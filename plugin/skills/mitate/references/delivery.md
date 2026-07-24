@@ -126,31 +126,54 @@ no blocking — and SSIM 0.97 against the source frames.
 `avif` needs `avifenc` (macOS: `brew install libavif`), the exact parallel of
 `img2webp` for `loop`.
 
-## Pick the format from the surface, not from a size table
+## On a page you control, ship the scene — not a recording of it
 
-The whole AVIF-versus-WebP argument above is scoped to **one constraint: GitHub
-will not render an mp4 inline.** Lift that constraint and the answer changes
-completely. On a web page you control, mp4 wins every axis at once — it
-hardware-decodes, it is far better quality per byte, and the resolution ceiling
-that AVIF's software decode imposes disappears.
+Everything above is scoped to **one constraint: GitHub will not render an mp4
+inline.** That constraint is why a compressed loop exists at all. Lift it — on
+any page you control — and the right answer is not a better recording. It is no
+recording: serve the scene.
 
-| surface | format | why |
+The instinct is that an HTML file carrying an embedded three.js is the heavy
+option. Measured, it is the opposite, because text compresses and video does not:
+
+| per film, over the wire | size |
+|---|---|
+| scene HTML, raw | ~1.11 MB |
+| scene HTML, **brotli** (what a static host actually serves) | **~255 KB** |
+| the same film as h264 1280/30fps | 559-1626 KB |
+| the same film as AVIF 720/12fps | ~344 KB |
+
+The real artifact is cheaper than a mid-quality recording of itself, at far
+better fidelity — because it is not a copy, it is the thing. On this repo's
+showcase the swap cut a full scroll-through from ~6.3 MB to ~1.9 MB and removed
+8 MB of tracked mp4s.
+
+Two second-order wins, both larger than they look:
+
+- **The thumbnail and the full view are the same URL.** Watch a thumbnail, click
+  to open it, and the open costs zero bytes — already cached. A recording makes
+  you pay for the film twice.
+- **Bandwidth tracks device capability.** Weak devices fall back to the poster
+  still (~45 KB), cheaper than any animated format. The degradation path saves
+  bytes instead of costing them.
+
+The cost is real and worth stating: a live scene boots in about a second where a
+video paints its poster instantly, and each one holds a GPU context. So mount
+lazily and **unmount on exit** — measured on the showcase, that holds concurrent
+live scenes to two where the naive version would run six. Gate it on
+`hardwareConcurrency`, coarse pointer and Save-Data, and never mount under
+`prefers-reduced-motion`; the still is the correct experience in every one of
+those cases.
+
+| surface | ship | why |
 |---|---|---|
 | GitHub README | animated AVIF (or WebP) | the only animated formats GitHub embeds; mp4 is served `text/plain` and `<video>` is stripped |
-| a web page you control | **h264 mp4 in `<video>`** | hardware decode, so many loops on one page stay cheap; no resolution/fps compromise |
-| the artifact itself | the scene HTML | deterministic, interactive, full quality — always the real deliverable |
+| a page you control | **the scene HTML** | smaller than its own recording after brotli, and it is the artifact rather than a lossy copy |
+| a poster or still, anywhere | `build.js poster` | a frame rendered from source |
 
-Measured on `gearbox` (16.5s) when this repo's showcase moved its thumbnails off
-AVIF: the AVIF was 344 KB at 720px/12fps and *software*-decoded; the replacement
-mp4 is 1119 KB at 1280px/30fps and *hardware*-decoded. Roughly 3x the bytes for
-1.8x the resolution, 2.5x the frame rate, and a decode path that does not stutter
-when six of them share a page. On a site, that trade is not close. `-tune
-animation` is worth setting on this content — large flat areas and hard edges —
-where it cut ~20% at identical CRF (1393 KB to 1119 KB).
-
-Both can be true at once for the same film, and in this repo they are: the site
-serves `clips/*.mp4`, the examples README embeds `posters/*.avif`, and each is
-rendered from the scene rather than transcoded from the other.
+Both are true at once in this repo: the site mounts `films/*.html` live, the
+examples README embeds `posters/*.avif`, and every still comes from `poster`.
+Nothing is ever transcoded out of anything else.
 
 ## Stills come from the scene, never from the loop
 

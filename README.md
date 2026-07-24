@@ -39,8 +39,8 @@ a Chromium; see [`plugin/README.md`](plugin/README.md#requirements).
 | Path | What |
 |---|---|
 | [`plugin/`](plugin/) | The skill itself — manifest, `skills/mitate/` with SKILL.md, references, templates, examples. See [`plugin/README.md`](plugin/README.md) |
-| [`site/`](site/) | The static showcase site — see [`docs/site.md`](docs/site.md) to run or deploy it |
-| [`docs/`](docs/) | [`plan.md`](docs/plan.md) (founding plan, architecture, phase gates), [`physics-bake-proposal.md`](docs/physics-bake-proposal.md), [`site.md`](docs/site.md) (running and deploying the showcase), and [`predecessor-record.md`](docs/predecessor-record.md) (the frozen predecessor's measured findings, inherited) |
+| [`site/`](site/) | The static showcase site behind [mitate.microapp.me](https://mitate.microapp.me) — one hand-authored page, no framework |
+| [`docs/`](docs/) | [`plan.md`](docs/plan.md) (founding plan, architecture, phase gates), [`physics-bake-proposal.md`](docs/physics-bake-proposal.md), and [`predecessor-record.md`](docs/predecessor-record.md) (the frozen predecessor's measured findings, inherited) |
 | [`scripts/`](scripts/) | `stage-films.sh` — copies the skill's examples into `site/films/` at build time |
 
 The scene HTML files are tracked once, as `plugin/skills/mitate/examples/`, and

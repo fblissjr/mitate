@@ -611,21 +611,24 @@ Amended 2026-07-23 (owner directive, clarified same day): the gate is
 owner has seen it and approved it; test and interim scenes (and any interim
 renders) live under gitignored `internal/` until promoted. But **once a
 scene IS tracked in `examples/`, the preview set is mandatory and
-consistent**, and it is now three files, because the two surfaces have
-genuinely different constraints:
+consistent**: an AVIF in `site/posters/`, embedded in the examples README so it
+renders on GitHub, alongside a link to the `.html` and a description of what the
+example showcases, plus a `-still.jpg` rendered frame-exact from source
+(`build.js poster`). Both come **from the scene**, never from each other — no
+still pulled out of a compressed loop.
 
-| file | lives in | serves | why that format |
-|---|---|---|---|
-| `<name>.avif` | `site/posters/` | the examples README on GitHub | the only animated format GitHub embeds inline |
-| `<name>.mp4` | `site/clips/` | the showcase gallery | hardware decode, so six loops on one page stay cheap at 1280/30fps |
-| `<name>-still.jpg` | `site/posters/` | reduced motion, `<video>` poster | a frame, not a recording |
-
-All three render **from the scene**, never from each other — no frame transcoded
-out of an AVIF, no still pulled from an mp4. The README entry still needs its
-link to the `.html` and a description of what the example showcases. Amended
-2026-07-24, when the gallery moved off AVIF: the format argument in
-`references/delivery.md` was always scoped to GitHub's refusal to render mp4
-inline, and that constraint simply does not apply to a page we control. The examples README also
+Amended 2026-07-24, and the amendment is the interesting part. The showcase site
+briefly shipped a third preview tier (h264 clips at 1280/30fps) to escape the
+AVIF's 720/12fps ceiling, then deleted it: **on a page we control the right
+preview is the scene itself.** Brotli takes a scene HTML to ~255 KB where its own
+mp4 was 559–1626 KB, so the artifact is cheaper than a lossy recording of it, and
+the thumbnail and the lightbox become the same cached URL. The whole
+compressed-loop argument in `references/delivery.md` was only ever scoped to
+GitHub's refusal to render mp4 or run `<script>`, and that constraint does not
+travel. The AVIF stays because the README genuinely needs it; the mp4 tier does
+not exist. Live scenes mount lazily and unmount on scroll-out (peak of two
+contexts, measured), gated off weak devices and reduced motion, where the still
+is both the correct experience and the cheapest one. The examples README also
 carries a standing callout above the listing: the AVIF is to the film what
 a thumbnail is to a full image (720px/12fps/inline budget) — the HTML is
 the artifact. The HTML remains the full-quality deliverable; the AVIF

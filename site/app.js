@@ -138,59 +138,69 @@
   lbClose.addEventListener('click', closeFilm);
   lb.addEventListener('click', (e) => { if (e.target === lb) closeFilm(); });
 
-  /* ---------- poster loops ---------- */
-  // Thumbnails are muted h264 clips, not animated images: they hardware-decode,
-  // so six on one page cost a fraction of what six software-decoded AVIFs did,
-  // at 1280/30fps instead of 720/12. Nothing is fetched until a clip nears the
-  // viewport, and under reduced motion nothing is fetched at all — the poster
-  // still is the whole experience.
-  const startClip = (v) => {
-    if (reduceMotion || v.dataset.started) return;
-    v.dataset.started = '1';
-    if (!v.querySelector('source')) {
-      const s = document.createElement('source');
-      s.src = v.dataset.clip; s.type = 'video/mp4';
-      v.appendChild(s); v.load();
-    }
-    const p = v.play();
-    if (p && p.catch) p.catch(() => {}); // an autoplay refusal leaves the poster up; fine
+  /* ---------- live thumbnails ---------- */
+  // A thumbnail is the scene itself, not a recording of it. The still paints
+  // first (and is the whole experience with JS off, under reduced motion, or on
+  // a device we decide not to push); a real iframe mounts over it as it comes
+  // into view and is REMOVED when it leaves, so the number of live WebGL
+  // contexts tracks what is actually on screen rather than how many films exist.
+  //
+  // Why not a video: brotli takes a scene to ~255 KB where its mp4 was ~1 MB,
+  // and the lightbox opens the very same URL, so watching a thumbnail and then
+  // opening it costs nothing the second time. references/delivery.md carries the
+  // measurement.
+  const conn = navigator.connection || {};
+  const liveOK = !reduceMotion
+    && (navigator.hardwareConcurrency || 2) >= 8
+    && !window.matchMedia('(pointer: coarse)').matches
+    && !conn.saveData
+    && !/(^|-)(2g|slow-2g)$/.test(conn.effectiveType || '');
+
+  const mountLive = (img) => {
+    if (img.dataset.live || !img.dataset.scene) return;
+    img.dataset.live = '1';
+    const f = document.createElement('iframe');
+    f.className = 'live-frame';
+    f.setAttribute('aria-hidden', 'true');
+    f.setAttribute('tabindex', '-1');
+    f.setAttribute('scrolling', 'no');
+    f.setAttribute('title', '');
+    f.addEventListener('load', () => f.classList.add('on'));
+    f.src = img.dataset.scene;
+    img.parentNode.appendChild(f);
   };
 
-  if (!reduceMotion) {
-    const vids = Array.from(document.querySelectorAll('.poster-vid'));
-    if ('IntersectionObserver' in window) {
-      const vio = new IntersectionObserver((entries) => {
-        entries.forEach(e => {
-          if (e.isIntersecting) startClip(e.target);
-          else if (e.target.dataset.started) e.target.pause();
-        });
-      }, { rootMargin: '200px' });
-      vids.forEach(v => vio.observe(v));
-    } else {
-      vids.forEach(startClip);
-    }
+  const unmountLive = (img) => {
+    if (!img.dataset.live) return;
+    delete img.dataset.live;
+    // removing the element is what releases the GPU context; hiding it would not
+    const f = img.parentNode.querySelector('.live-frame');
+    if (f) f.remove();
+  };
+
+  if (liveOK && 'IntersectionObserver' in window) {
+    const lio = new IntersectionObserver((entries) => {
+      entries.forEach(e => e.isIntersecting ? mountLive(e.target) : unmountLive(e.target));
+    }, { rootMargin: '120px' });
+    document.querySelectorAll('.poster-still[data-scene]').forEach(el => lio.observe(el));
   }
 
   /* ---------- gearbox bible toggle (workshop <-> neon) ---------- */
-  // The gallery gearbox clip is managed here so the source swaps reliably on
-  // toggle. The poster still is the HTML default, so no-JS and reduced-motion
-  // stay correct without loading a byte of video.
+  // Both bibles are the same scene one line apart, so the toggle swaps the still
+  // and the scene URL together. If a live frame is already mounted it is torn
+  // down and remounted on the other bible; if not, the next scroll-in picks up
+  // whichever is current. The still is the HTML default, so no-JS and
+  // reduced-motion stay correct without loading a scene at all.
   const gearboxScreen = document.getElementById('gearboxScreen');
-  const gearboxVid = document.getElementById('gearboxVid');
-  if (gearboxScreen && gearboxVid) {
+  const gearboxStill = document.getElementById('gearboxStill');
+  if (gearboxScreen && gearboxStill) {
     const setBible = (bible) => {
       const neon = bible === 'neon';
-      gearboxVid.poster = neon ? 'posters/gearbox-neon-still.jpg' : 'posters/gearbox-still.jpg';
-      gearboxVid.dataset.clip = neon ? 'clips/gearbox-neon.mp4' : 'clips/gearbox.mp4';
-      if (!reduceMotion && gearboxVid.dataset.started) {
-        const s = gearboxVid.querySelector('source');
-        if (s) {
-          s.src = gearboxVid.dataset.clip;
-          gearboxVid.load();
-          const p = gearboxVid.play();
-          if (p && p.catch) p.catch(() => {});
-        }
-      }
+      const wasLive = !!gearboxStill.dataset.live;
+      if (wasLive) unmountLive(gearboxStill);
+      gearboxStill.src = neon ? 'posters/gearbox-neon-still.jpg' : 'posters/gearbox-still.jpg';
+      gearboxStill.dataset.scene = neon ? 'films/gearbox-neon.html' : 'films/gearbox.html';
+      if (wasLive) mountLive(gearboxStill);
       gearboxScreen.setAttribute('data-film', neon ? 'gearbox-neon' : 'gearbox');
       document.querySelectorAll('.bible-btn').forEach(x => {
         const on = x.getAttribute('data-bible') === bible;
@@ -200,6 +210,6 @@
     };
     document.querySelectorAll('.bible-btn').forEach(b =>
       b.addEventListener('click', () => setBible(b.getAttribute('data-bible'))));
-    setBible('workshop'); // establishes the default bible; the clip starts when it scrolls into view
+    setBible('workshop'); // establishes the default bible; the scene mounts when it scrolls into view
   }
 })();

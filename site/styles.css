@@ -175,6 +175,11 @@ h1 .fn{font-family:var(--mono);font-weight:600;letter-spacing:-0.02em;color:var(
 .prims{margin-top:1.15rem;display:flex;flex-wrap:wrap;gap:.4rem}
 .prim{font-family:var(--mono);font-size:.68rem;color:var(--stage-mut);border:1px solid var(--hair);border-radius:2px;padding:.24rem .5rem;transition:border-color .2s,color .2s}
 .prim:hover{border-color:var(--amber-dim);color:var(--stage-ink)}
+.bibles{display:flex;align-items:center;gap:.5rem;margin-top:1rem}
+.bibles-label{font-family:var(--mono);font-size:.66rem;color:var(--stage-mut);text-transform:uppercase;letter-spacing:.1em}
+.bible-btn{font-family:var(--mono);font-size:.72rem;color:var(--stage-mut);background:none;border:1px solid var(--hair);border-radius:2px;padding:.26rem .62rem;cursor:pointer;transition:border-color .2s,color .2s,background .2s}
+.bible-btn:hover{color:var(--stage-ink);border-color:var(--amber-dim)}
+.bible-btn.is-on{color:var(--stage);background:var(--amber);border-color:var(--amber);font-weight:500}
 @media(max-width:760px){.film,.film:nth-child(even){grid-template-columns:1fr}.film:nth-child(even) .film-screen{order:0}}
 
 /* woven-thesis footnote in gallery */

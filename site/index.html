@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Martian+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=5">
+<link rel="stylesheet" href="styles.css?v=6">
 </head>
 <body>
 <script>document.documentElement.classList.add('js')</script>
@@ -59,7 +59,10 @@
         <div class="inst-film">
           <span class="corner c1"></span><span class="corner c2"></span><span class="corner c3"></span><span class="corner c4"></span>
           <button class="screen" data-film="gearbox" aria-label="Play the gearbox film">
-            <img src="posters/gearbox.avif" alt="A five-beat gearbox mechanism turning in a lit workshop" loading="eager" fetchpriority="high" width="1280" height="720">
+            <picture>
+              <source media="(prefers-reduced-motion: no-preference)" srcset="posters/gearbox.avif" type="image/avif">
+              <img src="posters/gearbox-still.jpg" alt="A five-beat gearbox mechanism turning in a lit workshop" loading="eager" fetchpriority="high" width="1280" height="720">
+            </picture>
             <span class="playbadge">open film</span>
           </button>
         </div>
@@ -121,14 +124,19 @@
 
       <!-- gearbox -->
       <article class="film reveal">
-        <button class="film-screen" data-film="gearbox" aria-label="Play the gearbox film">
-          <img src="posters/gearbox.avif" alt="A gearbox of steel and brass turning under a workshop key light" loading="lazy" width="1280" height="720">
+        <button class="film-screen" id="gearboxScreen" data-film="gearbox" aria-label="Play the gearbox film">
+          <img id="gearboxImg" src="posters/gearbox-still.jpg" alt="A gearbox of steel and brass turning under a workshop key light" loading="lazy" width="1280" height="720">
           <span class="open"><span class="tri"></span>open film</span>
         </button>
         <div class="film-meta">
           <div class="slug">SCENE 01 — INT. WORKSHOP · EXPLAINER</div>
           <h3>Gearbox</h3>
           <p class="desc">A five-beat mechanism, judged frame-for-frame against the frozen predecessor. Switch one line — <span class="mono">workshop</span> to <span class="mono">neon</span> — and the same beats become a dark stage where the light is the subject.</p>
+          <div class="bibles" role="group" aria-label="Style bible — switch the look">
+            <span class="bibles-label mono">bible</span>
+            <button type="button" class="bible-btn is-on" data-bible="workshop" aria-pressed="true">workshop</button>
+            <button type="button" class="bible-btn" data-bible="neon" aria-pressed="false">neon</button>
+          </div>
           <div class="runline"><span>run <b>16.5s</b></span><span>beats <b>5</b></span><span>loop <b>seamless</b></span></div>
           <div class="prims">
             <span class="prim">buildWorlds()</span><span class="prim">TSL node materials</span><span class="prim">shot solver</span><span class="prim">style bibles</span><span class="prim">RenderPipeline post</span>
@@ -139,7 +147,10 @@
       <!-- bear-and-bees -->
       <article class="film reveal">
         <button class="film-screen" data-film="bear-and-bees" aria-label="Play the bear-and-bees film">
-          <img src="posters/bear-and-bees.avif" alt="A furred bear ambles toward a hanging beehive, then flees as bees erupt" loading="lazy" width="1280" height="720">
+          <picture>
+            <source media="(prefers-reduced-motion: no-preference)" srcset="posters/bear-and-bees.avif" type="image/avif">
+            <img src="posters/bear-and-bees-still.jpg" alt="A furred bear ambles toward a hanging beehive, then flees as bees erupt" loading="lazy" width="1280" height="720">
+          </picture>
           <span class="open"><span class="tri"></span>open film</span>
         </button>
         <div class="film-meta">
@@ -156,7 +167,10 @@
       <!-- menagerie -->
       <article class="film reveal">
         <button class="film-screen" data-film="menagerie" aria-label="Play the menagerie film">
-          <img src="posters/menagerie.avif" alt="A bear, a human, and an invented three-eyed strider walk in on their own gaits" loading="lazy" width="1280" height="720">
+          <picture>
+            <source media="(prefers-reduced-motion: no-preference)" srcset="posters/menagerie.avif" type="image/avif">
+            <img src="posters/menagerie-still.jpg" alt="A bear, a human, and an invented three-eyed strider walk in on their own gaits" loading="lazy" width="1280" height="720">
+          </picture>
           <span class="open"><span class="tri"></span>open film</span>
         </button>
         <div class="film-meta">
@@ -173,7 +187,10 @@
       <!-- materials -->
       <article class="film reveal">
         <button class="film-screen" data-film="materials" aria-label="Play the materials film">
-          <img src="posters/materials.avif" alt="Cel banding, subsurface scattering through thin ears, and dispersive glass over an emissive core" loading="lazy" width="1280" height="720">
+          <picture>
+            <source media="(prefers-reduced-motion: no-preference)" srcset="posters/materials.avif" type="image/avif">
+            <img src="posters/materials-still.jpg" alt="Cel banding, subsurface scattering through thin ears, and dispersive glass over an emissive core" loading="lazy" width="1280" height="720">
+          </picture>
           <span class="open"><span class="tri"></span>open film</span>
         </button>
         <div class="film-meta">
@@ -190,7 +207,10 @@
       <!-- noise-chart -->
       <article class="film reveal">
         <button class="film-screen" data-film="noise-chart" aria-label="Play the noise-chart film">
-          <img src="posters/noise-chart.avif" alt="Eight shader noise primitives in a grid, one per cell, including a deliberate drift control" loading="lazy" width="1280" height="720">
+          <picture>
+            <source media="(prefers-reduced-motion: no-preference)" srcset="posters/noise-chart.avif" type="image/avif">
+            <img src="posters/noise-chart-still.jpg" alt="Eight shader noise primitives in a grid, one per cell, including a deliberate drift control" loading="lazy" width="1280" height="720">
+          </picture>
           <span class="open"><span class="tri"></span>open film</span>
         </button>
         <div class="film-meta">
@@ -355,6 +375,6 @@ phase = { HL:<span class="c-v">0</span>,  FL:<span class="c-v">.25</span>,
   </div>
 </div>
 
-<script src="app.js?v=5"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>

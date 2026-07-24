@@ -68,6 +68,7 @@
   /* ---------- film lightbox ---------- */
   const FILMS = {
     'gearbox':       { title: 'Gearbox · five-beat mechanism',        meta: 'workshop bible · 16.5s',    src: 'films/gearbox.html' },
+    'gearbox-neon':  { title: 'Gearbox · neon bible',                 meta: 'neon bible · 16.5s',        src: 'films/gearbox-neon.html' },
     'bear-and-bees': { title: 'Bear & Bees · silent comedy short',    meta: 'locked camera · 21.3s',     src: 'films/bear-and-bees.html' },
     'menagerie':     { title: 'Menagerie · character-scaffold demo',  meta: 'one skeleton · three gaits',src: 'films/menagerie.html' },
     'materials':     { title: 'Materials · cel · SSS · glass',        meta: 'transparency ordering case',src: 'films/materials.html' },
@@ -136,4 +137,28 @@
   });
   lbClose.addEventListener('click', closeFilm);
   lb.addEventListener('click', (e) => { if (e.target === lb) closeFilm(); });
+
+  /* ---------- gearbox bible toggle (workshop <-> neon) ---------- */
+  // The gallery gearbox poster is a plain <img> managed here so the animated
+  // AVIF swaps reliably on toggle (a <picture> won't re-select on the fly).
+  // The static still is the HTML default, so no-JS / reduced-motion stays correct.
+  const gearboxScreen = document.getElementById('gearboxScreen');
+  const gearboxImg = document.getElementById('gearboxImg');
+  if (gearboxScreen && gearboxImg) {
+    const setBible = (bible) => {
+      const neon = bible === 'neon';
+      gearboxImg.src = reduceMotion
+        ? (neon ? 'posters/gearbox-neon-still.jpg' : 'posters/gearbox-still.jpg')
+        : (neon ? 'posters/gearbox-neon.avif' : 'posters/gearbox.avif');
+      gearboxScreen.setAttribute('data-film', neon ? 'gearbox-neon' : 'gearbox');
+      document.querySelectorAll('.bible-btn').forEach(x => {
+        const on = x.getAttribute('data-bible') === bible;
+        x.classList.toggle('is-on', on);
+        x.setAttribute('aria-pressed', String(on));
+      });
+    };
+    document.querySelectorAll('.bible-btn').forEach(b =>
+      b.addEventListener('click', () => setBible(b.getAttribute('data-bible'))));
+    setBible('workshop'); // upgrade the static default to the animated loop for motion users
+  }
 })();

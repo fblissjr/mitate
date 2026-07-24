@@ -7,6 +7,15 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.15.0
+
+### changed
+- **The showcase ships no recordings at all, and the docs follow.** The site had been playing compressed AVIF loops as its default experience while the copy said "not a video" — an incoherence the owner caught. Every AVIF is deleted; the gallery is poster frames with two explicit actions per film (preview in a lightbox, or open the scene in a new tab), and exactly one scene is ever loaded, on demand. `examples/README.md` now embeds `-still.jpg` frames instead of loops, with the reasoning stated: GitHub cannot run a scene, so a frame is the honest thing to show there.
+- **`delivery.md` records the reversal rather than dropping it.** The AVIF-versus-WebP measurements stay, because they are real and `build.js avif` still exists for anyone who needs an inline animated preview on GitHub. What changed is the conclusion for a page you control: shipping a recording to explain a thing that is not a recording is not a tradeoff, it is a contradiction. Also corrected two stale predecessor paths that survived the migration — `bibles.md` pointed at `docs/media/*.avif` and `webgpu-stack.md` at `examples/gearbox.avif`, neither of which has ever existed in this repo.
+
+### fixed
+- The lightbox's loading state now waits for `sceneReady` with a 90s ceiling, and the format readout is gone along with the preview tier it described.
+
 ## 0.14.2
 
 ### fixed

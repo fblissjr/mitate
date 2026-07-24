@@ -39,8 +39,8 @@ byte-deterministic on both backends. `workshop` is a lit machine-shop
 (steel and brass under a key light, steadicam); `neon` is a dark stage
 where the machines are silhouettes and the LIGHT is the subject — bloomed
 emissive markers, glowing time-history trails, locked long-lens camera,
-slower dolly blends. Previews: `docs/media/gearbox.avif` (workshop) and
-`docs/media/gearbox-neon.avif` in the repo.
+slower dolly blends. Poster frames for both: `site/posters/gearbox-still.jpg` and
+`site/posters/gearbox-neon-still.jpg`. To see them move, open the scene.
 
 ## Register rules
 

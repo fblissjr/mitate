@@ -171,9 +171,13 @@ those cases.
 | a page you control | **the scene HTML** | smaller than its own recording after brotli, and it is the artifact rather than a lossy copy |
 | a poster or still, anywhere | `build.js poster` | a frame rendered from source |
 
-Both are true at once in this repo: the site mounts `films/*.html` live, the
-examples README embeds `posters/*.avif`, and every still comes from `poster`.
-Nothing is ever transcoded out of anything else.
+What this repo actually does, after trying the alternatives: **it ships no
+recordings at all.** The showcase loads one scene on demand and nothing else
+moves; the examples README embeds a poster frame per example, because GitHub
+cannot run a scene and a frame is the honest thing to show there. Every image is
+`build.js poster` against the scene. The reasoning above still holds for anyone
+who *needs* an inline animated preview on GitHub — that is what `build.js avif`
+is for — but a page that says it is not a video should not open by playing one.
 
 ## Stills come from the scene, never from the loop
 
@@ -183,10 +187,8 @@ thumbnails. Extracting a frame from an AVIF or WebP instead gives you a
 transcode of a lossy encode — visibly worse, and for no gain, since the scene is
 right there and deterministic.
 
-In this repo that rule is why `site/posters/` carries both an animated `.avif`
-and a `-still.jpg` per film: the AVIF is the loop, the JPEG is a poster rendered
-from source at a chosen `t`, and the site's `<picture>` blocks swap to the still
-under `prefers-reduced-motion`.
+In this repo that rule is why `site/posters/` carries a `-still.jpg` per film,
+rendered from source at a chosen `t`. It is the only image the showcase ships.
 
 ## Why WebP (and, provisionally, AVIF) embed and mp4 does not
 

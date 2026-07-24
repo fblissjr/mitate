@@ -132,7 +132,7 @@ SHADING — the node renderer's highlights are brighter and shadows tighter
 (~9% of pixels differ by >8/255) — which the eye reads as zoom. Also
 learned here: `key.shadow.normalBias = .035` kills shadow acne on extruded
 faces at closeup (a scene-rig setting; both stacks needed it). The shipped
-example is `examples/gearbox.html` / `examples/gearbox.avif`.
+example is `examples/gearbox.html`.
 
 ## Node materials in scene code
 

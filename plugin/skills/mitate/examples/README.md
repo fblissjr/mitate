@@ -1,6 +1,6 @@
 # mitate examples
 
-last updated: 2026-07-23
+last updated: 2026-07-24
 
 Each example is a complete, self-contained film: open the `.html` straight
 from disk and it plays. **WebGPU is not required** — the embedded
@@ -10,16 +10,14 @@ These are the skill's teaching baselines — SKILL.md and the references point
 at them — and every one passed the full instrument suite (smoke on both
 backends, sheets, motion, independent review).
 
-Rendered previews live in [`site/posters/`](../../../../site/posters/) at the
-repo root, NOT here: the plugin subtree ships to every installed user (and
-is cached per version), so it carries only what the skill itself needs. The
-showcase site serves the same files, so there is one copy, not two. Every
-tracked example has one — the AVIF is the preview, the HTML is the film.
+Poster frames live in [`site/posters/`](../../../../site/posters/) at the repo
+root, NOT here: the plugin subtree ships to every installed user and is cached
+per version, so it carries only what the skill itself needs.
 
-> **About the previews:** the embedded AVIFs are heavily compressed
-> (720px, 12fps, inline-on-GitHub budget) — treat each one as a thumbnail
-> is to a full image. The `.html` next to it is the actual artifact:
-> full resolution, full frame rate, crisp DOM captions. Open that.
+> **The stills below are one frame each, rendered from the scene.** They are not
+> recordings and there is no compressed loop to watch — GitHub cannot run a
+> scene, so a frame is the honest thing to show here. The `.html` next to each
+> one is the artifact: open it and the scene runs.
 
 ## gearbox
 
@@ -28,13 +26,13 @@ explainer-video: the same scene body on both stacks, judged side-by-side.
 Five beats, 16.5s, seamless loop by construction. Showcases the baseline
 pipeline: beats, the shot solver, the node post chain.
 
-![gearbox](../../../../site/posters/gearbox.avif)
+![gearbox](../../../../site/posters/gearbox-still.jpg)
 
 The same file carries the committed style-bible control pair: switch
 `const STYLE = BIBLES.workshop` to `BIBLES.neon` — one line — and the same
 beats render as a dark stage where the light is the subject:
 
-![gearbox neon](../../../../site/posters/gearbox-neon.avif)
+![gearbox neon](../../../../site/posters/gearbox-neon-still.jpg)
 
 ## menagerie
 
@@ -47,7 +45,7 @@ silhouettes, strip-checked planted feet, byte-deterministic on both
 backends. Showcases the character scaffold, the fur and fabric packs, and
 gait.
 
-![menagerie](../../../../site/posters/menagerie.avif)
+![menagerie](../../../../site/posters/menagerie-still.jpg)
 
 ## bear-and-bees
 
@@ -61,7 +59,7 @@ in all three axes: the boop solves to a surface graze (normalized 1.02),
 and the flee passes UNDER the hive with measured clearance. Showcases
 pause-then-fast timing, probe-solved staging, and the character register.
 
-![bear-and-bees](../../../../site/posters/bear-and-bees.avif)
+![bear-and-bees](../../../../site/posters/bear-and-bees-still.jpg)
 
 ## noise-chart
 
@@ -76,7 +74,7 @@ hash function. Verified 20/20 smoke-green across 15 WebGPU-Metal and 5
 WebGL2-fallback runs, control included. Showcases the primitive-isolation
 tier and the determinism instruments doing their job.
 
-![noise-chart](../../../../site/posters/noise-chart.avif)
+![noise-chart](../../../../site/posters/noise-chart-still.jpg)
 
 ## materials
 
@@ -86,4 +84,4 @@ through thin ears, transmissive glass with dispersion over an emissive core
 (the overlapping-transparency ordering case). Recipes and measured gotchas:
 `../references/materials.md`.
 
-![materials](../../../../site/posters/materials.avif)
+![materials](../../../../site/posters/materials-still.jpg)

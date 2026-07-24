@@ -5,12 +5,19 @@
 
 [build]
   publish = "."
-  command = "./stage-films.sh"
+  command = "../scripts/stage-films.sh"
 
-# Cache film + poster assets. Filenames are stable (NOT content-addressed), so no
-# `immutable` — an in-place update is still picked up on the next revalidate.
+# Cache film, clip and poster assets. Filenames are stable (NOT content-addressed),
+# so no `immutable` — an in-place update is still picked up on the next revalidate.
 [[headers]]
   for = "/films/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+# The thumbnail loops. Byte-for-byte the largest thing the site serves, and the
+# most re-requested, so they get the same day-long window as the films.
+[[headers]]
+  for = "/clips/*"
   [headers.values]
     Cache-Control = "public, max-age=86400"
 

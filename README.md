@@ -6,14 +6,18 @@ A scene pipeline an agent drives: reshoot parts, validate on three axes, and get
 better over time. Every scene is a deterministic, self-contained HTML file — a
 pure function of time `t`.
 
+[![Six scenes made with mitate: a bear nosing a hanging beehive, three characters walking in on their own gaits, a gearbox mechanism, subsurface scattering through thin skin, a grid of shader primitives, and the same gearbox under a neon style bible](site/posters/scenes.jpg)](https://mitate.microapp.me)
+
+Those six are what it makes today, playing in the browser at
+**[mitate.microapp.me](https://mitate.microapp.me)** — free and MIT-licensed, and
+the site is just the films. The same scenes are in
+[`plugin/skills/mitate/examples/`](plugin/skills/mitate/examples/): open one from
+disk and you get the real artifact, at full resolution and frame rate, rather than
+a compressed recording of it. It's an early version — this is the current output,
+not the ceiling.
+
 *mitate* (見立て): to see one thing as another — the Japanese aesthetic of
 representing one thing through another. Here, seeing any input as a scene.
-
-The example scenes are in [`plugin/skills/mitate/examples/`](plugin/skills/mitate/examples/)
-and play straight from disk. If you'd rather just watch them,
-[mitate.microapp.me](https://mitate.microapp.me) runs the same files in the
-browser — it's an early version, and it's what the skill produces today rather
-than what it's aiming at.
 
 ## Install
 
@@ -35,8 +39,9 @@ a Chromium; see [`plugin/README.md`](plugin/README.md#requirements).
 | Path | What |
 |---|---|
 | [`plugin/`](plugin/) | The skill itself — manifest, `skills/mitate/` with SKILL.md, references, templates, examples. See [`plugin/README.md`](plugin/README.md) |
-| [`site/`](site/) | The static showcase site — see [`site/README.md`](site/README.md) to run or deploy it |
-| [`docs/`](docs/) | [`plan.md`](docs/plan.md) (founding plan, architecture, phase gates), [`physics-bake-proposal.md`](docs/physics-bake-proposal.md), and [`predecessor-record.md`](docs/predecessor-record.md) (the frozen predecessor's measured findings, inherited) |
+| [`site/`](site/) | The static showcase site — see [`docs/site.md`](docs/site.md) to run or deploy it |
+| [`docs/`](docs/) | [`plan.md`](docs/plan.md) (founding plan, architecture, phase gates), [`physics-bake-proposal.md`](docs/physics-bake-proposal.md), [`site.md`](docs/site.md) (running and deploying the showcase), and [`predecessor-record.md`](docs/predecessor-record.md) (the frozen predecessor's measured findings, inherited) |
+| [`scripts/`](scripts/) | `stage-films.sh` — copies the skill's examples into `site/films/` at build time |
 
 The scene HTML files are tracked once, as `plugin/skills/mitate/examples/`, and
 staged into `site/films/` at deploy. Edit them where they live.

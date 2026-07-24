@@ -51,31 +51,30 @@
     <!-- live instrument -->
     <div class="instrument reveal" role="img" aria-label="A film rendering as a function of time">
       <div class="inst-head">
-        <span class="id">GEARBOX.scene</span>
-        <span class="tag">16.50s · 5 beats · seamless loop · backend WebGPU→WebGL2</span>
+        <span class="id">BEAR-AND-BEES.scene</span>
+        <span class="tag">21.30s · 8 beats · locked camera · backend WebGPU→WebGL2</span>
       </div>
       <div class="inst-body">
         <div class="inst-film">
           <span class="corner c1"></span><span class="corner c2"></span><span class="corner c3"></span><span class="corner c4"></span>
-          <button class="screen" data-film="gearbox" aria-label="Play the gearbox film">
-            <picture>
-              <source media="(prefers-reduced-motion: no-preference)" srcset="posters/gearbox.avif" type="image/avif">
-              <img src="posters/gearbox-still.jpg" alt="A five-beat gearbox mechanism turning in a lit workshop" loading="eager" fetchpriority="high" width="1280" height="720">
-            </picture>
+          <button class="screen" data-film="bear-and-bees" aria-label="Play the bear-and-bees film: a furred bear noses a hanging beehive, then flees as bees erupt">
+            <video class="poster-vid" data-clip="clips/bear-and-bees.mp4" poster="posters/bear-and-bees-still.jpg"
+                   muted loop playsinline preload="metadata" width="1280" height="720"
+                   aria-hidden="true" tabindex="-1"></video>
             <span class="playbadge">open film</span>
           </button>
         </div>
         <div class="inst-read">
-          <div class="frame-count"><span id="frameCount">00000</span><small> / 00512</small></div>
+          <div class="frame-count"><span id="frameCount">00000</span><small> / 00639</small></div>
           <div class="rr"><span>t</span><b id="tVal">0.000s</b></div>
-          <div class="rr"><span>fps</span><b>31.03</b></div>
-          <div class="rr"><span>beat</span><b id="beatVal">1 / 5</b></div>
-          <div class="rr"><span>style</span><b>workshop</b></div>
+          <div class="rr"><span>fps</span><b>30.00</b></div>
+          <div class="rr"><span>beat</span><b id="beatVal">1 / 8</b></div>
+          <div class="rr"><span>camera</span><b>locked</b></div>
           <div class="rr"><span>determinism</span><b class="pass">pass</b></div>
         </div>
       </div>
       <div class="inst-axis">
-        <div class="axis-label"><span>t = 0.000s</span><span>timeline · a pure function of t</span><span>16.500s</span></div>
+        <div class="axis-label"><span>t = 0.000s</span><span>timeline · a pure function of t</span><span>21.300s</span></div>
         <div class="track">
           <div class="base"></div>
           <div class="tick maj" style="left:0"></div><div class="tick" style="left:10%"></div><div class="tick" style="left:20%"></div>
@@ -123,8 +122,10 @@
 
       <!-- gearbox -->
       <article class="film reveal">
-        <button class="film-screen" id="gearboxScreen" data-film="gearbox" aria-label="Play the gearbox film">
-          <img id="gearboxImg" src="posters/gearbox-still.jpg" alt="A gearbox of steel and brass turning under a workshop key light" loading="lazy" width="1280" height="720">
+        <button class="film-screen" id="gearboxScreen" data-film="gearbox" aria-label="Play the gearbox film: a five-beat mechanism turning in a lit workshop">
+          <video id="gearboxVid" class="poster-vid" data-clip="clips/gearbox.mp4" poster="posters/gearbox-still.jpg"
+                 muted loop playsinline preload="none" width="1280" height="720"
+                 aria-hidden="true" tabindex="-1"></video>
           <span class="open"><span class="tri"></span>open film</span>
         </button>
         <div class="film-meta">
@@ -145,11 +146,10 @@
 
       <!-- bear-and-bees -->
       <article class="film reveal">
-        <button class="film-screen" data-film="bear-and-bees" aria-label="Play the bear-and-bees film">
-          <picture>
-            <source media="(prefers-reduced-motion: no-preference)" srcset="posters/bear-and-bees.avif" type="image/avif">
-            <img src="posters/bear-and-bees-still.jpg" alt="A furred bear ambles toward a hanging beehive, then flees as bees erupt" loading="lazy" width="1280" height="720">
-          </picture>
+        <button class="film-screen" data-film="bear-and-bees" aria-label="Play the bear-and-bees film: a furred bear noses a hanging beehive, then flees as bees erupt">
+          <video class="poster-vid" data-clip="clips/bear-and-bees.mp4" poster="posters/bear-and-bees-still.jpg"
+                 muted loop playsinline preload="none" width="1280" height="720"
+                 aria-hidden="true" tabindex="-1"></video>
           <span class="open"><span class="tri"></span>open film</span>
         </button>
         <div class="film-meta">
@@ -165,11 +165,10 @@
 
       <!-- menagerie -->
       <article class="film reveal">
-        <button class="film-screen" data-film="menagerie" aria-label="Play the menagerie film">
-          <picture>
-            <source media="(prefers-reduced-motion: no-preference)" srcset="posters/menagerie.avif" type="image/avif">
-            <img src="posters/menagerie-still.jpg" alt="A bear, a human, and an invented three-eyed strider walk in on their own gaits" loading="lazy" width="1280" height="720">
-          </picture>
+        <button class="film-screen" data-film="menagerie" aria-label="Play the menagerie film: a bear, a human and an invented three-eyed strider walk in on their own gaits">
+          <video class="poster-vid" data-clip="clips/menagerie.mp4" poster="posters/menagerie-still.jpg"
+                 muted loop playsinline preload="none" width="1280" height="720"
+                 aria-hidden="true" tabindex="-1"></video>
           <span class="open"><span class="tri"></span>open film</span>
         </button>
         <div class="film-meta">
@@ -185,11 +184,10 @@
 
       <!-- materials -->
       <article class="film reveal">
-        <button class="film-screen" data-film="materials" aria-label="Play the materials film">
-          <picture>
-            <source media="(prefers-reduced-motion: no-preference)" srcset="posters/materials.avif" type="image/avif">
-            <img src="posters/materials-still.jpg" alt="Cel banding, subsurface scattering through thin ears, and dispersive glass over an emissive core" loading="lazy" width="1280" height="720">
-          </picture>
+        <button class="film-screen" data-film="materials" aria-label="Play the materials film: cel banding, subsurface scattering through thin ears, and dispersive glass over an emissive core">
+          <video class="poster-vid" data-clip="clips/materials.mp4" poster="posters/materials-still.jpg"
+                 muted loop playsinline preload="none" width="1280" height="720"
+                 aria-hidden="true" tabindex="-1"></video>
           <span class="open"><span class="tri"></span>open film</span>
         </button>
         <div class="film-meta">
@@ -205,11 +203,10 @@
 
       <!-- noise-chart -->
       <article class="film reveal">
-        <button class="film-screen" data-film="noise-chart" aria-label="Play the noise-chart film">
-          <picture>
-            <source media="(prefers-reduced-motion: no-preference)" srcset="posters/noise-chart.avif" type="image/avif">
-            <img src="posters/noise-chart-still.jpg" alt="Eight shader noise primitives in a grid, one per cell, including a deliberate drift control" loading="lazy" width="1280" height="720">
-          </picture>
+        <button class="film-screen" data-film="noise-chart" aria-label="Play the noise-chart film: eight shader noise primitives in a grid, including a deliberate drift control">
+          <video class="poster-vid" data-clip="clips/noise-chart.mp4" poster="posters/noise-chart-still.jpg"
+                 muted loop playsinline preload="none" width="1280" height="720"
+                 aria-hidden="true" tabindex="-1"></video>
           <span class="open"><span class="tri"></span>open film</span>
         </button>
         <div class="film-meta">

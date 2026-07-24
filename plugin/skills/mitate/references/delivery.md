@@ -126,6 +126,32 @@ no blocking — and SSIM 0.97 against the source frames.
 `avif` needs `avifenc` (macOS: `brew install libavif`), the exact parallel of
 `img2webp` for `loop`.
 
+## Pick the format from the surface, not from a size table
+
+The whole AVIF-versus-WebP argument above is scoped to **one constraint: GitHub
+will not render an mp4 inline.** Lift that constraint and the answer changes
+completely. On a web page you control, mp4 wins every axis at once — it
+hardware-decodes, it is far better quality per byte, and the resolution ceiling
+that AVIF's software decode imposes disappears.
+
+| surface | format | why |
+|---|---|---|
+| GitHub README | animated AVIF (or WebP) | the only animated formats GitHub embeds; mp4 is served `text/plain` and `<video>` is stripped |
+| a web page you control | **h264 mp4 in `<video>`** | hardware decode, so many loops on one page stay cheap; no resolution/fps compromise |
+| the artifact itself | the scene HTML | deterministic, interactive, full quality — always the real deliverable |
+
+Measured on `gearbox` (16.5s) when this repo's showcase moved its thumbnails off
+AVIF: the AVIF was 344 KB at 720px/12fps and *software*-decoded; the replacement
+mp4 is 1119 KB at 1280px/30fps and *hardware*-decoded. Roughly 3x the bytes for
+1.8x the resolution, 2.5x the frame rate, and a decode path that does not stutter
+when six of them share a page. On a site, that trade is not close. `-tune
+animation` is worth setting on this content — large flat areas and hard edges —
+where it cut ~20% at identical CRF (1393 KB to 1119 KB).
+
+Both can be true at once for the same film, and in this repo they are: the site
+serves `clips/*.mp4`, the examples README embeds `posters/*.avif`, and each is
+rendered from the scene rather than transcoded from the other.
+
 ## Stills come from the scene, never from the loop
 
 `build.js poster <scene.html> [t] [width]` renders a frame-exact still straight

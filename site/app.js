@@ -23,7 +23,7 @@
   }
 
   /* ---------- live hero instrument: a self-consistent f(t) → frame readout ---------- */
-  const DUR = 16.5, FRAMES = 512, BEATS = 5;
+  const DUR = 21.3, FRAMES = 639, BEATS = 8;   // bear-and-bees, the hero scene: 21.3s at 30fps
   const elFrame = document.getElementById('frameCount');
   const elT = document.getElementById('tVal');
   const elBeat = document.getElementById('beatVal');
@@ -138,18 +138,59 @@
   lbClose.addEventListener('click', closeFilm);
   lb.addEventListener('click', (e) => { if (e.target === lb) closeFilm(); });
 
+  /* ---------- poster loops ---------- */
+  // Thumbnails are muted h264 clips, not animated images: they hardware-decode,
+  // so six on one page cost a fraction of what six software-decoded AVIFs did,
+  // at 1280/30fps instead of 720/12. Nothing is fetched until a clip nears the
+  // viewport, and under reduced motion nothing is fetched at all — the poster
+  // still is the whole experience.
+  const startClip = (v) => {
+    if (reduceMotion || v.dataset.started) return;
+    v.dataset.started = '1';
+    if (!v.querySelector('source')) {
+      const s = document.createElement('source');
+      s.src = v.dataset.clip; s.type = 'video/mp4';
+      v.appendChild(s); v.load();
+    }
+    const p = v.play();
+    if (p && p.catch) p.catch(() => {}); // an autoplay refusal leaves the poster up; fine
+  };
+
+  if (!reduceMotion) {
+    const vids = Array.from(document.querySelectorAll('.poster-vid'));
+    if ('IntersectionObserver' in window) {
+      const vio = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) startClip(e.target);
+          else if (e.target.dataset.started) e.target.pause();
+        });
+      }, { rootMargin: '200px' });
+      vids.forEach(v => vio.observe(v));
+    } else {
+      vids.forEach(startClip);
+    }
+  }
+
   /* ---------- gearbox bible toggle (workshop <-> neon) ---------- */
-  // The gallery gearbox poster is a plain <img> managed here so the animated
-  // AVIF swaps reliably on toggle (a <picture> won't re-select on the fly).
-  // The static still is the HTML default, so no-JS / reduced-motion stays correct.
+  // The gallery gearbox clip is managed here so the source swaps reliably on
+  // toggle. The poster still is the HTML default, so no-JS and reduced-motion
+  // stay correct without loading a byte of video.
   const gearboxScreen = document.getElementById('gearboxScreen');
-  const gearboxImg = document.getElementById('gearboxImg');
-  if (gearboxScreen && gearboxImg) {
+  const gearboxVid = document.getElementById('gearboxVid');
+  if (gearboxScreen && gearboxVid) {
     const setBible = (bible) => {
       const neon = bible === 'neon';
-      gearboxImg.src = reduceMotion
-        ? (neon ? 'posters/gearbox-neon-still.jpg' : 'posters/gearbox-still.jpg')
-        : (neon ? 'posters/gearbox-neon.avif' : 'posters/gearbox.avif');
+      gearboxVid.poster = neon ? 'posters/gearbox-neon-still.jpg' : 'posters/gearbox-still.jpg';
+      gearboxVid.dataset.clip = neon ? 'clips/gearbox-neon.mp4' : 'clips/gearbox.mp4';
+      if (!reduceMotion && gearboxVid.dataset.started) {
+        const s = gearboxVid.querySelector('source');
+        if (s) {
+          s.src = gearboxVid.dataset.clip;
+          gearboxVid.load();
+          const p = gearboxVid.play();
+          if (p && p.catch) p.catch(() => {});
+        }
+      }
       gearboxScreen.setAttribute('data-film', neon ? 'gearbox-neon' : 'gearbox');
       document.querySelectorAll('.bible-btn').forEach(x => {
         const on = x.getAttribute('data-bible') === bible;
@@ -159,6 +200,6 @@
     };
     document.querySelectorAll('.bible-btn').forEach(b =>
       b.addEventListener('click', () => setBible(b.getAttribute('data-bible'))));
-    setBible('workshop'); // upgrade the static default to the animated loop for motion users
+    setBible('workshop'); // establishes the default bible; the clip starts when it scrolls into view
   }
 })();

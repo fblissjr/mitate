@@ -611,11 +611,21 @@ Amended 2026-07-23 (owner directive, clarified same day): the gate is
 owner has seen it and approved it; test and interim scenes (and any interim
 renders) live under gitignored `internal/` until promoted. But **once a
 scene IS tracked in `examples/`, the preview set is mandatory and
-consistent**: an AVIF in `site/posters/`, embedded in the examples
-README so it renders on GitHub, alongside a link to the `.html` and a
-description of what the example is and showcases. A `-still.jpg` rendered
-frame-exact from source (`build.js poster`) sits beside it, for the site's
-reduced-motion swap — never a frame transcoded out of the AVIF. The examples README also
+consistent**, and it is now three files, because the two surfaces have
+genuinely different constraints:
+
+| file | lives in | serves | why that format |
+|---|---|---|---|
+| `<name>.avif` | `site/posters/` | the examples README on GitHub | the only animated format GitHub embeds inline |
+| `<name>.mp4` | `site/clips/` | the showcase gallery | hardware decode, so six loops on one page stay cheap at 1280/30fps |
+| `<name>-still.jpg` | `site/posters/` | reduced motion, `<video>` poster | a frame, not a recording |
+
+All three render **from the scene**, never from each other — no frame transcoded
+out of an AVIF, no still pulled from an mp4. The README entry still needs its
+link to the `.html` and a description of what the example showcases. Amended
+2026-07-24, when the gallery moved off AVIF: the format argument in
+`references/delivery.md` was always scoped to GitHub's refusal to render mp4
+inline, and that constraint simply does not apply to a page we control. The examples README also
 carries a standing callout above the listing: the AVIF is to the film what
 a thumbnail is to a full image (720px/12fps/inline budget) — the HTML is
 the artifact. The HTML remains the full-quality deliverable; the AVIF

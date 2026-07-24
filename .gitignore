@@ -3,6 +3,9 @@
 .AppleDouble
 .LSOverride
 
+# internal only folders
+internal/
+
 # Editors / IDEs
 .vscode/
 .idea/

@@ -17,27 +17,34 @@ site/
   index.html      the page (one file, hand-authored)
   styles.css      design system — spec-sheet light + sound-stage dark, one type system
   app.js          nav state, reveal-on-enter, live f(t) instrument, scene lightbox
-  netlify.toml    deploy config — publish this dir, no build step
-  films/          the five self-contained scene HTML pages (three.js embedded, zero network)
-  posters/        animated AVIF loops used as thumbnails
+  netlify.toml    deploy config — publish this dir, one build step (stage-films.sh)
+  stage-films.sh  copies the skill's examples/ into films/
+  films/          the self-contained scene HTML pages (three.js embedded, zero network)
+  posters/        animated AVIF loops used as thumbnails, and their -still.jpg frames
 ```
 
-The scenes in `films/` are copies of the skill's shipped examples. They are fully
-self-contained — three.js is embedded per file, no CDN, no fetched assets — so
-serving them statically is all that's required. The lightbox loads each one into
-an iframe on demand (and tears it down on close, releasing the WebGL context).
+The scenes are fully self-contained — three.js is embedded per file, no CDN, no
+fetched assets — so serving them statically is all that's required. The lightbox
+loads each one into an iframe on demand (and tears it down on close, releasing
+the WebGL context).
 
-Once the skill lives in this repo, prefer tracking the scenes once (as the skill's
-`examples/`) and staging them into `site/films/` at deploy via a build command,
-rather than committing two copies. Until then, the copies here keep the site
-self-contained and deployable on its own.
+**`films/` is staged, not tracked.** The scenes live once, as the skill's
+`plugin/skills/mitate/examples/`; `stage-films.sh` copies them here at build
+time, and the five staged names are gitignored so there is never a second copy
+to drift. The one exception is `gearbox-neon.html`, tracked here directly — it
+is a showcase-only variant (one line: `STYLE = BIBLES.neon`), not a skill
+example, so this is its only home.
+
+`posters/` is tracked here and is also what the skill's `examples/README.md`
+embeds, by relative path. Same rule: one copy.
 
 ## Run locally
 
-Any static server works, since there is no build step:
+Stage the films first, then any static server works:
 
 ```
 cd site
+./stage-films.sh
 python3 -m http.server 8788
 # open http://localhost:8788
 ```
@@ -47,27 +54,26 @@ server rather than opening `index.html` from disk.
 
 ## Deploy to Netlify
 
-Publish this directory as-is (`netlify.toml` sets `publish = "."`, no build
-command). Either:
+`netlify.toml` sets `publish = "."` and `command = "./stage-films.sh"`. The
+build step needs the repo checkout, because it reads the skill's `examples/`
+from a sibling directory:
 
-- **Drag-and-drop:** zip this folder and drop it on the Netlify dashboard, or
-- **CLI:** `netlify deploy --prod --dir site`, or
-- **Git integration:** point a Netlify site at this repo with **base directory
-  `site`** (Netlify then reads `site/netlify.toml` and publishes it).
-
-## Pending the skill migration
-
-The install commands and GitHub links in `index.html` point at `fblissjr/mitate`
-and `mitate@mitate` — the intended home once the skill migrates and publishes
-under the new name. Update them if the marketplace or repo path differs.
+- **Git integration (the deployed setup):** point a Netlify site at this repo
+  with **base directory `site`** — Netlify reads `site/netlify.toml`, runs
+  `stage-films.sh`, and publishes `site/`.
+- **CLI:** run `./stage-films.sh` first, then `netlify deploy --prod --dir site`.
+- **Drag-and-drop:** run `./stage-films.sh` first, or the zip ships without its
+  films.
 
 ## Keeping scenes current
 
-When a skill example changes, re-copy it from the skill's `examples/` directory:
+Edit the scene where it lives — `plugin/skills/mitate/examples/<name>.html` —
+and the next build picks it up. No copying.
+
+Previews do need a manual render, from source rather than from the AVIF:
 
 ```
-cp <skill>/examples/<name>.html site/films/
-cp <path-to-rendered-previews>/<name>.avif site/posters/
+build.js poster <name>.html <t> 1280    # frame-exact -> posters/<name>-still.jpg
 ```
 
 Bump the `?v=` query on the `styles.css` / `app.js` links in `index.html` when

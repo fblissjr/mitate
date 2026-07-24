@@ -1,9 +1,11 @@
 # mitate showcase — Netlify config
-# Static site. Publish this directory as-is; no build step.
+# Static site. The only build step stages the skill's example scenes into
+# films/ — they are tracked once, as plugin/skills/mitate/examples/, so the
+# site and the skill can never drift into two different versions of a film.
 
 [build]
   publish = "."
-  command = ""
+  command = "./stage-films.sh"
 
 # Cache film + poster assets. Filenames are stable (NOT content-addressed), so no
 # `immutable` — an in-place update is still picked up on the next revalidate.

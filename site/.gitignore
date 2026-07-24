@@ -1,0 +1,10 @@
+# Scenes staged from the skill's examples/ at build time by stage-films.sh.
+# Tracked once, as plugin/skills/mitate/examples/ — not twice.
+films/bear-and-bees.html
+films/gearbox.html
+films/materials.html
+films/menagerie.html
+films/noise-chart.html
+
+# gearbox-neon.html is deliberately NOT ignored: it is a showcase-only variant
+# (STYLE = BIBLES.neon), not a skill example, so this is its only home.

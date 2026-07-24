@@ -133,6 +133,11 @@ h1 .fn{font-family:var(--mono);font-weight:600;letter-spacing:-0.02em;color:var(
 .rr b{color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums}
 .rr b.pass{color:var(--blue-ink)}
 .inst-axis{border-top:1px solid var(--line);padding:13px 16px;background:var(--paper)}
+.inst-note{border-top:1px solid var(--line);padding:10px 16px;background:var(--paper);margin:0;
+  font-size:.76rem;line-height:1.5;color:var(--muted)}
+.linky{background:none;border:0;padding:0;font:inherit;color:var(--blue-ink);cursor:pointer;
+  text-decoration:underline;text-underline-offset:2px}
+.linky:hover{color:var(--ink)}
 .axis-label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.66rem;color:var(--muted);margin-bottom:.5rem}
 .track{position:relative;height:24px}
 .track .base{position:absolute;top:50%;left:0;right:0;height:1px;background:var(--ink)}
@@ -309,6 +314,10 @@ h1 .fn{font-family:var(--mono);font-weight:600;letter-spacing:-0.02em;color:var(
 .lb-standin{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:var(--stage-deep);
   opacity:1;transition:opacity .6s var(--ease)}
 .lb-standin.gone{opacity:0}
+/* format readout: lives in the bar above the stage, never over the scene */
+.lb-src{font-family:var(--mono);font-size:.66rem;color:var(--stage-dim);white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;min-width:0}
+@media(max-width:640px){.lb-src{display:none}}
 .lb-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.78rem;color:var(--stage-dim);gap:.6rem}
 .lb-loading .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);animation:pulse 1.1s var(--ease) infinite}
 @keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}

@@ -14,7 +14,7 @@
      instead of a live scene, desktops play it while the scene's shaders compile
      (measured 18-20s for the character films). That earns a preload hint. -->
 <link rel="preload" href="posters/bear-and-bees.avif" as="image" type="image/avif">
-<link rel="stylesheet" href="styles.css?v=8">
+<link rel="stylesheet" href="styles.css?v=10">
 </head>
 <body>
 <script>document.documentElement.classList.add('js')</script>
@@ -53,7 +53,10 @@
     </div>
 
     <!-- live instrument -->
-    <div class="instrument reveal" role="img" aria-label="A film rendering as a function of time">
+    <!-- role="group", not "img": this holds real controls (the screen button and
+         the note's link), and role="img" would make the whole subtree
+         presentational, hiding them from assistive tech. -->
+    <div class="instrument reveal" role="group" aria-label="A film rendering as a function of time">
       <div class="inst-head">
         <span class="id">BEAR-AND-BEES.scene</span>
         <span class="tag">21.30s · 8 beats · locked camera · backend WebGPU→WebGL2</span>
@@ -87,6 +90,11 @@
           <div class="marker" id="marker" style="left:0%"></div>
         </div>
       </div>
+      <p class="inst-note" id="instNote">
+        <span id="instNoteText">Showing a compressed preview loop.</span>
+        <button type="button" class="linky" data-film="bear-and-bees">Open the film</button>
+        <span id="instNoteWhy">to run the real scene — one self-contained file, rendered live in the page.</span>
+      </p>
     </div>
   </div>
 </header>
@@ -361,6 +369,7 @@ phase = { HL:<span class="c-v">0</span>,  FL:<span class="c-v">.25</span>,
     <div class="lb-bar">
       <span class="lb-title" id="lbTitle">—</span>
       <span class="amber" id="lbMeta">running the live scene</span>
+      <span class="lb-src" id="lbSrc" aria-live="polite"></span>
       <button class="lb-close" id="lbClose" aria-label="Close film">esc · close ✕</button>
     </div>
     <div class="lb-stage" id="lbStage">
@@ -369,6 +378,6 @@ phase = { HL:<span class="c-v">0</span>,  FL:<span class="c-v">.25</span>,
   </div>
 </div>
 
-<script src="app.js?v=8"></script>
+<script src="app.js?v=10"></script>
 </body>
 </html>

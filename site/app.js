@@ -81,6 +81,7 @@
   const lbMeta = document.getElementById('lbMeta');
   const lbLoading = document.getElementById('lbLoading');
   const lbClose = document.getElementById('lbClose');
+  const lbSrc = document.getElementById('lbSrc');
   let lastFocus = null;
   let teardownTimer = null;
 
@@ -110,6 +111,18 @@
     standin.alt = '';
     standin.setAttribute('aria-hidden', 'true');
     standin.src = 'posters/' + key + '.avif';
+    // Say which of the two you are looking at, with numbers read from the real
+    // asset rather than written down here, so they cannot drift.
+    const kb = (url) => {
+      const e = performance.getEntriesByName(new URL(url, location.href).href)[0];
+      return e && e.encodedBodySize ? ' · ' + Math.round(e.encodedBodySize / 1024) + ' KB' : '';
+    };
+    if (lbSrc) lbSrc.textContent = 'preview loop';
+    standin.addEventListener('load', () => {
+      if (lbSrc && !lbStage.querySelector('iframe.on')) {
+        lbSrc.textContent = `preview · AVIF ${standin.naturalWidth}×${standin.naturalHeight} · 12 fps${kb(standin.src)}`;
+      }
+    });
     lbStage.appendChild(standin);
 
     const frame = document.createElement('iframe');
@@ -126,6 +139,14 @@
         if (ready) {
           lbLoading.style.display = 'none';
           frame.classList.add('on');
+          if (lbSrc) {
+            let dims = '';
+            try {
+              const c = frame.contentWindow.document.querySelector('canvas');
+              if (c) dims = ` ${c.width}×${c.height}`;
+            } catch (e) {}
+            lbSrc.textContent = `live scene ·${dims} · a pure function of t${kb(frame.src)}`;
+          }
           const s = lbStage.querySelector('.lb-standin');
           if (s) { s.classList.add('gone'); setTimeout(() => s.remove(), 700); }
         } else if (++tries < 600) {           // ~60s ceiling, then show whatever there is
@@ -203,9 +224,12 @@
     && (navigator.hardwareConcurrency || 2) >= 8
     && !window.matchMedia('(pointer: coarse)').matches;
 
+  const isHero = (img) => !!img.closest('.inst-film');
+
   const mountLive = (img) => {
     if (img.dataset.live || !img.dataset.scene) return;
     img.dataset.live = '1';
+    if (isHero(img)) setNote('compiling');
     const f = document.createElement('iframe');
     f.className = 'live-frame';
     f.setAttribute('aria-hidden', 'true');
@@ -221,7 +245,7 @@
         let ready = false;
         try { ready = f.contentWindow && f.contentWindow.sceneReady === true; } catch (e) { ready = true; }
         if (!f.isConnected) return;                 // scrolled away mid-compile
-        if (ready) { f.classList.add('on'); stopLoop(img); }   // AVIF has done its job
+        if (ready) { f.classList.add('on'); stopLoop(img); if (isHero(img)) setNote('live'); }
         else if (++tries < 600) setTimeout(settle, 100);
       };
       settle();
@@ -239,6 +263,7 @@
   const unmountLive = (img) => {
     if (!img.dataset.live) return;
     delete img.dataset.live;
+    if (isHero(img)) setNote(liveOK ? 'compiling' : 'loop');
     // removing the element is what releases the GPU context; hiding it would not
     const f = img.parentNode.querySelector('.live-frame');
     if (f) f.remove();
@@ -258,6 +283,29 @@
     delete img.dataset.looping;
     img.src = img.dataset.still;
   };
+
+  // The hero says out loud which of the two it is showing, because "why is this
+  // a loop" is a fair question and the answer differs by device: a phone is
+  // deliberately never given a live scene, while a desktop is showing one as
+  // soon as its shaders finish compiling.
+  const noteText = document.getElementById('instNoteText');
+  const noteWhy = document.getElementById('instNoteWhy');
+  const NOTE = {
+    live:      ['Running the real scene, live in this page.',
+                'to see it full size — one self-contained file, no video.'],
+    compiling: ['Preview loop while the real scene compiles its shaders.',
+                'to watch it full size — one self-contained file, no video.'],
+    loop:      ['A compressed preview loop, so the page stays light here.',
+                'to run the real scene — one self-contained file, no video.'],
+    still:     ['A still frame, since you prefer reduced motion.',
+                'to run the real scene — one self-contained file, no video.'],
+  };
+  const setNote = (mode) => {
+    const n = NOTE[mode] || NOTE.loop;
+    if (noteText) noteText.textContent = n[0];
+    if (noteWhy) noteWhy.textContent = n[1];
+  };
+  setNote(reduceMotion ? 'still' : 'loop');
 
   // Every device that accepts motion gets the AVIF the moment a thumbnail
   // approaches — that is the frame that actually arrives fast. Devices that can

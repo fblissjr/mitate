@@ -1,10 +1,14 @@
 # mitate
 
-A Claude Code skill that turns any input or context — markdown, a codebase, an
-image or video, or whatever you want — into an animated scene of any length.
-A scene pipeline an agent drives: reshoot parts, validate on three axes, and get
-better over time. Every scene is a deterministic, self-contained HTML file — a
-pure function of time `t`.
+A Claude Code skill that writes **an animated three.js scene as native HTML**.
+Ask for one — from a description, a document, or a codebase — and you get a
+single file that opens in any browser. Not a video: no player, no build step,
+and the geometry is drawn live on every frame.
+
+It is a pipeline an agent drives rather than a one-shot generator: it reshoots
+parts, validates on three axes, and gets better over time. Every scene is
+deterministic — a pure function of time `t`, so the same `t` always renders the
+same frame.
 
 [![Six scenes made with mitate: a bear nosing a hanging beehive, three characters walking in on their own gaits, a gearbox mechanism, subsurface scattering through thin skin, a grid of shader primitives, and the same gearbox under a neon style bible](site/posters/scenes.jpg)](https://mitate.microapp.me)
 
@@ -19,6 +23,25 @@ not the ceiling.
 *mitate* (見立て): to see one thing as another — the Japanese aesthetic of
 representing one thing through another. Here, seeing any input as a scene.
 
+## Why do it this way, and what it costs
+
+**What you gain.** The output is code, not pixels. An agent can reshoot one shot
+without re-rendering the rest, and swap the whole look by changing one line. It
+diffs and versions like source. It renders at any resolution from the same file,
+because nothing is baked in. And determinism makes a regression byte-detectable:
+the same `t` either matches the last run or it does not.
+
+**What it can't do.** Procedural geometry is stylized by construction — it cannot
+be photoreal and it cannot use footage. It will not edit an existing video, a
+screen recording, or a slide deck. The films are silent. Faces are not built yet.
+Heavy scenes spend 18–20 seconds compiling shaders on a first visit, and captions
+stop being legible below roughly 700px of frame width.
+
+**Where it is.** Alpha, genuinely unfinished. Everything here runs 12 to 21
+seconds; longer is possible by construction but has not been built or tested.
+Characters are one skeleton family. I don't know yet whether this is useful — it
+is interesting to see what it can do, and that is the honest reason it is public.
+
 ## Install
 
 ```
@@ -26,9 +49,14 @@ representing one thing through another. Here, seeing any input as a scene.
 /plugin install mitate@mitate
 ```
 
-Then ask for a scene: *"make a 30-second video of how our approval process
-flows"*, *"animate a boss-intro cutscene for this creature"*, *"turn
-docs/data-flywheel.md into an explainer"*, *"make this joke an animated meme"*.
+Then ask for one, in whatever words you'd normally use: *"animate how our
+approval process flows"*, *"make a boss-intro cutscene for this creature"*,
+*"turn docs/data-flywheel.md into an explainer"*, *"make this joke an animated
+meme"*.
+
+The shipped examples run 12 to 21 seconds. A scene is as long as its beats table
+adds up to, so there is no built-in ceiling — but nothing longer has been built
+or gated yet, so treat longer as untested rather than promised.
 
 **WebGPU is not required** — scenes use three.js `WebGPURenderer`, which falls
 back to WebGL2 transparently. Rendering to MP4 or AVIF needs `bun`, ffmpeg, and

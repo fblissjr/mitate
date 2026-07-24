@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>mitate — see any input as a scene, directed by an agent</title>
-<meta name="description" content="mitate (見立て) sees any input — a document, a codebase, an idea — as a scene. It hands an agent the primitives of motion and the tooling to reshoot, validate, and improve. Any register, deterministic: one self-contained HTML file, a pure function of time t.">
-<meta property="og:title" content="mitate — see any input as a scene, directed by an agent">
-<meta property="og:description" content="An agent turns any input into an animated scene of any length — deterministic, one self-contained HTML file, a pure function of time t.">
+<title>mitate — an animated three.js scene as native HTML, written by a Claude Code skill</title>
+<meta name="description" content="mitate (見立て) is a Claude Code skill that writes an animated three.js scene as native HTML. Ask for one from a description, a document, or a codebase and you get a single self-contained file that opens in any browser — not a video. Deterministic: a pure function of time t.">
+<meta property="og:title" content="mitate — an animated three.js scene as native HTML">
+<meta property="og:description" content="A Claude Code skill that writes an animated three.js scene as native HTML — one self-contained file, no player, no build step, a pure function of time t.">
 <meta property="og:type" content="website">
 <link rel="preload" href="fonts/archivo-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/archivo-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -14,7 +14,7 @@
      instead of a live scene, desktops play it while the scene's shaders compile
      (measured 18-20s for the character films). That earns a preload hint. -->
 <link rel="preload" href="posters/bear-and-bees.avif" as="image" type="image/avif">
-<link rel="stylesheet" href="styles.css?v=11">
+<link rel="stylesheet" href="styles.css?v=13">
 </head>
 <body>
 <script>document.documentElement.classList.add('js')</script>
@@ -40,13 +40,14 @@
   <div class="hero-grid-fade"></div>
   <div class="wrap hero-in">
     <div class="tagrow reveal">
-      <span>f(t) → frame</span><span class="sep">·</span>
+      <span>Claude Code skill</span><span class="sep">·</span>
+      <span>three.js · native HTML</span><span class="sep">·</span>
       <span class="ok">byte-identical across runs</span><span class="sep">·</span>
-      <span>zero assets</span><span class="sep">·</span>
-      <span>one HTML file</span>
+      <span>zero assets</span>
     </div>
     <h1 class="reveal">One file. One function <span class="fn">f(t)</span>. Frame-exact.</h1>
-    <p class="hero-lede reveal"><b>mitate</b> — 見立て, to see one thing as another. It sees any input — a document, a codebase, an idea — <b>as a scene</b>, and hands an agent the primitives to build it: an explainer, a cutscene, a comedy short. Deterministic, so the same <span class="mono">t</span> always renders the same frame.</p>
+    <p class="hero-lede reveal">Ask for a scene — from a description, a document, or a codebase — and it writes <b>an animated three.js scene as native HTML</b>. One file, opens in any browser. Not a video: there is no player and no build step, and the geometry is drawn live on every frame.</p>
+    <p class="hero-sub reveal"><b>mitate</b> — 見立て, to see one thing as another. An explainer, a cutscene, a comedy short, a chart: only the subject changes. Deterministic, so the same <span class="mono">t</span> always renders the same frame.</p>
     <div class="hero-actions reveal">
       <a class="btn btn-primary" href="#films">See the films <span aria-hidden="true">→</span></a>
       <a class="btn btn-ghost" href="#method">How it's directed</a>
@@ -118,12 +119,35 @@
   </div>
 </section>
 
+<!-- ============================ WHY / LIMITS / STATUS ============================ -->
+<section class="thesis" id="why">
+  <div class="wrap">
+    <div class="thesis-grid">
+      <div class="claim reveal">
+        <div class="n">what you gain</div>
+        <h2>A scene is text, so an agent can edit it.</h2>
+        <p>Because the output is code rather than pixels, an agent can reshoot <b>one shot</b> without re-rendering the rest, and swap the entire look by changing one line. It diffs and versions like source. It renders at any resolution from the same file, because there is nothing baked in. And determinism means a regression is <b>byte-detectable</b> — the same <span class="mono">t</span> either matches the last run or it does not.</p>
+      </div>
+      <div class="claim reveal">
+        <div class="n">what it can't do</div>
+        <h2>No footage, no faces, no sound.</h2>
+        <p>This is procedural geometry, so it is stylized by construction — <b>it cannot be photoreal and it cannot use footage</b>. It will not edit an existing video, a screen recording or a slide deck. The films are silent. Faces are not built yet. Heavy scenes spend <b>18–20 seconds compiling shaders</b> on a first visit, and captions stop being legible below about 700px of frame width.</p>
+      </div>
+      <div class="claim reveal">
+        <div class="n">where it is</div>
+        <h2>Alpha. Genuinely unfinished.</h2>
+        <p>Everything here runs 12 to 21 seconds; longer is possible by construction but <b>has not been built or tested</b>. Characters are one skeleton family. I don't know yet whether this is useful — <b>it is interesting to see what it can do</b>, and that is the honest reason it exists in the open.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ============================ GALLERY (dark stage) ============================ -->
 <section class="sec stage-sec" id="films">
   <div class="wrap">
     <div class="sec-head reveal"><span class="idx">02</span><span>The films</span><span class="ln"></span><span>five works · one pipeline</span></div>
     <h2 class="sec-title reveal">Lit on the stage. Each one a single file that plays from disk.</h2>
-    <p class="sec-lede reveal">Every title below is one self-contained HTML page — three.js embedded, zero fetched assets. The loop you see is the real render; open any film to run the live scene. Each is tagged with the <b>primitives an agent composed it from</b>.</p>
+    <p class="sec-lede reveal">Every title below is one self-contained HTML page — three.js embedded, zero fetched assets. <b>These run 12 to 21 seconds</b>; a scene is as long as its beats table adds up to. The thumbnails are compressed loops so the page stays light — open any film to run the actual scene. Each is tagged with the <b>primitives an agent composed it from</b>.</p>
 
     <div class="films">
 
@@ -374,6 +398,6 @@ phase = { HL:<span class="c-v">0</span>,  FL:<span class="c-v">.25</span>,
   </div>
 </div>
 
-<script src="app.js?v=11"></script>
+<script src="app.js?v=13"></script>
 </body>
 </html>

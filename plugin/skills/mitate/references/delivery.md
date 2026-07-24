@@ -158,12 +158,14 @@ Two second-order wins, both larger than they look:
   bytes instead of costing them.
 
 The cost is real and worth stating: a live scene boots in about a second where a
-video paints its poster instantly, and each one holds a GPU context. So mount
-lazily and **unmount on exit** — measured on the showcase, that holds concurrent
-live scenes to two where the naive version would run six. Gate it on
-`hardwareConcurrency`, coarse pointer and Save-Data, and never mount under
-`prefers-reduced-motion`; the still is the correct experience in every one of
-those cases.
+video paints its poster instantly, and each one holds a GPU context. So the
+showcase mounts almost nothing: one driven hero scene on capable desktops
+(gearbox — the cheapest warm, ~1.1s to `sceneReady` against 18-20s for the
+character films), and every other scene only on an explicit click, unmounted on
+close. Under `prefers-reduced-motion`, and on coarse-pointer devices — where an
+offscreen-composited iframe was measured never reaching `sceneReady` — the hero
+holds a poster still and a static readout instead. Zero or one mounted scene,
+by construction.
 
 | surface | ship | why |
 |---|---|---|
@@ -172,8 +174,9 @@ those cases.
 | a poster or still, anywhere | `build.js poster` | a frame rendered from source |
 
 What this repo actually does, after trying the alternatives: **it ships no
-recordings at all.** The showcase loads one scene on demand and nothing else
-moves; the examples README embeds a poster frame per example, because GitHub
+recordings at all.** The showcase drives one hero scene through the window
+contract where the device can afford it, loads any other scene on demand, and
+otherwise nothing moves; the examples README embeds a poster frame per example, because GitHub
 cannot run a scene and a frame is the honest thing to show there. Every image is
 `build.js poster` against the scene. The reasoning above still holds for anyone
 who *needs* an inline animated preview on GitHub — that is what `build.js avif`

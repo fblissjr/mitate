@@ -33,7 +33,12 @@
   // gearbox is the hero because it is the cheapest to warm: 1.1s to sceneReady
   // against 18-20s for the character films, measured in WebKit. A hero that
   // takes twenty seconds to start is not a hero.
-  const DUR = 16.5, FRAMES = 512, BEATS = 5;
+  // These are gearbox's OWN numbers, not chosen ones: 16.5s of beats
+  // (2.5/3.2/3.6/3.4/3.8, accumulating to BEAT_STARTS) shot at the pipeline's
+  // 30 fps is 495 frames. An instrument about honest readouts cannot display
+  // a frame count or fps that no artifact of the pipeline has.
+  const DUR = 16.5, FPS = 30, FRAMES = 495;
+  const BEAT_STARTS = [0, 2.5, 5.7, 9.3, 12.7];
   const elFrame = document.getElementById('frameCount');
   const elT = document.getElementById('tVal');
   const elBeat = document.getElementById('beatVal');
@@ -44,11 +49,14 @@
 
   function paint(t) {
     const frac = t / DUR;
-    const frame = Math.min(Math.round(frac * FRAMES), FRAMES - 1);
-    const beat = Math.min(BEATS, Math.floor(frac * BEATS) + 1);
+    const frame = Math.min(Math.floor(t * FPS), FRAMES - 1);
+    // the scene's real beat boundaries — gearbox's beats are unequal, so an
+    // equal five-way split would disagree with what is rendering
+    let beat = 1;
+    for (let i = BEAT_STARTS.length - 1; i >= 0; i--) { if (t >= BEAT_STARTS[i]) { beat = i + 1; break; } }
     if (elFrame) elFrame.textContent = pad(frame, 5);
     if (elT) elT.textContent = t.toFixed(3) + 's';
-    if (elBeat) elBeat.textContent = beat + ' / ' + BEATS;
+    if (elBeat) elBeat.textContent = beat + ' / ' + BEAT_STARTS.length;
     if (elMarker) elMarker.style.left = (frac * 100).toFixed(2) + '%';
   }
 
@@ -62,7 +70,10 @@
     && !window.matchMedia('(pointer: coarse)').matches
     && heroScreen && heroStill;
 
-  paint(heroLive ? 0 : 13.541);
+  // 7.2 is the t the poster still was rendered at (verified against a fresh
+  // render of the scene) — the static readout must describe the frame it sits
+  // beside, or it is the incoherence the comment above promises away.
+  paint(heroLive ? 0 : 7.2);
 
   if (heroLive) {
     const frame = document.createElement('iframe');

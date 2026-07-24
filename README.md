@@ -1,9 +1,10 @@
 # mitate
 
 A Claude Code skill that turns any input or context — markdown, a codebase, an
-image or video — into an animated scene of any length. A scene pipeline an agent
-drives: reshoot parts, validate on three axes, and get better over time. Every
-scene is a deterministic, self-contained HTML file — a pure function of time `t`.
+image or video, or whatever you want — into an animated scene of any length.
+A scene pipeline an agent drives: reshoot parts, validate on three axes, and get
+better over time. Every scene is a deterministic, self-contained HTML file — a
+pure function of time `t`.
 
 *mitate* (見立て): to see one thing as another — the Japanese aesthetic of
 representing one thing through another. Here, seeing any input as a scene.

@@ -7,6 +7,14 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.14.0
+
+### added
+- **`references/instruments.md` and `references/delivery.md` — two references the tooling has cited since 0.1.0 but never actually shipped.** `smoke.js` told readers "callers should invoke THIS rather than reimplement the check; see `references/instruments.md`", and `build.js` pointed at `references/delivery.md`; both files existed only in the predecessor and were left behind when this skill forked. Every installed user has been following a dangling pointer for the whole life of the plugin. Ported and **audited against this stack rather than copied**, which turned up four stale claims: parity covers **six** fences (`KERNEL`, `SOLVER`, `RIG`, `DRIVER`, `CHARACTER`, `HTML`), not two; the determinism and blank-frame checks quantify over **three** sampled points (`SAMPLE_FRACTIONS = [0.25, 0.5, 0.8]`, interior-only, flash windows avoided against merged intervals), not four; the shipped-frame spread floor and `build.js poster` postdate the original text entirely and are now documented (spread bracketed on this stack at 1.7 half-dead SwiftShader / 161.3 healthy 3D / 120.9 flat 2D); and the cross-machine section now leads with the WebGPU-Metal vs WebGL2 finding, with the predecessor's PSNR 57–58 dB figure explicitly labelled inherited-and-not-re-measured. Both files carry a provenance header saying which measurements were re-verified here and which transfer unchanged. `delivery.md` also gains a rule the predecessor had no reason to state: stills come from `build.js poster` against the scene, never from transcoding an AVIF or WebP.
+
+### fixed
+- **A broken table in `references/characters.md`.** The `buildCharacter` row documented `matFor(part)`'s accepted values as a code span containing unescaped pipes, which GFM reads as column delimiters — the row rendered as 7 columns against a 2-column header, breaking the table wherever it was viewed. Pipes escaped.
+
 ## 0.13.0
 
 ### changed

@@ -204,6 +204,10 @@ Two constraints that dictate the setup — do not "simplify" them away:
   (palette, exposure, post, lens, cut pace, camera energy), switched by one
   line; `examples/gearbox.html` ships the committed control pair
   (`workshop` / `neon`) — read at art-direction time
+- `references/instruments.md` — what each check can and cannot see, with its
+  measured brackets; read when deciding whether a green result means anything
+- `references/delivery.md` — shipping inline on GitHub: format tradeoffs, the
+  AVIF decode cost, encoder settings, and why stills come from the scene
 - `examples/gearbox.html` — the regression film against frozen
   explainer-video: same scene body on both stacks, judged side-by-side
 - `examples/menagerie.html` — the character-scaffold demonstration: bear,

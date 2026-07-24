@@ -23,7 +23,7 @@ by the kit use: `rotation.z` = curl (sagittal), `rotation.x` = wag (lateral),
 | Call | What it does |
 |---|---|
 | `propDefaults()` | the full proportion vector with defaults — override per character |
-| `buildCharacter(P, matFor)` | skeleton + lathed/capsule shells -> `rig`. `matFor(part)` supplies materials per `'torso'|'head'|'muzzle'|'limb'|'foot'|'tail'` — the seam where shading packs plug in |
+| `buildCharacter(P, matFor)` | skeleton + lathed/capsule shells -> `rig`. `matFor(part)` supplies materials per `'torso'\|'head'\|'muzzle'\|'limb'\|'foot'\|'tail'` — the seam where shading packs plug in |
 | `solveLimb(limb, dx, dy)` | analytic two-bone IK, target relative to the limb's attach point |
 | `gaitPose(rig, s, vAmp, opts)` | plant every planted limb from distance travelled `s`; returns the stride |
 | `gaitBob(s, stride)` | the shared gait phase (`sin(pi*s/stride)`) for bob/lean/arm swing |

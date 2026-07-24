@@ -10,14 +10,15 @@ explainer-video proved (the window contract, the determinism discipline, the
 instruments, the review method) and rebuilds everything the old renderer stack
 constrained (materials, post, characters, physics).
 
-Companion documents live in the predecessor's repo (`fb-claude-skills`), where
-explainer-video remains published and frozen: `docs/internals/explainer_video_generalization_plan.md`
-(the predecessor's arc, including its postmortem) and
-`docs/internals/explainer_video_test_cases.md` (the measured findings mitate
-must not re-learn the hard way). The WebGPU migration
-research that triggered this lives in `internal/threejs_explainer_research/`
-(uncommitted, externally authored) — treat it as a capability map, not a
-migration plan; its defects are catalogued below.
+The predecessor's full record — its arc and postmortem, per-item ledger, test
+suite, and hardening findings — is consolidated in
+[predecessor-record.md](predecessor-record.md), carried over verbatim so the
+measured findings mitate must not re-learn the hard way do not live one
+repository retirement away. The externally-authored WebGPU migration
+research that triggered this was a capability map, not a migration plan; its
+defects are catalogued below, its usable conclusions are already folded into
+this document, and the corpus itself stayed in the predecessor's repo rather
+than moving here — nothing in it is citable.
 
 ---
 
@@ -45,7 +46,7 @@ conditions have changed; the fourth was that plan's own stated revisit trigger.
 4. **The measurement ledger does not fragment — it transfers.** The measured
    knowledge (caption brackets, exposure two-tail rule, motion-detector
    negative result, AVIF decode cost) is recorded in the frozen skill's
-   references and in `fb-claude-skills`' `docs/internals/explainer_video_test_cases.md`.
+   references and in [predecessor-record.md](predecessor-record.md).
    mitate imports the conclusions and re-verifies only what the renderer
    change invalidates (per-backend calibrations), appending to its own ledger.
 
@@ -147,9 +148,9 @@ map, not migration plan.
 
 ### Framework survey (reviewed 2026-07-23)
 
-A second external corpus, `internal/web3d_frameworks_comparison/` (uncommitted),
-surveys eight frameworks and concludes three.js WebGPU/TSL is the right 3D
-foundation. Reviewed twice — directly and by an independent agent — verdict:
+A second external corpus (kept in the predecessor's repo, not carried here for
+the reasons that follow) surveys eight frameworks and concludes three.js
+WebGPU/TSL is the right 3D foundation. Reviewed twice — directly and by an independent agent — verdict:
 **zero-weight confirmation.** Its conclusion converges with this plan's, but
 its "Gartner Magic Quadrant" is fabricated framing (Gartner does not cover this
 space, and the chart's own normalization note admits placements were moved to

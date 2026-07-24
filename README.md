@@ -9,8 +9,11 @@ function of time `t`.
 *mitate* (見立て): to see one thing as another — the Japanese aesthetic of
 representing one thing through another. Here, seeing any input as a scene.
 
-See the films playing at native quality, plus the thesis, at
-**[mitate.microapp.me](https://mitate.microapp.me)**.
+The example scenes are in [`plugin/skills/mitate/examples/`](plugin/skills/mitate/examples/)
+and play straight from disk. If you'd rather just watch them,
+[mitate.microapp.me](https://mitate.microapp.me) runs the same files in the
+browser — it's an early version, and it's what the skill produces today rather
+than what it's aiming at.
 
 ## Install
 
@@ -33,7 +36,7 @@ a Chromium; see [`plugin/README.md`](plugin/README.md#requirements).
 |---|---|
 | [`plugin/`](plugin/) | The skill itself — manifest, `skills/mitate/` with SKILL.md, references, templates, examples. See [`plugin/README.md`](plugin/README.md) |
 | [`site/`](site/) | The static showcase site — see [`site/README.md`](site/README.md) to run or deploy it |
-| [`docs/`](docs/) | [`plan.md`](docs/plan.md) (founding plan, architecture, phase gates) and [`physics-bake-proposal.md`](docs/physics-bake-proposal.md) |
+| [`docs/`](docs/) | [`plan.md`](docs/plan.md) (founding plan, architecture, phase gates), [`physics-bake-proposal.md`](docs/physics-bake-proposal.md), and [`predecessor-record.md`](docs/predecessor-record.md) (the frozen predecessor's measured findings, inherited) |
 
 The scene HTML files are tracked once, as `plugin/skills/mitate/examples/`, and
 staged into `site/films/` at deploy. Edit them where they live.

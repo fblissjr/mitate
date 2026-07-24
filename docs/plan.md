@@ -1,4 +1,4 @@
-last updated: 2026-07-23
+last updated: 2026-07-24
 
 # mitate: founding plan
 
@@ -280,6 +280,25 @@ nothing and the chart re-runs free.
 Each phase ends at a gate a reviewer can check. No phase starts until the
 previous gate is green — except documentation, which trails every phase.
 
+**Not a phase: the repo split (0.13.0–0.14.0, 2026-07-24).** The skill moved out
+of the `fb-claude-skills` marketplace into this repo and was renamed
+`screenwright` → `mitate` (a real name collision — see the founding decisions
+table). Infrastructure only: no scene, template, or instrument behavior changed,
+and phase status is exactly what Phase 2's gate left it. Two things worth
+recording because they are findings, not moves. **0.14.0 shipped
+`references/instruments.md` and `references/delivery.md`, which `smoke.js` and
+`build.js` had cited since 0.1.0 without either file ever existing here** — a
+dangling pointer every installed user has followed for the plugin's whole life,
+found only once the tree sat in one place. Porting them was an audit, not a
+copy, and it corrected four claims that had gone stale against this stack (six
+parity fences, not two; three sample points, not four; the shipped-frame spread
+floor and `build.js poster` undocumented entirely; the predecessor's
+cross-backend PSNR figure relabelled inherited). And **the predecessor's measured
+record now lives here**, consolidated verbatim into
+[predecessor-record.md](predecessor-record.md) — this plan commits to importing
+those conclusions rather than re-learning them, and they had been one repository
+retirement away from gone.
+
 **Phase 0 — Foundation. DONE 2026-07-23 (mitate 0.1.0).** Plugin
 scaffold (`plugin/skills/mitate/`), vendor entry for the node stack (SkyMesh —
 the node-stack Sky — kept), 3D template with async init + `compileAsync`
@@ -510,16 +529,36 @@ at build time, shipped as data, playback pure). Recorded in the same
 proposal doc, including the finding that reflections themselves need NO bake
 (SSR node, planar reflector, GTAO, environment lighting are pure functions
 of scene state — available at runtime today at zero determinism cost).
-*NEXT SESSION ENTRY POINT (recorded 2026-07-23, end of session):* start with
-the proposal's spike list, measured before any pipeline code — (1) Rapier
+*NEXT SESSION ENTRY POINT (updated 2026-07-24, after the repo split):* start
+with the proposal's spike list, measured before any pipeline code — (1) Rapier
 version pin + WASM re-bake identity on this machine, (2) sample-rate bracket
 (12/30/60Hz, size vs smoothness), (3) embedding format (JSON floats vs
 base64 Float32Array) on a real bake. Then the light-bake spike under the
-same red lines. Everything through 0.12.1 (chart tier, previews, policy
-clarification) is shipped and pushed; no loose ends carry over except the
-standing ones already listed in this plan (bloom bracket, crushed-exposure
-advisory, `WEBGPU=vulkan`, the unreproduced metal 1-in-6, per-shot camera
-energy).
+same red lines.
+
+State going in: everything through 0.14.0 is shipped and **committed but not
+pushed** — this repo's history begins with the migration, and the two commits
+are local. The bake work needs no new tooling; `smoke.js` already gates
+re-bake determinism the same way it gates seek determinism, which is the point
+of doing the sim at build time.
+
+Loose ends carried in, none blocking Phase 4:
+- the standing measurement opens — full bloom bracket, the template palette's
+  crushed-exposure advisory, `WEBGPU=vulkan` verification, per-shot camera
+  energy vocabulary;
+- the unreproduced `WEBGPU=metal` 1-in-6 determinism FAIL, narrowed by the
+  chart tier (it did **not** reproduce under dense noise coverage with no
+  shadows, no characters, one shot) toward machinery bear-and-bees has and the
+  chart lacks. **Phase 4 raises the stakes on this one**: a bake is only worth
+  anything if playback is deterministic, so if the intermittent FAIL is real
+  it will surface here first. Re-run the chart control before trusting a green
+  bake;
+- character colors are still hex literals in `buildCharacter` calls rather
+  than STYLE keys (dispositioned in 0.9.1, not fixed) — the bibles.md rule
+  bites when the first character bible pair arrives, which Phase 5 will force
+  if Phase 4 does not;
+- the site's `stage-films.sh` build step has been verified locally but has not
+  yet run on a real deploy.
 
 **Phase 5 — Registers.** Cutscene and meme film-language extensions (dialogue
 staging, comedic timing, title cards); `boss-intro` and `meme-remix`.
@@ -536,10 +575,12 @@ spike exists.
 ## Examples policy (decided 2026-07-23, measured on a live install)
 
 Examples stay in the plugin dirs. The mechanics, verified on this machine:
-`/plugin marketplace add` shallow-clones the ENTIRE repo (~18 MB, of which
-examples are ~9.8 MB) regardless of which plugin the user wants;
-`/plugin install` then copies just that plugin's subtree — examples included —
-into a per-version cache. So yes, examples ship; and no, it does not matter
+`/plugin marketplace add` shallow-clones the ENTIRE repo regardless of which
+plugin the user wants; `/plugin install` then copies just that plugin's
+subtree — examples included — into a per-version cache. (Measured in this repo
+after the split: 9.6 MB tracked in total, a 5.9 MB plugin subtree of which
+5.5 MB is examples. The original measurement was taken in the predecessor's
+multi-plugin marketplace at ~18 MB; the ratio is what carried, not the figure.) So yes, examples ship; and no, it does not matter
 for the concern that would actually bite: the Agent Skills spec loads ONLY
 SKILL.md into context — `examples/` never auto-loads, so films are pure disk
 weight, zero ambient-context cost. Moving them out would break what they pay
@@ -550,8 +591,9 @@ workaround (raw serves pointer files, breaking embeds).
 Amended same day after owner pushback, and the amendment is better: the
 teaching HTML files stay in-plugin (bundled — self-containment is doctrinal
 and there is genuinely no way around embedding three without reopening the
-shipped-broken-example class), but **rendered AVIF previews live in the
-repo-level `docs/media/`, outside every plugin subtree**. They are
+shipped-broken-example class), but **rendered AVIF previews live outside every
+plugin subtree** — in this repo, `site/posters/`, which is also what the
+showcase site serves, so there is one copy rather than two. They are
 human-browsing artifacts with zero skill value (Claude never reads them;
 only the HTML teaches). Examples READMEs embed them by relative path
 (GitHub resolves across the tree), the per-version install cache stops
@@ -569,9 +611,11 @@ Amended 2026-07-23 (owner directive, clarified same day): the gate is
 owner has seen it and approved it; test and interim scenes (and any interim
 renders) live under gitignored `internal/` until promoted. But **once a
 scene IS tracked in `examples/`, the preview set is mandatory and
-consistent**: an AVIF in repo-level `docs/media/`, embedded in the examples
+consistent**: an AVIF in `site/posters/`, embedded in the examples
 README so it renders on GitHub, alongside a link to the `.html` and a
-description of what the example is and showcases. The examples README also
+description of what the example is and showcases. A `-still.jpg` rendered
+frame-exact from source (`build.js poster`) sits beside it, for the site's
+reduced-motion swap — never a frame transcoded out of the AVIF. The examples README also
 carries a standing callout above the listing: the AVIF is to the film what
 a thumbnail is to a full image (720px/12fps/inline budget) — the HTML is
 the artifact. The HTML remains the full-quality deliverable; the AVIF

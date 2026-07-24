@@ -22,12 +22,24 @@
     document.querySelectorAll('.reveal').forEach(el => io.observe(el));
   }
 
-  /* ---------- live hero instrument: a self-consistent f(t) → frame readout ---------- */
-  const DUR = 21.3, FRAMES = 639, BEATS = 8;   // bear-and-bees, the hero scene: 21.3s at 30fps
+  /* ---------- hero instrument: the readout DRIVES the scene ---------- */
+  // The numbers beside the frame used to be a simulation running alongside a
+  // picture. They are not any more: this mounts the real scene, calls
+  // stopPlayback() so the scene is not also advancing itself, and then feeds one
+  // `t` to BOTH window.seekTo() and the readout every frame. The value you read
+  // is the value that rendered — identical by construction, which is the whole
+  // thesis stated in the one place a visitor actually looks.
+  //
+  // gearbox is the hero because it is the cheapest to warm: 1.1s to sceneReady
+  // against 18-20s for the character films, measured in WebKit. A hero that
+  // takes twenty seconds to start is not a hero.
+  const DUR = 16.5, FRAMES = 512, BEATS = 5;
   const elFrame = document.getElementById('frameCount');
   const elT = document.getElementById('tVal');
   const elBeat = document.getElementById('beatVal');
   const elMarker = document.getElementById('marker');
+  const heroScreen = document.getElementById('heroScreen');
+  const heroStill = document.getElementById('heroStill');
   const pad = (n, w) => String(n).padStart(w, '0');
 
   function paint(t) {
@@ -40,28 +52,61 @@
     if (elMarker) elMarker.style.left = (frac * 100).toFixed(2) + '%';
   }
 
-  if (reduceMotion) {
-    paint(13.541); // representative frame, static
-  } else {
-    let start = null, raf = null;
+  // The instrument only animates when it is animating something REAL. A live
+  // hero needs a scene mounted and driven; where we will not mount one — reduced
+  // motion, or a coarse-pointer device where an offscreen-composited iframe was
+  // measured never reaching sceneReady — the readout holds one representative
+  // frame instead. A counter ticking beside a frozen picture is the incoherence
+  // this whole instrument exists to disprove.
+  const heroLive = !reduceMotion
+    && !window.matchMedia('(pointer: coarse)').matches
+    && heroScreen && heroStill;
+
+  paint(heroLive ? 0 : 13.541);
+
+  if (heroLive) {
+    const frame = document.createElement('iframe');
+    frame.className = 'hero-frame';
+    frame.setAttribute('aria-hidden', 'true');
+    frame.setAttribute('tabindex', '-1');
+    frame.setAttribute('title', '');
+    frame.src = 'films/gearbox.html?nocap';
+
+    let win = null, raf = null, start = null;
     const tick = (ts) => {
       if (start === null) start = ts;
       const t = ((ts - start) / 1000) % DUR;
+      try { if (win && win.seekTo) win.seekTo(t); } catch (e) {}
       paint(t);
       raf = requestAnimationFrame(tick);
     };
-    // pause the readout when the hero is offscreen (save cycles)
+
+    frame.addEventListener('load', () => {
+      let tries = 0;
+      const settle = () => {
+        if (!frame.isConnected) return;
+        let ready = false;
+        try { ready = frame.contentWindow && frame.contentWindow.sceneReady === true; } catch (e) {}
+        if (ready) {
+          win = frame.contentWindow;
+          try { if (win.stopPlayback) win.stopPlayback(); } catch (e) {}  // we drive it now
+          frame.classList.add('on');
+          if (raf === null) raf = requestAnimationFrame(tick);
+        } else if (++tries < 900) setTimeout(settle, 100);
+      };
+      settle();
+    });
+    heroScreen.appendChild(frame);
+
+    // stop feeding it when it is off screen; the contract makes this free
     const inst = document.querySelector('.instrument');
     if (inst && 'IntersectionObserver' in window) {
-      const io2 = new IntersectionObserver((entries) => {
+      new IntersectionObserver((entries) => {
         entries.forEach(e => {
-          if (e.isIntersecting && raf === null) { start = null; raf = requestAnimationFrame(tick); }
+          if (e.isIntersecting && win && raf === null) { start = null; raf = requestAnimationFrame(tick); }
           else if (!e.isIntersecting && raf !== null) { cancelAnimationFrame(raf); raf = null; }
         });
-      }, { threshold: 0.05 });
-      io2.observe(inst);
-    } else {
-      raf = requestAnimationFrame(tick);
+      }, { threshold: 0.05 }).observe(inst);
     }
   }
 

@@ -10,7 +10,9 @@
 <meta property="og:type" content="website">
 <link rel="preload" href="fonts/archivo-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/archivo-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="styles.css?v=14">
+<!-- the hero mounts this scene on load, so fetch it with the page -->
+<link rel="preload" href="films/gearbox.html" as="fetch" crossorigin>
+<link rel="stylesheet" href="styles.css?v=16">
 </head>
 <body>
 <script>document.documentElement.classList.add('js')</script>
@@ -55,29 +57,29 @@
          presentational, hiding them from assistive tech. -->
     <div class="instrument reveal" role="group" aria-label="A film rendering as a function of time">
       <div class="inst-head">
-        <span class="id">BEAR-AND-BEES.scene</span>
-        <span class="tag">21.30s · 8 beats · locked camera · backend WebGPU→WebGL2</span>
+        <span class="id">GEARBOX.scene</span>
+        <span class="tag">16.50s · 5 beats · seamless loop · backend WebGPU→WebGL2</span>
       </div>
       <div class="inst-body">
         <div class="inst-film">
           <span class="corner c1"></span><span class="corner c2"></span><span class="corner c3"></span><span class="corner c4"></span>
-          <button class="screen" data-film="bear-and-bees" aria-label="Play the bear-and-bees film: a furred bear noses a hanging beehive, then flees as bees erupt">
-            <img class="poster-still" src="posters/bear-and-bees-still.jpg"
+          <button class="screen" id="heroScreen" data-film="gearbox" aria-label="Open the gearbox film full size: a five-beat mechanism turning in a lit workshop">
+            <img class="poster-still" id="heroStill" src="posters/gearbox-still.jpg"
                  loading="eager" fetchpriority="high" width="1280" height="720" alt="" aria-hidden="true">
-            <span class="playbadge">preview</span>
+            <span class="playbadge">open full size</span>
           </button>
         </div>
         <div class="inst-read">
-          <div class="frame-count"><span id="frameCount">00000</span><small> / 00639</small></div>
+          <div class="frame-count"><span id="frameCount">00000</span><small> / 00512</small></div>
           <div class="rr"><span>t</span><b id="tVal">0.000s</b></div>
-          <div class="rr"><span>fps</span><b>30.00</b></div>
-          <div class="rr"><span>beat</span><b id="beatVal">1 / 8</b></div>
-          <div class="rr"><span>camera</span><b>locked</b></div>
+          <div class="rr"><span>fps</span><b>31.03</b></div>
+          <div class="rr"><span>beat</span><b id="beatVal">1 / 5</b></div>
+          <div class="rr"><span>style</span><b>workshop</b></div>
           <div class="rr"><span>determinism</span><b class="pass">pass</b></div>
         </div>
       </div>
       <div class="inst-axis">
-        <div class="axis-label"><span>t = 0.000s</span><span>timeline · a pure function of t</span><span>21.300s</span></div>
+        <div class="axis-label"><span>t = 0.000s</span><span>timeline · a pure function of t</span><span>16.500s</span></div>
         <div class="track">
           <div class="base"></div>
           <div class="tick maj" style="left:0"></div><div class="tick" style="left:10%"></div><div class="tick" style="left:20%"></div>
@@ -397,6 +399,6 @@ phase = { HL:<span class="c-v">0</span>,  FL:<span class="c-v">.25</span>,
   </div>
 </div>
 
-<script src="app.js?v=14"></script>
+<script src="app.js?v=16"></script>
 </body>
 </html>

@@ -11,7 +11,7 @@
 //   bun run build.js loop   <scene.html> [fps] [w] -> <name>.webp, inline in a README (decodes smoothly; wants a held camera)
 //   bun run build.js avif   <scene.html> [fps] [w] -> <name>.avif, inline, much smaller file (decode-heavy at playback)
 //   bun run build.js poster <scene.html> [t] [w]   -> <name>.jpg still + markdown snippet
-//   bun run build.js sheet  <scene.html> [w] [frac] -> <name>.sheet.jpg contact sheet + .squint.jpg
+//   bun run build.js sheet  <scene.html> [w] [frac] [nocap] -> <name>.sheet.jpg contact sheet + .squint.jpg
 //   bun run build.js aspect <scene.html> [t]      -> <name>.aspect.jpg, one moment at four window shapes
 //   bun run build.js strip  <scene.html> <t0> <t1> [fps] -> <name>.strip.jpg, consecutive frames
 //   bun run build.js motion <scene.html> [fps]     -> per-beat motion profile + dead air, no files kept
@@ -104,7 +104,7 @@ function vendor(dir, target) {
   // dangling ./three.global.js reference and did not run at all. Embedding is
   // the only form that makes "opens straight from disk" true by construction,
   // so the tooling does it automatically rather than asking authors to remember
-  // a bundle step. Cost is ~0.73 MB per scene, paid once, and accepted.
+  // a bundle step. Cost is ~1.09 MB per scene, paid once, and accepted.
   const lib = fs.readFileSync(out, 'utf8');
   fs.unlinkSync(out);
   if (cache) fs.writeFileSync(cache, lib);

@@ -66,11 +66,13 @@ mv scene.template.html <name>.html
 # film has figures? copy scene.character.template.html instead of scene.template.html
 bun add three@0.185.1 playwright-core@1.61.1
 bun run build.js vendor <name>.html   # EMBEDS three into the scene; leaves no .js
-# (skipping this is recoverable: every command that opens a scene embeds
-#  automatically via ensureVendor)
+# (skipping this is recoverable for build.js: every build.js command embeds
+#  automatically via ensureVendor. Direct shoot.js runs do NOT — an
+#  unvendored scene fails there with "scene never set window.sceneReady")
 ```
 
-Both scenes run as-is (placeholder, 12s) and carry the shared contract:
+All three run as-is (placeholder, 12s; 12.6s for the character template)
+and carry the shared contract:
 `BEATS`, `CONFIG`/`STYLE`, `FRAME`, the deterministic kit (seeded `R[]` pool,
 `ss`, `bump`, easing personalities, `ramp`/`pulse`/`rampS`/`latch`/`warp` —
 see method.md), DOM caption/title overlays, and the driver: `window.seekTo(t)`,
@@ -102,8 +104,9 @@ Replace the two marked sections: `buildWorlds()` (geometry) and `animate(t)`
   `focus` property, so two adjacent shots differing only in focus, joined by
   `cut:'blend'`, are a rack focus).
 - No temporal post passes, no `ComputeNode`, no storage buffers.
-- Shared scene blocks are marker-fenced (`KERNEL`/`SOLVER`, plus `RIG`/
-  `DRIVER`/`HTML` in 3D scenes and `CHARACTER` in character scenes) and smoke
+- Shared scene blocks are marker-fenced (`KERNEL` in every template, plus
+  `SOLVER`/`RIG`/`DRIVER`/`HTML` in 3D scenes and `CHARACTER` in character
+  scenes) and smoke
   byte-parity-checks every fence across the scenes it is pointed at: edit a
   fenced block in ALL scenes or in none. `HTML` uses HTML-comment markers
   (it fences the page scaffold outside `<script>`); the rest use JS comments.

@@ -7,6 +7,15 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## unreleased
+
+### fixed
+- **`film-language.md` told authors a shipped feature doesn't work.** Its Focus section required "a post chain with a `BokehPass`, which the base template does not have" and pointed to `examples/toybot-walk.html` for the wiring — a predecessor filename that has never existed here, describing a mechanism that never migrated to this stack. The template has carried the working chain all along: the always-on `RenderPipeline` gates DoF on `STYLE.dof`, and `shotFocus` feeds its focus uniform every frame. The section now documents that, notes that no shipped example enables `STYLE.dof` yet, and labels the toybot match-cut illustration as inherited (no shipped example uses `match:` either). Same defect class as the dangling paths 0.14.0 and 0.15.0 caught — verbatim-copied references citing a repo that isn't this one.
+- **SKILL.md promised a recovery `shoot.js` does not provide.** "Every command that opens a scene embeds automatically via ensureVendor" is true of `build.js` only; direct `shoot.js` runs never embed, by design — the recorder does not rewrite scenes on disk, and its own header says so. The claim is now scoped, and names the failure an unvendored scene actually produces there ("scene never set window.sceneReady").
+- **Stale measurements corrected against the current tree.** `build.js`'s vendor-cost comment said ~0.73 MB where the embed is ~1.09 MB (line 71 of the same file had it right); `smoke.js`'s size-gate bracket cited 32/24 KB templates that now measure 40/28/56 KB; SKILL.md's "12s placeholder" is 12.6s for the character template; `characters.md`'s "verified" bear vector had drifted from the one `menagerie.html` ships (`neckLen .85`, `headR .62`) and now matches it and names its source. Past-tense incident records keep their historical 0.77 MB figure — only current-state claims changed.
+- **Claims that overstated their own subject, scoped to what the code shows.** `instruments.md` had moved the stall-detector's fired-at-every-boundary false-positive rate onto the known-good film; `build.js` records it was the defective control, with ~10 firings on the good film — restored. Its blank-frame row now admits the check shares determinism's 4-to-6-point plan instead of underselling it. `bibles.md`'s "buildWorlds() reads colors ONLY from STYLE" was falsified by its own committed control pair (gearbox's neutral-hardware hexes never move between bibles); the contract is now about subject colors, with the hardware exception stated. `scene2d.template.html`'s camera comment cited "the 3D template's `KEYS[]`", which does not exist — the 3D rail is `SHOTS[]`; the comment now says what the rail actually is. `SKILL.md`'s fence list grouped `SOLVER` with the universal `KERNEL`; only `KERNEL` is fenced in all three templates.
+- CLAUDE.md invariant 4 follows 0.15.0: poster stills, not preview AVIFs, are what `site/posters/` holds once.
+
 ## 0.15.0
 
 ### changed

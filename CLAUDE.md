@@ -56,7 +56,7 @@ for its red lines.
    `site/films/` at build, which `site/.gitignore` ignores wholesale
    (`films/*.html`) so a new example needs no edit there.
    `site/films/gearbox-neon.html` is the one negated exception — a showcase-only
-   variant, so `site/` is its only home. Preview AVIFs live once in `site/posters/`, which
+   variant, so `site/` is its only home. Poster stills live once in `site/posters/`, which
    the skill's `examples/README.md` embeds by relative path. Never re-introduce
    a second copy of either.
 

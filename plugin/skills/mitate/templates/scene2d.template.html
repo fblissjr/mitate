@@ -265,7 +265,8 @@ addEventListener('resize',resize);resize();
    y down, (0,0) at the center of the home view. Drawing in world units keeps
    the scene resolution-independent; the shipping render is whatever viewport
    shoot.js opens. The camera is {x,y,zoom} keyframes anchored to beats —
-   the exact convention the 3D template's KEYS[] uses, minus one dimension. */
+   the simple rail the 3D template replaced with its SHOTS[] solver; 2D
+   keeps keyframes because a flat frame has no cinematography to solve. */
 const VIEW_H=90, VIEW_W=VIEW_H*FRAME.aspect;   // design frame, single-sourced from FRAME
 const KEYS=[
   {beat:'title', at:0,  x:0,  y:0, zoom:1},

@@ -58,9 +58,10 @@ Worked starting points (tune by looking, not by faith):
   `{tailLen:1.8, tailSegs:4, muzzle:.4}` for a creature register; drop the
   tail and muzzle for a human silhouette. `quadruped:false` hangs the
   forelimbs as arms (swing them from `gaitBob`, flex `mid.rotation.z`).
-- **Quadruped (bear-shaped), verified building and walking:**
+- **Quadruped (bear-shaped) — the vector `examples/menagerie.html` ships,
+  verified building and walking:**
   `{quadruped:true, torsoTilt:80, hipH:1.85, torsoLen:2.4, pelvisR:.95,
-  chestR:1.05, neckLen:.7, neckSegs:2, neckTilt:55, headR:.55, muzzle:.55,
+  chestR:1.05, neckLen:.85, neckSegs:2, neckTilt:55, headR:.62, muzzle:.55,
   tailLen:.5, tailSegs:2, tailTilt:30, shoulderW:1.6, hipW:1.5,
   foreUpper:1.2, foreLower:1.15, foreR:.34, hindUpper:1.1, hindLower:1.05,
   hindR:.38, footLen:.65, footH:.22}`

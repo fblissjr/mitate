@@ -54,6 +54,9 @@ slower dolly blends. Poster frames for both: `site/posters/gearbox-still.jpg` an
   wants `locked` or calm `steadicam` + long lens; character registers earn
   `handheld` only in moments the story is unstable.
 - **Palette keys are the scene's contract with the bible.** buildWorlds()
-  reads colors ONLY from STYLE — a hex literal in a material is a look
-  decision hiding from the bible switch (the control pair is the test:
-  if switching bibles leaves a color behind, that color was hardcoded).
+  reads every color that IS the look from STYLE — a hex literal on a
+  subject is a look decision hiding from the bible switch (the control
+  pair is the test: if switching bibles leaves a subject color behind,
+  that color was hardcoded). Neutral hardware may keep literals: the
+  committed pair leaves gearbox's pedestal, axle and rim-light hexes
+  fixed across both bibles.

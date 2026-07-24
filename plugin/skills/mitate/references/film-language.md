@@ -101,16 +101,17 @@ pull-out, orbit — and a moving subject makes any shot a tracking shot.
 as a snap with a stutter rather than a smear. Measured; use it for pace, not for
 the effect its name suggests. `match: true` is the match-cut constraint: the entry must
 carry identical framing vocabulary (size/angle/elev/fov/anchor) to the
-previous shot — checked at load, throws loud. The toybot open is the worked
-instance: MS on the sign plate, hard cut, MS on the bot's torso — the frames
-rhyme because the compiler guarantees they must.
+previous shot — checked at load, throws loud. The worked instance is inherited
+(the predecessor's toybot open): MS on a sign plate, hard cut, MS on the bot's
+torso — the frames rhyme because the compiler guarantees they must. No shipped
+example here uses `match:` yet.
 
-**Focus** — **requires a post chain with a `BokehPass`, which the base template
-does not have.** `shotFocus` is solved every frame regardless, so a scene
-scaffolded from the template that sets `focus:` gets silence; see
-`examples/toybot-walk.html` for a scene that wires the chain. Each shot's DoF
-plane sits on `focus` (default: its subject);
-`shotFocus` is solved per frame for scenes with a BokehPass. **A rack focus
+**Focus** — needs no extra wiring: the always-on `RenderPipeline` carries the
+DoF chain, gated on declaring `STYLE.dof` (`{maxBlur}`). Each shot's DoF
+plane sits on `focus` (default: its subject); `shotFocus` is solved per frame
+and feeds the chain's focus uniform whether or not DoF is enabled, so setting
+`focus:` without `STYLE.dof` changes nothing visibly. No shipped example
+enables `STYLE.dof` yet — bracket before trusting a look to it. **A rack focus
 is two adjacent shots differing only in `focus`, joined by `blend`** — the
 focus distance interpolates with the same ease as the camera. No manual
 distance math survives in scene code.

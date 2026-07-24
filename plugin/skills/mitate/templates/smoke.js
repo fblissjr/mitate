@@ -707,7 +707,8 @@ async function checkScene(browser, file) {
     // `<script src>` tag; build.js refuses to embed into one, but that guards
     // the TOOL path, and an artifact can be broken by a hand edit or a merge
     // that never calls it. Bracketed by observation both ways: intact templates
-    // measured 32 KB and 24 KB, an inflated one 802 KB. Nothing sits near 200.
+    // measure 40, 28 and 56 KB; an inflated one carries the ~1.09 MB embed
+    // (802 KB observed on the old stack). Nothing sits near 200.
     for (const f of scenes) {
       if (!/\.template\.html$/.test(path.basename(f))) continue;
       let sz = 0;
@@ -786,7 +787,7 @@ async function checkScene(browser, file) {
         for (const w of warnings) console.log('       ' + w);
       }
     } finally {
-      // finally, not end-of-loop: a throwing check must not leave a 0.77 MB
+      // finally, not end-of-loop: a throwing check must not leave a ~1.09 MB
       // .smoke-*.html sitting in templates/ for someone to commit by accident.
       if (tmp) { try { fs.unlinkSync(tmp); } catch (e) {} }
     }

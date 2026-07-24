@@ -30,7 +30,7 @@ observation on both sides, or explicitly labelled unbracketed.
 | page errors | per load | console/page errors, deprecation warnings | anything that fails silently |
 | contract | — | a missing `seekTo`/`DURATION`/`stopPlayback`/`sceneReady` | — |
 | determinism | **all** of 4 planned points, +up to 2 transition midpoints | state across frames, `Math.random()`, wall-clock | state that only desyncs at unsampled times |
-| blank frame | **all** of 4 planned points | a pipeline shooting empty frames | a frame that is dark but not empty |
+| blank frame | **all** of 4 planned points, +up to 2 transition midpoints | a pipeline shooting empty frames | a frame that is dark but not empty |
 | shipped-frame spread | **max** over its own 4-point plan | a backend that ships nothing (half-dead adapter) | a register that is legitimately flat *and* correct |
 | marker parity | file set × 6 fences | two scenes carrying different kits | drift inside a scene |
 | framing invariance | 3 shapes × 3 fixed fractions | a scene that crops instead of containing | composition quality at any single shape |
@@ -100,7 +100,8 @@ assumed (inherited; the analysis is renderer-independent):
 
 - **It does not detect pops or stalls.** That was built and cut: a known 0.35 rad
   limb step measured **1.00x its own local baseline**, and a stall detector fired
-  at *every* beat boundary on a known-good film.
+  at *every* beat boundary on the defective control — and ~10 times on a
+  known-good film, because a film is SUPPOSED to settle between beats.
 - **It measures textured pixels, not motion.** A title beat with a real 14° camera
   orbit scored 0.54 because the frame is mostly flat sky; a comparable push over a
   detailed frame scored 3.09. Bars are **not comparable across beats of different

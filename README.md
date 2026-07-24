@@ -59,8 +59,20 @@ adds up to, so there is no built-in ceiling — but nothing longer has been buil
 or gated yet, so treat longer as untested rather than promised.
 
 **WebGPU is not required** — scenes use three.js `WebGPURenderer`, which falls
-back to WebGL2 transparently. Rendering to MP4 or AVIF needs `bun`, ffmpeg, and
-a Chromium; see [`plugin/README.md`](plugin/README.md#requirements).
+back to WebGL2 transparently, so any WebGL2 browser plays one.
+
+**The toolchain is local, and how much of it you need depends on the backend.**
+The Canvas2D template is born self-contained and needs nothing at all. A three.js
+scene needs `bun` to embed three into the file — skipping that is recoverable,
+since every command that opens a scene embeds automatically. Rendering to MP4 or
+AVIF, and running the review instruments, needs `bun`, ffmpeg and a Chromium.
+See [`plugin/README.md`](plugin/README.md#requirements).
+
+That local dependency is worth knowing if you use Claude somewhere other than
+Claude Code: Cowork and cloud sessions load the skills enabled on your claude.ai
+account rather than a locally installed plugin, and they are a different
+environment from the one these commands assume. **Nobody has run mitate there,
+so treat it as untested rather than supported.**
 
 ## Layout
 

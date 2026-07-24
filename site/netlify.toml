@@ -1,0 +1,28 @@
+# mitate showcase — Netlify config
+# Static site. Publish this directory as-is; no build step.
+
+[build]
+  publish = "."
+  command = ""
+
+# Cache film + poster assets. Filenames are stable (NOT content-addressed), so no
+# `immutable` — an in-place update is still picked up on the next revalidate.
+[[headers]]
+  for = "/films/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+[[headers]]
+  for = "/posters/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"

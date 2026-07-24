@@ -95,11 +95,48 @@
     // fresh iframe each open so the scene boots clean; removed on close so no film keeps running
     const old = lbStage.querySelector('iframe');
     if (old) old.remove();
+    const oldStandin = lbStage.querySelector('.lb-standin');
+    if (oldStandin) oldStandin.remove();
+
+    // A scene is not watchable when its document loads — it is watchable when
+    // its shaders finish compiling, and `compileAsync` pre-warms every program
+    // before setting sceneReady. Measured in WebKit: 1.1s for gearbox, but 18-20s
+    // for the character films (fur shells and three rigs are a lot of programs).
+    // So play the AVIF loop immediately and let the real scene boot behind it.
+    // Browser shader caches only help a SECOND visit; a showcase visitor arrives
+    // once, so the first paint has to come from somewhere else.
+    const standin = document.createElement('img');
+    standin.className = 'lb-standin';
+    standin.alt = '';
+    standin.setAttribute('aria-hidden', 'true');
+    standin.src = 'posters/' + key + '.avif';
+    lbStage.appendChild(standin);
+
     const frame = document.createElement('iframe');
     frame.setAttribute('title', film.title);
     frame.setAttribute('loading', 'eager');
     frame.setAttribute('allow', 'autoplay; fullscreen');
-    frame.addEventListener('load', () => { lbLoading.style.display = 'none'; });
+    // Wait for sceneReady, not `load` — `load` fires while the canvas is still
+    // blank, which is what made a slow film look like a broken one.
+    frame.addEventListener('load', () => {
+      let tries = 0;
+      const settle = () => {
+        let ready = false;
+        try { ready = frame.contentWindow && frame.contentWindow.sceneReady === true; } catch (e) { ready = true; }
+        if (ready) {
+          lbLoading.style.display = 'none';
+          frame.classList.add('on');
+          const s = lbStage.querySelector('.lb-standin');
+          if (s) { s.classList.add('gone'); setTimeout(() => s.remove(), 700); }
+        } else if (++tries < 600) {           // ~60s ceiling, then show whatever there is
+          setTimeout(settle, 100);
+        } else {
+          lbLoading.style.display = 'none';
+          frame.classList.add('on');
+        }
+      };
+      settle();
+    });
     frame.src = film.src;
     lbStage.appendChild(frame);
     lb.setAttribute('data-open', 'true');
@@ -174,7 +211,21 @@
     f.setAttribute('aria-hidden', 'true');
     f.setAttribute('tabindex', '-1');
     f.setAttribute('title', '');
-    f.addEventListener('load', () => f.classList.add('on'));
+    // Reveal the scene only once its shaders are warm. `load` fires with the
+    // canvas still blank, and pre-warm takes 1.1s for gearbox but 18-20s for the
+    // character films, so fading in on `load` would replace a playing AVIF with
+    // a frozen black box for twenty seconds.
+    f.addEventListener('load', () => {
+      let tries = 0;
+      const settle = () => {
+        let ready = false;
+        try { ready = f.contentWindow && f.contentWindow.sceneReady === true; } catch (e) { ready = true; }
+        if (!f.isConnected) return;                 // scrolled away mid-compile
+        if (ready) { f.classList.add('on'); stopLoop(img); }   // AVIF has done its job
+        else if (++tries < 600) setTimeout(settle, 100);
+      };
+      settle();
+    });
     // ?nocap: a scene's caption scales WITH the frame (measured: ~32% of frame
     // width at every size), which keeps composition faithful but puts the text
     // at ~5.7px in a phone-sized box and ~10px in a gallery card — illegible
@@ -208,9 +259,14 @@
     img.src = img.dataset.still;
   };
 
+  // Every device that accepts motion gets the AVIF the moment a thumbnail
+  // approaches — that is the frame that actually arrives fast. Devices that can
+  // also afford a live scene boot one BEHIND the loop and cross-fade when its
+  // shaders are warm, so nobody ever watches a frozen still waiting for a
+  // compile. Leaving the viewport tears down both.
   if (motionOK && 'IntersectionObserver' in window) {
-    const enter = liveOK ? mountLive : startLoop;
-    const leave = liveOK ? unmountLive : stopLoop;
+    const enter = (img) => { startLoop(img); if (liveOK) mountLive(img); };
+    const leave = (img) => { if (liveOK) unmountLive(img); stopLoop(img); };
     const lio = new IntersectionObserver((entries) => {
       entries.forEach(e => e.isIntersecting ? enter(e.target) : leave(e.target));
     }, { rootMargin: '120px' });

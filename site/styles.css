@@ -70,7 +70,7 @@ a{color:inherit}
 .nav-links{display:flex;gap:1.6rem;align-items:center}
 .nav-links a{text-decoration:none;color:var(--muted);font-size:.88rem;font-weight:500;transition:color .2s}
 .nav-links a:hover{color:var(--ink)}
-.nav-cta{display:inline-flex;align-items:center;gap:.4rem;font-family:var(--mono);font-size:.74rem;font-weight:500;color:var(--blue-ink);border:1px solid var(--blue);border-radius:2px;padding:.42rem .7rem;transition:background .2s,color .2s}
+.nav-cta{display:inline-flex;align-items:center;gap:.42rem;font-size:.82rem;letter-spacing:-0.01em;font-weight:500;color:var(--blue-ink);border:1px solid var(--blue);border-radius:2px;padding:.42rem .7rem;transition:background .2s,color .2s}
 .nav-cta:hover{background:var(--blue);color:#fff}
 .nav-cta .gh{flex:none;display:block}
 @media(max-width:680px){.nav-links a:not(.nav-cta){display:none}}
@@ -304,7 +304,11 @@ h1 .fn{font-family:var(--mono);font-weight:600;letter-spacing:-0.02em;color:var(
 .lb-close{background:none;border:1px solid var(--hair);color:var(--stage-ink);font-family:var(--mono);font-size:.72rem;cursor:pointer;padding:.32rem .6rem;border-radius:2px;transition:border-color .2s,color .2s}
 .lb-close:hover{border-color:var(--amber);color:var(--amber)}
 .lb-stage{position:relative;aspect-ratio:16/9;background:#000;overflow:hidden}
-.lb-stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.lb-stage iframe{position:absolute;inset:0;width:100%;height:100%;border:0;opacity:0;transition:opacity .5s var(--ease)}
+.lb-stage iframe.on{opacity:1}
+.lb-standin{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:var(--stage-deep);
+  opacity:1;transition:opacity .6s var(--ease)}
+.lb-standin.gone{opacity:0}
 .lb-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.78rem;color:var(--stage-dim);gap:.6rem}
 .lb-loading .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);animation:pulse 1.1s var(--ease) infinite}
 @keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}

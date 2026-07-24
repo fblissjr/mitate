@@ -10,7 +10,11 @@
 <meta property="og:type" content="website">
 <link rel="preload" href="fonts/archivo-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/archivo-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="styles.css?v=7">
+<!-- The hero's AVIF is first-paint motion on every device now: phones play it
+     instead of a live scene, desktops play it while the scene's shaders compile
+     (measured 18-20s for the character films). That earns a preload hint. -->
+<link rel="preload" href="posters/bear-and-bees.avif" as="image" type="image/avif">
+<link rel="stylesheet" href="styles.css?v=8">
 </head>
 <body>
 <script>document.documentElement.classList.add('js')</script>
@@ -365,6 +369,6 @@ phase = { HL:<span class="c-v">0</span>,  FL:<span class="c-v">.25</span>,
   </div>
 </div>
 
-<script src="app.js?v=6"></script>
+<script src="app.js?v=8"></script>
 </body>
 </html>

@@ -52,10 +52,11 @@ for its red lines.
    installed user. (Plugin READMEs may, since a repo clone has them.)
 
 4. **Films are tracked once.** The scenes live in
-   `plugin/skills/mitate/examples/`; `site/stage-films.sh` copies them into
-   `site/films/` at build, and those five names are gitignored under `site/`.
-   `site/films/gearbox-neon.html` is the exception — a showcase-only variant, so
-   `site/` is its only home. Preview AVIFs live once in `site/posters/`, which
+   `plugin/skills/mitate/examples/`; `scripts/stage-films.sh` copies them into
+   `site/films/` at build, which `site/.gitignore` ignores wholesale
+   (`films/*.html`) so a new example needs no edit there.
+   `site/films/gearbox-neon.html` is the one negated exception — a showcase-only
+   variant, so `site/` is its only home. Preview AVIFs live once in `site/posters/`, which
    the skill's `examples/README.md` embeds by relative path. Never re-introduce
    a second copy of either.
 

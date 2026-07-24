@@ -145,16 +145,26 @@
   // into view and is REMOVED when it leaves, so the number of live WebGL
   // contexts tracks what is actually on screen rather than how many films exist.
   //
-  // Why not a video: brotli takes a scene to ~255 KB where its mp4 was ~1 MB,
-  // and the lightbox opens the very same URL, so watching a thumbnail and then
-  // opening it costs nothing the second time. references/delivery.md carries the
-  // measurement.
+  // Why not a video: after brotli a scene is smaller than its own mp4, and the
+  // lightbox opens the very same URL, so watching a thumbnail then opening it
+  // costs nothing the second time. The measured table lives in the skill's
+  // references/delivery.md — deliberately not restated here, so there is one
+  // copy to keep true.
+  // Three tiers, matched to what a device can actually afford:
+  //   live   — the scene itself in an iframe (a GPU context each)
+  //   loop   — the animated AVIF, decoded in software, no GPU context. This is
+  //            the phone tier: at 720px on a ~390px-wide screen the AVIF is
+  //            oversampled rather than upscaled, so the quality objection that
+  //            drove it off the desktop gallery does not apply here, and a phone
+  //            shows one or two at a time so the decode cost stays small.
+  //   still  — reduced motion, Save-Data, 2G, or no JS.
   const conn = navigator.connection || {};
-  const liveOK = !reduceMotion
+  const cheapNetwork = conn.saveData
+    || conn.effectiveType === '2g' || conn.effectiveType === 'slow-2g';
+  const motionOK = !reduceMotion && !cheapNetwork;
+  const liveOK = motionOK
     && (navigator.hardwareConcurrency || 2) >= 8
-    && !window.matchMedia('(pointer: coarse)').matches
-    && !conn.saveData
-    && !/(^|-)(2g|slow-2g)$/.test(conn.effectiveType || '');
+    && !window.matchMedia('(pointer: coarse)').matches;
 
   const mountLive = (img) => {
     if (img.dataset.live || !img.dataset.scene) return;
@@ -163,10 +173,15 @@
     f.className = 'live-frame';
     f.setAttribute('aria-hidden', 'true');
     f.setAttribute('tabindex', '-1');
-    f.setAttribute('scrolling', 'no');
     f.setAttribute('title', '');
     f.addEventListener('load', () => f.classList.add('on'));
-    f.src = img.dataset.scene;
+    // ?nocap: a scene's caption scales WITH the frame (measured: ~32% of frame
+    // width at every size), which keeps composition faithful but puts the text
+    // at ~5.7px in a phone-sized box and ~10px in a gallery card — illegible
+    // either way. The films are authored to read without captions (that is what
+    // the nocap pass in method.md checks), so a thumbnail shows the geometry and
+    // the lightbox, at full size, shows the captions.
+    f.src = img.dataset.scene + '?nocap';
     img.parentNode.appendChild(f);
   };
 
@@ -178,30 +193,56 @@
     if (f) f.remove();
   };
 
-  if (liveOK && 'IntersectionObserver' in window) {
+  // The loop tier swaps the still for its animated AVIF and back, so at most the
+  // handful on screen are ever decoding.
+  const loopSrc = (img) => (img.dataset.still || img.src).replace(/-still\.jpg$/, '.avif');
+  const startLoop = (img) => {
+    if (img.dataset.looping) return;
+    if (!img.dataset.still) img.dataset.still = img.getAttribute('src');
+    img.dataset.looping = '1';
+    img.src = loopSrc(img);
+  };
+  const stopLoop = (img) => {
+    if (!img.dataset.looping) return;
+    delete img.dataset.looping;
+    img.src = img.dataset.still;
+  };
+
+  if (motionOK && 'IntersectionObserver' in window) {
+    const enter = liveOK ? mountLive : startLoop;
+    const leave = liveOK ? unmountLive : stopLoop;
     const lio = new IntersectionObserver((entries) => {
-      entries.forEach(e => e.isIntersecting ? mountLive(e.target) : unmountLive(e.target));
+      entries.forEach(e => e.isIntersecting ? enter(e.target) : leave(e.target));
     }, { rootMargin: '120px' });
     document.querySelectorAll('.poster-still[data-scene]').forEach(el => lio.observe(el));
   }
 
   /* ---------- gearbox bible toggle (workshop <-> neon) ---------- */
   // Both bibles are the same scene one line apart, so the toggle swaps the still
-  // and the scene URL together. If a live frame is already mounted it is torn
-  // down and remounted on the other bible; if not, the next scroll-in picks up
-  // whichever is current. The still is the HTML default, so no-JS and
-  // reduced-motion stay correct without loading a scene at all.
+  // and the scene URL together, then restores whichever tier was already running:
+  // a mounted live frame is torn down and remounted on the other bible, a running
+  // AVIF loop is re-pointed at the other bible's loop. If neither is active the
+  // next scroll-in picks up whatever is current. The still is the HTML default,
+  // so no-JS and reduced motion stay correct without loading anything extra.
   const gearboxScreen = document.getElementById('gearboxScreen');
   const gearboxStill = document.getElementById('gearboxStill');
   if (gearboxScreen && gearboxStill) {
+    const BIBLES = {
+      workshop: { still: 'posters/gearbox-still.jpg',      scene: 'films/gearbox.html',      film: 'gearbox' },
+      neon:     { still: 'posters/gearbox-neon-still.jpg', scene: 'films/gearbox-neon.html', film: 'gearbox-neon' },
+    };
     const setBible = (bible) => {
-      const neon = bible === 'neon';
+      const b = BIBLES[bible] || BIBLES.workshop;
       const wasLive = !!gearboxStill.dataset.live;
-      if (wasLive) unmountLive(gearboxStill);
-      gearboxStill.src = neon ? 'posters/gearbox-neon-still.jpg' : 'posters/gearbox-still.jpg';
-      gearboxStill.dataset.scene = neon ? 'films/gearbox-neon.html' : 'films/gearbox.html';
+      const wasLooping = !!gearboxStill.dataset.looping;
+      if (wasLive) unmountLive(gearboxStill);   // swap the scene, then bring it back on the new bible
+      if (wasLooping) stopLoop(gearboxStill);   // ...same for the AVIF tier, so dataset.still stays true
+      gearboxStill.src = b.still;
+      gearboxStill.dataset.still = b.still;
+      gearboxStill.dataset.scene = b.scene;
+      if (wasLooping) startLoop(gearboxStill);
       if (wasLive) mountLive(gearboxStill);
-      gearboxScreen.setAttribute('data-film', neon ? 'gearbox-neon' : 'gearbox');
+      gearboxScreen.setAttribute('data-film', b.film);
       document.querySelectorAll('.bible-btn').forEach(x => {
         const on = x.getAttribute('data-bible') === bible;
         x.classList.toggle('is-on', on);

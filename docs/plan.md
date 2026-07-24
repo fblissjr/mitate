@@ -291,7 +291,7 @@ recording because they are findings, not moves. **0.14.0 shipped
 dangling pointer every installed user has followed for the plugin's whole life,
 found only once the tree sat in one place. Porting them was an audit, not a
 copy, and it corrected four claims that had gone stale against this stack (six
-parity fences, not two; three sample points, not four; the shipped-frame spread
+parity fences, not two; the shipped-frame spread
 floor and `build.js poster` undocumented entirely; the predecessor's
 cross-backend PSNR figure relabelled inherited). And **the predecessor's measured
 record now lives here**, consolidated verbatim into

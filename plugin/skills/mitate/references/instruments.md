@@ -29,17 +29,30 @@ observation on both sides, or explicitly labelled unbracketed.
 |---|---|---|---|
 | page errors | per load | console/page errors, deprecation warnings | anything that fails silently |
 | contract | — | a missing `seekTo`/`DURATION`/`stopPlayback`/`sceneReady` | — |
-| determinism | **all** of 3 sampled points | state across frames, `Math.random()`, wall-clock | state that only desyncs at unsampled times |
-| blank frame | **all** of 3 sampled points | a pipeline shooting empty frames | a frame that is dark but not empty |
-| shipped-frame spread | **max** over the sample plan | a backend that ships nothing (half-dead adapter) | a register that is legitimately flat *and* correct |
+| determinism | **all** of 4 planned points, +up to 2 transition midpoints | state across frames, `Math.random()`, wall-clock | state that only desyncs at unsampled times |
+| blank frame | **all** of 4 planned points | a pipeline shooting empty frames | a frame that is dark but not empty |
+| shipped-frame spread | **max** over its own 4-point plan | a backend that ships nothing (half-dead adapter) | a register that is legitimately flat *and* correct |
 | marker parity | file set × 6 fences | two scenes carrying different kits | drift inside a scene |
-| framing invariance | 3 shapes × 3 times | a scene that crops instead of containing | composition quality at any single shape |
+| framing invariance | 3 shapes × 3 fixed fractions | a scene that crops instead of containing | composition quality at any single shape |
 | caption speed / overflow | per beat | a caption too fast or too wide **for the frame** | canvas text; vertical collision |
-| exposure | 3 times, worst | washed out or crushed | whether the register intended it |
+| exposure | 3 fixed fractions, worst | washed out or crushed | whether the register intended it |
 
-The sample plan is `SAMPLE_FRACTIONS = [0.25, 0.5, 0.8]` of `DURATION`, interior
-points only, with flash windows avoided against **merged** intervals rather than
-one flash at a time.
+**There are two different sampling mechanisms, and conflating them is a mistake
+this file has already made once.** Which one a check uses decides whether it can
+be blinded by a flash:
+
+| mechanism | used by | points | flash-aware? |
+|---|---|---|---|
+| `samplePlan(dur, flashes, 4)` | determinism, blank frame, shipped-frame spread | 4 interior, at `dur*i/5` | **yes** — cleared against MERGED flash intervals |
+| `SAMPLE_FRACTIONS = [0.25, 0.5, 0.8]` | exposure, framing invariance | 3 fixed fractions of `DURATION` | **no** — raw multiplication, no avoidance |
+
+So exposure and framing invariance can land inside a white-out and read it as the
+frame. That is tolerable for those two (both are advisory or shape-comparing) and
+would not be for determinism — which is exactly why determinism routes through
+the plan. The determinism check additionally appends up to two shot-transition
+midpoints from `window.SHOTS`, so its real floor is 4 points and often 6: fixed
+fractions were measured missing every blend window on a shipped film, and a
+transition-confined bug would have passed every check.
 
 **The determinism check was the sharpest lesson in this whole file.** It used to
 sample `Math.min(1, dur/3)` — the constant 1.0s for any film over 3s, inside the

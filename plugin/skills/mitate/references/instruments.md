@@ -34,7 +34,7 @@ observation on both sides, or explicitly labelled unbracketed.
 | shipped-frame spread | **max** over its own 4-point plan | a backend that ships nothing (half-dead adapter) | a register that is legitimately flat *and* correct |
 | marker parity | file set × 6 fences | two scenes carrying different kits | drift inside a scene |
 | framing invariance | 3 shapes × 3 fixed fractions | a scene that crops instead of containing | composition quality at any single shape |
-| caption speed / overflow | per beat | a caption too fast or too wide **for the frame** | canvas text; vertical collision |
+| caption speed / overflow | per beat | a caption too fast or too wide **for the frame** | canvas text; vertical collision; **text that fits but is too small to read** |
 | exposure | 3 fixed fractions, worst | washed out or crushed | whether the register intended it |
 
 **There are two different sampling mechanisms, and conflating them is a mistake
@@ -219,6 +219,11 @@ Recorded honestly, because these are where films actually ship broken:
   canvas text, which is where a diagrammatic film's meaning actually lives — in
   one external-doc film only 2 of 8 beats survived a strict cover-*all*-text pass.
 - **Whether a beat is funny, warm, or tense.** No still answers it.
+- **Whether a caption is legible at the size it will actually be viewed.**
+  Captions are a constant fraction of the frame (`calc(var(--fw)*.015625)`), so
+  they compose correctly at every size and go unreadable at small ones — ~5.7px
+  in a phone-sized box. The overflow check passes, because the text fits. See
+  `method.md`; the answer below ~700px of frame width is `?nocap`.
 - **Whether a contact is real in all three axes.** A camera angle can fake a
   graze that misses in depth; that class of defect has recurred five times and is
   caught by probe-measuring the contact, not by looking at it.

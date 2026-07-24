@@ -868,10 +868,23 @@ Three consequences to design around:
 - A narrow window reveals world **above and below** the design frame, so
   **never hide an element by parking it off-frame.** Gate it with scale or
   opacity instead.
-- Captions are fixed CSS px, so they size against the *window*, not the frame.
-  That is a separate, still-open parity gap: `smoke.js` measures caption
-  overflow at 1920 wide, so a caption can pass there and still clip in a
-  1280-wide window.
+- Captions size against the **frame**, not the window: `#cap` is
+  `font: 600 calc(var(--fw)*.015625)`, and `--fw` tracks the design frame box.
+  Measured on `gearbox` at three frame widths — 30px at 1920, 10px at 640,
+  5.69px at 364 — all exactly `0.015625 x frame width`. So the overflow check
+  smoke runs at 1920 IS representative at every window size, and there is no
+  caption/window parity gap. (This paragraph claimed the opposite until
+  2026-07-24, inherited from the predecessor, where captions really were fixed
+  CSS px against the window. That was one of the ten implicit frames the FRAME
+  architecture eliminated — the template's own comment lists it among the
+  defects it fixed — and this doc never caught up.)
+- **What frame-relative scaling costs instead is legibility, and no instrument
+  sees it.** Because a caption is a constant fraction of the frame, it is ~5.7px
+  in a phone-sized box and ~10px in a gallery-card-sized one: composed
+  correctly, unreadable in practice. smoke measures caption *overflow* and
+  *reading speed*, and neither fires on text that fits and is merely too small.
+  Below roughly 700px of frame width, ship `?nocap` and let the geometry carry
+  the beat — which is exactly what the nocap pass exists to prove it can.
 
 The alternative that preserves the authored lens exactly is scissor-letterbox
 (`renderer.setViewport`/`setScissor` into the largest 16:9 rect). It gives

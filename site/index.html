@@ -14,7 +14,7 @@
      instead of a live scene, desktops play it while the scene's shaders compile
      (measured 18-20s for the character films). That earns a preload hint. -->
 <link rel="preload" href="posters/bear-and-bees.avif" as="image" type="image/avif">
-<link rel="stylesheet" href="styles.css?v=10">
+<link rel="stylesheet" href="styles.css?v=11">
 </head>
 <body>
 <script>document.documentElement.classList.add('js')</script>
@@ -77,6 +77,7 @@
           <div class="rr"><span>beat</span><b id="beatVal">1 / 8</b></div>
           <div class="rr"><span>camera</span><b>locked</b></div>
           <div class="rr"><span>determinism</span><b class="pass">pass</b></div>
+          <div class="rr"><span>source</span><b id="instSrc">preview loop</b></div>
         </div>
       </div>
       <div class="inst-axis">
@@ -90,11 +91,6 @@
           <div class="marker" id="marker" style="left:0%"></div>
         </div>
       </div>
-      <p class="inst-note" id="instNote">
-        <span id="instNoteText">Showing a compressed preview loop.</span>
-        <button type="button" class="linky" data-film="bear-and-bees">Open the film</button>
-        <span id="instNoteWhy">to run the real scene — one self-contained file, rendered live in the page.</span>
-      </p>
     </div>
   </div>
 </header>
@@ -378,6 +374,6 @@ phase = { HL:<span class="c-v">0</span>,  FL:<span class="c-v">.25</span>,
   </div>
 </div>
 
-<script src="app.js?v=10"></script>
+<script src="app.js?v=11"></script>
 </body>
 </html>

@@ -7,6 +7,12 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.14.2
+
+### fixed
+- **`method.md` documented a caption/window parity gap that no longer exists.** It claimed captions are fixed CSS px sized against the window, leaving `smoke.js`'s 1920-wide overflow check unrepresentative at other sizes. The template says otherwise: `#cap` is `font: 600 calc(var(--fw)*.015625)` and `--fw` tracks the design frame, so captions are frame-relative. Measured on `gearbox` at three frame widths — 30px at 1920, 10px at 640, 5.69px at 364, every one exactly `0.015625 x frame width`. The claim was inherited from the predecessor, where it was true; frame-relative captions were one of the ten implicit frames the FRAME architecture eliminated, and the template's own comment lists it among the defects that fix closed. The doc never caught up. So the gap is closed, not open, and nobody needs to build a fix for it.
+- **The real caption limit, now documented in both references, is legibility.** Scaling with the frame is what makes composition faithful and what makes the text ~5.7px in a phone-sized box and ~10px in a gallery card. No instrument catches it: overflow passes because the text fits, and reading speed passes because it is a timing check. Added to `instruments.md`'s "what it cannot see" column and to its no-instrument list, with the standing answer — below roughly 700px of frame width, ship `?nocap` and let the geometry carry the beat.
+
 ## 0.14.1
 
 ### fixed

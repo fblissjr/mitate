@@ -229,7 +229,7 @@
   const mountLive = (img) => {
     if (img.dataset.live || !img.dataset.scene) return;
     img.dataset.live = '1';
-    if (isHero(img)) setNote('compiling');
+    if (isHero(img)) setNote('loop');
     const f = document.createElement('iframe');
     f.className = 'live-frame';
     f.setAttribute('aria-hidden', 'true');
@@ -263,7 +263,7 @@
   const unmountLive = (img) => {
     if (!img.dataset.live) return;
     delete img.dataset.live;
-    if (isHero(img)) setNote(liveOK ? 'compiling' : 'loop');
+    if (isHero(img)) setNote('loop');
     // removing the element is what releases the GPU context; hiding it would not
     const f = img.parentNode.querySelector('.live-frame');
     if (f) f.remove();
@@ -284,26 +284,15 @@
     img.src = img.dataset.still;
   };
 
-  // The hero says out loud which of the two it is showing, because "why is this
-  // a loop" is a fair question and the answer differs by device: a phone is
-  // deliberately never given a live scene, while a desktop is showing one as
-  // soon as its shaders finish compiling.
-  const noteText = document.getElementById('instNoteText');
-  const noteWhy = document.getElementById('instNoteWhy');
-  const NOTE = {
-    live:      ['Running the real scene, live in this page.',
-                'to see it full size — one self-contained file, no video.'],
-    compiling: ['Preview loop while the real scene compiles its shaders.',
-                'to watch it full size — one self-contained file, no video.'],
-    loop:      ['A compressed preview loop, so the page stays light here.',
-                'to run the real scene — one self-contained file, no video.'],
-    still:     ['A still frame, since you prefer reduced motion.',
-                'to run the real scene — one self-contained file, no video.'],
-  };
+  // The hero's readout says which of the two is on screen, in the same voice as
+  // the rows beside it. No prose: a visitor does not need our compile story, and
+  // the lightbox carries the full spec for anyone who wants it.
+  const instSrc = document.getElementById('instSrc');
   const setNote = (mode) => {
-    const n = NOTE[mode] || NOTE.loop;
-    if (noteText) noteText.textContent = n[0];
-    if (noteWhy) noteWhy.textContent = n[1];
+    if (!instSrc) return;
+    instSrc.textContent = mode === 'live' ? 'live scene'
+                        : mode === 'still' ? 'still frame'
+                        : 'preview loop';
   };
   setNote(reduceMotion ? 'still' : 'loop');
 

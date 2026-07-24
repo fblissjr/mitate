@@ -1,0 +1,34 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node / bun (the skill's render + build toolchain, when it lands here)
+node_modules/
+.bun/
+npm-debug.log*
+bun-debug.log*
+# bun.lock IS committed for reproducibility — do not ignore it.
+
+# Playwright browsers / recorder scratch (never committed; artifacts live outside the repo)
+.cache/ms-playwright/
+/render-tmp/
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+
+# Netlify
+.netlify/
+
+# Logs / OS cruft
+*.log
+Thumbs.db

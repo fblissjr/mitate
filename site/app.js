@@ -60,9 +60,17 @@
   const heroStill = document.getElementById('heroStill');
   const pad = (n, w) => String(n).padStart(w, '0');
 
+  let ariaN = 0;
   function paint(t) {
     const frac = t / DUR;
     const frame = Math.min(Math.floor(t * FPS), FRAMES - 1);
+    // the slider's accessible value must track the render like everything else
+    // (review finding: it froze at 0 during autoplay). Throttled to ~2/s so
+    // assistive tech is informed, not flooded.
+    if (ariaN++ % 30 === 0) {
+      const trackEl = document.querySelector('.inst-axis .track');
+      if (trackEl) { trackEl.setAttribute('aria-valuenow', t.toFixed(2)); trackEl.setAttribute('aria-valuetext', t.toFixed(2) + ' seconds'); }
+    }
     // the scene's real beat boundaries — gearbox's beats are unequal, so an
     // equal five-way split would disagree with what is rendering
     let beat = 1;
@@ -95,7 +103,11 @@
   // render of the scene) — until the scene is live, the readout must describe
   // the frame it sits beside.
   let win = null, raf = null, start = null, mounted = false;
-  let dragging = false, pendingT = null;
+  // wantPlay is USER INTENT, the one flag every auto-resume path consults:
+  // true on autoplay-eligible load or an explicit play; false on an explicit
+  // pause. Scroll-out/in, focus blur and drag-release resume ONLY if it holds
+  // — an explicit pause must survive all of them (review finding).
+  let dragging = false, pendingT = null, wantPlay = autoPlayHero, heroWasPlaying = false;
   let lastT = autoPlayHero ? 0 : 7.2;
   paint(lastT);
 
@@ -126,12 +138,11 @@
     const t0 = pendingT !== null ? pendingT : lastT;
     pendingT = null;
     if (dragging) { showT(t0); return; }
-    // reduced motion never autoplays, but an explicit play press is a media
-    // control the user operated — honoring it is not autoplay
-    if (reduceMotion && !wantPlay) { showT(t0); return; }
+    // wantPlay is false under reduced motion unless the user pressed play —
+    // an explicit press is a media control they operated, not autoplay
+    if (!wantPlay) { showT(t0); return; }
     play(t0);
   };
-  let wantPlay = false;
 
   function mountHero() {
     if (mounted || !heroScreen || !heroStill) return;
@@ -181,6 +192,7 @@
       if (win) showT(t);
       else {
         pendingT = t;
+        if (!reduceMotion) wantPlay = true;   // touching the track is engagement
         if (axisMid) axisMid.textContent = 'loading the scene…';
         mountHero();
       }
@@ -193,7 +205,7 @@
     const endDrag = () => {
       if (!dragging) return;
       dragging = false;
-      if (win && !reduceMotion) play(lastT);
+      if (win && wantPlay) play(lastT);
     };
     track.addEventListener('pointerup', endDrag);
     track.addEventListener('pointercancel', endDrag);
@@ -205,11 +217,12 @@
       else if (ev.key === 'ArrowRight' || ev.key === 'ArrowUp') t = Math.min(DUR, lastT + step);
       else if (ev.key === 'Home') t = 0;
       else if (ev.key === 'End') t = DUR;
-      else if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); if (raf === null && !reduceMotion) play(lastT); else stop(); return; }
+      else if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); if (raf === null) { wantPlay = true; play(lastT); } else { wantPlay = false; stop(); } return; }
       if (t !== null) { ev.preventDefault(); stop(); showT(t); }
     });
-    // a keyboard scrub parks the film; leaving the control lets it run again
-    track.addEventListener('blur', () => { if (win && raf === null && !dragging && !reduceMotion) play(lastT); });
+    // a keyboard scrub parks the film; leaving the control lets it run again —
+    // unless the user explicitly paused
+    track.addEventListener('blur', () => { if (win && raf === null && !dragging && wantPlay) play(lastT); });
 
     // transport: play/pause and ±3s — the same t plumbing the scrubber uses.
     // On an unmounted hero (coarse pointer), any transport press mounts first,
@@ -244,7 +257,7 @@
   if (inst && 'IntersectionObserver' in window) {
     new IntersectionObserver((entries) => {
       entries.forEach(e => {
-        if (e.isIntersecting) { if (win && raf === null && !dragging && !reduceMotion) play(lastT); }
+        if (e.isIntersecting) { if (win && raf === null && !dragging && wantPlay) play(lastT); }
         else stop();
       });
     }, { threshold: 0.05 }).observe(inst);
@@ -272,6 +285,11 @@
   function openFilm(key, trigger) {
     const film = FILMS[key];
     if (!film) return;
+    // pause the hero while the overlay is up: its IntersectionObserver cannot
+    // see an overlay, so without this two live scenes render at once — the
+    // incoherence this page exists to refute (review finding)
+    heroWasPlaying = raf !== null;
+    stop();
     if (teardownTimer) { clearTimeout(teardownTimer); teardownTimer = null; }
     lastFocus = trigger || null;
     lbTitle.textContent = film.title;
@@ -319,6 +337,8 @@
       if (frame && frame.parentNode) frame.remove();
       teardownTimer = null;
     }, 380);
+    if (heroWasPlaying && wantPlay && win && raf === null && !dragging) play(lastT);
+    heroWasPlaying = false;
     if (lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
   }
 

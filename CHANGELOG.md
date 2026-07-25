@@ -7,7 +7,7 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
-## unreleased
+## 0.16.0
 
 ### added
 - **The hero's timeline is an input now: drag t and the scene follows.** The track is a real slider (pointer + keyboard, `role="slider"`) — a drag pauses the clock and drives `seekTo` with the dragged t, so the readout, the marker and the rendered frame agree by construction at any point you choose; release resumes from where you let go. On touch devices nothing mounts until the first touch of the track; while the scene warms the axis says "loading the scene…" and the numbers hold rather than move against a still. Under reduced motion, scrubbed frames render (user-driven, not autoplay) but nothing plays by itself. Verified: drag-to-50% reads exactly t 8.250s / beat 3/5 / frame 00247, Shift+arrow steps one frame, and a touch tap mounts, holds honestly, then plays from the tapped t. A transport row — play/pause and ±3s — rides the same t plumbing (verified in Chromium, WebKit and mobile emulation: pause freezes t, skips land at exactly ±3.00s, a transport press on an unmounted hero mounts first), the marker grows on hover to read as a handle, and the axis label says "drag it".

@@ -32,6 +32,7 @@ observation on both sides, or explicitly labelled unbracketed.
 | determinism | **all** of 4 planned points, +up to 2 transition midpoints | state across frames, `Math.random()`, wall-clock | state that only desyncs at unsampled times |
 | blank frame | **all** of 4 planned points, +up to 2 transition midpoints | a pipeline shooting empty frames | a frame that is dark but not empty |
 | shipped-frame spread | **max** over its own 4-point plan | a backend that ships nothing (half-dead adapter) | a register that is legitimately flat *and* correct |
+| live playback | 3+ `seekTo` calls, 2+ distinct `t`, on the one load without `?record=1` | a film that records perfectly and never moves for a viewer | whether the motion *reads*; a driver calling a captured reference instead of `window.seekTo` |
 | marker parity | file set × 6 fences | two scenes carrying different kits | drift inside a scene |
 | framing invariance | 3 shapes × 3 fixed fractions | a scene that crops instead of containing | composition quality at any single shape |
 | caption speed / overflow | per beat | a caption too fast or too wide **for the frame** | canvas text; vertical collision; **text that fits but is too small to read** |
@@ -92,6 +93,59 @@ MAX (the film's richest stripped frame). A film whose *best* frame is flat is no
 a register, it is a backend shipping nothing. Bracketed on this stack: a half-dead
 SwiftShader-WebGPU configuration measured 1.7; the healthy 3D template 161.3; the
 flat paper-register 2D template 120.9 — two orders of magnitude of daylight.
+
+**The live-playback check exists because the whole pipeline was blind to the only
+path a viewer takes.** Every template starts its rAF loop with
+`if(!location.search.includes('record'))requestAnimationFrame(loop)`, and every
+page load in `smoke.js` and `shoot.js` carries `?record=1`. So the loop — the
+thing every human who opens the file gets — was executed by nothing in this
+suite, and a scene whose loop dies on its first frame shipped perfect recorded
+frames while sitting motionless on screen. It passed this gate green on both
+backends. The recorder cannot see the defect by construction, which is precisely
+why the gate has to.
+
+It watches the mechanism rather than the pixels: the loop's only job is to call
+`seekTo` with a rising `t`, so the check wraps `seekTo` after `sceneReady` and
+counts. A pixel diff would have to guess how far a given film moves in 200 ms and
+would fire on a held title card — the same "one frame answers no question about
+motion" trap the strip exists for. Counting cannot. **Two distinct `t` values is
+the load-bearing half:** a loop that runs forever while recomputing the same `t`
+is as frozen as one that never started, and a call count alone passes it.
+
+**It asks whether `seekTo` is being driven, never whose loop is driving it**, and
+that generality is deliberate rather than incidental. More than one thing already
+replaces the built-in loop: `site/app.js` calls `stopPlayback()` and drives `t`
+itself ("we drive it now"), and any in-scene viewer does the same. A check
+written against `requestAnimationFrame` would go blind on exactly the scenes with
+the most machinery between the clock and the frame — and a control aimed at the
+built-in loop of such a scene fails to fire, which is how this shape was found.
+For the same reason the assertion is *distinct* `t`, not *rising* `t`: a
+viewer-driven or wrapping clock is not monotone, and demanding monotonicity would
+fail correct scenes. The one thing it cannot see is a driver that captured a
+direct reference to the function before the wrap and calls it privately; every
+template calls `window.seekTo` by name, and any replacement loop must keep doing
+so to stay visible here.
+
+**The sharper boundary is the host, not the scene.** This check answers *does the
+scene's own loop run*, and it answers it standalone, which is where the chain
+does die. A host that both replaces the loop **and swallows the exception** is
+outside its reach entirely: injected into `seekTo` itself, a standalone load
+registers 0 calls and fails correctly, while the same scene under a
+`try { win.seekTo(t) } catch (e) {}` host was measured at 71 calls and 71
+distinct `t` — passing every arm of this check while rendering nothing. Note what
+that configuration also escapes: the shipped-frame check runs under `?record=1`,
+so it never sees the host path either. That is the one place a dead film looks
+alive to everything, and it is the reason a host must not swallow silently
+(`site/app.js` now warns) and the reason a scene carrying its own viewer should
+stand down when framed rather than negotiate with the parent.
+
+Bracketed three ways on `gearbox`, all three firing with the right message: the
+rAF chain never started (0 calls), the first frame threw and killed the chain
+(0 calls, plus the page error) — which is the shape the real defect took — and a
+frozen clock driving `seekTo(0)` forever (3+ calls, 1 distinct `t`, caught only
+by the distinctness arm). Quiet on all five shipped examples and on the 2D
+template. Cost is one extra page load per scene: **+0.14 s on hardware WebGPU,
++1.05 s on the software-GL default**, the gap being boot rather than the check.
 
 ## `build.js motion`
 
@@ -214,7 +268,9 @@ not.
 Recorded honestly, because these are where films actually ship broken:
 
 - **Watching the loop at speed.** The strongest continuity instrument, and it
-  needs a human. No agent can do it.
+  needs a human. No agent can do it. The live-playback check above is not this
+  and does not weaken it: it answers *does the loop run*, never *does it read* —
+  a film that plays and pops at every cut passes it.
 - **Semantics.** "Cover everything except the geometry" is a question you ask
   yourself. The `?nocap` switch removes the DOM caption; it does **not** remove
   canvas text, which is where a diagrammatic film's meaning actually lives — in

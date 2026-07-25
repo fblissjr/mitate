@@ -103,6 +103,23 @@
   // render of the scene) — until the scene is live, the readout must describe
   // the frame it sits beside.
   let win = null, raf = null, start = null, mounted = false;
+  // Driving the scene has exactly one home, because this host is the one
+  // configuration where a dead film looks alive to every instrument: we replace
+  // the scene's own rAF loop (stopPlayback below), so smoke's live-playback
+  // check — which loads standalone — never exercises this path, and the
+  // shipped-frame check runs under ?record=1 and never sees it either. Two
+  // copies of `try { seekTo } catch {}` swallowing silently meant a scene
+  // throwing on every seek kept a perfectly healthy-looking scrubber. Warn once
+  // and keep going: the page must not die because a film did, but nobody should
+  // have to guess why the canvas stopped.
+  let seekWarned = false;
+  const drive = (t) => {
+    if (!win || !win.seekTo) return;
+    try { win.seekTo(t); }
+    catch (e) {
+      if (!seekWarned) { seekWarned = true; console.warn('scene seekTo threw — the film is not rendering: ' + e.message); }
+    }
+  };
   // wantPlay is USER INTENT, the one flag every auto-resume path consults:
   // true on autoplay-eligible load or an explicit play; false on an explicit
   // pause. Scroll-out/in, focus blur and drag-release resume ONLY if it holds
@@ -115,7 +132,7 @@
     if (start === null) start = ts;
     const t = ((ts - start) / 1000) % DUR;
     lastT = t;
-    try { if (win && win.seekTo) win.seekTo(t); } catch (e) {}
+    drive(t);
     paint(t);
     raf = requestAnimationFrame(tick);
   };
@@ -128,7 +145,7 @@
   };
   const showT = (t) => {
     lastT = t;
-    try { if (win && win.seekTo) win.seekTo(t); } catch (e) {}
+    drive(t);
     paint(t);
     if (track) { track.setAttribute('aria-valuenow', t.toFixed(2)); track.setAttribute('aria-valuetext', t.toFixed(2) + ' seconds'); }
   };

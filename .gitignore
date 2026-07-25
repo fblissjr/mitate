@@ -24,6 +24,9 @@ bun-debug.log*
 .cache/ms-playwright/
 /render-tmp/
 
+# Machine-local tooling config (holds absolute paths — never commit)
+.path-privacy.local.json
+
 # Env / secrets
 .env
 .env.local

@@ -23,14 +23,17 @@
 //      the renderer is deliberately not asserted, so any backend can pass)
 //   3. seekTo(t) is deterministic: the same t twice gives byte-identical pixels
 //   4. seekTo renders something — not a blank canvas
+//   5. the film PLAYS — the rAF loop drives seekTo with a rising t on a load
+//      WITHOUT ?record=1, which is the only path a human viewer ever takes and
+//      the only one nothing else in this pipeline executes
 //
 // Advisory checks (print `warn` lines, never fail the build or touch the exit
 // code) — these are judgment calls bracketed on a handful of scenes, and a
 // scene author may legitimately overrule them; a lint that blocks a release
 // on a taste call just gets bypassed:
-//   5. caption reading speed, when window.BEATS is present
-//   6. caption overflow against the nowrap caption pill, when window.BEATS is present
-//   7. exposure — both overexposed clipping and underexposed crushing
+//   6. caption reading speed, when window.BEATS is present
+//   7. caption overflow against the nowrap caption pill, when window.BEATS is present
+//   8. exposure — both overexposed clipping and underexposed crushing
 //
 // Requires: bun, playwright-core, a Chromium (see shoot.js resolution order).
 // Exits non-zero on any failure, so it can gate a release.
@@ -333,6 +336,59 @@ async function checkScene(browser, file) {
       }
     } catch (e) {
       fails.push('shipped-frame check errored — ' + e.message.split('\n')[0]);
+    }
+
+    // CHECK (hard): the film actually PLAYS. Every other check in this file --
+    // and every page load in shoot.js -- opens the scene with `?record=1`, and
+    // all three templates gate their rAF loop on the ABSENCE of that flag
+    // (`if(!location.search.includes('record'))requestAnimationFrame(loop)`).
+    // So the code path every human viewer gets was executed by nothing in this
+    // suite. A scene whose loop dies on its first frame ships perfect recorded
+    // frames and sits motionless for every person who opens it -- measured
+    // exactly that way once, on a film that had passed this gate green on both
+    // backends. The recorder cannot see it by construction, so the gate has to.
+    //
+    // Observed at the MECHANISM, not at the pixels: the loop's whole job is to
+    // call seekTo with a rising t, so wrap seekTo once the scene is ready and
+    // count the calls. A pixel diff would have to guess how far a given film
+    // moves in 200ms and would false-positive on a held title card -- the same
+    // "one frame answers no question about motion" trap the strip exists for.
+    // Counting cannot.
+    //
+    // This is the ONE load in this file without `?record=1`, which is the whole
+    // point of it. It runs AFTER the cold shipped-frame check so that check
+    // keeps the cold browser it needs, and on `page` rather than a third tab so
+    // a throw inside the loop lands in the same console/page-error listener
+    // that already reports it.
+    try {
+      await page.goto('file://' + path.resolve(file));
+      await page.waitForFunction('window.sceneReady === true', { timeout: 20000 });
+      await page.evaluate(`(() => {
+        window.__ticks = [];
+        const inner = window.seekTo;
+        // Count AFTER the inner call returns, never before: a seekTo that throws
+        // on every call would otherwise register a tick per attempt and inflate
+        // its way past the count arm while rendering nothing.
+        window.seekTo = function (t) { const r = inner.apply(this, arguments); window.__ticks.push(t); return r; };
+      })()`);
+      // 3 frames is ~50ms at 60fps and ~200ms on the software path at this
+      // viewport, so 5s of headroom means a timeout here is a dead loop rather
+      // than a slow one. Two DISTINCT t values is the real assertion: a loop
+      // that runs but recomputes the same t (a clock that never starts) is as
+      // frozen as one that never ran, and the call count alone would pass it.
+      await page.waitForFunction('window.__ticks.length >= 3', { timeout: 5000 }).catch(() => {});
+      const ticks = await page.evaluate('window.__ticks');
+      if (ticks.length < 3) {
+        fails.push(`live playback stalled -- the scene reached sceneReady but its rAF loop drove `
+                 + `seekTo ${ticks.length} time(s) in 5s. Every RECORDED frame can still be perfect: `
+                 + `the recorder loads ?record=1, which skips this path entirely`);
+      } else if (new Set(ticks).size < 2) {
+        fails.push(`live playback is frozen -- the loop runs but every seekTo received the same t `
+                 + `(${ticks[0]}), so the film holds one frame forever`);
+      }
+      await page.evaluate('window.stopPlayback()').catch(() => {});
+    } catch (e) {
+      fails.push('live-playback check errored -- ' + e.message.split('\n')[0]);
     }
 
     await page.goto('file://' + path.resolve(file) + '?record=1');

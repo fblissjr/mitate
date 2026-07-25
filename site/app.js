@@ -13,12 +13,25 @@
   // Content is visible by default (CSS). The observer only adds the entrance
   // animation as elements approach the viewport; if it never runs, nothing is
   // hidden. Under reduced motion we simply skip the entrance entirely.
-  if (!reduceMotion && 'IntersectionObserver' in window) {
+  //
+  // The margin must be POSITIVE: the animation's from-state is opacity 0, and
+  // content is visible before the class lands, so adding `.in` to an element
+  // already inside the viewport makes it visibly vanish and re-enter — seen as
+  // flashing under iOS momentum scroll with the old -6% margin. Firing ~15%
+  // below the fold means the from-state is only ever applied off screen.
+  //
+  // No entrance at all on coarse-pointer devices: a momentum flick outruns any
+  // margin (measured — center-screen content caught at 0.27-0.38 opacity), so
+  // on touch the animation can only ever be seen as flashing. Same shape as
+  // the hero's gate: decoration that cannot be honest on a platform is not
+  // shown there.
+  const coarse = window.matchMedia('(pointer: coarse)').matches;
+  if (!reduceMotion && !coarse && 'IntersectionObserver' in window) {
     const io = new IntersectionObserver((entries, obs) => {
       entries.forEach(e => {
         if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); }
       });
-    }, { rootMargin: '0px 0px -6% 0px', threshold: 0.05 });
+    }, { rootMargin: '0px 0px 15% 0px', threshold: 0 });
     document.querySelectorAll('.reveal').forEach(el => io.observe(el));
   }
 

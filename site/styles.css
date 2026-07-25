@@ -122,7 +122,7 @@ h1 .fn{font-family:var(--mono);font-weight:600;letter-spacing:-0.02em;color:var(
 .inst-film .screen{position:relative;overflow:hidden;border:1px solid var(--line);cursor:pointer;background:var(--stage-deep)}
 .inst-film img{width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;display:block;transition:transform .5s var(--ease)}
 .inst-film .screen:hover img{transform:scale(1.02)}
-.film-actions{margin-top:.8rem;font-size:.86rem}
+.film-actions{margin-top:1rem}
 .linky{background:none;border:0;padding:0;font:inherit;color:var(--blue-ink);cursor:pointer;
   text-decoration:underline;text-underline-offset:2px}
 .linky:hover{color:var(--ink)}
@@ -288,6 +288,7 @@ h1 .fn{font-family:var(--mono);font-weight:600;letter-spacing:-0.02em;color:var(
 .btn-amber{background:var(--amber);color:oklch(0.20 0.03 70)}
 .btn-amber:hover{transform:translateY(-2px);box-shadow:0 12px 28px -12px var(--amber)}
 .btn-stage-ghost{border:1px solid var(--hair);color:var(--stage-ink)}
+.btn-sm{font-size:.86rem;padding:.5rem .9rem}
 .btn-stage-ghost:hover{border-color:var(--amber-dim)}
 
 /* ============================ footer ============================ */

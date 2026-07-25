@@ -12,7 +12,7 @@
 <link rel="preload" href="fonts/archivo-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <!-- the hero mounts this scene on load, so fetch it with the page -->
 <link rel="preload" href="films/gearbox.html" as="fetch" crossorigin>
-<link rel="stylesheet" href="styles.css?v=19">
+<link rel="stylesheet" href="styles.css?v=21">
 </head>
 <body>
 <script>document.documentElement.classList.add('js')</script>
@@ -45,8 +45,7 @@
     </div>
     <h1 class="reveal">One file. One function <span class="fn">f(t)</span>. Frame-exact.</h1>
     <p class="hero-lede reveal">Ask for a film and it writes <b>an animated three.js scene as native HTML</b> — one file, opens in any browser. Not a video: no player, no build step, and the geometry is drawn live on every frame.</p>
-    <p class="hero-sub reveal"><b>There is no input format.</b> Whatever context your agent can already read is enough — a repo, a spec, a paper, a screenshot, a stack trace, the thread you just pasted in. The skill parses nothing; the agent has already read it. What it adds is direction: what that context should look like as geometry and time.</p>
-    <p class="hero-sub reveal"><b>mitate</b> — 見立て, to see one thing as another: a codebase as a machine, a document as a scene, a joke staged in geometry. The films below are what today's primitives compose without a fight. The 200-page terms of service explained by a figure who keeps falling over is where this is pointed — reachable, but expect to iterate, and to build a primitive or two on the way. The same <span class="mono">t</span> always renders the same frame.</p>
+    <p class="hero-sub reveal"><b>There is no input format</b> — whatever your agent can already read is enough: a repo, a spec, a paper, a screenshot, a stack trace. <b>mitate</b> (見立て) is to see one thing as another: a codebase as a machine, a document as a scene.</p>
     <div class="hero-actions reveal">
       <a class="btn btn-primary" href="#films">See the films <span aria-hidden="true">→</span></a>
       <a class="btn btn-ghost" href="#method">How it's directed</a>
@@ -67,7 +66,7 @@
           <button class="screen" id="heroScreen" data-film="gearbox" aria-label="Open the gearbox film full size: a five-beat mechanism turning in a lit workshop">
             <img class="poster-still" decoding="async" id="heroStill" src="posters/gearbox-still.jpg"
                  loading="eager" fetchpriority="high" width="1280" height="720" alt="" aria-hidden="true">
-            <span class="playbadge">open full size</span>
+            <span class="playbadge"><span class="lbl">open full size</span></span>
           </button>
         </div>
         <div class="inst-read">
@@ -160,7 +159,7 @@
         <button class="film-screen" id="gearboxScreen" data-film="gearbox" aria-label="Play the gearbox film: a five-beat mechanism turning in a lit workshop">
           <img class="poster-still" decoding="async" id="gearboxStill" src="posters/gearbox-still.jpg"
                loading="lazy" width="1280" height="720" alt="" aria-hidden="true">
-          <span class="open"><span class="tri"></span>preview</span>
+          <span class="open"><span class="tri"></span><span class="lbl">preview</span></span>
         </button>
         <div class="film-meta">
           <div class="slug">SCENE 01 — INT. WORKSHOP · EXPLAINER</div>
@@ -172,7 +171,7 @@
             <button type="button" class="bible-btn" data-bible="neon" aria-pressed="false">neon</button>
           </div>
           <div class="runline"><span>run <b>16.5s</b></span><span>beats <b>5</b></span><span>loop <b>seamless</b></span></div>
-          <p class="film-actions"><a class="linky" href="films/gearbox.html" target="_blank" rel="noopener">Open Gearbox in a new tab</a></p>
+          <p class="film-actions"><a class="btn btn-stage-ghost btn-sm" href="films/gearbox.html" target="_blank" rel="noopener">Open Gearbox full size <span aria-hidden="true">↗</span></a></p>
           <div class="prims">
             <span class="prim">buildWorlds()</span><span class="prim">TSL node materials</span><span class="prim">shot solver</span><span class="prim">style bibles</span><span class="prim">RenderPipeline post</span>
           </div>
@@ -184,14 +183,14 @@
         <button class="film-screen" data-film="bear-and-bees" aria-label="Play the bear-and-bees film: a furred bear noses a hanging beehive, then flees as bees erupt">
           <img class="poster-still" decoding="async" src="posters/bear-and-bees-still.jpg"
                loading="lazy" width="1280" height="720" alt="" aria-hidden="true">
-          <span class="open"><span class="tri"></span>preview</span>
+          <span class="open"><span class="tri"></span><span class="lbl">preview</span></span>
         </button>
         <div class="film-meta">
           <div class="slug">SCENE 02 — EXT. MEADOW · COMEDY SHORT</div>
           <h3>Bear &amp; Bees</h3>
           <p class="desc">Silent-comedy timing: a 2.6s hush — one scout bee at the bear's eyeline, a double blink to camera — against 1.1s of everything at once. The gag reads with zero captions. Every contact is probe-measured.</p>
           <div class="runline"><span>run <b>21.3s</b></span><span>camera <b>locked</b></span><span>hush <b>2.6s</b></span></div>
-          <p class="film-actions"><a class="linky" href="films/bear-and-bees.html" target="_blank" rel="noopener">Open Bear & Bees in a new tab</a></p>
+          <p class="film-actions"><a class="btn btn-stage-ghost btn-sm" href="films/bear-and-bees.html" target="_blank" rel="noopener">Open Bear & Bees full size <span aria-hidden="true">↗</span></a></p>
           <div class="prims">
             <span class="prim">buildCharacter()</span><span class="prim">fur pack</span><span class="prim">gait from distance</span><span class="prim">Box3 contact probes</span><span class="prim">pause-then-fast beats</span>
           </div>
@@ -203,14 +202,14 @@
         <button class="film-screen" data-film="menagerie" aria-label="Play the menagerie film: a bear, a human and an invented three-eyed strider walk in on their own gaits">
           <img class="poster-still" decoding="async" src="posters/menagerie-still.jpg"
                loading="lazy" width="1280" height="720" alt="" aria-hidden="true">
-          <span class="open"><span class="tri"></span>preview</span>
+          <span class="open"><span class="tri"></span><span class="lbl">preview</span></span>
         </button>
         <div class="film-meta">
           <div class="slug">SCENE 03 — INT. STAGE · CHARACTER DEMO</div>
           <h3>Menagerie</h3>
           <p class="desc">A furred bear, a fabric-shirted human, and a text-invented three-eyed strider — three proportion vectors through <span class="mono">one</span> buildCharacter. Three gaits (quadruped, biped, long-stride), all squint-distinct, all planted.</p>
           <div class="runline"><span>walk-in <b>loop</b></span><span>skeletons <b>1</b></span><span>characters <b>3</b></span></div>
-          <p class="film-actions"><a class="linky" href="films/menagerie.html" target="_blank" rel="noopener">Open Menagerie in a new tab</a></p>
+          <p class="film-actions"><a class="btn btn-stage-ghost btn-sm" href="films/menagerie.html" target="_blank" rel="noopener">Open Menagerie full size <span aria-hidden="true">↗</span></a></p>
           <div class="prims">
             <span class="prim">proportion vectors</span><span class="prim">two-bone IK</span><span class="prim">chainCurl / chainWave</span><span class="prim">fur + fabric packs</span>
           </div>
@@ -222,14 +221,14 @@
         <button class="film-screen" data-film="materials" aria-label="Play the materials film: cel banding, subsurface scattering through thin ears, and dispersive glass over an emissive core">
           <img class="poster-still" decoding="async" src="posters/materials-still.jpg"
                loading="lazy" width="1280" height="720" alt="" aria-hidden="true">
-          <span class="open"><span class="tri"></span>preview</span>
+          <span class="open"><span class="tri"></span><span class="lbl">preview</span></span>
         </button>
         <div class="film-meta">
           <div class="slug">SCENE 04 — INT. STUDIO · PACK SHOWCASE</div>
           <h3>Materials</h3>
           <p class="desc">Three surfaces in three beats — TSL-native cel banding, subsurface scattering through thin ears, and transmissive glass with dispersion over an emissive core: the overlapping-transparency ordering case, solved.</p>
           <div class="runline"><span>beats <b>4</b></span><span>surfaces <b>3</b></span><span>loop <b>held</b></span></div>
-          <p class="film-actions"><a class="linky" href="films/materials.html" target="_blank" rel="noopener">Open Materials in a new tab</a></p>
+          <p class="film-actions"><a class="btn btn-stage-ghost btn-sm" href="films/materials.html" target="_blank" rel="noopener">Open Materials full size <span aria-hidden="true">↗</span></a></p>
           <div class="prims">
             <span class="prim">MeshToonNodeMaterial</span><span class="prim">MeshSSSNodeMaterial</span><span class="prim">MeshPhysicalNodeMaterial</span><span class="prim">transparency ordering</span>
           </div>
@@ -241,14 +240,14 @@
         <button class="film-screen" data-film="noise-chart" aria-label="Play the noise-chart film: eight shader noise primitives in a grid, including a deliberate drift control">
           <img class="poster-still" decoding="async" src="posters/noise-chart-still.jpg"
                loading="lazy" width="1280" height="720" alt="" aria-hidden="true">
-          <span class="open"><span class="tri"></span>preview</span>
+          <span class="open"><span class="tri"></span><span class="lbl">preview</span></span>
         </button>
         <div class="film-meta">
           <div class="slug">SCENE 05 — CHART TIER · PRIMITIVE ISOLATION</div>
           <h3>Noise Chart</h3>
           <p class="desc">Eight shader primitives, one per cell — the MaterialX baseline row, a hash-lattice row, and a sin-hash <span class="mono">drift control</span>. New primitives are proven here, in isolation, before any film is allowed to use them.</p>
           <div class="runline"><span>cells <b>8</b></span><span>control <b>1</b></span><span>smoke <b>20/20</b></span></div>
-          <p class="film-actions"><a class="linky" href="films/noise-chart.html" target="_blank" rel="noopener">Open Noise Chart in a new tab</a></p>
+          <p class="film-actions"><a class="btn btn-stage-ghost btn-sm" href="films/noise-chart.html" target="_blank" rel="noopener">Open Noise Chart full size <span aria-hidden="true">↗</span></a></p>
           <div class="prims">
             <span class="prim">mx_fractal_noise</span><span class="prim">mx_worley_noise</span><span class="prim">mx_aastep</span><span class="prim">hash lattice</span><span class="prim">drift control</span>
           </div>
@@ -406,6 +405,6 @@ phase = { HL:<span class="c-v">0</span>,  FL:<span class="c-v">.25</span>,
   </div>
 </div>
 
-<script src="app.js?v=19"></script>
+<script src="app.js?v=21"></script>
 </body>
 </html>

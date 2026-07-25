@@ -217,8 +217,25 @@
     else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
   }
 
+  // On a phone the lightbox is the WRONG container, measured rather than assumed:
+  // the same scene reaches sceneReady in 5-6s as a top-level document and takes
+  // over 20s inside the lightbox iframe on iOS 26. Safari gives an iframe a much
+  // smaller budget — the same effect that left an offscreen iframe never ready at
+  // all in mobile WebKit. So a coarse-pointer tap opens the film directly; the
+  // lightbox stays where it is fast and keeps you in the gallery.
+  const preferTab = window.matchMedia('(pointer: coarse)').matches;
+  // say what the tap actually does on this device
+  if (preferTab) document.querySelectorAll('.open .lbl')
+    .forEach(el => { el.textContent = 'open full size'; });
   document.querySelectorAll('[data-film]').forEach(btn => {
-    btn.addEventListener('click', () => openFilm(btn.getAttribute('data-film'), btn));
+    btn.addEventListener('click', () => {
+      const key = btn.getAttribute('data-film');
+      if (preferTab) {
+        const film = FILMS[key];
+        if (film) { window.open(film.src, '_blank', 'noopener'); return; }
+      }
+      openFilm(key, btn);
+    });
   });
   lbClose.addEventListener('click', closeFilm);
   lb.addEventListener('click', (e) => { if (e.target === lb) closeFilm(); });

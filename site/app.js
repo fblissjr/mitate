@@ -73,38 +73,66 @@
     if (elMarker) elMarker.style.left = (frac * 100).toFixed(2) + '%';
   }
 
-  // The instrument only animates when it is animating something REAL. A live
-  // hero needs a scene mounted and driven; where we will not mount one — reduced
-  // motion, or a coarse-pointer device where an offscreen-composited iframe was
-  // measured never reaching sceneReady — the readout holds one representative
-  // frame instead. A counter ticking beside a frozen picture is the incoherence
-  // this whole instrument exists to disprove.
-  const heroLive = !reduceMotion
-    && !window.matchMedia('(pointer: coarse)').matches
-    && heroScreen && heroStill;
+  // The instrument only animates when it is animating something REAL, and the
+  // axis is an INPUT: dragging the track sets t, and the same t feeds seekTo
+  // and the readout — scrubbing is the thesis made tactile. Desktop mounts the
+  // scene on load and plays; a drag pauses the clock and resumes from where
+  // you let go. On coarse pointers nothing mounts until the first touch of the
+  // track (a moving readout beside a still is the incoherence this instrument
+  // exists to disprove); while the scene warms, the axis says so and the
+  // numbers hold. Under reduced motion scrubbed frames render — they are
+  // user-driven, not autoplay — but nothing ever plays by itself.
+  const track = document.querySelector('.inst-axis .track');
+  const axisMid = document.querySelector('.inst-axis .axis-label span:nth-child(2)');
+  const axisMidText = axisMid ? axisMid.textContent : '';
+  const autoPlayHero = !reduceMotion && !coarse && heroScreen && heroStill;
 
   // 7.2 is the t the poster still was rendered at (verified against a fresh
-  // render of the scene) — the static readout must describe the frame it sits
-  // beside, or it is the incoherence the comment above promises away.
-  paint(heroLive ? 0 : 7.2);
+  // render of the scene) — until the scene is live, the readout must describe
+  // the frame it sits beside.
+  let win = null, raf = null, start = null, mounted = false;
+  let dragging = false, pendingT = null;
+  let lastT = autoPlayHero ? 0 : 7.2;
+  paint(lastT);
 
-  if (heroLive) {
+  const tick = (ts) => {
+    if (start === null) start = ts;
+    const t = ((ts - start) / 1000) % DUR;
+    lastT = t;
+    try { if (win && win.seekTo) win.seekTo(t); } catch (e) {}
+    paint(t);
+    raf = requestAnimationFrame(tick);
+  };
+  const stop = () => { if (raf !== null) { cancelAnimationFrame(raf); raf = null; } };
+  const play = (fromT) => {
+    if (raf !== null || !win) return;
+    start = performance.now() - (fromT || 0) * 1000;
+    raf = requestAnimationFrame(tick);
+  };
+  const showT = (t) => {
+    lastT = t;
+    try { if (win && win.seekTo) win.seekTo(t); } catch (e) {}
+    paint(t);
+    if (track) { track.setAttribute('aria-valuenow', t.toFixed(2)); track.setAttribute('aria-valuetext', t.toFixed(2) + ' seconds'); }
+  };
+
+  const onReady = () => {
+    if (axisMid) axisMid.textContent = axisMidText;
+    const t0 = pendingT !== null ? pendingT : lastT;
+    pendingT = null;
+    if (dragging || reduceMotion) { showT(t0); return; }
+    play(t0);
+  };
+
+  function mountHero() {
+    if (mounted || !heroScreen || !heroStill) return;
+    mounted = true;
     const frame = document.createElement('iframe');
     frame.className = 'hero-frame';
     frame.setAttribute('aria-hidden', 'true');
     frame.setAttribute('tabindex', '-1');
     frame.setAttribute('title', '');
     frame.src = 'films/gearbox.html?nocap';
-
-    let win = null, raf = null, start = null;
-    const tick = (ts) => {
-      if (start === null) start = ts;
-      const t = ((ts - start) / 1000) % DUR;
-      try { if (win && win.seekTo) win.seekTo(t); } catch (e) {}
-      paint(t);
-      raf = requestAnimationFrame(tick);
-    };
-
     frame.addEventListener('load', () => {
       let tries = 0;
       const settle = () => {
@@ -115,23 +143,71 @@
           win = frame.contentWindow;
           try { if (win.stopPlayback) win.stopPlayback(); } catch (e) {}  // we drive it now
           frame.classList.add('on');
-          if (raf === null) raf = requestAnimationFrame(tick);
+          onReady();
         } else if (++tries < 900) setTimeout(settle, 100);
       };
       settle();
     });
     heroScreen.appendChild(frame);
+  }
 
-    // stop feeding it when it is off screen; the contract makes this free
-    const inst = document.querySelector('.instrument');
-    if (inst && 'IntersectionObserver' in window) {
-      new IntersectionObserver((entries) => {
-        entries.forEach(e => {
-          if (e.isIntersecting && win && raf === null) { start = null; raf = requestAnimationFrame(tick); }
-          else if (!e.isIntersecting && raf !== null) { cancelAnimationFrame(raf); raf = null; }
-        });
-      }, { threshold: 0.05 }).observe(inst);
-    }
+  if (autoPlayHero) mountHero();
+
+  if (track && heroScreen && heroStill) {
+    const tFromEvent = (ev) => {
+      const r = track.getBoundingClientRect();
+      const frac = Math.min(1, Math.max(0, (ev.clientX - r.left) / r.width));
+      return frac * DUR;
+    };
+    track.addEventListener('pointerdown', (ev) => {
+      ev.preventDefault();
+      try { track.setPointerCapture(ev.pointerId); } catch (e) {}
+      dragging = true;
+      stop();
+      const t = tFromEvent(ev);
+      if (win) showT(t);
+      else {
+        pendingT = t;
+        if (axisMid) axisMid.textContent = 'loading the scene…';
+        mountHero();
+      }
+    });
+    track.addEventListener('pointermove', (ev) => {
+      if (!dragging) return;
+      const t = tFromEvent(ev);
+      if (win) showT(t); else pendingT = t;
+    });
+    const endDrag = () => {
+      if (!dragging) return;
+      dragging = false;
+      if (win && !reduceMotion) play(lastT);
+    };
+    track.addEventListener('pointerup', endDrag);
+    track.addEventListener('pointercancel', endDrag);
+    track.addEventListener('keydown', (ev) => {
+      if (!win) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); mountHero(); } return; }
+      const step = ev.shiftKey ? 1 / FPS : 0.5;
+      let t = null;
+      if (ev.key === 'ArrowLeft' || ev.key === 'ArrowDown') t = Math.max(0, lastT - step);
+      else if (ev.key === 'ArrowRight' || ev.key === 'ArrowUp') t = Math.min(DUR, lastT + step);
+      else if (ev.key === 'Home') t = 0;
+      else if (ev.key === 'End') t = DUR;
+      else if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); if (raf === null && !reduceMotion) play(lastT); else stop(); return; }
+      if (t !== null) { ev.preventDefault(); stop(); showT(t); }
+    });
+    // a keyboard scrub parks the film; leaving the control lets it run again
+    track.addEventListener('blur', () => { if (win && raf === null && !dragging && !reduceMotion) play(lastT); });
+  }
+
+  // stop feeding it when it is off screen; the contract makes this free
+  const inst = document.querySelector('.instrument');
+  if (inst && 'IntersectionObserver' in window) {
+    new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { if (win && raf === null && !dragging && !reduceMotion) play(lastT); }
+        else stop();
+      });
+    }, { threshold: 0.05 }).observe(inst);
   }
 
   /* ---------- film lightbox ---------- */

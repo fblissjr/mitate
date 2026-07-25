@@ -9,6 +9,9 @@ make the record say things that never happened. The rename and repo split are
 
 ## unreleased
 
+### added
+- **The hero's timeline is an input now: drag t and the scene follows.** The track is a real slider (pointer + keyboard, `role="slider"`) — a drag pauses the clock and drives `seekTo` with the dragged t, so the readout, the marker and the rendered frame agree by construction at any point you choose; release resumes from where you let go. On touch devices nothing mounts until the first touch of the track; while the scene warms the axis says "loading the scene…" and the numbers hold rather than move against a still. Under reduced motion, scrubbed frames render (user-driven, not autoplay) but nothing plays by itself. Verified: drag-to-50% reads exactly t 8.250s / beat 3/5 / frame 00247, Shift+arrow steps one frame, and a touch tap mounts, holds honestly, then plays from the tapped t.
+
 ### changed
 - **On a phone, tapping a film opens it directly instead of in the lightbox — measured, not assumed.** The same scene reaches `sceneReady` in 5-6s as a top-level document on iOS 26 and takes over 20s inside the lightbox iframe. Safari gives an iframe a far smaller budget; it is the same effect that left an offscreen iframe never becoming ready at all under mobile WebKit. Coarse-pointer taps now open the film, and the badge says "open full size" there instead of "preview". The lightbox stays on desktop, where it is fast and keeps you in the gallery.
 - **The hero had grown past the fold.** At 906 characters it pushed the instrument — the thing the page exists to show — off-screen at both phone and desktop widths, needing 1.14-1.26 viewports of scrolling to reach. Trimmed to 411; the instrument now paints on load at both sizes. The cut keeps "there is no input format" and the 見立て line and drops the aspirational passage, which the "where it is" card already carries.

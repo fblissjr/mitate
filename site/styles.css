@@ -142,7 +142,10 @@ h1 .fn{font-family:var(--mono);font-weight:600;letter-spacing:-0.02em;color:var(
 .rr b.pass{color:var(--blue-ink)}
 .inst-axis{border-top:1px solid var(--line);padding:13px 16px;background:var(--paper)}
 .axis-label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.66rem;color:var(--muted);margin-bottom:.5rem}
-.track{position:relative;height:24px}
+.track{position:relative;height:24px;cursor:grab;touch-action:none}
+.track:active{cursor:grabbing}
+.track:focus-visible{outline:2px solid var(--blue);outline-offset:5px}
+@media(pointer:coarse){.track{height:34px}}
 .track .base{position:absolute;top:50%;left:0;right:0;height:1px;background:var(--ink)}
 .tick{position:absolute;top:calc(50% - 4px);width:1px;height:8px;background:var(--line)}
 .tick.maj{height:15px;top:calc(50% - 7px);background:var(--dim)}

@@ -419,12 +419,69 @@ converge alone — delegate a review."* **That sentence can only be written if A
 ships**, which is what makes item 4's dependency on {0, 2} real rather than
 cosmetic.
 
-*Owner's call, deliberately surfaced:* the agent carries no `model` frontmatter,
-so it inherits the session model by design — its output is what a human acts on.
-That is a reason to make invocation **opt-in and routed**, not a reason to keep
-it unreachable, and the gate requirement cuts against maintainer-only. Decide
-default-on versus opt-in explicitly. `control-builder` and `doc-claim-auditor`
-are maintainer tools and stay repo-local; only the reviewer has users outside.
+**Decided: opt-in, routed at the saturation point. Ship `control-builder` with
+it; `doc-claim-auditor` stays repo-local.**
+
+*Why opt-in rather than default.* The ecosystem already made this call on this
+exact shape one day earlier — an always-on "identify what you'd do differently"
+rule was replaced by on-demand skills, because a standing elicitation beats its
+own escape hatch and invents findings on trivial work. A default-on reviewer is
+that rule with a render budget: it would fire on a 12-second chart with one
+locked shot. And the cost that decides it is not tokens — **a default reviewer
+quietly makes looking someone else's job**, and `method.md`'s whole thesis is
+that looking is the method. Eroding that erodes the practice the skill is built
+on. The failure was never that it defaulted off; it was that it was
+unmentionable.
+
+*The trigger, which is the actual design decision.* Not "before delivery" — the
+precise moment is **when your own rounds stop finding things**. That is where the
+long film stopped and shipped two defects; it is where menagerie's author stopped
+and had five caught. Self-review saturating is not convergence, it is the point
+where an independent pass has yield and only an independent pass does. So it
+belongs in step 3 as the loop's **exit condition**, not as another command:
+
+> *You have stopped finding things. That is when to delegate a review, not when
+> to ship.*
+
+*The policy is already written — shipping makes it compliable, not new.*
+`plan.md:460` already requires a reviewer pass for anything entering `examples/`.
+So there are two tiers and they are consistent: **mandatory at the examples gate,
+opt-in at saturation for everyone else.** Say it that way in the changelog, or it
+reads as added ceremony rather than a closed gap.
+
+*Ship `control-builder` too, and decide the surface once rather than per agent.*
+The structural cost is the **first** agent — a new `plugin/agents/` subtree, new
+plugin content in the cascade, the pointer rewrite, joining the audit surface.
+The second costs a pointer rewrite and a routing line. `control-builder` is not a
+maintainer tool: its brief is *"delegate when something is about to be trusted —
+a new check, a threshold, a 'this technique helps' belief, or a green result on a
+scene you expected to be broken"*, which is `method.md`'s build-the-control
+discipline — a **shipped** discipline — packaged as an agent. All four of this
+session's errors were control failures rather than review failures, and its own
+brief names the mode verbatim: *"a weak control that passes is worse than no
+control."* The frontmatter already sorts the three: `control-builder` and
+`film-reviewer` inherit the session model as judgment tasks; `doc-claim-auditor`
+pins `model: sonnet` as mechanical. **The two judgment agents are exactly the two
+that face authors.**
+
+The two agents route to different moments, which removes any ambiguity about
+which to reach for: the reviewer at the end of the review loop (step 3,
+saturation), `control-builder` when a green result is about to be trusted
+(step 4, and whenever a threshold or bracket is set). Both routing lines must
+state plainly that they spend a model call the user did not budget for —
+`control-builder` runs things, so it may cost more per invocation than the
+reviewer.
+
+`doc-claim-auditor` stays repo-local: it audits `references/*.md` against code,
+which installed users do not maintain, and the remit extension found above (code
+comments asserting enforcement) is still a sweep over *this skill's* code.
+
+*One honesty fix that routing does not cover, and should land with A0.* Whether
+or not a user opts in, they will compare their film to the shipped examples.
+**Say in `examples/README.md` that the shipped films had an independent reviewer
+pass, and what it caught.** Without that line, the misattribution survives the
+routing fix: a user who declines the delegation and finds their film weaker still
+concludes their judgment is worse.
 
 ### A1. `build.js probe <scene> <t> '<expr>'`
 
@@ -1002,7 +1059,14 @@ that is what the signature invites.
 
 **Cheapest possible intervention, and the moment is now:** make the seam *visible*
 without implementing the split — `setCamera` takes a state object that today
-contains only `{t}`. Mechanically provable byte-identical, no behaviour change,
+contains only `{t}`. The viewer's offset then becomes `state.view`, which the
+timeline driver simply omits — and `setCamera` needs **zero modification**, so
+Phase 6's gate is met by construction rather than by argument (C0.4).
+
+**One discipline keeps the place from rotting:** a state object invites becoming
+a bag. The driver owns what goes in, and **the kernel never reads anything the
+timeline driver cannot produce.** Without that rule, `state` is a global with
+better manners and the split is back to being discipline. Mechanically provable byte-identical, no behaviour change,
 and it converts a discipline into a place. Do it inside the Track D batched
 release, because it touches the same 8 files and would otherwise be a ninth
 cascade later. After Phase 3 and 4 the same change costs several times more.
@@ -1048,10 +1112,22 @@ close-up where it was authored, which is the same shape as the documented
 "silhouette failure is invisible at the size you are authoring at." The squint
 strip is whole-frame and cannot see a face.
 
+The rule generalises past faces: **a feature is validated at the rung it will be
+seen at, not the rung it is authored at — and the authoring rung is always
+tighter.**
+
 That belongs in `characters.md` before Phase 3 designs the basis, not after
-`the-briefing` rediscovers it. It also implies a Phase 3 instrument nobody has
-scoped: **a squint pass at face scale**, since the existing one structurally
-cannot reach the feature Phase 3 exists to build.
+`the-briefing` rediscovers it. And the instrument it implies is not a squint pass
+— it is a **rung ladder**: `build.js ladder <scene> <subject> <t>`, the same
+declared sub-subject framed at CU / MCU / MS / FSA and tiled. `sheet`'s shape,
+over rungs instead of over beats. It is nearly free because every part exists:
+the solver already does rungs, `SUBJECTS` already resolves any declared name (so
+a `face` sub-subject is just another entry), and the tiling is `sheet`'s ffmpeg
+call.
+
+Scope it before Phase 3 designs the morph basis, because it changes what the
+basis must survive: **expressions that read at CU are the easy case, and the gate
+should be MS.**
 
 ### A control rule the project does not have
 

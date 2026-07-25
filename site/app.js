@@ -31,7 +31,7 @@
   // thesis stated in the one place a visitor actually looks.
   //
   // gearbox is the hero because it is the cheapest to warm: 1.1s to sceneReady
-  // against 18-20s for the character films, measured in WebKit. A hero that
+  // against 4-7s for the character films, measured in WebKit. A hero that
   // takes twenty seconds to start is not a hero.
   // These are gearbox's OWN numbers, not chosen ones: 16.5s of beats
   // (2.5/3.2/3.6/3.4/3.8, accumulating to BEAT_STARTS) shot at the pipeline's
@@ -153,7 +153,7 @@
     if (old) old.remove();
     // One scene at a time, loaded on demand, and nothing shown until it is
     // actually watchable. `load` fires while the canvas is still blank —
-    // pre-warm is 1.1s for gearbox and 18-20s for the character films — so the
+    // pre-warm is 1.1s for gearbox and 4-7s for the character films — so the
     // loading state waits for sceneReady instead of lying about it.
     const frame = document.createElement('iframe');
     frame.setAttribute('title', film.title);

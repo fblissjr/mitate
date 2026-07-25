@@ -12,7 +12,7 @@
 <link rel="preload" href="fonts/archivo-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <!-- the hero mounts this scene on load, so fetch it with the page -->
 <link rel="preload" href="films/gearbox.html" as="fetch" crossorigin>
-<link rel="stylesheet" href="styles.css?v=16">
+<link rel="stylesheet" href="styles.css?v=17">
 </head>
 <body>
 <script>document.documentElement.classList.add('js')</script>
@@ -44,8 +44,9 @@
       <span>zero assets</span>
     </div>
     <h1 class="reveal">One file. One function <span class="fn">f(t)</span>. Frame-exact.</h1>
-    <p class="hero-lede reveal">Ask for a scene — from a prompt, a document, a codebase, an image, even a video it re-stages rather than edits — and it writes <b>an animated three.js scene as native HTML</b>. One file, opens in any browser. Not a video: there is no player and no build step, and the geometry is drawn live on every frame.</p>
-    <p class="hero-sub reveal"><b>mitate</b> — 見立て, to see one thing as another: a 200-page terms of service, explained by a figure who keeps falling over. Explainer, cutscene, comedy short, chart — only the subject changes. Deterministic, so the same <span class="mono">t</span> always renders the same frame.</p>
+    <p class="hero-lede reveal">Ask for a scene and it writes <b>an animated three.js scene as native HTML</b> — one file, opens in any browser. Not a video: no player, no build step, and the geometry is drawn live on every frame.</p>
+    <p class="hero-sub reveal"><b>There is no input format.</b> You hand it whatever context your agent can already read — a prompt, a repo, a spec, a paper, a screenshot, a stack trace, the thread you just pasted in — and it decides what that should look like with geometry and time. The skill isn't parsing your file; the agent already read it.</p>
+    <p class="hero-sub reveal"><b>mitate</b> — 見立て, to see one thing as another. That is the whole move: a 200-page terms of service, explained by a figure who keeps falling over. A dependency graph as a mechanism that turns. A postmortem as a comedy short, if the postmortem deserves it. Explainer, cutscene, chart — only the subject changes. Deterministic, so the same <span class="mono">t</span> always renders the same frame.</p>
     <div class="hero-actions reveal">
       <a class="btn btn-primary" href="#films">See the films <span aria-hidden="true">→</span></a>
       <a class="btn btn-ghost" href="#method">How it's directed</a>
@@ -134,7 +135,7 @@
       <div class="claim reveal">
         <div class="n">what it can't do</div>
         <h2>No footage, no faces, no sound.</h2>
-        <p>This is three.js with no image textures — flat color, node math, GPU noise — so it is stylized by construction: <b>it cannot be photoreal and it cannot use footage</b>. What that look carries is direction, not rendering: the same kit already does silent-comedy timing and invented creatures, and bake-time simulation is on the roadmap. It will not edit an existing video, a screen recording or a slide deck. The films are silent. Faces are not built yet. Heavy scenes spend <b>18–20 seconds compiling shaders</b> on a first visit, and captions stop being legible below about 700px of frame width.</p>
+        <p>This is three.js with no image textures — flat color, node math, GPU noise — so it is stylized by construction: <b>it cannot be photoreal and it cannot use footage</b>. What that look carries is direction, not rendering: the same kit already does silent-comedy timing and invented creatures, and bake-time simulation is on the roadmap. It will not edit an existing video, a screen recording or a slide deck. The films are silent. Faces are not built yet. The character films spend <b>4 to 7 seconds compiling shaders</b> on a first visit, and captions stop being legible below about 700px of frame width.</p>
       </div>
       <div class="claim reveal">
         <div class="n">where it is</div>
@@ -150,7 +151,7 @@
   <div class="wrap">
     <div class="sec-head reveal"><span class="idx">02</span><span>The films</span><span class="ln"></span><span>five works · one pipeline</span></div>
     <h2 class="sec-title reveal">Lit on the stage. Each one a single file that plays from disk.</h2>
-    <p class="sec-lede reveal">Every title below is one self-contained HTML page — three.js embedded, zero fetched assets. <b>These run 12 to 21 seconds</b> — a film lasts exactly as long as the beats written for it; these are kept short so every example opens live everywhere. The thumbnails are poster frames rendered from the scenes; open a film and the scene itself runs. Each is tagged with the <b>primitives an agent composed it from</b>.</p>
+    <p class="sec-lede reveal">Every title below is one self-contained HTML page — three.js embedded, zero fetched assets. <b>These run 12 to 21 seconds</b> — a film lasts exactly as long as the beats written for it; these are kept short so every example opens live everywhere. The thumbnails are poster frames rendered from the scenes; open a film and the scene itself runs. Each is tagged with the <b>primitives an agent composed it from</b>. This is what composes easily today — the <a href="#roadmap">roadmap</a> is the rest of it, abstracted one primitive at a time.</p>
 
     <div class="films">
 
@@ -405,6 +406,6 @@ phase = { HL:<span class="c-v">0</span>,  FL:<span class="c-v">.25</span>,
   </div>
 </div>
 
-<script src="app.js?v=16"></script>
+<script src="app.js?v=17"></script>
 </body>
 </html>

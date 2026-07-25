@@ -160,7 +160,7 @@ Two second-order wins, both larger than they look:
 The cost is real and worth stating: a live scene boots in about a second where a
 video paints its poster instantly, and each one holds a GPU context. So the
 showcase mounts almost nothing: one driven hero scene on capable desktops
-(gearbox — the cheapest warm, ~1.1s to `sceneReady` against 18-20s for the
+(gearbox — the cheapest warm, ~1.1s to `sceneReady` against 4-7s for the
 character films), and every other scene only on an explicit click, unmounted on
 close. Under `prefers-reduced-motion`, and on coarse-pointer devices — where an
 offscreen-composited iframe was measured never reaching `sceneReady` — the hero

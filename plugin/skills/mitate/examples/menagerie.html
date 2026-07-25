@@ -1162,28 +1162,30 @@ function addFur(meshObj,o={}){
   const L=o.layers||8,len=o.len===undefined?.18:o.len;
   const freq=o.freq||16,cover=o.cover===undefined?.72:o.cover;
   const col=new THREE.Color(o.color!==undefined?o.color:(meshObj.material.color||0x808080));
-  const shells=[];
-  for(let i=1;i<=L;i++){
-    const u=i/L;
-    const g=meshObj.geometry.clone();
-    const p=g.attributes.position,n=g.attributes.normal;
-    for(let v=0;v<p.count;v++){
-      p.setXYZ(v,p.getX(v)+n.getX(v)*len*u,
-                 p.getY(v)+n.getY(v)*len*u,
-                 p.getZ(v)+n.getZ(v)*len*u);
-    }
-    p.needsUpdate=true;
-    const m=new THREE.MeshStandardNodeMaterial({roughness:o.roughness===undefined?.85:o.roughness});
-    const noise=THREE.mx_fractal_noise_float(THREE.positionLocal.mul(freq),2,2.0,.5,1.0).mul(.5).add(.5);
-    // strand coverage: keep where noise clears a floor that rises with u
-    m.opacityNode=THREE.step(THREE.float(lerp(1-cover*.9,1-cover*.25,1-u)),noise);
-    m.alphaTestNode=THREE.float(.5);            // node slot, not the property — the reliable interface
-    m.colorNode=THREE.color(col.getHex()).mul(lerp(.55,1.05,u));  // dark roots, lit tips
-    const sh=new THREE.Mesh(g,m);
-    sh.castShadow=false;sh.receiveShadow=false;sh.frustumCulled=false;
-    meshObj.add(sh);shells.push(sh);
-  }
-  return shells;
+  // ONE program for all L shells. The shell index rides instanceIndex, so the
+  // root-to-tip gradient is an expression evaluated per instance instead of L
+  // separately-compiled node graphs. This is not a micro-optimisation: each
+  // distinct noise-carrying program was measured at ~1-1.6s of driver compile
+  // time, and this function used to mint L of them per furred mesh.
+  const u=THREE.float(THREE.instanceIndex).add(1).div(L);
+  // Displacement moves out of a JS per-vertex loop into the vertex stage. Noise
+  // samples the DISPLACED point, which is what the pre-displaced geometry did —
+  // sampling the undisplaced position would change the strand pattern.
+  const pos=THREE.positionLocal.add(THREE.normalLocal.mul(len).mul(u));
+  const m=new THREE.MeshStandardNodeMaterial({roughness:o.roughness===undefined?.85:o.roughness});
+  m.positionNode=pos;
+  const noise=THREE.mx_fractal_noise_float(pos.mul(freq),2,2.0,.5,1.0).mul(.5).add(.5);
+  // strand coverage: keep where noise clears a floor that rises with u
+  m.opacityNode=THREE.step(THREE.mix(THREE.float(1-cover*.9),THREE.float(1-cover*.25),u.oneMinus()),noise);
+  m.alphaTestNode=THREE.float(.5);            // node slot, not the property — the reliable interface
+  m.colorNode=THREE.color(col.getHex()).mul(THREE.mix(THREE.float(.55),THREE.float(1.05),u));  // dark roots, lit tips
+  const sh=new THREE.InstancedMesh(meshObj.geometry,m,L);
+  const I=new THREE.Matrix4();                // identity: the shell offset lives in positionNode
+  for(let i=0;i<L;i++)sh.setMatrixAt(i,I);
+  sh.instanceMatrix.needsUpdate=true;
+  sh.castShadow=false;sh.receiveShadow=false;sh.frustumCulled=false;
+  meshObj.add(sh);
+  return [sh];
 }
 
 /* furCharacter(rig, parts, opts): fur every mesh of the named parts —

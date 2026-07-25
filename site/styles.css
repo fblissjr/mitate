@@ -101,8 +101,8 @@ h2.sec-title{font-weight:700;letter-spacing:-0.03em;line-height:1.02;font-size:c
 h1{font-weight:800;letter-spacing:-0.045em;line-height:0.96;font-size:clamp(2.6rem,7.5vw,5.4rem);max-width:15ch;text-wrap:balance}
 h1 .fn{font-family:var(--mono);font-weight:600;letter-spacing:-0.02em;color:var(--blue)}
 .hero-lede{margin-top:1.7rem;max-width:56ch;font-size:clamp(1.08rem,1.7vw,1.32rem);color:var(--muted);line-height:1.5}
-.hero-sub{max-width:62ch;margin-top:.85rem;font-size:.95rem;line-height:1.6;color:var(--muted)}
-.hero-lede b{color:var(--ink);font-weight:600}
+.hero-sub{max-width:62ch;margin-top:.85rem;font-size:clamp(1rem,1.35vw,1.12rem);line-height:1.6;color:var(--muted)}
+.hero-lede b,.hero-sub b{color:var(--ink);font-weight:600}
 .hero-actions{margin-top:2rem;display:flex;flex-wrap:wrap;gap:.8rem}
 .btn{font-family:var(--sans);font-weight:600;font-size:.95rem;text-decoration:none;padding:.72rem 1.25rem;border-radius:3px;transition:transform .2s var(--ease),background .2s,box-shadow .2s;display:inline-flex;align-items:center;gap:.5rem}
 .btn-primary{background:var(--ink);color:var(--paper)}

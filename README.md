@@ -34,8 +34,8 @@ the same `t` either matches the last run or it does not.
 **What it can't do.** Procedural geometry is stylized by construction — it cannot
 be photoreal and it cannot use footage. It will not edit an existing video, a
 screen recording, or a slide deck. The films are silent. Faces are not built yet.
-Heavy scenes spend 18–20 seconds compiling shaders on a first visit, and captions
-stop being legible below roughly 700px of frame width.
+The character films spend 4 to 7 seconds compiling shaders on a first visit, and
+captions stop being legible below roughly 700px of frame width.
 
 **Where it is.** Alpha, genuinely unfinished. Everything here runs 12 to 21
 seconds; longer is possible by construction but has not been built or tested.

@@ -79,14 +79,20 @@
         </div>
       </div>
       <div class="inst-axis">
-        <div class="axis-label"><span>t = 0.000s</span><span>timeline · a pure function of t</span><span>16.500s</span></div>
+        <div class="axis-label"><span>t = 0.000s</span><span>the film's five beats, as written · a pure function of t</span><span>16.500s</span></div>
         <div class="track">
           <div class="base"></div>
-          <div class="tick maj" style="left:0"></div><div class="tick" style="left:10%"></div><div class="tick" style="left:20%"></div>
-          <div class="tick maj" style="left:30%"></div><div class="tick" style="left:40%"></div><div class="tick" style="left:50%"></div>
-          <div class="tick maj" style="left:60%"></div><div class="tick" style="left:70%"></div><div class="tick" style="left:80%"></div>
-          <div class="tick maj" style="left:90%"></div><div class="tick maj" style="left:100%"></div>
+          <!-- boundaries are gearbox's real beats table: 2.5 + 3.2 + 3.6 + 3.4 + 3.8 = 16.5s -->
+          <div class="tick maj" style="left:0"></div>
+          <div class="tick maj" style="left:15.152%"></div>
+          <div class="tick maj" style="left:34.545%"></div>
+          <div class="tick maj" style="left:56.364%"></div>
+          <div class="tick maj" style="left:76.97%"></div>
+          <div class="tick maj" style="left:100%"></div>
           <div class="marker" id="marker" style="left:0%"></div>
+        </div>
+        <div class="beat-names">
+          <span style="width:15.152%">title</span><span style="width:19.394%">input</span><span style="width:21.818%">mesh</span><span style="width:20.606%">output</span><span style="width:23.03%">ratio</span>
         </div>
       </div>
     </div>
@@ -263,7 +269,7 @@
 
     <!-- primitives grid -->
     <div class="primgrid reveal">
-      <div class="primcard"><div class="pk">BEATS[]</div><h3>The beats table</h3><p>The only place a timestamp exists. Named beats with accumulating durations; retiming is one edit. Every caption and camera keyframe derives from it.</p></div>
+      <div class="primcard"><div class="pk">BEATS[]</div><h3>The beats table</h3><p>A film is written as a short list of named moments — beats — each with a duration and an optional caption. The only place a timestamp exists: retiming one beat is one edit, and every caption and camera keyframe derives from it.</p></div>
       <div class="primcard"><div class="pk">buildWorlds()</div><h3>Procedural geometry</h3><p>Every shape authored in code, zero fetched assets. Even physics is closed-form — a drop is <span class="mono">y₀ − k·(t−t₀)²</span>, evaluated from t, never integrated.</p></div>
       <div class="primcard"><div class="pk">TSL + MaterialX</div><h3>Node materials</h3><p>Cel, subsurface, physical glass, driven through node slots. GPU-computed MaterialX noise gives surfaces detail with no image files.</p></div>
       <div class="primcard"><div class="pk">SHOTS[]</div><h3>The shot solver</h3><p>A cinematographer's vocabulary — subject, size ladder, angle, lens, cut — compiled onto the camera per frame. Raw keyframes are gone on purpose.</p></div>

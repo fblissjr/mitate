@@ -1,8 +1,9 @@
 # mitate
 
 A Claude Code skill that writes **an animated three.js scene as native HTML**.
-Ask for one — from a description, a document, or a codebase — and you get a
-single file that opens in any browser. Not a video: no player, no build step,
+There is no input format — whatever context your agent can already read is
+enough: a prompt, a document, a codebase, a screenshot. Ask for one and you get
+a single file that opens in any browser. Not a video: no player, no build step,
 and the geometry is drawn live on every frame.
 
 It is a pipeline an agent drives rather than a one-shot generator: it reshoots
@@ -31,16 +32,19 @@ diffs and versions like source. It renders at any resolution from the same file,
 because nothing is baked in. And determinism makes a regression byte-detectable:
 the same `t` either matches the last run or it does not.
 
-**What it can't do.** Procedural geometry is stylized by construction — it cannot
-be photoreal and it cannot use footage. It will not edit an existing video, a
+**What it can't do.** This is three.js with no image textures — flat color, node
+math, GPU noise — so it is stylized by construction: it cannot be photoreal, and
+no frame of footage ever appears in a film. It will not edit an existing video, a
 screen recording, or a slide deck. The films are silent. Faces are not built yet.
-The character films spend 4 to 5 seconds compiling shaders on a first visit, and
-captions stop being legible below roughly 700px of frame width.
+The character films spend 4 to 5 seconds compiling shaders on a first visit on
+capable hardware — slower devices, longer — and captions stop being legible below
+roughly 700px of frame width.
 
 **Where it is.** Alpha, genuinely unfinished. Everything here runs 12 to 21
-seconds; longer is possible by construction but has not been built or tested.
+seconds — kept short so the examples open as live HTML on ordinary devices;
+nothing in the contract caps duration, but longer has not been shipped.
 Characters are one skeleton family. I don't know yet whether this is useful — it
-is interesting to see what it can do, and that is the honest reason it is public.
+is fun to tinker with and see what it can do, and that is why it is public.
 
 ## Install
 
@@ -54,9 +58,9 @@ approval process flows"*, *"make a boss-intro cutscene for this creature"*,
 *"turn docs/data-flywheel.md into an explainer"*, *"make this joke an animated
 meme"*.
 
-The shipped examples run 12 to 21 seconds. A scene is as long as its beats table
-adds up to, so there is no built-in ceiling — but nothing longer has been built
-or gated yet, so treat longer as untested rather than promised.
+The shipped examples run 12 to 21 seconds. A film lasts exactly as long as the
+beats written for it, so there is no built-in ceiling — but nothing longer has
+been built or gated yet, so treat longer as untested rather than promised.
 
 **WebGPU is not required** — scenes use three.js `WebGPURenderer`, which falls
 back to WebGL2 transparently, so any WebGL2 browser plays one.
@@ -64,7 +68,8 @@ back to WebGL2 transparently, so any WebGL2 browser plays one.
 **The toolchain is local, and how much of it you need depends on the backend.**
 The Canvas2D template is born self-contained and needs nothing at all. A three.js
 scene needs `bun` to embed three into the file — skipping that is recoverable,
-since every command that opens a scene embeds automatically. Rendering to MP4 or
+since every `build.js` command embeds automatically (a direct `shoot.js` run is
+the one path that does not). Rendering to MP4 or
 AVIF, and running the review instruments, needs `bun`, ffmpeg and a Chromium.
 See [`plugin/README.md`](plugin/README.md#requirements).
 

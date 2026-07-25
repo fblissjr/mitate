@@ -12,7 +12,7 @@
 <link rel="preload" href="fonts/archivo-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <!-- the hero mounts this scene on load, so fetch it with the page -->
 <link rel="preload" href="films/gearbox.html" as="fetch" crossorigin>
-<link rel="stylesheet" href="styles.css?v=21">
+<link rel="stylesheet" href="styles.css?v=22">
 </head>
 <body>
 <script>document.documentElement.classList.add('js')</script>
@@ -134,7 +134,7 @@
       <div class="claim reveal">
         <div class="n">what it can't do</div>
         <h2>No footage, no faces, no sound.</h2>
-        <p>This is three.js with no image textures — flat color, node math, GPU noise — so it is stylized by construction: <b>it cannot be photoreal, and no frame of footage ever appears in a film</b>. What that look carries is direction, not rendering: the same kit already does silent-comedy timing and invented creatures, and bake-time simulation is on the roadmap. It will not edit an existing video, a screen recording or a slide deck — hand it footage and the most an agent could do is re-stage what it shows as geometry, never play it. The films are silent. Faces are not built yet. The character films spend <b>4 to 7 seconds compiling shaders</b> on a first visit, and captions stop being legible below about 700px of frame width.</p>
+        <p>This is three.js with no image textures — flat color, node math, GPU noise — so it is stylized by construction: <b>it cannot be photoreal, and no frame of footage ever appears in a film</b>. What that look carries is direction, not rendering: the same kit already does silent-comedy timing and invented creatures, and bake-time simulation is on the roadmap. It will not edit an existing video, a screen recording or a slide deck — hand it footage and the most an agent could do is re-stage what it shows as geometry, never play it. The films are silent. Faces are not built yet. The character films spend <b>4 to 5 seconds compiling shaders</b> on a first visit on capable hardware — slower devices, longer — and captions stop being legible below about 700px of frame width.</p>
       </div>
       <div class="claim reveal">
         <div class="n">where it is</div>
@@ -363,6 +363,7 @@ phase = { HL:<span class="c-v">0</span>,  FL:<span class="c-v">.25</span>,
   <div class="wrap">
     <h2 class="reveal">Hand an agent the primitives. Get back <span class="fn">f(t)</span>.</h2>
     <p class="reveal">mitate installs as a Claude Code plugin. Point it at any input, in any register, and it directs — spec, scaffold, review, gate, deliver — then re-directs until the film is yours.</p>
+    <p class="reveal cta-aim">Where it is pointed: a 200-page terms of service, explained by a figure who keeps falling over. That one is reachable rather than shipped — expect to iterate, and to build a primitive or two on the way. The films above are what today's primitives compose without a fight.</p>
     <div class="install reveal">
       <div class="install-h"><span>terminal</span><span>claude code</span></div>
       <pre><span class="cmd-p">$</span> /plugin marketplace add fblissjr/mitate
@@ -405,6 +406,6 @@ phase = { HL:<span class="c-v">0</span>,  FL:<span class="c-v">.25</span>,
   </div>
 </div>
 
-<script src="app.js?v=21"></script>
+<script src="app.js?v=22"></script>
 </body>
 </html>

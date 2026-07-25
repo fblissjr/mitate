@@ -289,6 +289,7 @@ h1 .fn{font-family:var(--mono);font-weight:600;letter-spacing:-0.02em;color:var(
 .btn-amber:hover{transform:translateY(-2px);box-shadow:0 12px 28px -12px var(--amber)}
 .btn-stage-ghost{border:1px solid var(--hair);color:var(--stage-ink)}
 .btn-sm{font-size:.86rem;padding:.5rem .9rem}
+.cta-aim{margin-top:.9rem;max-width:58ch;color:var(--stage-mut)}
 .btn-stage-ghost:hover{border-color:var(--amber-dim)}
 
 /* ============================ footer ============================ */

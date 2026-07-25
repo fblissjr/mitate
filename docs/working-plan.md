@@ -419,19 +419,33 @@ converge alone — delegate a review."* **That sentence can only be written if A
 ships**, which is what makes item 4's dependency on {0, 2} real rather than
 cosmetic.
 
-**Decided: opt-in, routed at the saturation point. Ship `control-builder` with
-it; `doc-claim-auditor` stays repo-local.**
+**Decided: prescribed for the film tier, exempt for the chart tier, triggered at
+saturation, and the prescription itself is gated on a control. Ship
+`control-builder` with it; `doc-claim-auditor` stays repo-local.**
 
-*Why opt-in rather than default.* The ecosystem already made this call on this
-exact shape one day earlier — an always-on "identify what you'd do differently"
-rule was replaced by on-demand skills, because a standing elicitation beats its
-own escape hatch and invents findings on trivial work. A default-on reviewer is
-that rule with a render budget: it would fire on a 12-second chart with one
-locked shot. And the cost that decides it is not tokens — **a default reviewer
-quietly makes looking someone else's job**, and `method.md`'s whole thesis is
-that looking is the method. Eroding that erodes the practice the skill is built
-on. The failure was never that it defaulted off; it was that it was
-unmentionable.
+*An earlier draft of this section said opt-in, on the ecosystem's own precedent —
+an always-on "identify what you'd do differently" rule replaced by on-demand
+skills, because a standing elicitation beats its escape hatch and invents
+findings on trivial work. **That argument does not transfer, and the reason
+matters**: that rule fired on every task. Step 3 fires only when someone is
+already building a film, so the population is filtered before the prescription is
+reached.*
+
+*The second argument for opt-in was that a default reviewer **makes looking
+someone else's job**, eroding the practice `method.md` calls the method. **That
+one dies on placement rather than on population.** The trigger is "when your own
+rounds stop finding things," which cannot be reached without having looked — so
+the prescription appends to the author's looking instead of substituting for it.
+The erosion risk belongs to a reviewer named as a step in a list, which an author
+could run first and skip the looking. It is not a property of prescribing.*
+
+*What survives from that position is one carve-out, and it survives in the
+project's own vocabulary rather than as a scale threshold nobody has bracketed:*
+**exempt the chart tier.** `noise-chart.html` is a document — one locked head-on
+shot, gated on byte-comparison per backend — and has no composition, continuity
+or semantics axis in the sense the reviewer judges. Prescribing a judgment-model
+pass over a chart is the postmortem failure in miniature. The chart / showcase /
+film pipeline is already documented, so the carve-out costs nothing to state.
 
 *The trigger, which is the actual design decision.* Not "before delivery" — the
 precise moment is **when your own rounds stop finding things**. That is where the
@@ -442,6 +456,45 @@ belongs in step 3 as the loop's **exit condition**, not as another command:
 
 > *You have stopped finding things. That is when to delegate a review, not when
 > to ship.*
+
+*Findings are dispositioned, not obeyed — and without this the prescription
+inverts.* Both gate films had every HIGH accepted. Eventually an author gets a
+finding they disagree with, and with no convention there are two bad outcomes:
+defer to the agent (which is the erosion this section just argued placement
+prevents, arriving by another door), or silently drop it (and the finding is
+lost). **The repo already has the right convention** — 0.9.1's palette entry:
+*"Dispositioned, not fixed (recorded in the plan)… the palette moves into STYLE
+then."* That disposition carried a trigger, and the trigger fired two lineages
+later on the long film. That is the mechanism working end to end.
+
+So the routing line must say the findings are **dispositioned with a reason, not
+obeyed**. It preserves the author's authority, keeps the record, and it is the
+whole difference between a reviewer that assists judgment and one that replaces
+it.
+
+*The prescription is gated on a control, and the control is the point.* The yield
+evidence is **n=2, and both are maintainer films reviewed inside this repo by
+their own author.** Nobody has run the reviewer on a film built by a different
+agent following `SKILL.md` — which is exactly the population a `SKILL.md`
+prescription targets. Prescribing on that evidence would be the
+"instruments that generalise from a single sample" root cause, committed while
+writing the document that names it.
+
+**`circus.html` is that film and it has an answer key**: two defects a strip
+caught after eight rounds of author review missed them, plus roughly eight more
+the sheet caught along the way. One invocation says whether the yield generalises
+past an author reviewing work they were already close to.
+
+So split A0 in two:
+
+| step | gated on |
+|---|---|
+| **ship the agents** — pointer rewrite, `plugin/agents/`, cascade, delegation tier in `SKILL.md` | nothing. Reachability is right regardless of yield |
+| **prescribe at step 3** | the control coming back with meaningful yield on a non-maintainer film |
+
+If the control comes back thin, the answer is the offer-it wording rather than the
+prescription — and that is worth knowing before it is written into `SKILL.md`,
+not after.
 
 *The policy is already written — shipping makes it compliable, not new.*
 `plan.md:460` already requires a reviewer pass for anything entering `examples/`.

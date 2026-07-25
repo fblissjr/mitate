@@ -9,7 +9,11 @@ and the geometry is drawn live on every frame.
 It is a pipeline an agent drives rather than a one-shot generator: it reshoots
 parts, validates on three axes, and gets better over time. Every scene is
 deterministic — a pure function of time `t`, so the same `t` always renders the
-same frame.
+same frame. The whole surface tooling touches is a handful of `window.*`
+exports at the end of every scene — see the driver block in
+[`gearbox.html`](plugin/skills/mitate/examples/gearbox.html) (search for
+`window.seekTo`). The names are permanent; the list grows when a tool needs
+an export rather than a peek at scene internals.
 
 The tooling tries to abstract all this cleanly, but clean abstraction is nearly
 impossible here — so treat it as a bootstrap to personalize. When the film you

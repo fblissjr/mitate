@@ -12,7 +12,7 @@
 <link rel="preload" href="fonts/archivo-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <!-- the hero mounts this scene on load, so fetch it with the page -->
 <link rel="preload" href="films/gearbox.html" as="fetch" crossorigin>
-<link rel="stylesheet" href="styles.css?v=25">
+<link rel="stylesheet" href="styles.css?v=28">
 </head>
 <body>
 <script>document.documentElement.classList.add('js')</script>
@@ -337,6 +337,35 @@ phase = { HL:<span class="c-v">0</span>,  FL:<span class="c-v">.25</span>,
       <div class="layer emph"><div class="lname">driver</div><div class="ldesc">Produces the state stream. The <b>timeline driver</b> is <span class="mono">state = g(t)</span> from the beats — that is the film. An <b>input driver</b> (<span class="mono">state = g(events)</span>) reuses the same kernel later — that is the interactive spike.</div></div>
       <div class="layer"><div class="lname">contract</div><div class="ldesc"><span class="mono">seekTo · DURATION · BEATS · FRAME · sceneReady</span> — unchanged, implemented by the timeline driver. The one seam tooling is allowed to touch.</div></div>
       <div class="layer"><div class="lname">tooling</div><div class="ldesc">Build, shoot, smoke, instruments — talk <b>only</b> to the contract. Which is why the recorder and the live page can never disagree about <em>when</em>.</div></div>
+    </div>
+
+    <!-- the contract, shown rather than described -->
+    <div class="callout reveal">
+      <div class="callout-body">
+        <div class="ck">what it looks like</div>
+        <h3>A handful of window properties. That is the whole surface.</h3>
+        <p>Every scene ends by exporting the same few names — this is the driver block from <a href="https://github.com/fblissjr/mitate/blob/main/plugin/skills/mitate/examples/gearbox.html" rel="noopener">gearbox.html</a>, abridged to its shape. Everything the recorder, the gate, and this page's own hero can do, they do through these. The names are permanent — every tool depends on them — but the list grows: <span class="mono">FLASHES</span> and <span class="mono">SHOTS</span> joined the day a check needed them. When a tool is tempted to parse a scene's internals, the contract is missing an export.</p>
+      </div>
+      <div class="callout-code" aria-hidden="true">
+<span class="c-cm">// how every scene ends (abridged)</span>
+window.DURATION = TOTAL;
+window.BEATS    = BEATS;
+window.FRAME    = FRAME;
+window.FLASHES  = FLASHES;
+window.CAPFADE  = CONFIG.capFade;
+window.SHOTS    = SHOTS.map(<span class="c-cm">/*cuts*/</span>);
+
+<span class="c-cm">// the f in f(t)</span>
+window.seekTo = function (t) {
+  uTime.value = t;
+  setCamera(t); animate(t);
+  setOverlay(t);
+  pipeline.render();
+};
+window.stopPlayback =
+  function () { playing = false; };
+<span class="c-cm">// …sceneReady = true, once warm</span>
+</div>
     </div>
 
     <div class="facts reveal">

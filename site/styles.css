@@ -254,6 +254,7 @@ h1 .fn{font-family:var(--mono);font-weight:600;letter-spacing:-0.02em;color:var(
 .callout-body p b{color:var(--paper);font-weight:600}
 .callout-code{background:var(--stage-deep);border-left:1px solid var(--hair);padding:clamp(22px,2.6vw,32px);font-family:var(--mono);font-size:.8rem;line-height:1.75;color:var(--stage-mut);overflow-x:auto;white-space:pre;tab-size:2}
 .callout-code .c-cm{color:var(--stage-dim)}
+@media(max-width:560px){.callout-code{font-size:.68rem}}
 .callout-code .c-k{color:var(--amber)}
 .callout-code .c-v{color:var(--blue)}
 .callout-code .c-s{color:oklch(0.78 0.10 150)}

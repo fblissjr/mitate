@@ -54,7 +54,24 @@ evidence the spine could have, and it is historical rather than n=1** — it doe
 not merely assert that prose loses to friction, it is a recorded instance of
 this exact prose losing.
 
-Everything below is one of two interventions, and nothing else earns a slot:
+**The lineage supports a stronger statement, and it is the parent of the other
+two.** Three things that already existed were unreachable from where the work
+happened, and each was therefore re-derived, rediscovered, or never used:
+
+> **0. A practice, a decision, or a tool that cannot be reached from where the
+> work happens does not exist.**
+
+- A **technique** — `Box3` probes — documented with no tool. Re-derived, then
+  skipped for a whole film.
+- A **decision** — "the palette moves into `STYLE`, on this trigger" —
+  dispositioned in a plan nobody hits at authoring time. Rediscovered as a fresh
+  finding.
+- A **tool** — `film-reviewer`, which *gates two phases* and has the best measured
+  catch record in the project — not shipped, not routed, and unknown to the
+  people it was built for. See A0.
+
+Everything below is one of two interventions under that parent, and nothing else
+earns a slot:
 
 > **1. Make the correct move the cheap one.** A documented practice that costs
 > more than the mistake it prevents is not a practice, it is a wish.
@@ -121,7 +138,9 @@ information.
 | deferred: `shapes.md` | *"No content templates, scene presets, or genre scaffolds. This is the line that protects 'any scene you want'."* | inherited decline — **and a doctrinal one**, cited by the Anti-template principle |
 | deferred: 2D pan/zoom (owner's-call 4) | *"No 2D shot solver.* The film built to want one concluded the `{x,y,zoom}` rail was expressively sufficient" | inherited decline, with a recorded alternative |
 | Track C viewer | none in the hardening plan; **`museum-walk` in the portfolio** | Phase 6, arriving early |
-| A2 `transitions` | none found | genuinely new |
+| A2 `transitions` | **0.5.1** — smoke began sampling transition windows after review found no fixed-fraction sample ever landed in a blend window | **export shipped, the sweep did not** |
+| A0 ship `film-reviewer` | gate criterion at `plan.md:460`; catch record in 0.9.0 and 0.11.0 | **built, gate-required, never shipped or routed** |
+| D `STYLE.palette` | **0.9.1** — *"dispositioned, not fixed… the palette moves into STYLE"* when the first character bible pair arrives | **deferred decision, trigger fired** |
 
 Three of the deferred items turn out to be *inherited decisions with recorded
 reasoning*, which makes that list far more load-bearing than a set of
@@ -278,10 +297,11 @@ measuring instruments.
 
 | # | item | track | fenced | blocked by |
 |---|---|---|---|---|
+| **0** | **ship `film-reviewer` with the plugin** | **A** | no | — |
 | 1 | `build.js probe` | A | no | — |
 | 2 | `build.js transitions` | A | no | — |
-| 3 | self-reported elapsed + backend hint on every command | A | no | — |
-| 4 | `SKILL.md` step 3 rewrite (four findings) **+ the limit-wins tiebreaker** | B | no | **2** |
+| 3 | self-reported elapsed + backend hint + resolved binary | A | no | — |
+| 4 | `SKILL.md` step 3 rewrite **+ route to the reviewer + the limit-wins tiebreaker** | B | no | **0, 2** |
 | 5 | demote backend policy in `SKILL.md` | B | no | 3 |
 | 6 | provenance repairs (PNG home, 700px pointers, site row) | B | no | — |
 | 6b | **fix the false extent-check claim** in `solveShot`'s comment | B | no | — |
@@ -321,6 +341,54 @@ fence holds.
 
 These are the spine's first clause, and they are the highest-confidence items in
 the package because none of them rests on a single film.
+
+### A0. Ship `film-reviewer` with the plugin — the item that costs nothing to build
+
+**Ranked first under the reachability clause, and it reorders the rest of this
+track.** `plan.md:460` makes it a gate criterion — *"byte-deterministic both
+backends, film-reviewer-reviewed with all HIGH…"* — and the changelog credits it
+with the defects author-eyes missed on both Phase 2 gate films: menagerie's look
+beat entirely off-frame, its only closeup 70% void, a tail-wag spiking 5x, a
+breath holding every character 3-5% squashed from frame 0; bear-and-bees' contact
+z-axis miss *"faked by a lucky camera angle"* — instance five of the contact
+class — plus the flee clipping the hive and the comedy's face never facing the
+lens.
+
+**It lives at `.claude/agents/film-reviewer.md`, outside `plugin/`.** Verified:
+the plugin subtree ships `examples`, `references`, `SKILL.md`, `templates` and no
+agents; `SKILL.md` contains zero occurrences of "agent" or "reviewer". So the
+instrument two phase gates require is unavailable to anyone working from an
+installed plugin. Its own description says it reviews "using the shipped
+instruments" — it was written for exactly the context it cannot reach.
+
+**The mechanism of the gap is worth naming, because it is not an oversight.**
+`CLAUDE.md` invariant 3 forbids `SKILL.md` from citing any path outside its own
+subtree — the install cache has no `.claude/`, so such a pointer would dangle.
+Nobody writing `SKILL.md` could legally have added the route. **The invariant
+that prevents dangling pointers is also what prevented anyone noticing a missing
+capability**, and it means there is no doc-only fix: routing to the reviewer
+requires shipping it into `plugin/agents/`.
+
+The evidence for what it is worth is a controlled comparison this session
+produced by accident. Two films, both self-reviewed by their author over many
+rounds; one also got an independent reviewer pass and one did not. The one
+without shipped a prop occluding a face, a presence gate nobody watched, and a
+subject walking through geometry — defect classes matching menagerie's caught
+list nearly item for item. The difference was not diligence. It was access to an
+independent judge.
+
+Under the spine's third rule this outranks both new instruments: `probe` and
+`transitions` are instruments an agent runs; `film-reviewer` is the layer that
+decides *what to run and judges the output* — the attention-allocation layer the
+spine names as the scarce resource. **Building instruments for a judge that
+cannot be reached is the wrong order.**
+
+*Owner's call, deliberately surfaced:* the agent carries no `model` frontmatter,
+so it inherits the session model by design — its output is what a human acts on.
+That is a reason to make invocation **opt-in and routed**, not a reason to keep
+it unreachable, and the gate requirement cuts against maintainer-only. Decide
+default-on versus opt-in explicitly. `control-builder` and `doc-claim-auditor`
+are maintainer tools and stay repo-local; only the reviewer has users outside.
 
 ### A1. `build.js probe <scene> <t> '<expr>'`
 
@@ -371,7 +439,12 @@ windows by hand does not scale, so it gets run once and forgotten.
 
 **The windows are not a matter of taste.** Discontinuities live at cut
 boundaries, and the scene already publishes exactly that list: `window.SHOTS`
-exports `{t, cutEnd}` and `smoke.js` already consumes it. Strip every cut window
+exports `{t, cutEnd}` and `smoke.js` already consumes it. **That export exists
+because this problem was already diagnosed** — 0.5.1 added transition-window
+sampling to smoke after a review *"verified no fixed-fraction sample ever landed
+in any blend window on a shipped film."* So A2 is not a new idea; it is the
+completion of a line of work that already identified transitions as structurally
+under-sampled and shipped the export for it. Strip every cut window
 plus each beat boundary, tile one row per cut, labelled. No new export, no new
 concept — this **aims** an instrument that exists, which is why it outranks the
 occlusion linter.
@@ -435,6 +508,9 @@ result becomes auditable instead of authoritative."*
   all/6, blank: all/6, playback: all/1]` makes the strength of the claim visible
   where it is being made, and would have made three of this session's four errors
   visibly weak at the moment they were committed.
+- **Log the resolved browser binary**, alongside which backend resolved. One
+  line, and it retires or promotes an entire suspect class for the open 1-in-6
+  metal determinism FAIL (see the fixture note under Evidence).
 
 ---
 
@@ -670,6 +746,16 @@ been part of the viewing configuration. The doc change is a footnote saying the
 offset is a viewing parameter, so nobody reads "camera responds to input" as
 licence to carry state.
 
+### C0.4. Run it AS the Phase 6 spike, not as a feature
+
+**Label it, or you get the capability and lose the proof.** Phase 6's gate —
+*"reuses kernel, characters, materials, and at least one instrument with zero
+modification"* — only means something if it is asserted at the time the work is
+done. Run Track C as the Phase 6 spike with `museum-walk` as its case, and the
+gate arbitrates the seam question instead of us arguing it: **one line inside
+`SOLVER` fails "zero modification"; state-routing passes.** That converts a
+design disagreement into a measurement, which is this project's whole method.
+
 ### C0.5. This is Phase 6 arriving early, and the seam points at the cut
 
 `plan.md`'s architecture section splits the scene layer in two: a **kernel**
@@ -864,6 +950,144 @@ rather than a matter of mood.
 
 ---
 
+## What this implies for the phases, the tests, and the hierarchy
+
+Forward-looking consequences that are not items above, recorded because they
+change decisions in phases nobody has started.
+
+### The weld gets more expensive every phase — cut it while it is cheap
+
+`plan.md` says the kernel/driver split "costs only discipline" until Phase 6.
+**Discipline has not held**: `setCamera(t)` takes `t`, C1 adds a hook inside the
+kernel, and Phase 6's gate ("zero modification") is therefore not reachable as
+written. Every phase from here welds tighter — Phase 3 adds face state, Phase 4
+adds baked tracks, both of which will be authored as functions of `t` because
+that is what the signature invites.
+
+**Cheapest possible intervention, and the moment is now:** make the seam *visible*
+without implementing the split — `setCamera` takes a state object that today
+contains only `{t}`. Mechanically provable byte-identical, no behaviour change,
+and it converts a discipline into a place. Do it inside the Track D batched
+release, because it touches the same 8 files and would otherwise be a ninth
+cascade later. After Phase 3 and 4 the same change costs several times more.
+
+### The portfolio tests content; nothing tests the harness
+
+The nine-case portfolio and the chart tier both vary *what is in the scene*.
+Every expensive defect this session traced was in a path nothing exercised — and
+one of them, `build.js aspect` throwing a `ReferenceError` in both skills, was a
+**command nobody had run since the feature landed**. There is no test that
+invokes each `build.js` subcommand once.
+
+**Add a harness tier below the chart tier:** run every subcommand against one
+tiny scene, assert exit 0 and that the named artifact exists. It is the cheapest
+test in the repo and it closes the "command never run" shape permanently. Note
+what it is not — it does not check that output is *correct*, only that the path
+executes. That is the right scope: correctness is what the instruments are for,
+and this catches the class where an instrument was never reached at all.
+
+### Instrument brackets want a defect corpus, not per-instrument improvisation
+
+Every instrument in this repo was bracketed by hand-injecting a defect and
+confirming it fires — `strip`'s 1.2-unit jump, the shipped-frame check's
+half-dead adapter, and 0.16.1's four controls. Each time the fixture was built
+from scratch and thrown away. `circus.html` is currently the third such fixture
+about to evaporate.
+
+**Keep a small corpus of scenes with characterized defects at known timestamps**
+(gitignored is fine — this is bracketing apparatus, not teaching material). A new
+instrument then has a positive control the day it is written, and a
+*regression* control the day someone changes it. This is what makes the
+occlusion linter cheap to evaluate whenever its trigger fires, and it is why the
+two `circus` reverts are recorded in A2 rather than left in a conversation.
+
+### Phase 3 has a design input it does not know about
+
+`characters.md` documents chains and vectors; Phase 3 builds the face morph
+basis. The only person to hand-build a face on this stack found a specific,
+measured failure: **dark eye furniture merges below MS.** Two dark eye rings
+whose radii nearly meet, plus lashes, plus a hair fringe, read as goggles at
+medium shot and as a blindfold in a walk strip — and it looks correct in the
+close-up where it was authored, which is the same shape as the documented
+"silhouette failure is invisible at the size you are authoring at." The squint
+strip is whole-frame and cannot see a face.
+
+That belongs in `characters.md` before Phase 3 designs the basis, not after
+`the-briefing` rediscovers it. It also implies a Phase 3 instrument nobody has
+scoped: **a squint pass at face scale**, since the existing one structurally
+cannot reach the feature Phase 3 exists to build.
+
+### A control rule the project does not have
+
+The chart-tier experiment varied the *scene* and held the environment fixed, so
+it could only ever implicate scene machinery — which is exactly why the suspect
+list for the intermittent FAIL reads "fur shells, solver traffic, character rig."
+The same error produced this session's retracted PNG caveat: one backend was
+benchmarked and the conclusion generalised to the documented figure.
+
+> **When an intermittent resists reproduction, the next control must vary the
+> layer the last one held fixed.**
+
+That belongs in `method.md`'s control discipline, beside "verify the control
+actually ran." It is one sentence and it would have redirected two separate
+investigations.
+
+### Two test cases that do not exist, and one is the product claim
+
+**The headline claim is untested.** *"Ask for one change and everything else
+changes too"* is the thesis the films assert and the site sells, and no case in
+the portfolio exercises it. The long film validated it by accident — eight beats
+added to a finished, reviewed film moved nothing in the existing thirty seconds —
+which is a gate waiting to be written:
+
+> **Regression-by-edit.** Take `gearbox`, apply three canonical edits — retime a
+> beat, swap the bible, insert a shot — and assert the blast radius is bounded:
+> every untouched beat byte-identical, or above the project's 70 dB bar.
+
+It needs no new film, it is mechanical, and it converts the most load-bearing
+untested claim in the project into something a gate can check.
+
+**Deployment configurations need a check, not a film.** One scene, four hosts
+(disk, top-level, iframe-with-parent-driving-`seekTo`, install cache), assert it
+plays and the contract holds in each. That is where the site collision would have
+surfaced as a failing check rather than a design argument.
+
+`museum-walk` already covers the interactive path — provided Track C is run as
+the Phase 6 spike (C0.4) rather than shipped as a feature.
+
+### The hierarchy lesson generalises past `SKILL.md`
+
+The routing failure (B1) and the lost backlog (Ancestry) are the same failure at
+two scales, and the general form is worth stating once:
+
+> **A document that records is not a document that directs.** Every record needs
+> an extraction into something that directs, and the extraction is where the
+> value leaks.
+
+`predecessor-record.md` is 2,765 lines of record; its open structural items never
+became a backlog, so they were re-derived at cost. `instruments.md` is a ledger
+of what checks cannot see; it never became a step, so it was skipped by an agent
+who then published a false claim. Same shape, different scale.
+
+Two consequences for the reference hierarchy:
+
+- **Route at every workflow step, not just step 3.** B1 fixes the worst instance;
+  the general rule is that `SKILL.md`'s numbered steps are the router and the
+  bibliography is a fallback. Constrained by invariant 3 to `references/*`.
+- **Add the tier that is genuinely missing: delegation.** The hierarchy today has
+  two levels — always-loaded `SKILL.md`, and references pulled on demand. There is
+  no level for *who else the agent can ask*, and `SKILL.md` names no agent at all.
+  `film-reviewer` is the instance, it has the best measured yield of anything in
+  the project, and A0 is what makes routing to it legal under invariant 3.
+- **Resist a middle tier.** The tempting fix is a short checklist between
+  `SKILL.md` and the 293-line reference. Do not add one: `instruments.md`'s "what
+  has no instrument" section *is* that checklist, and a second copy is the drift
+  this repo keeps finding. The problem was never that the 15 lines did not exist
+  — it is that nothing pointed at them at the moment they mattered. Adding a tier
+  pays standing context to solve a routing problem.
+
+---
+
 ## Owner's calls
 
 **0. Is Track C inside or outside `plan.md`'s Phase 6 fence?** This is the
@@ -991,6 +1215,11 @@ too narrow — the family has three shapes and the repo has shipped all three:
   exercised on either fork since the nocap feature landed"
 - **a branch never taken** — the `_nodes`-removed path, where the determinism
   guard silently no-opped under a comment claiming smoke would fail loudly
+- **a deployment configuration never exercised** — a film ships into four hosts
+  (disk, top-level, an iframe whose parent drives `seekTo`, and the plugin
+  install cache) and tooling exercises one. Both the site collision and the
+  `film-reviewer` gap are instances. This shape is a *harness* item, not a smoke
+  item — smoke checks a scene, and this checks how a scene is delivered
 
 Open by that test right now:
 

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>mitate — an animated three.js scene as native HTML, written by a Claude Code skill</title>
-<meta name="description" content="mitate (見立て) is a Claude Code skill that writes an animated three.js scene as native HTML. Ask for one from a description, a document, or a codebase and you get a single self-contained file that opens in any browser — not a video. Deterministic: a pure function of time t.">
+<meta name="description" content="mitate (見立て) is a Claude Code skill that writes an animated three.js scene as native HTML. Ask for one from a prompt, a document, a codebase, an image, even a video it re-stages, and you get a single self-contained file that opens in any browser — not a video. Deterministic: a pure function of time t.">
 <meta property="og:title" content="mitate — an animated three.js scene as native HTML">
 <meta property="og:description" content="A Claude Code skill that writes an animated three.js scene as native HTML — one self-contained file, no player, no build step, a pure function of time t.">
 <meta property="og:type" content="website">
@@ -44,8 +44,8 @@
       <span>zero assets</span>
     </div>
     <h1 class="reveal">One file. One function <span class="fn">f(t)</span>. Frame-exact.</h1>
-    <p class="hero-lede reveal">Ask for a scene — from a description, a document, or a codebase — and it writes <b>an animated three.js scene as native HTML</b>. One file, opens in any browser. Not a video: there is no player and no build step, and the geometry is drawn live on every frame.</p>
-    <p class="hero-sub reveal"><b>mitate</b> — 見立て, to see one thing as another. An explainer, a cutscene, a comedy short, a chart: only the subject changes. Deterministic, so the same <span class="mono">t</span> always renders the same frame.</p>
+    <p class="hero-lede reveal">Ask for a scene — from a prompt, a document, a codebase, an image, even a video it re-stages rather than edits — and it writes <b>an animated three.js scene as native HTML</b>. One file, opens in any browser. Not a video: there is no player and no build step, and the geometry is drawn live on every frame.</p>
+    <p class="hero-sub reveal"><b>mitate</b> — 見立て, to see one thing as another: a 200-page terms of service, explained by a figure who keeps falling over. Explainer, cutscene, comedy short, chart — only the subject changes. Deterministic, so the same <span class="mono">t</span> always renders the same frame.</p>
     <div class="hero-actions reveal">
       <a class="btn btn-primary" href="#films">See the films <span aria-hidden="true">→</span></a>
       <a class="btn btn-ghost" href="#method">How it's directed</a>
@@ -144,7 +144,7 @@
   <div class="wrap">
     <div class="sec-head reveal"><span class="idx">02</span><span>The films</span><span class="ln"></span><span>five works · one pipeline</span></div>
     <h2 class="sec-title reveal">Lit on the stage. Each one a single file that plays from disk.</h2>
-    <p class="sec-lede reveal">Every title below is one self-contained HTML page — three.js embedded, zero fetched assets. <b>These run 12 to 21 seconds</b>; a scene is as long as its beats table adds up to. The thumbnails are compressed loops so the page stays light — open any film to run the actual scene. Each is tagged with the <b>primitives an agent composed it from</b>.</p>
+    <p class="sec-lede reveal">Every title below is one self-contained HTML page — three.js embedded, zero fetched assets. <b>These run 12 to 21 seconds</b>; a scene is as long as its beats table adds up to. The thumbnails are poster frames rendered from the scenes; open a film and the scene itself runs. Each is tagged with the <b>primitives an agent composed it from</b>.</p>
 
     <div class="films">
 
@@ -259,7 +259,7 @@
   <div class="wrap">
     <div class="sec-head reveal"><span class="idx">03</span><span>How it's directed</span><span class="ln"></span><span>primitives → pipeline</span></div>
     <h2 class="sec-title reveal">An agent doesn't write a movie. It composes primitives.</h2>
-    <p class="sec-lede reveal">The skill ships the building blocks and the discipline. Any harness — Claude or otherwise — reads them and directs a film: it writes a beats table, scaffolds a scene, reviews it on three axes, passes an automated gate, and delivers. Here is what it's handed.</p>
+    <p class="sec-lede reveal">The skill ships the building blocks and the discipline. Any harness — Claude or otherwise — reads them and directs a film: it writes a beats table, scaffolds a scene, reviews it on three axes, passes an automated gate, and delivers. Expect iteration — a few look-and-edit rounds are the method, not a failure of it — and a film that needs a primitive that doesn't exist yet is how the library grows. Here is what it's handed.</p>
 
     <!-- primitives grid -->
     <div class="primgrid reveal">
@@ -356,7 +356,7 @@ phase = { HL:<span class="c-v">0</span>,  FL:<span class="c-v">.25</span>,
 <section class="sec cta-sec" id="install">
   <div class="wrap">
     <h2 class="reveal">Hand an agent the primitives. Get back <span class="fn">f(t)</span>.</h2>
-    <p class="reveal">mitate installs as a Claude Code plugin. Point it at any input, in any register, and it directs — spec, scaffold, review, gate, deliver.</p>
+    <p class="reveal">mitate installs as a Claude Code plugin. Point it at any input, in any register, and it directs — spec, scaffold, review, gate, deliver — then re-directs until the film is yours.</p>
     <div class="install reveal">
       <div class="install-h"><span>terminal</span><span>claude code</span></div>
       <pre><span class="cmd-p">$</span> /plugin marketplace add fblissjr/mitate

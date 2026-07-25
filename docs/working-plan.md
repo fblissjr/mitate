@@ -74,7 +74,7 @@ construction, bracketed both ways, quiet on the corpus.
 | 1 | `build.js probe` | A | no | — |
 | 2 | `build.js transitions` | A | no | — |
 | 3 | self-reported elapsed + backend hint on every command | A | no | — |
-| 4 | `SKILL.md` step 3 rewrite (four findings) **+ the limit-wins tiebreaker** | B | no | 1, 2 |
+| 4 | `SKILL.md` step 3 rewrite (four findings) **+ the limit-wins tiebreaker** | B | no | **2** |
 | 5 | demote backend policy in `SKILL.md` | B | no | 3 |
 | 6 | provenance repairs (PNG home, 700px pointers, site row) | B | no | — |
 | 7 | the batched kit release | D | **yes** | — |
@@ -83,6 +83,20 @@ construction, bracketed both ways, quiet on the corpus.
 
 Items 1-3 and 6 are independent and can run in parallel today. **Item 7 is the
 only fenced work on this plan and it is batched deliberately** — see Track D.
+
+Two notes on the dependencies, because both were initially overstated:
+
+- **Item 4 is blocked on A2 only, not on A1.** None of step 3's four fixes
+  mentions `probe`. Since the whole sequencing argument is "edit that paragraph
+  once," this matters: step 3 can land the moment `transitions` exists. If A1
+  happens to land first, name it in the same edit rather than making a third
+  pass at the same fifteen lines.
+- **Batching (item 7) buys three saved cascades and creates a critical path it
+  should name.** The viewer — the item with the most external demo value — now
+  sits behind three unrelated kit changes. Keep the option open explicitly: **if
+  the viewer becomes time-sensitive, pull C1's single line out and pay one extra
+  cascade.** The seam factoring is precisely what makes that escape cheap, which
+  is an argument for the factoring rather than against the batching.
 
 ---
 
@@ -126,7 +140,29 @@ two real defects in ninety seconds — a bear inflating on camera for 0.74s, and
 the subject walking through a prop row. Both invisible in a contact sheet, both
 obvious in a strip, both shipped past eight rounds of composition review.
 
-Inherits `strip`'s bracket: blind to limb-level breaks (~2% of frame area).
+**Derive windows from `window.SHOTS` where present, and fall back to
+`window.BEATS` boundaries where it is not.** As specified against `SHOTS` alone
+this covers four of five shipped examples and silently does nothing for the
+fifth: the 2D template has `KEYS[]` and exports no `SHOTS`. `window.BEATS` *is*
+exported by all three templates (`scene2d.template.html:498`), so the fallback
+costs a line and keeps the command universal — 3D gets cut-plus-beat coverage, 2D
+gets beat coverage, and the tool does not acquire a second 2D asymmetry alongside
+owner's-call #4. Write it in, rather than discovering it in the lead item that
+everything else is blocked on.
+
+**Its bracket is not `strip`'s.** It inherits `strip`'s *pixel* sensitivity
+(blind to limb-level breaks, ~2% of frame area), but the new property is **window
+selection**, and that needs its own positive control: does it surface a defect
+nobody hand-picked? The fixture for that exists today and is about to evaporate —
+`circus.html` lives outside the repo and has two characterized defects at known
+timestamps. Its current state is the negative control (both fixed; the sweep
+should be quiet). The positive control is two named reverts, recorded here so the
+bracket is reproducible without the film ever being committed:
+
+| defect | window | revert |
+|---|---|---|
+| bear inflates on camera | ~44.8-45.6s | `backOut(ramp(t,'fall',.80,.96))` → `backOut(ramp(t,'bear',.04,.20))` |
+| subject walks through the prop row | ~23.4-24.1s | `(1-ramp(t,'beats',.84,.97))` → `(1-ramp(t,'ship',.10,.24))` |
 
 ### A3. Every command reports its own cost, and names the cheaper backend
 
@@ -269,6 +305,37 @@ no instrument" section stops being advisory and becomes the tiebreaker of record
 — which raises the payoff on binding it to step 3, because the file an agent was
 skipping becomes authoritative rather than informational. The two items are worth
 more together than separately, and they should land together.
+
+**Before adding the rule, understand why the existing mechanism did not fire —
+otherwise this is a second unenforced rule stacked on a first, which is the
+spine's own failure mode applied to the spine's own track.**
+`.claude/agents/doc-claim-auditor.md` already exists, its brief is exactly this
+("verifies that a reference doc's capability claims are actually true of the
+code"), and its own rationale names this defect class in as many words: *"a claim
+was true once, or was aspirational, and nothing rechecks it."* It lists five
+prior instances. The `txt()` claim is a sixth.
+
+The diagnosis is in the trigger, not the agent. The convention is that changes
+*touching code a reference describes* get an auditor pass before commit. **An
+inherited claim has no code change to trigger on.** `method.md`'s `txt()` promise
+was ported from the predecessor describing a mechanism that never migrated to
+this stack; nothing changed here, so nothing fired. That is the same class
+0.14.0, 0.15.0 and 0.16.0 each caught by hand — dangling paths, then
+`film-language.md`'s Focus section citing a predecessor filename that has never
+existed here. **Three catches, three times heroic**, against a doc that claims
+drift detection is "scheduled, not heroic."
+
+So B4 carries two things beyond the tiebreaker, or it is prose:
+
+- **A one-time sweep of inherited claims.** This is a different activity from
+  ongoing drift detection: ported text is stale *on arrival*, and no
+  change-triggered process will ever reach it.
+- **A trigger widened past code change** — a file being ported, or carrying
+  claims older than the stack, is itself cause to audit.
+
+The tiebreaker is still worth having: it resolves what the auditor structurally
+cannot — doc-versus-doc where both match the code, or where the code is
+ambiguous.
 
 ### B5. `?strip=text` in 3D — scope now, implement on demand
 

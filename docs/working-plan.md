@@ -39,6 +39,21 @@ as the fix for a friction problem. The consistency is the finding, not the
 carelessness — each time, the wrong move was the cheap one at the moment of
 choosing.
 
+**The precedent is what makes this a finding rather than an anecdote.** The same
+class was diagnosed a lineage earlier, in writing, with the mechanism named:
+five rounds were spent tuning multipliers before anything was measured, each
+round made the scene worse, the fix took minutes once the offsets were read —
+and it was *"committed by the author of the pass that added the measuring
+instruments, in the same session."* The conclusion drawn then: **"the pull toward
+tuning a coefficient is strongest exactly when a thing is nearly right, and that
+is the moment to stop and instrument."**
+
+That was written down. It was carried into `predecessor-record.md`. And the class
+recurred four times in the successor project anyway. **That is the strongest
+evidence the spine could have, and it is historical rather than n=1** — it does
+not merely assert that prose loses to friction, it is a recorded instance of
+this exact prose losing.
+
 Everything below is one of two interventions, and nothing else earns a slot:
 
 > **1. Make the correct move the cheap one.** A documented practice that costs
@@ -81,6 +96,69 @@ That is the shape every item below is trying to be: a blind spot closed by
 construction, bracketed both ways, quiet on the corpus.
 
 ---
+
+## Ancestry: what this plan is rediscovering
+
+**Most of this plan has an ancestor**, and the ancestors are better argued than
+the rediscoveries because they were written against more films. The record was
+preserved; the *backlog* was not — `predecessor-record.md` is 2,765 lines that
+read as "what happened," so nothing carried its open structural items into a
+roadmap. This session paid to re-derive several of them.
+
+Every item below carries its ancestor and status. **Adding a row is mandatory for
+any new item**: if it has no ancestor, say so, because that is itself
+information.
+
+| item | ancestor (hardening plan, 2026-07-22) | status |
+|---|---|---|
+| A1 `probe` | `build.js kinematics`, the state-space probe — **bracketed**: boundary/interior 1.0001 vs 0.0531, spread 1.003x vs 72.7x, on scenes `motion` called indistinguishable | **declined on earn-in, then dropped in migration** — see A1 |
+| A3 self-reporting | *"Every check states its plan and prints the samples it used. A green result becomes auditable instead of authoritative"* | **partial** — see A3 |
+| D `subjectFromObject` | *"Structural: declarations are never checked against the thing they describe"* | **specified, never built, and a comment claims it shipped** |
+| B5 `txt()` / `strip=text` | *"Structural: make the text helper good enough that turning text off is possible"* | **half-built** — 2D got both parts, 3D got the instrument only |
+| B4 limit-wins | *"Root cause 2 — vocabulary that promises more than it measures"* | inherited diagnosis, new tiebreaker |
+| the spine | *"the pull toward tuning a coefficient is strongest exactly when a thing is nearly right"* | **written down, then violated four times in the successor** |
+| deferred: occlusion linter | *"No register-aware lint engine. Two candidate instances exist; no film has been blocked. Revisit when one is."* | inherited decline, same earn-in shape as A1 |
+| deferred: `shapes.md` | *"No content templates, scene presets, or genre scaffolds. This is the line that protects 'any scene you want'."* | inherited decline — **and a doctrinal one**, cited by the Anti-template principle |
+| deferred: 2D pan/zoom (owner's-call 4) | *"No 2D shot solver.* The film built to want one concluded the `{x,y,zoom}` rail was expressively sufficient" | inherited decline, with a recorded alternative |
+| Track C viewer | none in the hardening plan; **`museum-walk` in the portfolio** | Phase 6, arriving early |
+| A2 `transitions` | none found | genuinely new |
+
+Three of the deferred items turn out to be *inherited decisions with recorded
+reasoning*, which makes that list far more load-bearing than a set of
+preferences. Two of them — `shapes.md` and 2D pan/zoom — are protected by the
+Anti-template principle, not merely deferred. Reviving either is a doctrine
+change.
+
+### The sampling layer: the most useful thing that was lost
+
+`kinematics` was not proposed as a standalone tool. It was the **second consumer
+of a shared sampling layer** — modes (`beats`, `peaks`, `avoid:'flash'`) plus a
+quantifier discipline — and the proposal's own point was that it "inherits
+correct sampling for free."
+
+Part of that layer shipped: `samplePlan(dur, flashes, n)` exists, is flash-aware,
+and `instruments.md` documents determinism/blank/spread as **all**-quantified
+over it. What did not ship, and is still worth having:
+
+- **`peaks` mode** — *"the only mode that can see a 0.5s jump inside a 2.0s
+  beat."* Note what that is: a continuity instrument that aims itself, which is
+  the same argument as A2 and it was made first.
+- **The second sampling mechanism was never retired.** `instruments.md` admits
+  it: `SAMPLE_FRACTIONS` (exposure, framing invariance) is not flash-aware, so
+  those checks "can land inside a white-out and read it as the frame."
+- **Green results are still not auditable.** The plan is printed only in the
+  *failure* message (`checked ${PLAN.join(', ')}`). A passing run prints
+  `ok <scene> [source, webgl2]` and nothing about what it sampled — which is
+  precisely the case the property was designed for. **Two lines, and it converts
+  every green run from authoritative to auditable.** Folded into A3.
+- **The quantifier is not declared.** The ancestor's sharpest line:
+  > *"A check declares `all` or `any`. Determinism is `all`. Blankness is `all`.
+  > 'Something legible happens' is `any`. Today every check is implicitly `any`
+  > with n=1, which is the weakest possible claim stated as the strongest."*
+
+  That is a precise description of all four errors this session committed, written
+  a lineage earlier. `smoke.js` has since all-quantified three checks; the
+  *discipline* — every check names its quantifier and its n — has not landed.
 
 ## What the predecessor already knew
 
@@ -258,7 +336,31 @@ Ship a small eval prelude so the common measurements are one-liners (`bb(o)` →
 in `method.md`: contact separation, reach, clearance from the camera-subject
 line, foot-plant drift.
 
-Six agents across films, not one. This is the best-justified item here.
+**State this as what it is: a reversal of a recorded decision, not a new
+proposal.** The ancestor was bracketed (boundary/interior 1.0001 vs 0.0531,
+spread 1.003x vs 72.7x) and then **deliberately declined** on earn-in grounds —
+*"four films hit it and none was blocked"* — and dropped entirely in the
+migration. Reviving it by simply feeling strongly about it would make every
+declined item revivable the same way, which destroys the deferred list's value.
+
+So the argument has to be an amendment to the earn-in rule itself:
+
+> **Earn-in's trigger is "a film was blocked." That trigger cannot fire for a
+> failure mode whose signature is *not blocked, reliably wrong*.** Six films hit
+> the contact class; none was blocked; the sixth published a false claim as a
+> direct consequence. For a human author the rule held, because doing the
+> expensive thing informally (eyeball the render) is cheap and usually adequate.
+> For an agent author it inverts: "not blocked" and "not done" are the same
+> outcome, because the agent substitutes the cheap wrong method silently.
+>
+> **Amendment: earn-in fires on "blocked" *or* on a third recorded instance of
+> the same wrong answer.** Everything else in the deferred list keeps its
+> original trigger.
+
+Note the amendment also re-opens the occlusion linter's ancestor (*"no register-
+aware lint engine — revisit when a film is blocked"*) on the same logic. It stays
+third regardless, on the merits in the deferred table — but it should be third
+for its own reasons, not because a trigger that cannot fire is holding it.
 
 ### A2. `build.js transitions <scene>`
 
@@ -316,6 +418,23 @@ what loses. So the tool says it, at the moment of use — every command prints i
 elapsed time, and when it ran on the fallback with hardware available, prints
 what the other backend would have cost. This merges with the self-timing item
 rather than adding one.
+
+**Two more properties belong here, both inherited and both cheap.** The ancestor
+specified: *"Every check states its plan and prints the samples it used. A green
+result becomes auditable instead of authoritative."*
+
+- **Print the sample plan on green, not only on failure.** Today the plan appears
+  only inside the determinism failure string; a passing run prints
+  `ok <scene> [source, webgl2]` and says nothing about what it sampled — which is
+  exactly the case the property exists for. Two lines.
+- **Declare the quantifier.** The ancestor's sharpest line is that a check
+  declares `all` or `any`, and *"today every check is implicitly `any` with n=1,
+  which is the weakest possible claim stated as the strongest."* `smoke.js` has
+  since all-quantified determinism, blankness and spread — but nothing *states*
+  it at the point of output. A green line that reads `ok <scene> [determinism:
+  all/6, blank: all/6, playback: all/1]` makes the strength of the claim visible
+  where it is being made, and would have made three of this session's four errors
+  visibly weak at the moment they were committed.
 
 ---
 
@@ -483,6 +602,22 @@ So B4 carries two things beyond the tiebreaker, or it is prose:
 The tiebreaker is still worth having: it resolves what the auditor structurally
 cannot — doc-versus-doc where both match the code, or where the code is
 ambiguous.
+
+**And a second rule, cheaper than the tiebreaker, that prevents the class rather
+than adjudicating it.** The `txt()` case is not careless overclaiming. Its
+ancestor is a *planned structural item* — "make the text helper good enough that
+turning text off is possible" — and the reference describes the planned end
+state, of which only half shipped. That is roadmap optimism reaching a reference
+file, and it has a one-line fix:
+
+> **A reference may not describe a mechanism that is planned but unbuilt, unless
+> it is marked as such.**
+
+Add it to `source-of-truth.md`. It composes with limit-wins rather than competing:
+this rule stops the contradictions being created, limit-wins settles the ones
+already live. It also generalises past docs — the false extent-check *comment*
+is the same failure in code, describing a fix that was specified and never
+built.
 
 ### B5. `?strip=text` in 3D — scope now, implement on demand
 

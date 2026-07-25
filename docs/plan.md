@@ -597,7 +597,7 @@ cheapest one available: the baker is a person, so there is no version pin, no
 seed and no re-bake identity question. It exercises two of Phase 4's three spike
 items against a baker that cannot be non-deterministic.
 
-**Scope-fence amendment, pending owner sign-off.** The Risks section below fences
+**Scope-fence amendment — APPROVED by the owner 2026-07-25.** The Risks section below fences
 "input handling" as an engine-shaped non-goal until this phase reopens the
 question, which as written blocks a viewer. The distinction worth drawing is not
 film-versus-interactive but **who owns the state stream**: viewer chrome that
@@ -696,8 +696,14 @@ creature exists to keep that test honest.
   hand-authoring, the policy has silently become an asset pipeline.
 - **Scope creep toward a game engine.** The driver split is the fence:
   mitate ships films; interactivity is one spike behind a gate, and
-  engine-shaped features (input handling, game state, audio mixing) are
-  non-goals until Phase 6 reopens the question.
+  engine-shaped features (game state, audio mixing) are non-goals until Phase 6
+  reopens the question. **Amended 2026-07-25 (owner-approved):** the fence is
+  *who owns the state stream*, not film-versus-interactive. Viewer chrome that
+  bounds a viewing parameter — framing, captions, transport — while the timeline
+  driver still owns `t` is a delivery feature and is admitted; an input driver
+  that *replaces* the state stream is Phase 6 and stays behind its gate. The
+  recorder arms neither, so neither can reach a shipped frame. Rationale and the
+  evidence that forced it are in the Phase 6 entry above.
 - **The three pin is now load-bearing beyond the API surface.** `seekTo`
   ticks `renderer._nodes.nodeFrame.update()` (private API) to defeat the
   shadow frameId guard. The upgrade ritual for any pin bump, in order: grep

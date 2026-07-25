@@ -82,6 +82,105 @@ construction, bracketed both ways, quiet on the corpus.
 
 ---
 
+## What the predecessor already knew
+
+`internal/prior_artifacts/` holds the four explainer-video planning documents and
+the screenwright founding plan. **All of it is already consolidated** — the four
+explainer docs into [`predecessor-record.md`](predecessor-record.md) (arc,
+postmortem, per-item ledger, test suite, and the hardening plan as "The
+remediation"), and `screenwright_plan.md` into [`plan.md`](plan.md) by the
+rename. Nobody needs to re-read 3,400 lines. But reading the consolidated record
+against this plan changed five items, and turned up one live defect.
+
+### The live defect: a load-bearing capability claim, in code, that is false
+
+`solveShot`'s camera-floor comment
+(`scene.character.template.html:807`) reads: *"Not a fix for 'camera inside the
+subject' — that is a LIE about extent, and **the extent check in smoke.js** is
+what catches it."*
+
+**There is no extent check.** Verified exhaustively: zero occurrences of `Box3`,
+`setFromObject` or `computeBoundingBox` anywhere in `templates/`; zero hits for
+`extent` or `declared` in `smoke.js`, `build.js` or `shoot.js`; and
+`subjectExtent` (`:763`) reads the declared `SUBJECTS` values only — it never
+touches geometry.
+
+This is worse than a stale doc line because of what it is doing: it is the stated
+*reason* the camera floor guard is deliberately not a fix for camera-inside-
+subject. An author reading it believes a failure mode is covered when nothing
+covers it. It is also exactly the class `doc-claim-auditor` exists for and that
+B4's tiebreaker addresses — occurring in a code comment, which no audit pass has
+ever been pointed at.
+
+The history makes it sharper still. The predecessor specified this fix in
+detail — *"the tool measures what the author declared. At load, walk the named
+object's scene-graph bounding box and compare it to the declared extent.
+Under-declaration throws; over-declaration warns"* — against three films that had
+cropped their own payoff, and named the principle it serves: **"a rule with an
+enforcement mechanism stayed true, and every rule that shipped as prose
+drifted."** Three of the four Group 2 items shipped into mitate (the projected
+box at `:794`, `anchorX` at `:801`, union subjects at `:764`). **The foundational
+one did not, and a comment claims it did.**
+
+So `subjectFromObject` in Track D is under-scoped. The predecessor's design is
+*validation*, not a constructor: compare declared against measured, throw on
+under-declaration, warn on over. Evidence now stands at six films — three
+predecessor payoff crops, three of five hand-computed extents wrong on the long
+film. Promote it, and fix the comment either way.
+
+### The earn-in rule has a blind spot, and A1 is what fell into it
+
+The predecessor considered a contact checker and **explicitly declined it**, on
+earn-in grounds: *"this scene did not earn a `build.js contact` checker, and it
+did not get one… Resolved by documentation plus the measurement technique, not by
+an instrument: four films hit it and none was blocked."*
+
+That reasoning was sound for a human author, where eyeballing a render is cheap.
+**For an agent it fails, because "not blocked" and "not done" are the same
+outcome** — the agent silently substitutes the cheap wrong method, which is
+precisely what happened two sessions later across a whole film with four staged
+setups. The earn-in rule's cost model assumes the author can do the expensive
+thing informally. An agent cannot: hand-writing a Playwright harness is not a
+degraded version of eyeballing, it is a different order of cost.
+
+This is the strongest justification A1 has, and it comes from the decision record
+that declined it.
+
+### Three smaller corrections
+
+- **The spine is twice-derived, not n=1.** The predecessor reached it from the
+  other direction in a different session: *"a rule with an enforcement mechanism
+  stayed true, and every rule that shipped as prose drifted."* Mine is stated in
+  terms of cost, theirs in terms of enforcement. Two independent derivations is a
+  materially different evidence position from four errors in one session, and it
+  partly answers this document's own n=1 problem — for the criterion, at least.
+- **B5's diagnosis sharpens: the instrument shipped without its precondition.**
+  The predecessor's design was explicitly two-part — ship `txt()` worth using,
+  *then* a `?strip=text` that skips every draw through it — with the dependency
+  stated: *"the instrument for the semantics axis falls out of making the helper
+  good, and it only works because everyone uses the helper."* 2D got both. **3D
+  got the instrument and not the helper.** That is why `method.md` reads as an
+  overclaim: it describes a design that was half-implemented, and the half that
+  shipped is the half that does nothing alone. It also explains why 3D is harder
+  — in 2D the helper can be the only reasonable path to a glyph; in 3D text *is*
+  geometry and there is no choke point to route through.
+- **Occlusion is not a one-film finding.** The predecessor's two-character scene
+  closed with it still open: *"geometric contact is not legible contact. Both
+  blows now overlap on all three axes and still read as clipping rather than
+  impact, because the contact point sits behind a body."* That is the occlusion
+  class, recorded as unresolved, before the four new instances. It does not
+  change the ranking — `transitions` still catches the expensive kind more
+  cheaply — but the deferred entry should stop calling it one film's problem.
+
+One more worth carrying into the spine's neighbourhood, because it names the
+moment the failures actually happen: **"the pull toward tuning a coefficient is
+strongest exactly when a thing is nearly right, and that is the moment to stop
+and instrument."** Recorded against a session that spent five rounds tuning
+multipliers before measuring anything, by the author of the pass that added the
+measuring instruments.
+
+---
+
 ## Sequencing at a glance
 
 | # | item | track | fenced | blocked by |
@@ -92,6 +191,7 @@ construction, bracketed both ways, quiet on the corpus.
 | 4 | `SKILL.md` step 3 rewrite (four findings) **+ the limit-wins tiebreaker** | B | no | **2** |
 | 5 | demote backend policy in `SKILL.md` | B | no | 3 |
 | 6 | provenance repairs (PNG home, 700px pointers, site row) | B | no | — |
+| 6b | **fix the false extent-check claim** in `solveShot`'s comment | B | no | — |
 | 7 | the batched kit release | D | **yes** | — |
 | 8 | viewer overlay + capture | C | no | 7 |
 | 9 | camera bake + the fork | C | no | 8 |
@@ -603,7 +703,7 @@ rather than a matter of mood.
 |---|---|---|
 | JSON `tables`/`patch` round-trip | the tables contain functions exactly where they matter (`SUBJECTS.pos` is a function of `t`); a projection that cannot represent the interesting half lies about completeness. The cited pain — regex-editing JS source — is a tooling habit, not a format problem | an agent needing to *restructure* tables mechanically, after the enumeration exists |
 | `ACTORS` presence table | one prior instance in the corpus, differently spelled; `hide()` covers the drift risk | a second film with multi-appearance presence that `hide()` cannot express |
-| occlusion linter | 3 of 4 instances were static staging the contact sheet already catches by eye; the 4th was a transit defect a beat-midpoint sample structurally cannot see, and `transitions` catches it. So the linter automates eye-work on a converging axis — real, but third | probe + transitions shipped and composition rounds still not converging |
+| occlusion linter | **not a one-film finding** — the predecessor's two-character scene closed with it explicitly open ("geometric contact is not legible contact… the contact point sits behind a body"). Still ranked third: 3 of 4 new instances were static staging the contact sheet already catches by eye; the 4th was a transit defect a beat-midpoint sample structurally cannot see, and `transitions` catches it. So the linter automates eye-work on a converging axis — real, but third | probe + transitions shipped and composition rounds still not converging |
 | solver-aware staging | the proposed vocabulary fails on its own originating use case: props at fixed world positions a character walks to, which was every exhibit in the film that motivated it | a design that handles walked-to props |
 | `travel()` / `LEGS` / `shapes.md` | register-specific to the presenter explainer, which arrived as a commission rather than from the roadmap | a second presenter film asking |
 | type primitive (glyph data + renderers) | generalizes past the register — any film with a sign, an axis, a label — but it is a bigger build than it looks, and no shipped example needs it. **And it is governed by an existing rule neither review applied: a glyph alphabet is a *primitive*, so under the chart tier it lands as a chart — a grid of all 36 glyphs, byte-compared per backend — before any film uses it.** That is also the right shape on the evidence: all three glyph bugs were one letter built on a wrong assumption, which a grid makes obvious at a glance and a title card cannot | a second film needing built text, or the diagrammatic register (see B5) — entering at the chart tier, not in a film |

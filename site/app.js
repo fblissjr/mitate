@@ -156,7 +156,7 @@
     // a close-up rather than a cropped frame — measured confusion, not taste.
     // ~10.8px at this width sits at the legibility floor; the film's own words
     // beat no words.
-    frame.src = 'films/gearbox.html';
+    frame.src = 'films/gearbox.html?v=2';
     frame.addEventListener('load', () => {
       let tries = 0;
       const settle = () => {
@@ -265,12 +265,12 @@
 
   /* ---------- film lightbox ---------- */
   const FILMS = {
-    'gearbox':       { title: 'Gearbox · five-beat mechanism',        meta: 'workshop bible · 16.5s',    src: 'films/gearbox.html' },
-    'gearbox-neon':  { title: 'Gearbox · neon bible',                 meta: 'neon bible · 16.5s',        src: 'films/gearbox-neon.html' },
-    'bear-and-bees': { title: 'Bear & Bees · silent comedy short',    meta: 'locked camera · 21.3s',     src: 'films/bear-and-bees.html' },
-    'menagerie':     { title: 'Menagerie · character-scaffold demo',  meta: 'one skeleton · three gaits',src: 'films/menagerie.html' },
-    'materials':     { title: 'Materials · cel · SSS · glass',        meta: 'transparency ordering case',src: 'films/materials.html' },
-    'noise-chart':   { title: 'Noise Chart · primitive isolation',    meta: '8 cells · 1 drift control', src: 'films/noise-chart.html' },
+    'gearbox':       { title: 'Gearbox · five-beat mechanism',        meta: 'workshop bible · 16.5s',    src: 'films/gearbox.html?v=2' },
+    'gearbox-neon':  { title: 'Gearbox · neon bible',                 meta: 'neon bible · 16.5s',        src: 'films/gearbox-neon.html?v=2' },
+    'bear-and-bees': { title: 'Bear & Bees · silent comedy short',    meta: 'locked camera · 21.3s',     src: 'films/bear-and-bees.html?v=2' },
+    'menagerie':     { title: 'Menagerie · character-scaffold demo',  meta: 'one skeleton · three gaits',src: 'films/menagerie.html?v=2' },
+    'materials':     { title: 'Materials · cel · SSS · glass',        meta: 'transparency ordering case',src: 'films/materials.html?v=2' },
+    'noise-chart':   { title: 'Noise Chart · primitive isolation',    meta: '8 cells · 1 drift control', src: 'films/noise-chart.html?v=2' },
   };
 
   const lb = document.getElementById('lightbox');
@@ -391,7 +391,7 @@
       gearboxStill.src = b.still;
       gearboxScreen.setAttribute('data-film', b.film);
       const tab = gearboxScreen.closest('.film') && gearboxScreen.closest('.film').querySelector('.film-actions a');
-      if (tab) tab.href = 'films/' + b.film + '.html';
+      if (tab) tab.href = 'films/' + b.film + '.html?v=2';
       document.querySelectorAll('.bible-btn').forEach(x => {
         const on = x.getAttribute('data-bible') === bible;
         x.classList.toggle('is-on', on);

@@ -12,7 +12,7 @@
 <link rel="preload" href="fonts/archivo-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <!-- the hero mounts this scene on load, so fetch it with the page -->
 <link rel="preload" href="films/gearbox.html" as="fetch" crossorigin>
-<link rel="stylesheet" href="styles.css?v=17">
+<link rel="stylesheet" href="styles.css?v=19">
 </head>
 <body>
 <script>document.documentElement.classList.add('js')</script>
@@ -65,7 +65,7 @@
         <div class="inst-film">
           <span class="corner c1"></span><span class="corner c2"></span><span class="corner c3"></span><span class="corner c4"></span>
           <button class="screen" id="heroScreen" data-film="gearbox" aria-label="Open the gearbox film full size: a five-beat mechanism turning in a lit workshop">
-            <img class="poster-still" id="heroStill" src="posters/gearbox-still.jpg"
+            <img class="poster-still" decoding="async" id="heroStill" src="posters/gearbox-still.jpg"
                  loading="eager" fetchpriority="high" width="1280" height="720" alt="" aria-hidden="true">
             <span class="playbadge">open full size</span>
           </button>
@@ -158,7 +158,7 @@
       <!-- gearbox -->
       <article class="film reveal">
         <button class="film-screen" id="gearboxScreen" data-film="gearbox" aria-label="Play the gearbox film: a five-beat mechanism turning in a lit workshop">
-          <img class="poster-still" id="gearboxStill" src="posters/gearbox-still.jpg"
+          <img class="poster-still" decoding="async" id="gearboxStill" src="posters/gearbox-still.jpg"
                loading="lazy" width="1280" height="720" alt="" aria-hidden="true">
           <span class="open"><span class="tri"></span>preview</span>
         </button>
@@ -182,7 +182,7 @@
       <!-- bear-and-bees -->
       <article class="film reveal">
         <button class="film-screen" data-film="bear-and-bees" aria-label="Play the bear-and-bees film: a furred bear noses a hanging beehive, then flees as bees erupt">
-          <img class="poster-still" src="posters/bear-and-bees-still.jpg"
+          <img class="poster-still" decoding="async" src="posters/bear-and-bees-still.jpg"
                loading="lazy" width="1280" height="720" alt="" aria-hidden="true">
           <span class="open"><span class="tri"></span>preview</span>
         </button>
@@ -201,7 +201,7 @@
       <!-- menagerie -->
       <article class="film reveal">
         <button class="film-screen" data-film="menagerie" aria-label="Play the menagerie film: a bear, a human and an invented three-eyed strider walk in on their own gaits">
-          <img class="poster-still" src="posters/menagerie-still.jpg"
+          <img class="poster-still" decoding="async" src="posters/menagerie-still.jpg"
                loading="lazy" width="1280" height="720" alt="" aria-hidden="true">
           <span class="open"><span class="tri"></span>preview</span>
         </button>
@@ -220,7 +220,7 @@
       <!-- materials -->
       <article class="film reveal">
         <button class="film-screen" data-film="materials" aria-label="Play the materials film: cel banding, subsurface scattering through thin ears, and dispersive glass over an emissive core">
-          <img class="poster-still" src="posters/materials-still.jpg"
+          <img class="poster-still" decoding="async" src="posters/materials-still.jpg"
                loading="lazy" width="1280" height="720" alt="" aria-hidden="true">
           <span class="open"><span class="tri"></span>preview</span>
         </button>
@@ -239,7 +239,7 @@
       <!-- noise-chart -->
       <article class="film reveal">
         <button class="film-screen" data-film="noise-chart" aria-label="Play the noise-chart film: eight shader noise primitives in a grid, including a deliberate drift control">
-          <img class="poster-still" src="posters/noise-chart-still.jpg"
+          <img class="poster-still" decoding="async" src="posters/noise-chart-still.jpg"
                loading="lazy" width="1280" height="720" alt="" aria-hidden="true">
           <span class="open"><span class="tri"></span>preview</span>
         </button>
@@ -406,6 +406,6 @@ phase = { HL:<span class="c-v">0</span>,  FL:<span class="c-v">.25</span>,
   </div>
 </div>
 
-<script src="app.js?v=17"></script>
+<script src="app.js?v=19"></script>
 </body>
 </html>

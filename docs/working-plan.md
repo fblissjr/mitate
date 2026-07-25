@@ -512,6 +512,34 @@ If the control comes back thin, the answer is the offer-it wording rather than t
 prescription — and that is worth knowing before it is written into `SKILL.md`,
 not after.
 
+**The control is this item's revisit trigger, not a nice-to-have.** The policy is
+landing before its evidence, which is acceptable for a reversible doc line, but
+an untriggered debt is the format this plan just fixed. Same column as everything
+else: *trigger — before the step-3 prescription is written.*
+
+**Score it against the answer key, written in advance.** `circus.html` carries
+three classes of defect and **which class the reviewer hits is the whole
+finding**:
+
+| class | contents | what it means |
+|---|---|---|
+| **1** — found by an instrument, already fixed | the bear inflating on camera; the walk-through of the block row | reviewer adds nothing over `transitions`; offer-it wording was right |
+| **2** — seen by the author and **dispositioned**, not fixed | the eye rings + lashes reading as a black bar at MS (judged faithful to the reference and shipped); the whip-cut into the ship beat, where the block row crosses her face for ~5 frames (called a transient inside a 0.16s cut) | **the interesting class** — judgment over an author's dismissals, which no instrument does, and the reason to prescribe an agent at all |
+| **3** — neither the instruments nor the author saw it | unknown by construction | strongest result; justifies prescription on its own |
+
+**Who runs it matters, and it cannot be the film's author.** Applying the brief to
+one's own fixture reproduces the condition that already failed — eight rounds of
+self-review. The value in the agent is independence, and an author is
+definitionally not independent of their own film. It needs a real invocation from
+this repo, where the agent is scoped.
+
+One methodological caution for whoever does: running the *brief* as a general
+agent is indicative, not an instrument run. Record which references actually
+resolved — the brief's four dangling pointers are exactly what an installed user
+would hit, so an agent that resolves them from this repo is getting context the
+target population does not have. That is the difference between measuring the
+agent and measuring the agent-plus-repo.
+
 *The policy is already written — shipping makes it compliable, not new.*
 `plan.md:460` already requires a reviewer pass for anything entering `examples/`.
 So there are two tiers and they are consistent: **mandatory at the examples gate,

@@ -10,6 +10,12 @@ explainer-video proved (the window contract, the determinism discipline, the
 instruments, the review method) and rebuilds everything the old renderer stack
 constrained (materials, post, characters, physics).
 
+This file owns the architecture and the phase gates. The current *tactical* plan
+— instruments, doc routing, the viewer and the camera bake, and what is
+deliberately deferred with the trigger that revives it — lives in
+[working-plan.md](working-plan.md). Most of that work is cross-phase: it serves
+every phase and belongs to none.
+
 The predecessor's full record — its arc and postmortem, per-item ledger, test
 suite, and hardening findings — is consolidated in
 [predecessor-record.md](predecessor-record.md), carried over verbatim so the

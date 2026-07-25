@@ -5,13 +5,28 @@ last updated: 2026-07-25
 [`plan.md`](plan.md) is the founding architecture and its phase gates. This is
 the consolidated *tactical* plan that came out of the 2026-07-25 sessions — the
 first film built at ~3x the length of any shipped example, a viewer prototype,
-and an audit of [`source-of-truth.md`](source-of-truth.md) against the tree. Most
-of it is cross-phase: instruments and routing serve every phase and belong to
-none.
+and an audit of [`source-of-truth.md`](source-of-truth.md) against the tree.
 
-Read [the spine](#the-spine) first. It is one criterion, and it is what decides
-the ranking — without it this is a wish list, and the ranking is the only part
-that is hard.
+**About half of this is not new ground — it is executing against a roadmap that
+already exists**, and that discovery reorganized the document. Track C is Phase 6
+under a different name (`museum-walk` is already in the test-case portfolio as
+"same kernel, input driver instead of timeline driver"). The deferred type
+primitive belongs to the existing three-tier chart pipeline. The "get more
+evidence" recommendation is the portfolio. **An item that maps to a phase
+inherits that phase's gate, and a gate is a stronger commitment device than any
+trigger this document can write for itself.**
+
+| item | maps to |
+|---|---|
+| Track A (instruments), Track B (routing) | no phase — cross-cutting, ranked by the spine |
+| Track C (viewer + camera bake) | **Phase 6** (`museum-walk`), and the camera bake de-risks **Phase 4** |
+| Track D (kit) | no phase, but `STYLE.palette` discharges a 0.9.1 carry-forward |
+| type primitive (deferred) | the **chart tier** — chart before showcase before film |
+| condition coverage (below) | no phase — see [Evidence](#evidence-calibration) |
+
+So: **let the gates rank what maps, and the spine rank what doesn't.** Read
+[the spine](#the-spine) first — it is one criterion, and without it the
+unmapped half is a wish list.
 
 ---
 
@@ -96,7 +111,15 @@ Two notes on the dependencies, because both were initially overstated:
   sits behind three unrelated kit changes. Keep the option open explicitly: **if
   the viewer becomes time-sensitive, pull C1's single line out and pay one extra
   cascade.** The seam factoring is precisely what makes that escape cheap, which
-  is an argument for the factoring rather than against the batching.
+  is an argument for the factoring rather than against the batching. *Corrected
+  in Track D: that escape is an 8-file change, not one line. Still right, but
+  choose it knowingly.*
+
+**This order is provisional on owner's-call 0.** If Track C is admitted through
+an amendment to `plan.md`'s Phase 6 fence, the camera bake's role as the cheapest
+Phase 4 spike (C0) is a live argument for moving 8-9 ahead of 4-6 — de-risking
+the owner's stated priority outranks a routing edit. The order above assumes the
+fence holds.
 
 ---
 
@@ -184,6 +207,14 @@ rather than adding one.
 
 The spine's second clause. **Everything here is a delivery-timing fix, not new
 content.**
+
+**Hard constraint on all of it** (`CLAUDE.md` invariant 3): `SKILL.md` may only
+cite paths inside its own subtree, because the install cache has no `docs/` and
+such a pointer dangles for every installed user. So B1 and B2 can route to
+`references/*` and nothing else. Nothing proposed here breaks it — and it
+independently confirms keeping `source-of-truth.md` in `docs/` from a second
+direction: it is not only that installed users do not need it, it is that
+`SKILL.md` cannot legally point at it.
 
 ### B1. `SKILL.md` step 3 — three findings land in fifteen lines
 
@@ -367,6 +398,17 @@ it is the **easy** instance: Phase 4's hard problem is trusting the baker (pinne
 Rapier, seed, fixed timestep), whereas here the baker is a person and the samples
 *are* the ground truth. Nothing to reproduce.
 
+**Which makes the camera bake the cheapest available spike for Phase 4 — the
+owner's stated next priority.** `plan.md` records the bake as OWNER PRIORITY with
+a spike list to be measured before any pipeline code: (1) Rapier version pin and
+re-bake identity, (2) the sample-rate bracket, (3) the embedding format. **A
+camera bake exercises 2 and 3 against a baker that cannot be non-deterministic**,
+which is the whole point of a spike — isolate one class of new variable, which is
+Phase 1's own lesson. It also proves beat-anchoring and the splice-and-playback
+path end to end. That reframes Track C from "demo value, sequenced last" to
+"de-risks the owner's priority," which is a stronger argument for moving it up
+than any audience argument.
+
 The live-camera question needed no doctrine change either. Determinism as this
 repo defines and tests it is `seekTo(t)` twice giving byte-identical pixels, no
 state across frames, no `Math.random()`, no wall-clock. A viewer offset is none of
@@ -376,6 +418,42 @@ outputs — and has never been called a determinism violation. Framing has alway
 been part of the viewing configuration. The doc change is a footnote saying the
 offset is a viewing parameter, so nobody reads "camera responds to input" as
 licence to carry state.
+
+### C0.5. This is Phase 6 arriving early, and the seam points at the cut
+
+`plan.md`'s architecture section splits the scene layer in two: a **kernel**
+(`pose(state)`, `materials(state)`, `camera(state)` — no clock, no input) and a
+**driver** that produces the state stream, as `g(t)` for the film or `g(events)`
+for interaction. Phase 6's gate reads: *"the spike reuses kernel, characters,
+materials, and at least one instrument with zero modification — proving the layer
+split held."*
+
+**The prototype swapping the timeline driver for its own loop is that driver
+swap, done by accident** — and it reused the kernel, the characters, the
+materials and the contract. That is real evidence for the founding bet, arriving
+years earlier than the phase that was meant to test it, and it should be recorded
+as such rather than as a feature.
+
+It also means the seam needs its fork named **before Track D batches it into a
+fenced release**, which is the most expensive place to be wrong:
+
+- The architecture's own answer is that a view offset is **part of state**: the
+  timeline driver emits identity, an input driver emits it from events, and
+  `setCamera` never changes. That is literally zero modification, and it is the
+  shape Phase 6 will want.
+- **That shape is not available today.** `setCamera(t)` takes `t`; the split
+  "costs only discipline" until Phase 6 and has not been implemented. Threading
+  state through the kernel is a large refactor, not a line.
+
+So the honest position: our one-line hook does not violate a boundary that
+exists — it **deepens the weld at exactly the point the plan intends to cut**.
+That is acceptable and it is not free. Two mitigations, both cheap:
+
+1. **Shape the hook so it converts trivially.** Read the offset from a single
+   named object that a driver could later own, never from ad-hoc globals. Then
+   the Phase 6 refactor changes where the offset *comes from*, not the math.
+2. **Record it as a known weld** in `plan.md`'s Phase 6 entry, so the spike
+   starts by cutting there rather than discovering it.
 
 ### C1. The seam, not the feature (batched into Track D)
 
@@ -439,12 +517,34 @@ in the solver's vocabulary.
 fenced change costs edit-every-carrier + parity verify + version cascade. Four
 separate changes pay that four times; one release pays it once.
 
+**The carrier count is four times what a templates-only reading suggests.**
+Fences are carried by the templates *and* every example *and* the site's neon
+variant — measured: `scene.character.template.html` 6, `scene.template.html` 5,
+`scene2d.template.html` 1, `bear-and-bees` 6, `menagerie` 6, `gearbox` 5,
+`materials` 5, `noise-chart` 5, `site/films/gearbox-neon.html` 5. 0.16.0's boot
+card confirms this is established practice: it landed "byte-identically in both
+3D templates, all five examples, and the site-only neon variant."
+
 | change | fence | carriers |
 |---|---|---|
-| camera view-offset seam (C1) | `SOLVER` | 2 × 3D |
-| `CONFIG.name` / `CONFIG.titleCard` split | `DRIVER` + `HTML` | 2 × 3D |
-| `hide(obj, u)` owning the `1e-4` clamp | `KERNEL` | 3 templates |
-| `subjectFromObject(group, {pad})` | `KERNEL`/`RIG` | 2-3 templates |
+| camera view-offset seam (C1) | `SOLVER` | 2 templates + 5 examples + neon = **8** |
+| `CONFIG.name` / `CONFIG.titleCard` split | `DRIVER` + `HTML` | **8** |
+| `hide(obj, u)` owning the `1e-4` clamp | `KERNEL` | 3 templates + 5 examples + neon = **9** |
+| `subjectFromObject(group, {pad})` | `KERNEL`/`RIG` | **8-9** |
+
+Two consequences, both of which move decisions taken earlier in this document:
+
+- **Batching is worth far more than first stated** — four separate changes touch
+  ~33 files and pay four cascades.
+- **The escape hatch is not cheap.** "Pull C1 out and pay one extra cascade" is
+  an 8-file change, not a one-line one. It remains the right move if the viewer
+  becomes time-sensitive, but it should be chosen knowingly.
+
+**Use the standing maintenance rule, which this plan previously omitted**
+(`plan.md`, 0.6.0 post-gate pass): after editing any fenced block, run
+`bun run smoke.js --parity-only templates/*.html examples/*.html`
+**cross-directory** before committing. A per-directory green does not cover the
+template↔example boundary, which is exactly where a 33-file change will drift.
 
 Plus one unfenced template edit that belongs in the same release because it is
 the same kind of fact:
@@ -455,6 +555,20 @@ the same kind of fact:
   what happened, leaving a film that cannot swap bibles. **The template is the
   documentation most authors actually read.** Cheapest change on this plan,
   widest effect.
+
+  **This is not a new item — it discharges a carry-forward whose trigger has
+  fired.** The 0.9.1 review dispositioned character colors as hex literals rather
+  than `STYLE` keys, deferring with a stated trigger: *"palette keys move into
+  STYLE then, not before"*, the trigger being the first character bible pair.
+  A film has now shipped with its palette outside `STYLE` for precisely the
+  predicted reason, which is the same trigger arriving from the other direction.
+
+Also fold in one open carry-forward that is the **same shape as C1** and will
+otherwise reopen it: **per-shot camera energy.** `bear-and-bees` wanted `locked`
+for the hush while the film wanted `steadicam`, and there is no vocabulary for
+it, so the film went all-locked. That is a per-shot override of a `STYLE`-level
+camera property applied inside `setCamera` — structurally identical to the view
+offset. Design the two together or the second one reopens the first.
 
 Notes on two of these:
 
@@ -492,7 +606,7 @@ rather than a matter of mood.
 | occlusion linter | 3 of 4 instances were static staging the contact sheet already catches by eye; the 4th was a transit defect a beat-midpoint sample structurally cannot see, and `transitions` catches it. So the linter automates eye-work on a converging axis — real, but third | probe + transitions shipped and composition rounds still not converging |
 | solver-aware staging | the proposed vocabulary fails on its own originating use case: props at fixed world positions a character walks to, which was every exhibit in the film that motivated it | a design that handles walked-to props |
 | `travel()` / `LEGS` / `shapes.md` | register-specific to the presenter explainer, which arrived as a commission rather than from the roadmap | a second presenter film asking |
-| type primitive (glyph data + renderers) | generalizes past the register — any film with a sign, an axis, a label — but it is a bigger build than it looks, and no shipped example needs it | a second film needing built text, or the diagrammatic register (see B5) |
+| type primitive (glyph data + renderers) | generalizes past the register — any film with a sign, an axis, a label — but it is a bigger build than it looks, and no shipped example needs it. **And it is governed by an existing rule neither review applied: a glyph alphabet is a *primitive*, so under the chart tier it lands as a chart — a grid of all 36 glyphs, byte-compared per backend — before any film uses it.** That is also the right shape on the evidence: all three glyph bugs were one letter built on a wrong assumption, which a grid makes obvious at a glance and a title card cannot | a second film needing built text, or the diagrammatic register (see B5) — entering at the chart tier, not in a film |
 | splitting `method.md` (960 lines, 45% of reference text) | it would create exactly the doc-versus-doc boundary B4 exists to patch, and `method.md`/`instruments.md` already contradict in that shape. Its own justification is honest but weak: "I read all of it, so splitting wouldn't have helped me read" | B4's tiebreaker landing first |
 | distance-space gait as the template default | the algebra is sound (`{start:0, rootX:s}` reduces identically where travel is monotone) but was argued, not measured | the PSNR comparison `method.md` prescribes |
 | `--workers` in `build.js all` | **not a bug — retracted.** Clean cold run: exit 0, 180/180 frames, 32.5s vs 38.1s. It works and buys ~1.17x, contention-bound | a workload where 15% matters |
@@ -500,6 +614,19 @@ rather than a matter of mood.
 ---
 
 ## Owner's calls
+
+**0. Is Track C inside or outside `plan.md`'s Phase 6 fence?** This is the
+largest call here and the two documents currently disagree. `plan.md`'s risk
+section names the scope fence in as many words: *"mitate ships films;
+interactivity is one spike behind a gate, and engine-shaped features (input
+handling, game state, audio mixing) are non-goals until Phase 6 reopens the
+question."* The viewer is input handling. This document treats it as delivery
+chrome, distinct from an input driver — a defensible distinction that was
+asserted rather than reconciled, and someone reading `plan.md` today would
+correctly block Track C as the exact scope creep it fences against. Either
+`plan.md` gets an amendment, or Track C waits. Note that C0.5 argues the viewer
+*is* Phase 6 arriving early, which makes "amend" the more honest option than
+"it's a different thing."
 
 1. **Is the presenter explainer a register mitate commits to?** It arrived as a
    commission. If yes, `travel()` and `shapes.md` become roadmap; if no, the film
@@ -524,25 +651,34 @@ rather than a matter of mood.
 Things this plan asserts or assumes that have not been measured. Each is cheap;
 none should be believed until it is.
 
+**Each carries the trigger that forces it**, the same column the deferred table
+uses — an untriggered debt list sits, and this session's whole lesson is that
+unverified numbers get published anyway.
+
 - **PSNR before flipping the gait default** — same sample timestamps before and
   after, `ffmpeg -lavfi psnr`, per `method.md`'s own migration guidance.
+  *Trigger: before the distance-space gait becomes a template default.*
 - **Whether a PNG master is required for the MP4** — JPEG q92 would take a 60s
   film from 6.3 min to ~1.6 min. The stated reason for lossless is that artifacts
   would add noise to a frame-difference metric, which is an argument about
   `motion`, not about the mp4. Shoot 100 frames both ways, PSNR against a PNG
   master, and if it clears this project's 70 dB imperceptibility bar the argument
   is over.
+  *Trigger: the first film long enough that 6 minutes of encode is a real cost — or never; it is annoying, not prohibitive.*
 - **Whether 370 material instances for 121 distinct looks costs anything.** The
   node renderer caches programs by graph structure, so the compile cost may
   already be shared and the real cost may be only uniform updates. Measure before
   memoising — and note that memoising would silently share materials the film
   mutates per frame, which is a determinism hazard `method.md` documents.
+  *Trigger: before any memoisation of `gloss()`/`std()`/`flat()` is written.*
 - **A WebKit measurement for the site's shader-compile figure** (B3), before
   anyone calls it stale.
+  *Trigger: before that figure goes on the auditor's list or gets edited on the site.*
 - **A second data point on reference-reading order.** Ask the next agent to build
   a film and log which references it opened *and when* — before telling it that is
   being measured. The order matters as much as the set: `instruments.md` opened
   late is a different fix from `instruments.md` never opened.
+  *Trigger: the next film built by an agent — free if asked for up front, unrecoverable after.*
 
 ---
 
@@ -563,3 +699,61 @@ DoF/bloom. Roughly half the skill. Nothing above is evidence that half is health
 Track A is the exception and that is why it leads: `probe` rests on five prior
 recurrences recorded in `instruments.md` plus a sixth, and `transitions` rests on
 an export the gate already consumes.
+
+### Moving n past 1 — two axes, and only one of them is the portfolio
+
+Nothing in Tracks A-D generates a second data point; every item responds to what
+one film found. Two mechanisms, and they are **not** substitutes for each other.
+
+**Surface coverage — pull a portfolio case forward, do not invent one.**
+`plan.md` already carries nine test cases, framed as *"each case exists to break a
+different assumption, and each phase gate names the cases it must pass."*
+`market-crash` ("no characters at all — charts and glyphs as sets") is the cheap
+stressor for untouched surface, and it inherits a gate, which is stronger than
+any trigger this document writes for itself. Note also that the examples policy
+makes experiments cheap: nothing enters `examples/` without owner approval, so a
+throwaway lives in `internal/` at no cost to the corpus.
+
+**Condition coverage — a different axis, and the portfolio does not address
+it.** This is the repo's most expensive recorded lesson
+(`predecessor-record.md:302`): the framing defect was invisible to the entire
+verification surface *by construction*, because **no tool in the chain ever
+opened a non-16:9 viewport**. Every gate was met honestly against artifacts that
+could not exhibit the defect. The general form is already written down: *"a film
+gate proves what the film's rendering conditions can express. One viewport is one
+condition. The same is true of one renderer, one window size, one aspect."*
+
+A diverse portfolio does not fix this — the aspect defect happened *despite* one,
+and was found by a human resizing a window. **0.16.1 is a fresh instance of the
+same class**: all three tooling loads carry `?record=1`, so the live path was
+unreachable rather than untested. That is the third instance, after aspect (one
+viewport) and `FRAMES_DIR` (one call site).
+
+So carry a standing item, cheaper than a film and recurring: **enumerate the
+conditions the verification surface never produces, and close the cheapest one
+each cycle.** Open by that test right now:
+
+| condition | status |
+|---|---|
+| non-16:9 viewport | closed — framing-invariance check |
+| no-`record` load | closed — 0.16.1 |
+| second backend | covered — smoke runs both |
+| cold vs warm GPU | partial — shipped-frame check runs first, deliberately cold |
+| **framed vs top-level** | **open** — the site path is covered by neither instrument |
+| **WebKit** | **open** — verified only by hand |
+| **`WEBGPU=vulkan`** | **open** — a standing `plan.md` carry-forward |
+
+### Preserve `circus.html` now — it is time-sensitive twice over
+
+It lives outside the repo and will evaporate. Two reasons that is a cost, not
+housekeeping:
+
+1. It is A2's positive control for **window selection** (the two reverts above).
+2. **It is a candidate reproducer for the open 1-in-6 `WEBGPU=metal` determinism
+   FAIL**, which has resisted reproduction for two versions. `plan.md:275`
+   narrows the suspect space toward "shadowed fur shells, multi-shot solver
+   traffic, the character rig" — the machinery `bear-and-bees` has and the noise
+   chart lacks. `circus.html` has 14 shots and two rigs, i.e. *more* multi-shot
+   solver traffic than the current suspect film. A loop of repeated metal smoke
+   runs answers it, and `plan.md` notes Phase 4 raises the stakes on this one,
+   because a bake is worth nothing if playback is not deterministic.

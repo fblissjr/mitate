@@ -578,6 +578,35 @@ This phase decides whether interactivity becomes a sibling skill or a
 mitate register; that decision is explicitly out of scope until the
 spike exists.
 
+*Unplanned early evidence (2026-07-25), and a weld to cut here.* A viewer
+prototype built on one film swapped the timeline driver for its own loop — it
+called `stopPlayback()` and drove `seekTo` itself — and reused the kernel,
+characters, materials and the contract unchanged. **That is this phase's driver
+swap, arrived at by accident, and it is real evidence the layer split holds.**
+Two things it also established, both recorded in
+[working-plan.md](working-plan.md) Track C. First, the gate's "zero
+modification" is not yet literally reachable: a bounded view offset has to enter
+somewhere, and because `setCamera(t)` takes `t` rather than a state value, the
+split this plan describes is still a discipline rather than a seam. The offset
+therefore lands as a hook *inside* `setCamera` — which deepens the weld at
+precisely the point Phase 6 intends to cut, so the spike should start by cutting
+there rather than discovering it. Second, the same machinery recording and
+replaying its own camera deltas is a **Phase 4 bake** by this plan's own
+definition (sample once at build time, splice as data, play back pure), and the
+cheapest one available: the baker is a person, so there is no version pin, no
+seed and no re-bake identity question. It exercises two of Phase 4's three spike
+items against a baker that cannot be non-deterministic.
+
+**Scope-fence amendment, pending owner sign-off.** The Risks section below fences
+"input handling" as an engine-shaped non-goal until this phase reopens the
+question, which as written blocks a viewer. The distinction worth drawing is not
+film-versus-interactive but **who owns the state stream**: viewer chrome that
+bounds a *viewing parameter* (framing, captions, transport) while the timeline
+driver still owns `t` is a delivery feature and is admitted; an input driver that
+*replaces* the state stream is Phase 6 and stays behind this gate. The recorder
+never arms either, so neither can reach a shipped frame. Without this amendment
+Track C is correctly blocked; with it, the fence still holds where it matters.
+
 ## Examples policy (decided 2026-07-23, measured on a live install)
 
 Examples stay in the plugin dirs. The mechanics, verified on this machine:

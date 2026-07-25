@@ -472,6 +472,22 @@ obeyed**. It preserves the author's authority, keeps the record, and it is the
 whole difference between a reviewer that assists judgment and one that replaces
 it.
 
+**Make disposition structural, not permissive** — the retired reflection rule's
+second lesson applies here exactly: *"the escape hatch ('if nothing, say so') is
+weaker than the elicitation."* Wording it as "delegate a review, and you may
+disagree" puts a weak permission under a strong instruction, and it will lose the
+same way. The convention is that **every finding exits as fixed or dispositioned
+with a reason and a trigger, recorded** — a required field, not an available out.
+That is the shape 0.9.1 used, and its trigger fired two lineages later, which is
+the evidence it works.
+
+**And note the same lesson constrains the prescription's own wording**, because
+`SKILL.md` loads in full on every activation: the instruction is ambient even
+where the action is not. That is the retired rule's problem at much lower
+strength — two population filters down — but it is the reason the chart-tier
+exemption earns its place and the reason this text must *displace* the
+round-budget sentence rather than sit beside it.
+
 *The prescription is gated on a control, and the control is the point.* The yield
 evidence is **n=2, and both are maintainer films reviewed inside this repo by
 their own author.** Nobody has run the reviewer on a film built by a different

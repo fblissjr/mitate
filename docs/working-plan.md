@@ -22,7 +22,7 @@ trigger this document can write for itself.**
 | Track C (viewer + camera bake) | **Phase 6** (`museum-walk`), and the camera bake de-risks **Phase 4** |
 | Track D (kit) | no phase, but `STYLE.palette` discharges a 0.9.1 carry-forward |
 | type primitive (deferred) | the **chart tier** — chart before showcase before film |
-| condition coverage (below) | no phase — see [Evidence](#evidence-calibration) |
+| paths-nothing-exercises sweep (below) | no phase — see [Evidence](#evidence-calibration) |
 
 So: **let the gates rank what maps, and the spine rank what doesn't.** Read
 [the spine](#the-spine) first — it is one criterion, and without it the
@@ -128,6 +128,21 @@ under-declaration, warn on over. Evidence now stands at six films — three
 predecessor payoff crops, three of five hand-computed extents wrong on the long
 film. Promote it, and fix the comment either way.
 
+**And it is the second instance of its class, which makes the class worth
+sweeping.** The predecessor's own five-agent code review found the first: the
+`nodeFrame` determinism guard's *"smoke fails loudly"* comment **was false** for
+the `_nodes`-removed path — the `if` silently no-opped. That one was fixed (the
+template now emits a `console.warn`, which smoke's zero-warning rule converts to
+a hard failure), so the shape is established and has already cost one round.
+
+Two instances of *a code comment asserting an enforcement mechanism that does not
+fire* argue for a bounded, cheap sweep rather than a general audit: **grep every
+comment that claims a check exists — "smoke", "catches", "throws", "fails
+loudly", "is what catches it" — and verify each against the code.** That is a
+targeted pass over a specific sentence shape, and it is the one place
+`doc-claim-auditor` has never been pointed, because it audits reference files
+against code and this defect lives *in* the code.
+
 ### The earn-in rule has a blind spot, and A1 is what fell into it
 
 The predecessor considered a contact checker and **explicitly declined it**, on
@@ -192,6 +207,7 @@ measuring instruments.
 | 5 | demote backend policy in `SKILL.md` | B | no | 3 |
 | 6 | provenance repairs (PNG home, 700px pointers, site row) | B | no | — |
 | 6b | **fix the false extent-check claim** in `solveShot`'s comment | B | no | — |
+| 6c | sweep code comments that assert a check exists (second instance of the class) | B | no | — |
 | 7 | the batched kit release | D | **yes** | — |
 | 8 | viewer overlay + capture | C | no | 7 |
 | 9 | camera bake + the fork | C | no | 8 |
@@ -830,8 +846,18 @@ unreachable rather than untested. That is the third instance, after aspect (one
 viewport) and `FRAMES_DIR` (one call site).
 
 So carry a standing item, cheaper than a film and recurring: **enumerate the
-conditions the verification surface never produces, and close the cheapest one
-each cycle.** Open by that test right now:
+paths nothing exercises, and close the cheapest one each cycle.** "Conditions" is
+too narrow — the family has three shapes and the repo has shipped all three:
+
+- **a condition never produced** — no tool opened a non-16:9 viewport (the
+  framing defect); no tool loaded without `?record=1` (0.16.1)
+- **a command never run** — `build.js aspect` threw a `ReferenceError` on an
+  undefined `stripText` in *both* skills, because the command "had never been
+  exercised on either fork since the nocap feature landed"
+- **a branch never taken** — the `_nodes`-removed path, where the determinism
+  guard silently no-opped under a comment claiming smoke would fail loudly
+
+Open by that test right now:
 
 | condition | status |
 |---|---|
@@ -857,3 +883,20 @@ housekeeping:
    solver traffic than the current suspect film. A loop of repeated metal smoke
    runs answers it, and `plan.md` notes Phase 4 raises the stakes on this one,
    because a bake is worth nothing if playback is not deterministic.
+
+**But check the environment before the machinery — the current narrowing
+excludes the likeliest suspect by construction.** The predecessor's Phase 0
+session recorded this, and it is not in either consolidated doc: *"the Chromium
+cache scan matched nothing on Apple Silicon (no `-arm64` rels) and silently used
+system Chrome — which disagrees with playwright's pinned build about WebGPU.
+**That binary split is what made [the half-dead-adapter finding]
+warmth-dependent and maddening to reproduce.**"* Both tools were fixed to scan
+both layouts.
+
+Note the shape: an intermittent, warmth-dependent, hard-to-reproduce WebGPU
+defect whose cause was **which binary got resolved**, not what the scene
+contained. The chart-tier experiment that produced the current narrowing varied
+the *scene* and held the environment fixed, so it could only ever implicate scene
+machinery. Before hunting fur shells and solver traffic, assert the resolved
+browser binary is identical across the failing and passing runs — it is one line
+of logging and it retires or promotes an entire suspect class.

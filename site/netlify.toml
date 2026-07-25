@@ -7,17 +7,21 @@
   publish = "."
   command = "../scripts/stage-films.sh"
 
-# Cache film and poster assets. Filenames are stable (NOT content-addressed),
-# so no `immutable` — an in-place update is still picked up on the next revalidate.
+# Films: cache but ALWAYS revalidate. Filenames are stable (not
+# content-addressed) and films update in place, so any positive max-age is a
+# window where a phone replays yesterday's film and an update looks unshipped
+# — measured: the boot card reached every film on the server while a phone
+# still showed it on one. `no-cache` keeps the local copy and spends one 304
+# round trip to confirm it; an updated film arrives immediately.
 [[headers]]
   for = "/films/*"
   [headers.values]
-    Cache-Control = "public, max-age=86400"
+    Cache-Control = "public, no-cache"
 
 [[headers]]
   for = "/posters/*"
   [headers.values]
-    Cache-Control = "public, max-age=86400"
+    Cache-Control = "public, max-age=3600"
 
 [[headers]]
   for = "/fonts/*"

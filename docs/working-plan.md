@@ -527,6 +527,32 @@ finding**:
 | **2** — seen by the author and **dispositioned**, not fixed | the eye rings + lashes reading as a black bar at MS (judged faithful to the reference and shipped); the whip-cut into the ship beat, where the block row crosses her face for ~5 frames (called a transient inside a 0.16s cut) | **the interesting class** — judgment over an author's dismissals, which no instrument does, and the reason to prescribe an agent at all |
 | **3** — neither the instruments nor the author saw it | unknown by construction | strongest result; justifies prescription on its own |
 
+**The viewer layer is unkeyed territory, and it needs its own advance
+classification.** `circus.html` carries a prototype viewer — orbit, captions,
+caption size, scrub — that postdates every reference the reviewer is reading and
+that no one but its author has examined. The three classes above cover the
+*film*; they say nothing about the viewer. Fixed in advance:
+
+| reviewer output about the viewer | reading |
+|---|---|
+| a genuine defect in it | **class 3** — nothing covered it and nobody else looked |
+| "the viewer threatens determinism" | **characterised false positive** — it is gated on `?record=1`, and byte-identity against the pre-viewer render was verified (`cmp` clean, infinite PSNR). If this lands as a HIGH it reports the reviewer's priors, not the film's state |
+| **off-brief commentary** (code quality, architecture) rather than a film defect | **scope drift**, and neither a hit nor a false positive. A prescribed reviewer that wanders is a cost, and this is the run that would reveal it |
+| silence | uninformative — no reference it reads describes the feature |
+
+**One thing to watch that is about the reviewer rather than the film: does it
+measure or does it assert?** Its brief says it reviews "using the shipped
+instruments." If it *runs* them, its claims are measured. If it reads the source
+and infers — particularly on determinism, which cannot be established by reading
+— then it committed this project's central error inside the very pass being
+evaluated for prescription. Record which it did. That is arguably more decisive
+for the prescription question than the yield count.
+
+Note the environment is doubly old, and both ways are correct for realism: the
+prototype's `smoke.js` is also pre-0.16.1, so a "smoke green" from this run
+carries no live-playback check at all. Absence of that observation is not a
+miss — it is not executable there.
+
 **Who runs it matters, and it cannot be the film's author.** Applying the brief to
 one's own fixture reproduces the condition that already failed — eight rounds of
 self-review. The value in the agent is independence, and an author is

@@ -383,6 +383,42 @@ decides *what to run and judges the output* — the attention-allocation layer t
 spine names as the scarce resource. **Building instruments for a judge that
 cannot be reached is the wrong order.**
 
+**It is a pointer rewrite, not a `git mv`.** Verified: the file addresses itself
+from the repo root and **contradicts itself while doing it** — four pointers
+dangle in an install cache (`plugin/skills/mitate/references/method.md`,
+`…/instruments.md`, `…/film-language.md`, and `.claude/rules/model-delegation.md`,
+which does not ship at all), while two are already subtree-relative
+(`references/webgpu-stack.md`, `references/materials.md`). Two frames of
+reference in one file — the same failure the `FRAME` architecture exists to kill,
+one layer up, in prose. Its *content* is portable: every reference it cites is a
+shipped one. Only its addressing is not. This is the identical class 0.5.1 fixed
+for `SKILL.md`, described then as "the rule this very diff established."
+
+**Four steps, in order:** rewrite the pointers subtree-relative; resolve the
+`model-delegation` reference (inline the intent or drop it, since that rule does
+not ship); decide the model policy for installed users knowingly; add the
+delegation tier to `SKILL.md`'s routing so anyone knows the agent exists.
+
+**And one consequence worth stating plainly, because it changes what step 3 can
+honestly say.** `method.md:771` claims composition "is the axis that converges
+with rounds," and backs it with a worked instance where four rounds converged
+cleanly — so the claim is *supported*, and this is not an argument that it is
+false. The problem is the evidence a user compares against: **both Phase 2 gate
+films needed the reviewer to converge.** The changelog credits it with defects
+"author-eyes missed" — five on menagerie, three HIGHs on bear-and-bees. The
+maintainer's own rounds did not close them either.
+
+So a user follows `SKILL.md`, budgets 3-4 rounds, compares their film to
+menagerie, finds theirs weaker, and concludes their judgment is worse. The actual
+difference is that one of them had an independent reviewer and nothing says so.
+**The shipped examples are evidence for a workflow that did not produce them.**
+
+That merges item 4's rewrite with this one: the honest replacement for the round
+budget is not "rounds are cheap, look more" but *"your own rounds will not
+converge alone — delegate a review."* **That sentence can only be written if A0
+ships**, which is what makes item 4's dependency on {0, 2} real rather than
+cosmetic.
+
 *Owner's call, deliberately surfaced:* the agent carries no `model` frontmatter,
 so it inherits the session model by design — its output is what a human acts on.
 That is a reason to make invocation **opt-in and routed**, not a reason to keep

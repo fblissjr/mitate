@@ -160,7 +160,8 @@ h1 .fn{font-family:var(--mono);font-weight:600;letter-spacing:-0.02em;color:var(
 .tick.maj{height:15px;top:calc(50% - 7px);background:var(--dim)}
 .beat-names{display:flex;font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-top:.35rem}
 .beat-names span{text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-@media(max-width:560px){.axis-label span:nth-child(2){display:none}}
+.beat-names .bno{font-weight:400;color:var(--dim)}
+@media(max-width:560px){.axis-label span:nth-child(2){display:none}.beat-names .bno{display:none}}
 .marker{position:absolute;top:calc(50% - 8px);width:2px;height:16px;background:var(--blue);transition:left .1s linear}
 .marker::after{content:"";position:absolute;top:-5px;left:-4px;width:10px;height:10px;background:var(--blue);border-radius:50%;box-shadow:0 0 0 4px var(--blue-wash);transition:transform .15s var(--ease)}
 .track:hover .marker::after{transform:scale(1.35)}

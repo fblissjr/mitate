@@ -12,7 +12,7 @@
 <link rel="preload" href="fonts/archivo-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <!-- the hero mounts this scene on load, so fetch it with the page -->
 <link rel="preload" href="films/gearbox.html" as="fetch" crossorigin>
-<link rel="stylesheet" href="styles.css?v=23">
+<link rel="stylesheet" href="styles.css?v=24">
 </head>
 <body>
 <script>document.documentElement.classList.add('js')</script>
@@ -79,7 +79,14 @@
         </div>
       </div>
       <div class="inst-axis">
-        <div class="axis-label"><span>t = 0.000s</span><span>the film's five beats, as written · a pure function of t</span><span>16.500s</span></div>
+        <div class="axis-top">
+          <div class="transport">
+            <button type="button" class="tbtn" id="tBack" aria-label="Back 3 seconds">−3s</button>
+            <button type="button" class="tbtn tplay" id="tPlay" aria-label="Play or pause" aria-pressed="false"><span class="pp" aria-hidden="true"></span></button>
+            <button type="button" class="tbtn" id="tFwd" aria-label="Forward 3 seconds">+3s</button>
+          </div>
+          <div class="axis-label"><span>t = 0.000s</span><span>the film's five beats, as written · a pure function of t — drag it</span><span>16.500s</span></div>
+        </div>
         <div class="track" role="slider" tabindex="0" aria-label="Timeline — drag to move t through the film" aria-valuemin="0" aria-valuemax="16.5" aria-valuenow="0">
           <div class="base"></div>
           <!-- boundaries are gearbox's real beats table: 2.5 + 3.2 + 3.6 + 3.4 + 3.8 = 16.5s -->
@@ -138,8 +145,8 @@
       </div>
       <div class="claim reveal">
         <div class="n">where it is</div>
-        <h2>Alpha. Genuinely unfinished.</h2>
-        <p>Everything here runs 12 to 21 seconds — short on purpose: these examples are chosen to still open as live HTML on ordinary browsers and devices, and a longer film means more worlds and materials for a device to compile. <b>Nothing in the contract caps duration</b>, but longer has not been shipped here. Characters are one skeleton family. I don't know yet whether this is useful — <b>it is fun to tinker with and see what it can do</b>, and that is why it exists in the open.</p>
+        <h2>There's a balance in building in AI between "unfinished" and "over-engineered" — this currently sits on the side of unfinished (I think).</h2>
+        <p>A tinkering idea, in the open because <b>it is fun to see what it can do</b>. Everything here runs 12 to 21 seconds — kept short so every example opens as live HTML on ordinary devices; nothing caps duration, but longer has not been shipped. Characters are one skeleton family.</p>
       </div>
     </div>
   </div>
@@ -406,6 +413,6 @@ phase = { HL:<span class="c-v">0</span>,  FL:<span class="c-v">.25</span>,
   </div>
 </div>
 
-<script src="app.js?v=23"></script>
+<script src="app.js?v=24"></script>
 </body>
 </html>

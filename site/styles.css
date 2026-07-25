@@ -141,6 +141,15 @@ h1 .fn{font-family:var(--mono);font-weight:600;letter-spacing:-0.02em;color:var(
 .rr b{color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums}
 .rr b.pass{color:var(--blue-ink)}
 .inst-axis{border-top:1px solid var(--line);padding:13px 16px;background:var(--paper)}
+.axis-top{display:flex;align-items:center;gap:.9rem;margin-bottom:.5rem}
+.axis-top .axis-label{flex:1;margin-bottom:0}
+.transport{display:flex;gap:.3rem}
+.tbtn{font-family:var(--mono);font-size:.62rem;letter-spacing:.02em;color:var(--muted);background:var(--paper);border:1px solid var(--line);border-radius:2px;padding:.24rem .5rem;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;min-width:2.1rem;transition:color .15s,border-color .15s}
+.tbtn:hover{color:var(--ink);border-color:var(--dim)}
+.tbtn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.tplay .pp{display:block;width:0;height:0;border-left:7px solid currentColor;border-top:4.5px solid transparent;border-bottom:4.5px solid transparent}
+.tplay.playing .pp{width:8px;height:9px;border:0;border-left:2.6px solid currentColor;border-right:2.6px solid currentColor}
+@media(pointer:coarse){.tbtn{padding:.4rem .62rem;font-size:.68rem}}
 .axis-label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.66rem;color:var(--muted);margin-bottom:.5rem}
 .track{position:relative;height:24px;cursor:grab;touch-action:none}
 .track:active{cursor:grabbing}
@@ -153,7 +162,8 @@ h1 .fn{font-family:var(--mono);font-weight:600;letter-spacing:-0.02em;color:var(
 .beat-names span{text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 @media(max-width:560px){.axis-label span:nth-child(2){display:none}}
 .marker{position:absolute;top:calc(50% - 8px);width:2px;height:16px;background:var(--blue);transition:left .1s linear}
-.marker::after{content:"";position:absolute;top:-5px;left:-4px;width:10px;height:10px;background:var(--blue);border-radius:50%;box-shadow:0 0 0 4px var(--blue-wash)}
+.marker::after{content:"";position:absolute;top:-5px;left:-4px;width:10px;height:10px;background:var(--blue);border-radius:50%;box-shadow:0 0 0 4px var(--blue-wash);transition:transform .15s var(--ease)}
+.track:hover .marker::after{transform:scale(1.35)}
 @media(max-width:720px){.inst-body{grid-template-columns:1fr}.inst-film{border-right:0;border-bottom:1px solid var(--line)}}
 
 /* ============================ THESIS strip ============================ */

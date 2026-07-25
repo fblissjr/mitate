@@ -85,6 +85,10 @@
   const track = document.querySelector('.inst-axis .track');
   const axisMid = document.querySelector('.inst-axis .axis-label span:nth-child(2)');
   const axisMidText = axisMid ? axisMid.textContent : '';
+  const btnPlay = document.getElementById('tPlay');
+  const btnBack = document.getElementById('tBack');
+  const btnFwd = document.getElementById('tFwd');
+  const setPlayUI = (on) => { if (btnPlay) { btnPlay.classList.toggle('playing', on); btnPlay.setAttribute('aria-pressed', String(on)); } };
   const autoPlayHero = !reduceMotion && !coarse && heroScreen && heroStill;
 
   // 7.2 is the t the poster still was rendered at (verified against a fresh
@@ -103,11 +107,12 @@
     paint(t);
     raf = requestAnimationFrame(tick);
   };
-  const stop = () => { if (raf !== null) { cancelAnimationFrame(raf); raf = null; } };
+  const stop = () => { if (raf !== null) { cancelAnimationFrame(raf); raf = null; } setPlayUI(false); };
   const play = (fromT) => {
     if (raf !== null || !win) return;
     start = performance.now() - (fromT || 0) * 1000;
     raf = requestAnimationFrame(tick);
+    setPlayUI(true);
   };
   const showT = (t) => {
     lastT = t;
@@ -120,9 +125,13 @@
     if (axisMid) axisMid.textContent = axisMidText;
     const t0 = pendingT !== null ? pendingT : lastT;
     pendingT = null;
-    if (dragging || reduceMotion) { showT(t0); return; }
+    if (dragging) { showT(t0); return; }
+    // reduced motion never autoplays, but an explicit play press is a media
+    // control the user operated — honoring it is not autoplay
+    if (reduceMotion && !wantPlay) { showT(t0); return; }
     play(t0);
   };
+  let wantPlay = false;
 
   function mountHero() {
     if (mounted || !heroScreen || !heroStill) return;
@@ -197,6 +206,33 @@
     });
     // a keyboard scrub parks the film; leaving the control lets it run again
     track.addEventListener('blur', () => { if (win && raf === null && !dragging && !reduceMotion) play(lastT); });
+
+    // transport: play/pause and ±3s — the same t plumbing the scrubber uses.
+    // On an unmounted hero (coarse pointer), any transport press mounts first,
+    // holding the requested t until the scene is real.
+    const ensureMounted = (t) => {
+      if (win) return true;
+      pendingT = t;
+      if (axisMid) axisMid.textContent = 'loading the scene…';
+      mountHero();
+      return false;
+    };
+    if (btnPlay) btnPlay.addEventListener('click', () => {
+      if (raf !== null) { wantPlay = false; stop(); return; }
+      wantPlay = true;
+      if (ensureMounted(lastT)) play(lastT);
+    });
+    const skip = (d) => {
+      const base = pendingT !== null ? pendingT : lastT;
+      const t = Math.min(DUR, Math.max(0, base + d));
+      if (!ensureMounted(t)) return;
+      const wasPlaying = raf !== null;
+      stop();
+      showT(t);
+      if (wasPlaying) play(t);
+    };
+    if (btnBack) btnBack.addEventListener('click', () => skip(-3));
+    if (btnFwd) btnFwd.addEventListener('click', () => skip(3));
   }
 
   // stop feeding it when it is off screen; the contract makes this free

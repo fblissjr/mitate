@@ -10,10 +10,8 @@ It is a pipeline an agent drives rather than a one-shot generator: it reshoots
 parts, validates on three axes, and gets better over time. Every scene is
 deterministic — a pure function of time `t`, so the same `t` always renders the
 same frame. The whole surface tooling touches is a handful of `window.*`
-exports at the end of every scene — see the driver block in
-[`gearbox.html`](plugin/skills/mitate/examples/gearbox.html) (search for
-`window.seekTo`). The names are permanent; the list grows when a tool needs
-an export rather than a peek at scene internals.
+exports at the end of every scene — [the window contract](#the-window-contract),
+shown below.
 
 The tooling tries to abstract all this cleanly, but clean abstraction is nearly
 impossible here — so treat it as a bootstrap to personalize. When the film you
@@ -55,6 +53,38 @@ here runs 12 to 21 seconds — kept short so the examples open as live HTML on
 ordinary devices; nothing caps duration, but longer has not been shipped.
 Characters are one skeleton family. I don't know yet whether this is useful — it
 is fun to tinker with and see what it can do, and that is why it is public.
+
+## The window contract
+
+Everything the recorder, the smoke gate, and the showcase site can do, they do
+through a few `window.*` exports at the end of every scene — never by reaching
+into scene internals. This is the driver block from
+[`gearbox.html`](plugin/skills/mitate/examples/gearbox.html) (search for
+`window.seekTo`). The excerpt is abridged and may drift out of sync as scenes
+evolve — the scene file is the source of truth:
+
+```js
+// the driver (abridged)
+window.DURATION = TOTAL;            // derived from BEATS, cannot disagree
+window.BEATS    = BEATS;            // tools label frames by beat
+window.FRAME    = FRAME;            // the declared aspect + px
+window.FLASHES  = FLASHES;          // flash midpoints, absolute seconds
+window.CAPFADE  = CONFIG.capFade;   // caption fade, for the reading-speed lint
+window.SHOTS    = SHOTS.map(/* cut-entry windows */);
+
+window.seekTo = function (t) {      // the f in f(t)
+  uTime.value = t;
+  setCamera(t); animate(t); setOverlay(t);
+  pipeline.render();
+};
+window.stopPlayback = function () { playing = false; };
+// …and window.sceneReady = true, once every shader is warm
+```
+
+The names are permanent — every tool depends on them. The list grows when a
+tool needs an export rather than a peek: `FLASHES` and `SHOTS` joined the day
+a check needed them. The showcase site is itself a consumer — its hero drives
+gearbox through `seekTo`, live.
 
 ## Install
 

@@ -141,7 +141,11 @@
     frame.setAttribute('aria-hidden', 'true');
     frame.setAttribute('tabindex', '-1');
     frame.setAttribute('title', '');
-    frame.src = 'films/gearbox.html?nocap';
+    // captions ON: beat 2 is a close-up whose caption is what makes it read as
+    // a close-up rather than a cropped frame — measured confusion, not taste.
+    // ~10.8px at this width sits at the legibility floor; the film's own words
+    // beat no words.
+    frame.src = 'films/gearbox.html';
     frame.addEventListener('load', () => {
       let tries = 0;
       const settle = () => {

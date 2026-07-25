@@ -11,6 +11,11 @@ parts, validates on three axes, and gets better over time. Every scene is
 deterministic — a pure function of time `t`, so the same `t` always renders the
 same frame.
 
+The tooling tries to abstract all this cleanly, but clean abstraction is nearly
+impossible here — so treat it as a bootstrap to personalize. When the film you
+want needs a primitive that doesn't exist yet, you build it on top — until
+models can do all of this on their own.
+
 [![Six scenes made with mitate: a bear nosing a hanging beehive, three characters walking in on their own gaits, a gearbox mechanism, subsurface scattering through thin skin, a grid of shader primitives, and the same gearbox under a neon style bible](site/posters/scenes.jpg)](https://mitate.microapp.me)
 
 Those six are what it makes today, playing in the browser at
@@ -40,9 +45,10 @@ The character films spend 4 to 5 seconds compiling shaders on a first visit on
 capable hardware — slower devices, longer — and captions stop being legible below
 roughly 700px of frame width.
 
-**Where it is.** Alpha, genuinely unfinished. Everything here runs 12 to 21
-seconds — kept short so the examples open as live HTML on ordinary devices;
-nothing in the contract caps duration, but longer has not been shipped.
+**Where it is.** There's a balance in building in AI between "unfinished" and
+"over-engineered", and this sits on the unfinished side (I think). Everything
+here runs 12 to 21 seconds — kept short so the examples open as live HTML on
+ordinary devices; nothing caps duration, but longer has not been shipped.
 Characters are one skeleton family. I don't know yet whether this is useful — it
 is fun to tinker with and see what it can do, and that is why it is public.
 

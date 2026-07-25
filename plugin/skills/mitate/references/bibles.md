@@ -1,5 +1,11 @@
 # Style bibles v2: the whole look is one object
 
+> **Provenance.** Canonical for the style-bible schema and the committed workshop/neon control pair. Last verified against
+> the templates and shipped examples 2026-07-24 (full source audit;
+> corrections recorded in the changelog). If this file and the code
+> disagree, audit before trusting either — then fix the stale one.
+
+
 A bible is a single object that constrains everything about a film's look —
 palette, exposure, post, lens, cut pace, camera energy — selected by ONE
 line. Changing the film's register is changing that line; changing a field

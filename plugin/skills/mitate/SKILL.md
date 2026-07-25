@@ -16,7 +16,7 @@ description: >
   Do NOT use for editing existing video files, screen recordings, or slide
   decks.
 metadata:
-  last_verified: "2026-07-23"
+  last_verified: "2026-07-24"
   review_interval_days: "90"
 ---
 

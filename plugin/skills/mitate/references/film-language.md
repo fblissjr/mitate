@@ -1,5 +1,11 @@
 # Film language: shots as data
 
+> **Provenance.** Canonical for the shot vocabulary and the SHOTS[] solver semantics. Last verified against
+> the templates and shipped examples 2026-07-24 (full source audit;
+> corrections recorded in the changelog). If this file and the code
+> disagree, audit before trusting either — then fix the stale one.
+
+
 The cinematography layer: framing described the way a cinematographer would —
 sizes, angles, lenses, cuts — compiled onto the camera per frame by the solver
 in `scene.template.html`. Raw camera keyframes are gone from the template on

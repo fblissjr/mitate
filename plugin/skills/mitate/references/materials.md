@@ -1,5 +1,11 @@
 # Material packs: cel, subsurface, glass
 
+> **Provenance.** Canonical for the material packs and their ordering and bloom discipline. Last verified against
+> the templates and shipped examples 2026-07-24 (full source audit;
+> corrections recorded in the changelog). If this file and the code
+> disagree, audit before trusting either — then fix the stale one.
+
+
 Three verified recipes on the node stack, each shipped in
 `examples/materials.html` and reviewed on the instruments. Every number and
 gotcha here was measured on `three@0.185.1`, most of them the hard way.

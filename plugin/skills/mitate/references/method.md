@@ -1,5 +1,11 @@
 # Method: designing a sequence that reads
 
+> **Provenance.** Canonical for the universal method — the three failure axes, beats and controls discipline, review passes, and the determinism idioms. Last verified against
+> the templates and shipped examples 2026-07-24 (full source audit;
+> corrections recorded in the changelog). If this file and the code
+> disagree, audit before trusting either — then fix the stale one.
+
+
 The backend-agnostic core: the three failure axes, the beats discipline, the
 controls discipline, continuity and semantics review, and the determinism
 rules. Everything here holds for any scene that implements the window

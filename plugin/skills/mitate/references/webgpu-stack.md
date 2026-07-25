@@ -1,5 +1,11 @@
 # The node stack: WebGPURenderer, TSL, and the recorder
 
+> **Provenance.** Canonical for the backend policy, the determinism rules, recorder mechanics, and the measured node-stack brackets. Last verified against
+> the templates and shipped examples 2026-07-24 (full source audit;
+> corrections recorded in the changelog). If this file and the code
+> disagree, audit before trusting either — then fix the stale one.
+
+
 The renderer-specific half of mitate's 3D backend. The universal method —
 failure axes, beats discipline, determinism rules — is `method.md`; the shot
 vocabulary is `film-language.md`. This file is what changed when the stack

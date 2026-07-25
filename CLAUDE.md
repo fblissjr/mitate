@@ -81,3 +81,6 @@ SwiftShader adapter that renders pure black, silently, exit 0. `smoke.js` refuse
 - Session logs and scratch renders go under `internal/` (gitignored).
 - Documentation carries a `last updated:` line.
 - Never auto-commit; validate before writing.
+- Every fact has one home — code comment, reference, SKILL.md, or CLAUDE.md —
+  and everything else points at it. Before writing the same thing in two
+  places, read [`docs/source-of-truth.md`](docs/source-of-truth.md).

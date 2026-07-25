@@ -6,7 +6,8 @@ description: >
   an MP4, or an animated WebP/AVIF that plays inline in a README. Use when
   asked to "make a video / animation / cutscene / walkthrough / explainer /
   motion graphic / animated meme" of anything: a mechanism, a story beat, a
-  system, an organism, a joke, a document. mitate (見立て) is to see one thing
+  system, an organism, a joke, a document, an image or screenshot, an
+  existing video re-staged from scratch. mitate (見立て) is to see one thing
   as another — here, seeing any input as a scene. Built on the three.js node
   stack — WebGPURenderer with transparent WebGL2 fallback, TSL node materials,
   MaterialX procedural noise, zero assets — plus a Canvas2D flat-vector

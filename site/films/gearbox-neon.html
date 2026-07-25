@@ -30,6 +30,18 @@
   #flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;}
   #vig{position:fixed;inset:0;pointer-events:none;
     background:radial-gradient(ellipse at center,transparent 58%,rgba(10,6,18,.42) 100%);}
+  /* Boot card: the only thing on screen while shaders compile (1-7s on a cold
+     open). Pure DOM, removed BEFORE sceneReady goes true -- the recorder waits
+     on sceneReady, so no shot can ever contain it. Without this a cold open is
+     a blank dark page that reads as a broken link. */
+  #boot{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+    background:#0e0b14;color:#fff;font-family:"Avenir Next","Segoe UI",system-ui,sans-serif;text-align:center;}
+  #boot b{font-size:clamp(20px,4vw,34px);font-weight:800;letter-spacing:-.02em;}
+  #boot span{font-size:clamp(11px,1.7vw,14px);opacity:.55;font-weight:500;}
+  #boot i{width:38px;height:2px;border-radius:1px;background:rgba(255,255,255,.22);position:relative;overflow:hidden;}
+  #boot i::after{content:"";position:absolute;inset:0;background:#fff;transform:translateX(-101%);animation:bootsweep 1.1s ease-in-out infinite;}
+  @keyframes bootsweep{50%{transform:translateX(0)}100%{transform:translateX(101%)}}
+  @media (prefers-reduced-motion:reduce){#boot i{display:none}}
 </style>
 </head>
 <body>
@@ -38,6 +50,7 @@
 <div id="title"><h1></h1><p></p></div>
 <div id="cap"></div>
 <div id="flash"></div>
+<div id="boot"><b></b><span>compiling shaders — a few seconds on first open</span><i></i></div>
 <!-- PLACEHOLDER. `bun run build.js vendor` REPLACES this tag with three itself,
      inlined, and deletes the intermediate file: one scene = one self-contained
      .html, no sibling .js, no CDN. Never point this at a CDN — the render must
@@ -1274,6 +1287,8 @@ window.FLASHES=FLASHES;
 // Caption fade, resolved, same rule — smoke's reading-speed lint needs it and
 // used to probe CONFIG (scene internals) against a mirrored default.
 window.CAPFADE=CONFIG.capFade;
+// boot card: name the film while shaders compile (removed before sceneReady)
+var _bt=document.getElementById('boot');if(_bt)_bt.firstElementChild.textContent=CONFIG.title;
 // Cut-entry windows, resolved to absolute seconds — so smoke can sample INSIDE
 // shot transitions. Found by review: every fixed-fraction sample point missed
 // every blend window on a shipped film, making transition-confined bugs
@@ -1309,6 +1324,7 @@ window.stopPlayback=function(){playing=false;};
      across backends. */
   window.BACKEND=renderer.backend.isWebGPUBackend?'webgpu':'webgl2';
   window.seekTo(0);
+  var _bd=document.getElementById('boot');if(_bd)_bd.remove();  // gone BEFORE ready: no instrument can capture it
   window.sceneReady=true;
   if(!location.search.includes('record'))requestAnimationFrame(loop);
 })();

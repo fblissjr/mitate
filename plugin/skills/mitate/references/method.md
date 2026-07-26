@@ -1,6 +1,6 @@
 # Method: designing a sequence that reads
 
-> **Provenance.** Canonical for the universal method — the three failure axes, beats and controls discipline, review passes, and the determinism idioms. Last verified against
+> **Provenance.** Canonical for the universal method — the three failure axes, beats and controls discipline, review passes, and the determinism idioms. Three dangling `style-3d.md` pointers survived the audit below and were fixed 2026-07-25 (0.16.2) — a straight read does not test whether pointers resolve; only following them does. Last verified against
 > the templates and shipped examples 2026-07-24 (full source audit;
 > corrections recorded in the changelog). If this file and the code
 > disagree, audit before trusting either — then fix the stale one.

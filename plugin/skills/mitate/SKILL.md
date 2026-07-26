@@ -137,7 +137,10 @@ bun run build.js motion <name>.html           # per-beat motion profile + dead a
 ```
 
 `smoke.js` checks: loads clean, full contract, deterministic `seekTo` (same
-`t` twice → byte-identical), renders something, **and ships something** — a
+`t` twice → byte-identical), renders something, **plays** — one load without
+`?record=1`, because every other load in the pipeline sets it and the rAF loop
+is gated on its absence, so a film can record perfectly and never move for a
+viewer — **and ships something**: a
 caption-stripped cold-page check that catches a backend compositing only the
 clear color, which four other checks passed on before it existed. Run before
 any full shoot.
@@ -188,7 +191,7 @@ Two constraints that dictate the setup — do not "simplify" them away:
 - `templates/scene2d.template.html` — 2D scaffold (Canvas2D, self-contained)
 - `templates/shoot.js` / `templates/build.js` — recorder + pipeline (sheet,
   strip, aspect, motion, loop, avif, poster)
-- `templates/smoke.js` — contract, determinism, shipped-frame checks + lints
+- `templates/smoke.js` — contract, determinism, live-playback, shipped-frame checks + lints
 - `templates/backend.js` — shared by shoot.js and smoke.js: Chromium
   resolution, the WEBGPU/ANGLE flag policy, the settle idiom (one copy, so
   the gate and the recorder cannot drift apart)

@@ -516,8 +516,9 @@ function solveShot(sh,t){
   const aimX=E.cx+ax*E.w*rx, aimZ=E.cz+ax*E.w*rz;
   /* Floor guard: the solver had no clamps at all and would place the camera
      below the ground plane at low elevation and long distance. Not a fix for
-     "camera inside the subject" — that is a LIE about extent, and the extent
-     check in smoke.js is what catches it. */
+     "camera inside the subject" — that is a LIE about extent, and NOTHING
+     catches it today: SUBJECTS is hand-declared and no tool compares it against
+     the geometry. Measure the extent; do not trust this guard to. */
   /* Camera floor is OPT-IN (CONFIG.cameraFloor, world units). It is off by
      default on purpose: clamping y moves the camera off the sphere the solver
      placed it on, so elevation and true distance both change and the declared

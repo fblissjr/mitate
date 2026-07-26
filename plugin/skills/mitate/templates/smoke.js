@@ -378,10 +378,23 @@ async function checkScene(browser, file) {
       // frozen as one that never ran, and the call count alone would pass it.
       await page.waitForFunction('window.__ticks.length >= 3', { timeout: 5000 }).catch(() => {});
       const ticks = await page.evaluate('window.__ticks');
-      if (ticks.length < 3) {
+      // ZERO is the only hard fail, and the asymmetry is deliberate. A dead
+      // chain drives seekTo exactly 0 times no matter how long you wait, so it
+      // is distinguishable from slow WITHOUT calibrating a wall clock. A count
+      // of 1-2 is genuinely ambiguous -- a loop that ran once and died looks
+      // identical, in a 5s window, to a healthy film on a contended box under
+      // software GL -- and failing that ambiguity would make a correct scene
+      // red for being slow. The 5s budget was bracketed on ONE machine at this
+      // viewport; treating it as a universal threshold is the
+      // measured-on-one-machine error this suite exists to catch.
+      if (ticks.length === 0) {
         fails.push(`live playback stalled -- the scene reached sceneReady but its rAF loop drove `
-                 + `seekTo ${ticks.length} time(s) in 5s. Every RECORDED frame can still be perfect: `
+                 + `seekTo 0 times in 5s. Every RECORDED frame can still be perfect: `
                  + `the recorder loads ?record=1, which skips this path entirely`);
+      } else if (ticks.length < 3) {
+        warnings.push(`live playback [ambiguous]: only ${ticks.length} seekTo call(s) in 5s. Either the `
+                 + `loop ran and died, or this machine is slow enough that 3 frames did not fit. `
+                 + `Re-run; a dead chain stays at 0 and a slow one climbs`);
       } else if (new Set(ticks).size < 2) {
         fails.push(`live playback is frozen -- the loop runs but every seekTo received the same t `
                  + `(${ticks[0]}), so the film holds one frame forever`);
@@ -671,7 +684,11 @@ async function checkScene(browser, file) {
     fails.push(e.message.split('\n')[0]);
   }
   await page.close();
-  return { fails: fails.concat(noise), warnings, backend };
+  // Dedupe: this scene is loaded more than once, so a boot-time console error
+  // repeats per load, and a per-frame warn inside seekTo (the nodeFrame guard,
+  // say) emits once per rendered frame while the live-playback loop runs. One
+  // diagnostic should read as one line, not as a flood.
+  return { fails: fails.concat([...new Set(noise)]), warnings, backend };
 }
 
 (async () => {

@@ -851,9 +851,7 @@ it in three places. Two are verified:
   Had it carried its conditions, the mismatch would have been visible instantly.
   Give it one dated home in `webgpu-stack.md` with the backend stated; the code
   comments point.
-- **The ~700px caption figure is in three places**: `method.md:892` (the home),
-  `instruments.md:283` (restates), `site/index.html:144` (restates). Point, never
-  restate.
+- **The ~700px caption figure is in FOUR places**, not three, and this item undercounted it until 2026-07-25: `method.md` (the home, which alone carries the conditions — 30px at 1920, 10px at 640, 5.69px at 364, all exactly `0.015625 x frame width`), plus restatements in `instruments.md`, `README.md` and `site/index.html`. Line numbers are deliberately omitted here: the earlier version cited three that had already moved, which is its own small lesson about pinning a repair item to line numbers instead of to content.
 
 The third — that the site's "4 to 5 seconds compiling shaders" is stale — is
 **not established**. That figure has provenance (`site/app.js:47` and `:320`
@@ -1445,6 +1443,18 @@ unverified numbers get published anyway.
   verification date; several brackets in `instruments.md` state figures without
   machine or scene set; and seven reference headers say "verified against the
   templates" without naming *which copy*, which invariant 6 now makes load-bearing.
+  Four more from the same audits, captured 2026-07-25 after an accounting pass
+  found them outside this list: the extent-check verification at A0 states a
+  working-tree grep without naming the copy (invariant 6); `CLAUDE.md`'s
+  invariant 2 says `last_verified` asserts review of "the skill" without saying
+  which copy, which invariant 6 in the same file now makes ambiguous;
+  `predecessor-record.md` cites "CLAUDE.md invariant 3" and a "mirrored-copies-
+  plus-test pattern" that do not match this repo's numbering (inherited
+  pointers, softened but not covered by its read-as-history banner); and
+  `README.md`, `CHANGELOG.md`, `SKILL.md` and all eight references carry no
+  `last updated:` line despite `CLAUDE.md` requiring one — most substitute a
+  dated provenance header, which is arguably the better instrument, so the rule
+  may be what needs amending rather than the files.
   *Trigger: before the next release that touches references — these are
   consistency defects, not correctness ones, and fixing them piecemeal is how
   the count drifted in the first place.*

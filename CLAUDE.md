@@ -40,7 +40,8 @@ for its red lines.
    carries no `version` and no `author`, because the whole file including
    frontmatter loads into context on activation, so both would be standing cost
    with no runtime use. Do not add them. `metadata.last_verified` asserts that a
-   human reviewed the skill against its source — write it only after an actual
+   human reviewed **the working tree** against its source (invariant 6: say which
+   copy) — write it only after an actual
    review, never as part of a version bump.
 
    A **fenced** block (`KERNEL`, `SOLVER`, `RIG`, `DRIVER`, `CHARACTER`, `HTML`)
@@ -99,7 +100,8 @@ for its red lines.
 the workspace where a scene is being built, not from the plugin.
 
 Default headless path is the WebGL2 fallback (CI-safe, no GPU). Hardware WebGPU
-is opt-in per platform (`WEBGPU=metal` on macOS, ~2.3x faster for recording).
+is opt-in per platform (`WEBGPU=metal` on macOS; measurably faster for
+recording — figure and conditions in `references/webgpu-stack.md`).
 **Flag landmine:** `--enable-unsafe-webgpu` on macOS headless yields a
 SwiftShader adapter that renders pure black, silently, exit 0. `smoke.js` refuses
 `WEBGPU=swiftshader` for exactly this reason.

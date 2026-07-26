@@ -1,6 +1,6 @@
 # The character scaffold
 
-> **Provenance.** Canonical for the character scaffold API, gait, and the worked proportion vectors. Last verified against
+> **Provenance.** Canonical for the character scaffold API, gait, and the worked proportion vectors. Last verified (in the working tree, not an install cache) against
 > the templates and shipped examples 2026-07-24 (full source audit;
 > corrections recorded in the changelog). If this file and the code
 > disagree, audit before trusting either — then fix the stale one.

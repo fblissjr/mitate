@@ -199,7 +199,7 @@ against this plan changed five items, and turned up one live defect.
 subject' — that is a LIE about extent, and **the extent check in smoke.js** is
 what catches it."*
 
-**There is no extent check.** Verified exhaustively: zero occurrences of `Box3`,
+**There is no extent check.** Verified exhaustively **in the working tree**: zero occurrences of `Box3`,
 `setFromObject` or `computeBoundingBox` anywhere in `templates/`; zero hits for
 `extent` or `declared` in `smoke.js`, `build.js` or `shoot.js`; and
 `subjectExtent` (`:763`) reads the declared `SUBJECTS` values only — it never
@@ -1431,33 +1431,20 @@ unverified numbers get published anyway.
   blind to a swallowing host, but nothing tests the embedded configuration, and
   `site/app.js`'s warning is a warning rather than a check.
   *Trigger: before the viewer ships, since it makes the embedded case load-bearing.*
-- **Consistency sweep backlog — found 2026-07-25 by three subagent audits, not
-  yet fixed.** Recorded rather than silently carried: the reproducibility facet
-  of the provenance rule is violated *repo-wide* (no bracket harness is tracked
-  at all — the one that refuted the 0.16.2 claim lives in gitignored
-  `internal/`); `~2.3x` appears in four places and `1.09 MB` in two, three of
-  those without conditions; the contact-class count reads **5** in shipped
-  `instruments.md` and **6** in the ledger; `plan.md`'s tracked-size figures have
-  drifted (9.6/5.9/5.5 MB → 8.28/6.13/5.74) and carry neither a date nor a
-  method; `instruments.md` and `delivery.md` carry provenance headers with no
-  verification date; several brackets in `instruments.md` state figures without
-  machine or scene set; and seven reference headers say "verified against the
-  templates" without naming *which copy*, which invariant 6 now makes load-bearing.
-  Four more from the same audits, captured 2026-07-25 after an accounting pass
-  found them outside this list: the extent-check verification at A0 states a
-  working-tree grep without naming the copy (invariant 6); `CLAUDE.md`'s
-  invariant 2 says `last_verified` asserts review of "the skill" without saying
-  which copy, which invariant 6 in the same file now makes ambiguous;
-  `predecessor-record.md` cites "CLAUDE.md invariant 3" and a "mirrored-copies-
-  plus-test pattern" that do not match this repo's numbering (inherited
-  pointers, softened but not covered by its read-as-history banner); and
-  `README.md`, `CHANGELOG.md`, `SKILL.md` and all eight references carry no
-  `last updated:` line despite `CLAUDE.md` requiring one — most substitute a
-  dated provenance header, which is arguably the better instrument, so the rule
-  may be what needs amending rather than the files.
-  *Trigger: before the next release that touches references — these are
-  consistency defects, not correctness ones, and fixing them piecemeal is how
-  the count drifted in the first place.*
+- **Consistency sweep backlog — CLEARED 2026-07-25 (0.16.7).** Three subagent
+  audits found duplicated figures, undated provenance, an ad-hoc count in a
+  shipped reference, and — sharpest — the reproducibility facet violated
+  repo-wide. All fixed rather than carried: `~2.3x` and `1.09 MB` now have one
+  home each with conditions (two apparent duplicates turned out to be a
+  *different* 2.3x — AVIF encoder speed — and were correctly left alone); the
+  contact count left `instruments.md` for the ledger; `plan.md`'s size figures
+  were re-measured with a stated method; both undated provenance headers now say
+  they have no verification date rather than acquiring an invented one; the
+  live-playback bracket carries its machine, scene and viewport; six headers name
+  which copy was verified; and `templates/bracket-liveplay.js` is now tracked and
+  runnable from a clean checkout, so the bracket `instruments.md` cites can
+  actually be re-run. *Kept here as a record of what the audits found, not as
+  open work.*
 - **`test-audit` over `smoke.js`.** Two green-but-blind escapes landed in one
   session — the record-gated live path and the swallowing-host path — which is
   the stated trigger for auditing the whole suite rather than patching

@@ -7,7 +7,10 @@ fails — it is a check that **passes and should not have**.
 `method.md` holds the method; this holds the instruments' brackets. Read it when
 you are deciding whether a green result means anything.
 
-> **Provenance.** Most brackets here were measured on the predecessor skill and
+> **Provenance.** Canonical for what each check can and cannot see, and for its
+> measured brackets. **No full-source verification date: this file has never had
+> one, and writing one now would assert a review that did not happen.** Most
+> brackets here were measured on the predecessor skill and
 > carry over, because they describe what a *check* can perceive, not what a
 > renderer draws. Anything the node stack invalidated has been re-measured or is
 > labelled. Where a number is inherited and not re-verified on this stack, it
@@ -136,7 +139,9 @@ for that measurement incremented its counter *before* calling the inner
 counts **after the inner call returns**, which is why a swallowing host fires
 like any other frozen film.
 
-Re-bracketed four ways against `gearbox`, all four firing: unmodified
+Re-bracketed four ways against `gearbox` by `templates/bracket-liveplay.js`,
+which builds its own broken copies and is runnable from a clean checkout —
+all four firing: unmodified
 (calls=20, distinct=20, playing); a throw in the rAF loop; a throw inside
 `seekTo`; and a host that swallows the throw — the last three all calls=0,
 distinct=0. **The wrapper ordering is load-bearing**, and that is the finding
@@ -154,8 +159,10 @@ rAF chain never started (0 calls), the first frame threw and killed the chain
 (0 calls, plus the page error) — which is the shape the real defect took — and a
 frozen clock driving `seekTo(0)` forever (3+ calls, 1 distinct `t`, caught only
 by the distinctness arm). Quiet on all five shipped examples and on the 2D
-template. Cost is one extra page load per scene: **+0.14 s on hardware WebGPU,
-+1.05 s on the software-GL default**, the gap being boot rather than the check.
+template. Cost is one extra page load per scene: **+0.14 s on hardware WebGPU, +1.05 s on the
+software-GL default** — measured 2026-07-25 on `gearbox` at the 640x360 check
+viewport, one machine, wall-clock over a full `smoke.js` run; the gap is boot,
+not the check.
 
 ## `build.js motion`
 
@@ -292,7 +299,8 @@ Recorded honestly, because these are where films actually ship broken:
   in a phone-sized box. The overflow check passes, because the text fits. See
   `method.md`; the answer below ~700px of frame width is `?nocap`.
 - **Whether a contact is real in all three axes.** A camera angle can fake a
-  graze that misses in depth; that class of defect has recurred five times and is
+  graze that misses in depth; that class of defect recurs (the running count is kept outside this subtree,
+  with the repo's pattern ledger) and is
   caught by probe-measuring the contact, not by looking at it.
 - **Cross-backend reproducibility.** `seekTo` purity is a property *within* one
   backend. WebGPU-Metal and the WebGL2 fallback do not produce byte-identical

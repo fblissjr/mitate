@@ -35,7 +35,7 @@ no `docs/`).
 back to its WebGL2 backend transparently when no WebGPU adapter exists — any
 WebGL2-capable browser plays a scene, and the recorder's default headless path
 is the WebGL2 fallback (CI-safe, no GPU needed). Hardware WebGPU is an opt-in
-speedup for the recorder only (`WEBGPU=metal` on macOS, measured ~2.3x
+speedup for the recorder only (`WEBGPU=metal` on macOS, measurably
 faster); see `references/webgpu-stack.md` for the flag policy.
 
 Tooling: `bun`, `three@0.185.1` + `playwright-core@1.61.1` (pinned), ffmpeg

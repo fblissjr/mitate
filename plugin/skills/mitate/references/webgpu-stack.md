@@ -1,6 +1,6 @@
 # The node stack: WebGPURenderer, TSL, and the recorder
 
-> **Provenance.** Canonical for the backend policy, the determinism rules, recorder mechanics, and the measured node-stack brackets. Last verified against
+> **Provenance.** Canonical for the backend policy, the determinism rules, recorder mechanics, and the measured node-stack brackets. Last verified (in the working tree, not an install cache) against
 > the templates and shipped examples 2026-07-24 (full source audit;
 > corrections recorded in the changelog). If this file and the code
 > disagree, audit before trusting either — then fix the stale one.

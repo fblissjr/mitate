@@ -1,6 +1,6 @@
 # Style bibles v2: the whole look is one object
 
-> **Provenance.** Canonical for the style-bible schema and the committed workshop/neon control pair. Last verified against
+> **Provenance.** Canonical for the style-bible schema and the committed workshop/neon control pair. Last verified (in the working tree, not an install cache) against
 > the templates and shipped examples 2026-07-24 (full source audit;
 > corrections recorded in the changelog). If this file and the code
 > disagree, audit before trusting either — then fix the stale one.

@@ -53,7 +53,7 @@ function chromiumPath() {
    with no flags, headless Chromium exposes no WebGPU adapter and
    WebGPURenderer falls back to its WebGL2 backend transparently — same scene,
    same TSL materials, deterministic, works everywhere including GPU-less CI.
-   The opt-in exists because hardware WebGPU measured ~2.3x faster end to end
+   The opt-in exists because hardware WebGPU measures faster end to end
    (37 vs 87 ms/frame with a node post chain, screenshots included).
 
    Both values are allow-lists because the failure modes here are silent:

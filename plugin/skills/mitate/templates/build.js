@@ -68,7 +68,7 @@ function vendor(dir, target) {
   // spread flat onto THREE so scene code writes THREE.uniform, THREE.mix,
   // THREE.mx_fractal_noise_float) + the TSL display passes and SkyMesh (the
   // node-stack Sky). Always included: they cost bundle bytes when unused
-  // (~1.09 MB total vs ~0.77 MB for the old WebGL stack, measured), and the
+  // (about a megabyte; figure and conditions in references/webgpu-stack.md), and the
   // alternative — a second vendor file with its own staleness and load-order
   // rules — costs a failure mode. Determinism note for scene authors: every
   // bundled pass is per-frame pure; temporal passes (TRAA, afterimage,
@@ -104,7 +104,7 @@ function vendor(dir, target) {
   // dangling ./three.global.js reference and did not run at all. Embedding is
   // the only form that makes "opens straight from disk" true by construction,
   // so the tooling does it automatically rather than asking authors to remember
-  // a bundle step. Cost is ~1.09 MB per scene, paid once, and accepted.
+  // a bundle step. Cost is about a megabyte per scene, paid once, and accepted.
   const lib = fs.readFileSync(out, 'utf8');
   fs.unlinkSync(out);
   if (cache) fs.writeFileSync(cache, lib);

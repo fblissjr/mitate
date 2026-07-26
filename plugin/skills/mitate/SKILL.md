@@ -163,7 +163,7 @@ Whatever ships, the scene file stays the single source.
 ## Backend policy (recorder)
 
 No env vars: WebGL2 fallback — universal, CI-safe. `WEBGPU=metal` (macOS
-hardware, verified, ~2.3x faster) or `WEBGPU=vulkan` (Linux, unverified) to
+hardware, verified faster — figure and conditions in `references/webgpu-stack.md`) or `WEBGPU=vulkan` (Linux, unverified) to
 opt in; `ANGLE_BACKEND` selects the GL backend on the fallback path.
 `WEBGPU=swiftshader` is diagnostic-only — shoot refuses it. Frames are not
 byte-identical across backends; pin the backend on both sides of any
@@ -178,7 +178,7 @@ Two constraints that dictate the setup — do not "simplify" them away:
 
 - **three is vendored and EMBEDDED in the scene** (`build.js vendor` builds an
   IIFE of `three/webgpu` + `three/tsl` + display passes and splices it in;
-  1.09 MB per scene, paid once). Never CDN, never a sibling `.js`, never
+  ~1 MB per scene, paid once; exact figure in `references/webgpu-stack.md`). Never CDN, never a sibling `.js`, never
   `type="module"`: module imports are CORS-blocked over `file://`, and opening
   the file from disk is the point. `smoke.js` fails any scene that is not
   self-contained.

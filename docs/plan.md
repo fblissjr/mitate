@@ -614,9 +614,10 @@ Track C is correctly blocked; with it, the fence still holds where it matters.
 Examples stay in the plugin dirs. The mechanics, verified on this machine:
 `/plugin marketplace add` shallow-clones the ENTIRE repo regardless of which
 plugin the user wants; `/plugin install` then copies just that plugin's
-subtree — examples included — into a per-version cache. (Measured in this repo
-after the split: 9.6 MB tracked in total, a 5.9 MB plugin subtree of which
-5.5 MB is examples. The original measurement was taken in the predecessor's
+subtree — examples included — into a per-version cache. (Re-measured 2026-07-25 by byte-summing `git ls-files`: **7.9 MB tracked in
+total, a 5.8 MB plugin subtree of which 5.5 MB is examples** — the method matters,
+since `du` block-sums differ at this precision. The earlier figures, 9.6/5.9/5.5,
+were taken right after the repo split and carried neither date nor method. The original measurement was taken in the predecessor's
 multi-plugin marketplace at ~18 MB; the ratio is what carried, not the figure.) So yes, examples ship; and no, it does not matter
 for the concern that would actually bite: the Agent Skills spec loads ONLY
 SKILL.md into context — `examples/` never auto-loads, so films are pure disk

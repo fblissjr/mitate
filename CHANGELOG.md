@@ -7,6 +7,16 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.7
+
+### fixed
+- **The reproducibility facet of the provenance rule was violated repo-wide, one release after the rule shipped.** `source-of-truth.md` requires a measured bracket to carry a date, its conditions, *and* a harness runnable from a clean checkout — and no harness of any kind was tracked. The one that refuted 0.16.2's blind-spot claim lived only in gitignored scratch. `templates/bracket-liveplay.js` now ships beside `smoke.js`: 89 lines, builds its own four broken copies of `gearbox`, and re-homing it made it self-contained within the subtree so `instruments.md` can cite it under invariant 3. Verified from its new home — unmodified 21/21 playing, the other three all 0/0 firing.
+- **One figure, several homes.** `~2.3x` appeared in four places and `1.09 MB` in two, most without conditions, against the rule that a number appearing twice is itself the bug. `webgpu-stack.md` keeps both with their conditions; `CLAUDE.md`, `SKILL.md`, `plugin/README.md`, `backend.js` and `build.js` now name the phenomenon and point. **Two apparent duplicates were a coincidence** — `delivery.md` and `build.js` cite a 2.3x about AVIF *encoder* speed, an unrelated measurement — and were left alone; a blind consolidation would have merged two different facts.
+- **A count maintained by hand inside a shipped reference.** `instruments.md` said the contact-bug class "has recurred five times" while the repo's ledger derived six. The reference now names the class without a figure and notes the running count is kept outside the subtree, which is the only correct shape given it may not cite `docs/`.
+- **Measurements without their conditions.** The live-playback cost (+0.14s hardware, +1.05s software-GL) now states machine, scene, viewport and method. `plan.md`'s tracked-size figures were re-measured — 7.9 MB total, 5.8 MB plugin, 5.5 MB examples, by byte-summing `git ls-files` on 2026-07-25 — replacing undated post-split numbers that had drifted, with the method named because `du` block-sums differ at that precision.
+- **Two provenance headers had no verification date, and now say so.** `instruments.md` and `delivery.md` state plainly that they have never carried one, rather than acquiring an invented date — writing one would assert a review that did not happen, which is the same trap `metadata.last_verified` carries.
+- **Six provenance headers did not say which copy was verified**, which invariant 6 made load-bearing the same day: they now read "verified (in the working tree, not an install cache) against…". `CLAUDE.md`'s invariant 2 and `working-plan.md`'s extent-check verification got the same treatment.
+
 ## 0.16.6
 
 ### fixed

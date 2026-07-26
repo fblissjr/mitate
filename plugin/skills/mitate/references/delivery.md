@@ -6,7 +6,8 @@ its evidence chain. Backend-agnostic — everything here operates on shot
 frames, whatever rendered them. The method is `method.md`; the node-stack
 specifics are `webgpu-stack.md` and `materials.md`.
 
-> **Provenance.** The size and decode measurements below were taken on the
+> **Provenance.** Canonical for inline-delivery formats and their measured costs.
+> **No full-source verification date — this file has never carried one.** The size and decode measurements below were taken on the
 > predecessor skill. They operate on encoded output rather than on the renderer,
 > so they carry over; they have not been re-measured on the node stack. The
 > GitHub content-type findings are about GitHub and are unaffected by either.

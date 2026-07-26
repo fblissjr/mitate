@@ -109,7 +109,17 @@ SwiftShader adapter that renders pure black, silently, exit 0. `smoke.js` refuse
 ## Conventions
 
 - Session logs and scratch renders go under `internal/` (gitignored).
-- Documentation carries a `last updated:` line.
+- Documentation carries a **dated freshness marker**, in whichever of these
+  three forms fits: a `last updated:` line (docs, plans), a dated **provenance
+  header** saying what was verified against what (all eight references — the
+  better instrument, since it records the check and not just the touch), or
+  `metadata.last_verified` (SKILL.md only). A file that is itself a dated record
+  needs none: `CHANGELOG.md` is dated by entry, and `THIRD_PARTY_LICENSES.md` is
+  static legal text. `.claude/agents/*` and `.claude/rules/*` are behaviour
+  definitions rather than documentation — their freshness is git history — but
+  note that they still make drift-prone claims: `doc-claim-auditor` cites "five
+  real instances" of doc drift and that count is already low. An earlier version of this rule demanded one specific form
+  and so read as violated by eleven files that all carried a better one.
 - Never auto-commit; validate before writing.
 - Every fact has one home — code comment, reference, SKILL.md, or CLAUDE.md —
   and everything else points at it. Before writing the same thing in two

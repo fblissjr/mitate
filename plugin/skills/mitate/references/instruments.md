@@ -8,8 +8,9 @@ fails — it is a check that **passes and should not have**.
 you are deciding whether a green result means anything.
 
 > **Provenance.** Canonical for what each check can and cannot see, and for its
-> measured brackets. **No full-source verification date: this file has never had
-> one, and writing one now would assert a review that did not happen.** Most
+> measured brackets. **Verification date: UNKNOWN — never audited end to end.**
+> Someone should verify everything in here against the code and stamp a real
+> date. Writing one without doing that asserts a review that did not happen. Most
 > brackets here were measured on the predecessor skill and
 > carry over, because they describe what a *check* can perceive, not what a
 > renderer draws. Anything the node stack invalidated has been re-measured or is

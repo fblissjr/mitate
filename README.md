@@ -1,3 +1,5 @@
+last updated: 2026-07-25
+
 # mitate
 
 A Claude Code skill that writes **an animated three.js scene as native HTML**.

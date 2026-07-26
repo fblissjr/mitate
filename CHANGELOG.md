@@ -7,6 +7,14 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.8
+
+### changed
+- **Render and export are now named as separate domains, because one shared namespace nearly cost a fact.** A consistency pass found `2.3x` in six places and almost merged them: four are the renderer-backend speedup, two are an AVIF **encoder-effort** ratio (`-s 8` produces 2.3x larger files) with no relationship beyond the digits. Both figures now say which side they are on at every site, `source-of-truth.md`'s homes table gains explicit render-side (`webgpu-stack.md`) and export-side (`delivery.md`) rows, and the rule is stated: when a figure could belong to either domain, say which. The near-miss is the argument — a blind sweep merges facts that share a number.
+- **Two references now carry an actionable unverified marker instead of a passive admission.** `instruments.md` and `delivery.md` read **"Verification date: UNKNOWN — never audited end to end"** with an explicit call to verify and stamp a real date. The earlier wording ("has never carried one") was true and did nothing; this states the debt as work.
+- **The freshness rule was what was wrong, not the eleven files violating it.** `CLAUDE.md` demanded a `last updated:` line, and eleven files carried a *better* instrument instead — all eight references use a dated provenance header recording what was verified against what, and `SKILL.md` uses `metadata.last_verified`. The rule now names all three acceptable forms, exempts files that are themselves dated records (`CHANGELOG.md` by entry, `THIRD_PARTY_LICENSES.md` static), and exempts `.claude/` behaviour definitions while noting they still carry drift-prone claims. `README.md`, which genuinely had none, gets one.
+- **Two inherited citations in `predecessor-record.md` resolved to the wrong rule in this repo** — "CLAUDE.md invariant 3" and a "mirrored-copies-plus-test pattern", both from the predecessor's numbering. The file is reproduced verbatim, so the text stands and editorial notes were inserted beside it: this repo's invariant 3 is the plugin-layout rule, and the equivalent idea lives in invariant 2 plus `instruments.md`. A dangling pointer is better than one that resolves to the wrong rule, which is why these earned annotation rather than the read-as-history banner.
+
 ## 0.16.7
 
 ### fixed

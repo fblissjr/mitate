@@ -1442,7 +1442,10 @@ the extraction has not happened, which means the trigger fired and was not
 acted on — worth stating plainly, because a rule that quietly slips its own
 condition is worse than no rule.
 
-Shape, per the repo's own precedent (CLAUDE.md invariant 3, and the kernel block
+Shape, per the repo's own precedent (CLAUDE.md invariant 3 — *editorial note: that
+numbering is the PREDECESSOR's; this repo's invariant 3 is the plugin-layout rule,
+and the mirrored-copies-plus-parity-check idea lives in invariant 2 and
+instruments.md*, and the kernel block
 itself): **marker-fence plus a hard-fail drift test in `smoke.js`**, not a
 build step. Scenes stay single-file. The kernel block already proved the pattern
 works on templates, including its positive control (a one-character mutation
@@ -2367,7 +2370,9 @@ and `examples/toybot-walk.html`) with no drift guard — the kernel markers cove
 only the deterministic kit, not the solver. Two copies is the repo's tolerated
 maximum. If any case here adds a **third** consumer of the solver (a second
 3D example, or a new template), extract it or marker-fence it first, per the
-CLAUDE.md mirrored-copies-plus-test pattern.
+CLAUDE.md mirrored-copies-plus-test pattern. *(Editorial note: no rule of that
+name exists in this repo's CLAUDE.md; the equivalent is invariant 2's fenced-block
+carriers plus smoke's parity check.)*
 
 ---
 

@@ -7,7 +7,8 @@ frames, whatever rendered them. The method is `method.md`; the node-stack
 specifics are `webgpu-stack.md` and `materials.md`.
 
 > **Provenance.** Canonical for inline-delivery formats and their measured costs.
-> **No full-source verification date — this file has never carried one.** The size and decode measurements below were taken on the
+> **Verification date: UNKNOWN — never audited end to end.** Someone should
+> verify these against the current encoders and stamp a real date. The size and decode measurements below were taken on the
 > predecessor skill. They operate on encoded output rather than on the renderer,
 > so they carry over; they have not been re-measured on the node stack. The
 > GitHub content-type findings are about GitHub and are unaffected by either.
@@ -117,7 +118,9 @@ bun run build.js avif <scene.html> [fps] [width]   # <name>.avif — defaults fp
 ```
 
 Under the hood: `avifenc --fps <fps> -q 60 -s 6`. Speed 6 is the measured knee
-— `-s 8` gave 2.3x larger files for one second less encode time, `-s 4` gave no
+— `-s 8` gave **2.3x larger FILES** (an encoder-effort figure, nothing to do with
+the renderer-backend speedup of the same magnitude in `webgpu-stack.md`) for one
+second less encode time, `-s 4` gave no
 further size gain for double the time. Encode cost is 11s for 288 frames,
 negligible against a 65s shoot.
 

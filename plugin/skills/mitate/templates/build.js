@@ -333,6 +333,8 @@ function shootAndScale(scene, fps, width, srcDir, tmpDir) {
 // cannot make an AVIF cheaper to PLAY.
 //
 // -s 6 is the measured knee on encoder speed: s8 produced files 2.3x larger for
+// (encoder effort — unrelated to the renderer-backend speedup that shares this
+//  number; see delivery.md vs webgpu-stack.md)
 // one second less, s4 gave no further size gain for double the time. Encoding
 // 288 frames costs ~11s, negligible against the ~65s it takes to shoot them.
 // -q 60 matches what `loop` passes img2webp; decoded frames were inspected and

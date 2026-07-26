@@ -15,9 +15,17 @@ other surface points at the home. Nothing restates.
 | measured numbers and brackets | the one reference that owns the subject, with its date, conditions, and a re-runnable harness | code comments name the phenomenon, not the figure |
 | routing and workflow order | SKILL.md | — |
 | what a check can and cannot see | `references/instruments.md` | smoke.js comments say how, not what-it-means |
+| **render-side** facts — backends, determinism, node stack, per-frame cost | `references/webgpu-stack.md` | — |
+| **export-side** facts — formats, encoders, file size, inline delivery | `references/delivery.md` | — |
 | repo invariants that bite on first edit | CLAUDE.md | — |
 | history — what happened and why | CHANGELOG.md and git | docs speak present tense only |
 
+
+**Render and export are separate domains and must not share a home.** They
+measure different things and their figures collide: a "2.3x" exists in each — the
+renderer backend speedup and an AVIF encoder-effort ratio — and a consolidation
+pass nearly merged them as duplicates of one fact. When a figure could belong to
+either, say which side it is on.
 
 **A number travels with its provenance, or it gets trusted past its warrant.**
 One rule, three facets — a bracket carries its **date** (above), its

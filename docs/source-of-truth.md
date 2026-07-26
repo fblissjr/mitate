@@ -12,11 +12,26 @@ other surface points at the home. Nothing restates.
 |---|---|---|
 | line-local invariant (a tick that guards determinism, a flag that renders black) | the comment ON that line | references may summarize and point in |
 | method, discipline, failure modes — "how to fish" | `plugin/skills/mitate/references/*.md` | SKILL.md and code comments point, never re-teach |
-| measured numbers and brackets | the one reference that owns the subject, with a date | code comments name the phenomenon, not the figure |
+| measured numbers and brackets | the one reference that owns the subject, with a date **and its conditions** | code comments name the phenomenon, not the figure |
 | routing and workflow order | SKILL.md | — |
 | what a check can and cannot see | `references/instruments.md` | smoke.js comments say how, not what-it-means |
 | repo invariants that bite on first edit | CLAUDE.md | — |
 | history — what happened and why | CHANGELOG.md and git | docs speak present tense only |
+
+
+**A measurement that crosses a boundary must carry its method, not just its
+value.** Added 2026-07-25 after a bare figure — "calls=71, distinct=71, passes"
+— was published as a boundary finding without stating that the probe counted
+*before* the call it was measuring. It reached a shipped `instruments.md` entry
+and outranked a local control that had already disproved it, because a specific
+number with no visible method reads as more authoritative than a result whose
+softness you can see. One clause would have prevented it.
+
+The rule has two halves and they fail independently. **Receiving:** an external
+number without its conditions does not get to outrank a control you already
+ran. **Sending:** state the conditions, or the number will be trusted past its
+warrant by someone with no way to check. The date requirement above exists for
+the same reason; conditions are the other half of it.
 
 ## The rules
 

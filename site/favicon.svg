@@ -1,0 +1,11 @@
+<!-- mitate mark: the hero's film screen at 16px — a stage-dark frame, the four
+     blue corner brackets that frame every screen on the site, and one amber
+     mark held inside them. Drawn on the 16-unit grid so every edge lands on a
+     device pixel; no gradients, no text, no external refs. The opaque plate is
+     deliberate: it makes the mark read the same on a light or a dark tab bar,
+     with no prefers-color-scheme branch to get out of sync. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16" shape-rendering="crispEdges">
+  <rect width="16" height="16" fill="#12100D"/>
+  <path fill="#0073CF" d="M2 2h5v2H4v3H2V2zm7 0h5v5h-2V4H9V2zM2 9h2v3h3v2H2V9zm10 0h2v5H9v-2h3V9z"/>
+  <rect x="7" y="7" width="2" height="2" fill="#F5AD5A"/>
+</svg>

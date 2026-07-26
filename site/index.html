@@ -8,6 +8,13 @@
 <meta property="og:title" content="mitate — an animated three.js scene as native HTML">
 <meta property="og:description" content="A Claude Code skill that writes an animated three.js scene as native HTML — one self-contained file, no player, no build step, a pure function of time t.">
 <meta property="og:type" content="website">
+<!-- The .ico is declared with a fixed size and the .svg without one, so a modern
+     browser takes the vector and an old one falls back. It also has to exist at
+     the root regardless of these tags: a browser asks for /favicon.ico on its
+     own. -->
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preload" href="fonts/archivo-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/archivo-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <!-- the hero mounts this scene on load, so fetch it with the page -->

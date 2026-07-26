@@ -105,9 +105,12 @@ distinct rather than rising, because a viewer-driven or wrapping clock is not
 monotone; counted after the inner call returns, so a throwing `seekTo` cannot
 inflate past the count arm; agnostic to which loop drives, because more than one
 thing already replaces the built-in one. Bracketed four ways, quiet on all five
-examples and the 2D template. The same change closed the one host configuration
-neither instrument reaches: `site/app.js` replaced the loop *and* swallowed
-`seekTo` exceptions at two sites, so a dead film kept a healthy-looking scrubber.
+examples and the 2D template. The same change also fixed `site/app.js`, which swallowed `seekTo` exceptions at
+two sites so a dead film kept a healthy-looking scrubber. *(An earlier draft
+called that "the one host configuration neither instrument reaches" — retracted
+in 0.16.2: the check is **not** blind to a swallowing host, because it counts
+after the inner call returns. What survives is that nothing tests the embedded
+deployment configuration.)*
 
 That is the shape every item below is trying to be: a blind spot closed by
 construction, bracketed both ways, quiet on the corpus.
@@ -329,7 +332,10 @@ Two notes on the dependencies, because both were initially overstated:
   in Track D: that escape is an 8-file change, not one line. Still right, but
   choose it knowingly.*
 
-**This order is provisional on owner's-call 0.** If Track C is admitted through
+**Owner's-call 0 is now resolved in Track C's favour**, so the argument below is
+live rather than conditional: the camera bake's role as the cheapest Phase 4
+spike is a standing reason to move items 8-9 ahead of 4-6. *(Previously written
+as provisional.)* If Track C is admitted through
 an amendment to `plan.md`'s Phase 6 fence, the camera bake's role as the cheapest
 Phase 4 spike (C0) is a live argument for moving 8-9 ahead of 4-6 — de-risking
 the owner's stated priority outranks a routing edit. The order above assumes the
@@ -354,7 +360,9 @@ z-axis miss *"faked by a lucky camera angle"* — instance five of the contact
 class — plus the flee clipping the hive and the comedy's face never facing the
 lens.
 
-**It lives at `.claude/agents/film-reviewer.md`, outside `plugin/`.** Verified:
+**It lives at `.claude/agents/film-reviewer.md`, outside `plugin/`.** Verified in
+the **working tree** (per invariant 6, and separately confirmed against a real
+install cache, which contains only `.claude-plugin/`, `README.md` and `skills/`):
 the plugin subtree ships `examples`, `references`, `SKILL.md`, `templates` and no
 agents; `SKILL.md` contains zero occurrences of "agent" or "reviewer". So the
 instrument two phase gates require is unavailable to anyone working from an
@@ -663,7 +671,9 @@ So the argument has to be an amendment to the earn-in rule itself:
 > outcome, because the agent substitutes the cheap wrong method silently.
 >
 > **Amendment: earn-in fires on "blocked" *or* on a third recorded instance of
-> the same wrong answer.** Everything else in the deferred list keeps its
+> the same wrong answer** — recorded in
+> [pattern-ledger.md](pattern-ledger.md), which exists because no trigger
+> phrased as a count can fire without one. Everything else in the deferred list keeps its
 > original trigger.
 
 Note the amendment also re-opens the occlusion linter's ancestor (*"no register-
@@ -1350,8 +1360,15 @@ Two consequences for the reference hierarchy:
 
 ## Owner's calls
 
-**0. Is Track C inside or outside `plan.md`'s Phase 6 fence?** This is the
-largest call here and the two documents currently disagree. `plan.md`'s risk
+**0. RESOLVED 2026-07-25 — Track C is admitted.** The owner approved the
+scope-fence amendment; `plan.md`'s Phase 6 entry and its Risks bullet now set
+the fence at *who owns the state stream*, and "input handling" was removed from
+the non-goals list. Viewer chrome that bounds a viewing parameter while the
+timeline driver still owns `t` is a delivery feature; an input driver that
+*replaces* the state stream stays behind the Phase 6 gate. **The paragraph below
+is the superseded question, kept because the reasoning is what earned the
+amendment — but do not act on its conclusion.** ~~This is the
+largest call here and the two documents currently disagree.~~ `plan.md`'s risk
 section names the scope fence in as many words: *"mitate ships films;
 interactivity is one spike behind a gate, and engine-shaped features (input
 handling, game state, audio mixing) are non-goals until Phase 6 reopens the
@@ -1416,6 +1433,21 @@ unverified numbers get published anyway.
   blind to a swallowing host, but nothing tests the embedded configuration, and
   `site/app.js`'s warning is a warning rather than a check.
   *Trigger: before the viewer ships, since it makes the embedded case load-bearing.*
+- **Consistency sweep backlog — found 2026-07-25 by three subagent audits, not
+  yet fixed.** Recorded rather than silently carried: the reproducibility facet
+  of the provenance rule is violated *repo-wide* (no bracket harness is tracked
+  at all — the one that refuted the 0.16.2 claim lives in gitignored
+  `internal/`); `~2.3x` appears in four places and `1.09 MB` in two, three of
+  those without conditions; the contact-class count reads **5** in shipped
+  `instruments.md` and **6** in the ledger; `plan.md`'s tracked-size figures have
+  drifted (9.6/5.9/5.5 MB → 8.28/6.13/5.74) and carry neither a date nor a
+  method; `instruments.md` and `delivery.md` carry provenance headers with no
+  verification date; several brackets in `instruments.md` state figures without
+  machine or scene set; and seven reference headers say "verified against the
+  templates" without naming *which copy*, which invariant 6 now makes load-bearing.
+  *Trigger: before the next release that touches references — these are
+  consistency defects, not correctness ones, and fixing them piecemeal is how
+  the count drifted in the first place.*
 - **`test-audit` over `smoke.js`.** Two green-but-blind escapes landed in one
   session — the record-gated live path and the swallowing-host path — which is
   the stated trigger for auditing the whole suite rather than patching

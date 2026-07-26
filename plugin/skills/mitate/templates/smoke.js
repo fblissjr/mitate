@@ -17,7 +17,7 @@
 //                                       than reimplement the check; see
 //                                       references/instruments.md.
 //
-// Checks per scene, unbundled AND bundled:
+// Checks per scene (one artifact — the source/bundled pair collapsed):
 //   1. the page loads with zero console/page errors (incl. deprecation warnings)
 //   2. seekTo, DURATION, stopPlayback, sceneReady all exist (the contract only —
 //      the renderer is deliberately not asserted, so any backend can pass)
@@ -33,7 +33,9 @@
 // on a taste call just gets bypassed:
 //   6. caption reading speed, when window.BEATS is present
 //   7. caption overflow against the nowrap caption pill, when window.BEATS is present
-//   8. exposure — both overexposed clipping and underexposed crushing
+//   8. exposure — overexposed clipping and underexposed crushing. NOTE: its
+//      >=99%-near-black branch is a HARD fail, not advisory; framing invariance
+//      (also a hard fail) runs inside the same block. Neither is purely advisory.
 //
 // Requires: bun, playwright-core, a Chromium (see shoot.js resolution order).
 // Exits non-zero on any failure, so it can gate a release.
@@ -483,7 +485,12 @@ async function checkScene(browser, file) {
       }
     }
 
-    // --- advisory checks below: judgment calls, never fail the build --------
+    // --- MOSTLY advisory below: caption speed and caption overflow only warn.
+    // Framing invariance and the >=99% near-black branch of exposure are HARD
+    // fails and push to `fails` (see their own comments). An earlier version of
+    // this header said "never fail the build", contradicting code 130 lines
+    // down. What IS true for all four: each is wrapped so an unexpected error
+    // becomes a warning, never a FAIL. -----------------------------------
     // Each is wrapped so an unexpected error becomes a warning, not a FAIL —
     // an advisory check crashing must never flip the exit code.
     const beats = await page.evaluate('window.BEATS');

@@ -7,6 +7,16 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.6
+
+### fixed
+- **Four code comments asserted enforcement that does not exist, found by pointing an audit at comments rather than at docs.** The HTML fence in all thirteen carriers said "smoke.js fails a scene that is still carrying it" of the vendor tag. It does not: `bundle()` calls `ensureVendor()` *first*, which embeds three in place, so a canonical tag is silently fixed rather than failed — control-verified by building a scene carrying the tag and watching `build.js bundle` exit 0 with the tag gone. What smoke genuinely fails is a *non-canonical* external ref, which `ensureVendor` skips and the external-ref check catches. The same comment claimed `ensureVendor` runs before "every command that opens a scene"; `shoot.js` opens scenes and never embeds, which `SKILL.md` already documented as an exception. Both corrected.
+- **`smoke.js`'s own headers contradicted its code.** The section header at the advisory block said "never fail the build" while framing invariance and the ≥99%-near-black branch of exposure both `fails.push` 130 lines below it — each with its own honest inline comment saying so, making the header the stale part. The file header repeated it, listing exposure as purely advisory and omitting framing invariance from both lists. It also still claimed checks run "unbundled AND bundled" when the source/bundled pair collapsed into one artifact, which the code states explicitly 800 lines later. Third instance of the comment-asserts-a-mechanism class after the extent check and the nodeFrame guard.
+- **`film-language.md` stated the vocabulary trigger below the bar the promotion model sets** — "vocabulary enters when a film *needs* it" against `plan.md`'s "a film is **blocked** expressing something the tables cannot say". This matters more than an ordinary drift: `docs/` is uncitable from the plugin subtree, so this line is the *only* earn-in statement an author working from an installed plugin ever sees.
+
+### changed
+- `plugin/README.md` carries the date it was actually edited (2026-07-25), not the day before.
+
 ## 0.16.5
 
 ### fixed

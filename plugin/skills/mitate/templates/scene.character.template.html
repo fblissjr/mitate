@@ -58,9 +58,12 @@
      copy cannot be loaded from a classic script anyway. It MUST stay a classic
      script, not type="module": Chrome CORS-blocks ES module imports over
      file://, and opening the scene directly from disk is the whole point.
-     ensureVendor() runs before every command that opens a scene, so this tag
-     cannot survive into a render or a commit; smoke.js fails a scene that is
-     still carrying it. -->
+     ensureVendor() runs before every build.js command that opens a scene (NOT
+     shoot.js, which never embeds — SKILL.md documents that exception), so this
+     tag is EMBEDDED IN PLACE rather than failed: bundle() calls ensureVendor
+     first and only throws if the tag survives that. What smoke.js genuinely
+     fails is a NON-canonical external ref — a CDN URL, a differently-named
+     bundle — which ensureVendor skips and the external-ref check then catches. -->
 <!-- ==== HTML-END ==== -->
 <script src="./three.global.js"></script>
 <script>

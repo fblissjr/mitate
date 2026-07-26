@@ -135,7 +135,7 @@ riding `CONFIG.sway` so `build.js loop`'s held-camera warning stays honest.
 
 ## Deliberately not built yet
 
-Earn-in rule: vocabulary enters when a film needs it, not before.
+Earn-in rule: vocabulary enters when a film is **blocked** expressing something the tables cannot say — not merely when one would find it convenient.
 
 - **Dissolve / wipe** — needs a two-target composite; no film has wanted one.
 - **ffmpeg-side edit lists** (`xfade`) — would fork the MP4 from the HTML

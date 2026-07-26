@@ -1424,6 +1424,19 @@ unverified numbers get published anyway.
 - **A WebKit measurement for the site's shader-compile figure** (B3), before
   anyone calls it stale.
   *Trigger: before that figure goes on the auditor's list or gets edited on the site.*
+- **Unmount the hero iframe while the lightbox is open — leading hypothesis for
+  the blank-lightbox report, NOT yet confirmed.** Opening the lightbox calls
+  `stop()`, which cancels only the *parent's* rAF; the hero iframe stays mounted
+  and keeps its WebGPU device, so a second scene boots alongside a live first
+  one. Measured in Safari with the hero live: `menagerie` reached `sceneReady` in
+  **11,110 ms** against the hero gearbox's **1,232 ms** — ~9x, scaling with scene
+  weight. That is the same WebKit-budget effect that already sent mobile taps
+  top-level. An investigation could not reproduce the user's failure in Chrome or
+  Safari, locally or on the live site, so this is the best-supported explanation
+  rather than a diagnosis. 0.16.10 fixed the *visibility* of the failure without
+  guessing at its cause; do not ship the unmount until someone confirms the
+  cause, because remounting costs a re-boot on every lightbox close.
+  *Trigger: a reproduction, or the one-line console probe on a failing session.*
 - **A deployment-configuration check — a check to build, not an audit to run.**
   One scene, four hosts: disk, top-level, iframe with a parent driving `seekTo`,
   and the install cache. Only the top-level case is exercised today. This is the

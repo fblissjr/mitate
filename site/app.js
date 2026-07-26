@@ -323,16 +323,37 @@
     frame.setAttribute('title', film.title);
     frame.setAttribute('loading', 'eager');
     frame.setAttribute('allow', 'autoplay; fullscreen');
+    // Reveal the film IMMEDIATELY rather than gating on sceneReady. Every scene
+    // boots to its own title card ("compiling shaders — a few seconds on first
+    // open") which exists precisely so a booting film never reads as blank —
+    // and hiding the iframe until ready threw that away, making a slow boot and
+    // a dead scene pixel-identical. Measured in Safari with the hero still
+    // live: menagerie took 11.1s to reach sceneReady against gearbox's 1.2s in
+    // the hero, ~9x, scaling with scene weight. Under the old gate that is 11
+    // seconds of flat dark panel with no signal of any kind.
+    frame.classList.add('on');
     frame.addEventListener('load', () => {
       let tries = 0;
       const settle = () => {
         if (!frame.isConnected) return;
         let ready = false;
-        try { ready = frame.contentWindow && frame.contentWindow.sceneReady === true; } catch (e) { ready = true; }
-        if (ready || ++tries >= 900) {          // 90s ceiling, then show it regardless
+        // A THROWN probe is not readiness. This used to `catch (e) { ready =
+        // true }`, so any cross-origin or teardown error was indistinguishable
+        // from a booted scene — and with no logging anywhere on this path, a
+        // total failure produced an empty console. That is why "nothing in the
+        // console" was never evidence the scene was fine.
+        try { ready = frame.contentWindow && frame.contentWindow.sceneReady === true; }
+        catch (e) { console.warn('lightbox: cannot read sceneReady — ' + e.message); }
+        if (ready) { lbLoading.style.display = 'none'; return; }
+        if (++tries >= 200) {                   // 20s, was 90s
           lbLoading.style.display = 'none';
-          frame.classList.add('on');
-        } else setTimeout(settle, 100);
+          console.warn('lightbox: ' + film.title + ' did not reach sceneReady in 20s. '
+            + 'The film is shown regardless; if it is blank the scene is still '
+            + 'compiling or has failed to boot. Opening it full size in its own '
+            + 'tab gives it the whole browser budget.');
+          return;
+        }
+        setTimeout(settle, 100);
       };
       settle();
     });

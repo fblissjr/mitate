@@ -7,6 +7,15 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.10
+
+### fixed
+- **The lightbox made a slow film and a dead film pixel-identical.** Three defects in `openFilm()`, all of which turn any boot problem into a flat dark panel under correct chrome — which is exactly what a user reported. The iframe was hidden (`opacity:0`) until `sceneReady`, which threw away the scene's own boot card — the card that exists *precisely* so a booting film never reads as blank. On expiry of a 90-second ceiling it then revealed an unrendered iframe with the loading text removed and nothing logged. And the readiness probe did `catch (e) { ready = true }`, so a thrown error counted as success, on a path with no logging at all — which is why "nothing in the console" was never evidence the scene was fine. Now: the film is revealed immediately and its own boot card is the loading state; the ceiling is 20s and expiry both keeps the film visible and warns, naming the film and suggesting opening it full size; and a thrown probe logs instead of lying. Measured motivation, in Safari with the hero still live: `menagerie` took **11.1s** to reach `sceneReady` against the hero's **1.2s** — under the old gate that is eleven seconds of blank panel with no signal.
+- `site/index.html` moves to `app.js?v=30`, because `app.js` changed and `netlify.toml` caches `/*.js` for an hour — the same defect 0.16.3 fixed and the reason the rule exists.
+
+### changed
+- The investigation could not reproduce the original report in Chrome or Safari, locally or against the live site, and the deploy is confirmed healthy (all six films 200, md5-identical to source, no CSP, no service worker). So this release fixes the *visibility* of the failure rather than claiming its cause. The leading hypothesis — the hero iframe stays mounted and holds a WebGPU device while a second scene boots beside it — is recorded in `working-plan.md` with its measurement and a trigger, deliberately unshipped: the fix costs a re-boot on every lightbox close and nothing has confirmed the cause.
+
 ## 0.16.9
 
 ### fixed

@@ -873,12 +873,21 @@ see — so a capability claimed in one with its limits recorded in the other dri
 apart with neither violating the table. The offered tiebreaker (the newer audit
 date) is useless when both are dated the same day, which they are.
 
-Live instance: `method.md:634` promises every draw routed through `txt()` becomes
-a no-op under `?strip=text`; **the 3D templates ship no `txt()`** and alias
-`strip=text` to the DOM-caption `nocap`, while `instruments.md:212` correctly
-records that the pass cannot see canvas text. This is the exact failure class the
-doc was born from — a reference confidently describing a mechanism the stack
-never had — surviving in a shape the doc's rules do not detect.
+The instance that motivated this was `method.md` promising every draw routed
+through `txt()` becomes a no-op under `?strip=text`, while **the 3D templates
+ship no `txt()`** and alias `strip=text` to the DOM-caption `nocap` — with
+`instruments.md` correctly recording that the pass cannot see canvas text. The
+exact failure class the doc was born from: a reference confidently describing a
+mechanism the stack never had, in a shape the doc's rules do not detect.
+
+**Resolved in 0.16.13-0.16.14, which does not retire this item.** The limit won,
+as the rule below would have required — but it won because a human asked for a
+full read of SKILL.md, not because anything detected it. The correction then had
+to be chased into `SKILL.md`, the DRIVER fence across eight carriers, and
+`shoot.js`, over two releases, because fixing the reference does not move the
+copies. The underlying capability gap (3D has no `txt()`) is still open as B5, so
+the companion clause below is still the live risk: implementing `txt()` in 3D now
+has to clear the limit in *four* places, not one.
 
 **Proposed rule: when a capability claim and a limit claim disagree, the limit
 wins.** The asymmetry is real — overclaiming is the failure mode with teeth,
@@ -1472,6 +1481,15 @@ unverified numbers get published anyway.
   (resized without settling, under-measuring ~3x, and its stated rationale was
   false), the `?strip=text` page had no error listeners, and three of four
   contract members were shadowed by their own consumers.
+
+  **Two adjacent instances closed in 0.16.13-0.16.14, which sharpens what is
+  left.** The same family — a check that weakens without saying so — had two
+  cheap members: the soft contract (`BEATS`/`FRAME`/`FLASHES`/`CAPFADE`, plus
+  `SHOTS` on 3D) fell back in silence, and fence parity printed `ok` for a fence
+  carried by one scene and therefore compared against nothing. Both now say so,
+  and both are bracketed in each direction. Neither needed a design decision —
+  they needed a print statement. **That is exactly what distinguishes them from
+  the two below**, which cannot be fixed by speaking louder.
 
   **Still open, both requiring a design decision:**
   1. **Hard checks silently degrade to advisory when a scene throws.** Framing

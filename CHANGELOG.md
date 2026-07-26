@@ -7,6 +7,12 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.12
+
+### changed
+- **`SKILL.md` caught up with the suite twice over.** Its one-line summary of the determinism check still read "same `t` twice → byte-identical", which has been incomplete since 0.16.9 added the cross-reload sample — and the reload is the half that catches the interesting class, a random drawn once at load that is pure within a session and produces a different film every time the page opens. An author reading the old line would reasonably conclude smoke covers only in-session purity. This is the third time this release series that `SKILL.md`'s description of a check lagged the check; the version cascade deliberately excludes `SKILL.md`, and that exemption is about frontmatter cost, not accuracy.
+- **The two tracked brackets are listed where authors look.** `templates/bracket-liveplay.js` and `templates/bracket-determinism.js` now appear in the Files section with what they are for: each builds its own broken copies of a shipped example and reports which injections fire, so an author who doubts a green can re-derive it rather than trusting it. They were tracked precisely so that is possible, and a control nobody can find is barely better than one that does not exist.
+
 ## 0.16.11
 
 ### added

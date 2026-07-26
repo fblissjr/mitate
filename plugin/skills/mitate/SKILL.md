@@ -136,8 +136,10 @@ bun run smoke.js                              # all scenes; add WEBGPU=metal to 
 bun run build.js motion <name>.html           # per-beat motion profile + dead air
 ```
 
-`smoke.js` checks: loads clean, full contract, deterministic `seekTo` (same
-`t` twice → byte-identical), renders something, **plays** — one load without
+`smoke.js` checks: loads clean, full contract, deterministic `seekTo` — the same
+`t` twice is byte-identical, **and so is the same `t` after a page reload**, which
+is what catches a random drawn once at load: pure within a session, a different
+film every time it opens, renders something, **plays** — one load without
 `?record=1`, because every other load in the pipeline sets it and the rAF loop
 is gated on its absence, so a film can record perfectly and never move for a
 viewer — **and ships something**: a
@@ -192,6 +194,11 @@ Two constraints that dictate the setup — do not "simplify" them away:
 - `templates/shoot.js` / `templates/build.js` — recorder + pipeline (sheet,
   strip, aspect, motion, loop, avif, poster)
 - `templates/smoke.js` — contract, determinism, live-playback, shipped-frame checks + lints
+- `templates/bracket-liveplay.js` / `templates/bracket-determinism.js` — the
+  controls for two of smoke's checks, self-contained: each builds its own broken
+  copies of a shipped example and reports which injections fire. Run one when a
+  green result needs to mean something; a check whose bracket you cannot re-run
+  is a claim, not a control
 - `templates/backend.js` — shared by shoot.js and smoke.js: Chromium
   resolution, the WEBGPU/ANGLE flag policy, the settle idiom (one copy, so
   the gate and the recorder cannot drift apart)

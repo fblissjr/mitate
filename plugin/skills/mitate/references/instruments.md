@@ -126,18 +126,28 @@ direct reference to the function before the wrap and calls it privately; every
 template calls `window.seekTo` by name, and any replacement loop must keep doing
 so to stay visible here.
 
-**The sharper boundary is the host, not the scene.** This check answers *does the
-scene's own loop run*, and it answers it standalone, which is where the chain
-does die. A host that both replaces the loop **and swallows the exception** is
-outside its reach entirely: injected into `seekTo` itself, a standalone load
-registers 0 calls and fails correctly, while the same scene under a
-`try { win.seekTo(t) } catch (e) {}` host was measured at 71 calls and 71
-distinct `t` — passing every arm of this check while rendering nothing. Note what
-that configuration also escapes: the shipped-frame check runs under `?record=1`,
-so it never sees the host path either. That is the one place a dead film looks
-alive to everything, and it is the reason a host must not swallow silently
-(`site/app.js` now warns) and the reason a scene carrying its own viewer should
-stand down when framed rather than negotiate with the parent.
+**Corrected 2026-07-25 — an earlier version of this entry claimed a blind spot
+that does not exist, and the correction is the more useful finding.** It said a
+host that both replaces the loop *and* swallows the exception passes this check
+while rendering nothing, citing a measurement of 71 calls with 71 distinct `t`.
+That was an artifact of the **probe**, not of the gate: the ad-hoc wrapper used
+for that measurement incremented its counter *before* calling the inner
+`seekTo`, so the increment ran even when the inner threw. The shipped check
+counts **after the inner call returns**, which is why a swallowing host fires
+like any other frozen film.
+
+Re-bracketed four ways against `gearbox`, all four firing: unmodified
+(calls=20, distinct=20, playing); a throw in the rAF loop; a throw inside
+`seekTo`; and a host that swallows the throw — the last three all calls=0,
+distinct=0. **The wrapper ordering is load-bearing**, and that is the finding
+this entry should have carried in the first place.
+
+What survives, restated narrowly: **the check runs standalone, so no
+*deployment configuration* other than a top-level load is exercised** — not the
+iframe-with-a-parent-driving-`seekTo` case, not the install cache. The
+shipped-frame check runs under `?record=1` and does not reach them either. That
+is a coverage gap in the harness, not a blind spot in this check, and
+`site/app.js`'s warning is a warning rather than a check.
 
 Bracketed three ways on `gearbox`, all three firing with the right message: the
 rAF chain never started (0 calls), the first frame threw and killed the chain

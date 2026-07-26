@@ -1409,6 +1409,13 @@ unverified numbers get published anyway.
 - **A WebKit measurement for the site's shader-compile figure** (B3), before
   anyone calls it stale.
   *Trigger: before that figure goes on the auditor's list or gets edited on the site.*
+- **A deployment-configuration check — a check to build, not an audit to run.**
+  One scene, four hosts: disk, top-level, iframe with a parent driving `seekTo`,
+  and the install cache. Only the top-level case is exercised today. This is the
+  claim that *survives* the 0.16.2 retraction — the live-playback check is not
+  blind to a swallowing host, but nothing tests the embedded configuration, and
+  `site/app.js`'s warning is a warning rather than a check.
+  *Trigger: before the viewer ships, since it makes the embedded case load-bearing.*
 - **`test-audit` over `smoke.js`.** Two green-but-blind escapes landed in one
   session — the record-gated live path and the swallowing-host path — which is
   the stated trigger for auditing the whole suite rather than patching

@@ -16,8 +16,10 @@ Three companion references hold what this file deliberately does not:
 - `instruments.md` — what every check can and cannot see, with its measured
   bracket. Read it before trusting a green result.
 
-- `style-3d.md` — the three.js cookbook: lighting, the camera rail, texture
-  labels, procedural-asset recipes, r185 API notes, the performance envelope.
+- `webgpu-stack.md` — the node stack: backend policy, async boot, the six
+  determinism rules, recorder mechanics, r185 API notes, measured brackets.
+- `materials.md` — the material packs and their procedural recipes.
+- `bibles.md` — the look as ONE object: palette, exposure, post, lens, cut pace.
 - `delivery.md` — the GitHub delivery forensics: format tradeoffs, encoder
   settings, the content-type mechanism and its evidence chain.
 
@@ -143,7 +145,9 @@ Worked instances, each of which changed the outcome:
   directly observed to read fine. The threshold before that (17-21) had no
   observation on either side and was wrong by a wide margin.
 - The wash rule was stated as universal law for months. Rendering one
-  dark-palette scene refuted it. See `style-3d.md`, "Lighting and colour".
+  dark-palette scene refuted it. On this stack the failure is solved
+  structurally rather than by rule — see `materials.md`, which builds cel on an
+  unlit base so ambient light *cannot* wash the bands.
 - Phase-locking two coupled objects is *claimed* to make causality legible.
   Untested — and the way to test it is to break the phase deliberately and check
   whether the broken version reads differently. If it does not, the locking was
@@ -239,9 +243,11 @@ If you cannot describe one, you have not run a check.
 # Axis 1 — Composition: what fails inside one frame
 
 The rules here are about frames and framing, whatever draws them. The
-renderer-specific halves of this axis — lighting and colour, texture labels,
-camera lens choices, and the procedural-asset cookbook — live in
-`style-3d.md`.
+renderer-specific halves of this axis live elsewhere: lighting, colour and the
+look-as-one-object in `bibles.md`; the procedural recipes in `materials.md`;
+lens and camera vocabulary in `film-language.md`; backend and API specifics in
+`webgpu-stack.md`. (This stack ships no image textures, so the predecessor's
+texture-label material has no successor here.)
 
 ## One frame per beat hides systematic error
 

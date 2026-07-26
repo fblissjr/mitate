@@ -11,7 +11,13 @@
  * false-positive on both. Counted AFTER the inner call returns, so a throwing
  * seekTo cannot inflate the count.
  *
- *   bun run bracket-liveplay.js   (from templates/)
+ *   NODE_PATH="$PWD/node_modules" \
+ *     bun run "${CLAUDE_SKILL_DIR}"/templates/bracket-liveplay.js
+ *
+ * Invoke it FROM a working directory, leaving the file here: the fixture
+ * resolves beside this script, but playwright-core exists only where a film is
+ * being built. Bun stops its walk-up at the first node_modules it finds, which
+ * is why the dependency has to be handed to it rather than discovered.
  *
  * Measured 2026-07-25 against gearbox at 0.16.0:
  *

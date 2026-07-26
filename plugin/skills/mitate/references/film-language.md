@@ -19,8 +19,8 @@ simpler `{x,y,zoom}` rail; a 2D solver analog is deliberately unbuilt until a
 ## The pieces
 
 **SUBJECTS** — named things a camera can frame: `pos` is a pure function of
-`t` returning the subject's center, `h` its height, and optionally `w` its
-width. A moving subject is a tracking shot for free. Craft rule, learned by
+`t` returning the subject's center, `h` its framed extent (see below), and
+optionally `w` its width. A moving subject is a tracking shot for free. Craft rule, learned by
 rendering: track a subject's *travel*, not its jumps — leave vertical action
 out of `pos` so it moves in the frame instead of being cancelled by the camera.
 

@@ -79,14 +79,22 @@ and carry the shared contract:
 see method.md), DOM caption/title overlays, and the driver: `window.seekTo(t)`,
 `window.DURATION`, `window.stopPlayback()`, `window.sceneReady`,
 `window.BEATS`, `window.FRAME`, `window.FLASHES`, `window.CAPFADE`. Do not
-rename any of these.
-The 3D template additionally carries `SHOTS[]` with the match-cut constraint
-(the 2D template keeps its simpler `KEYS[]` camera rail) and exports
-`window.BACKEND` (`'webgpu' | 'webgl2'` — which backend actually rendered;
-smoke prints it per run).
+rename any of these — smoke hard-asserts only `seekTo`/`DURATION`/
+`stopPlayback`/`sceneReady`; the rest are read behind fallbacks and merely
+*named* when absent, so a rename degrades checks instead of failing them
+(`FLASHES` alone makes the blank-frame check misfire on a clean film).
+The 3D templates additionally carry `SUBJECTS[]` and `SHOTS[]` with the
+match-cut constraint (the 2D template keeps its simpler `KEYS[]` camera rail)
+and export `window.BACKEND` (`'webgpu' | 'webgl2'` — which backend actually
+rendered; smoke tags each scene with it, and 2D scenes set none).
 
-Replace the two marked sections: `buildWorlds()` (geometry) and `animate(t)`
-(per-beat motion, every property a function of `t`).
+Replace the marked sections: `buildWorlds()` (geometry) and `animate(t)`
+(per-beat motion, every property a function of `t`) in every template — plus
+`SUBJECTS` and `SHOTS` in the 3D ones, where the camera is authored. Leaving
+those at their placeholders frames the template's demo geometry, not your
+film, and the `h`/`w` declarations that decide every crop are the easiest
+thing here to get wrong. Read `references/film-language.md` before authoring
+them.
 
 **Node-stack rules (3D scenes)** — full detail in `references/webgpu-stack.md`:
 
@@ -117,16 +125,18 @@ Replace the two marked sections: `buildWorlds()` (geometry) and `animate(t)`
 ```bash
 bun run build.js sheet <name>.html            # one frame per beat -> .sheet.jpg + .squint.jpg
 bun run build.js sheet <name>.html 480 0.95   # every beat at its END — a standing pass
-bun run build.js sheet <name>.html 480 0.6 nocap  # every WORD removed — the semantics pass
+bun run build.js sheet <name>.html 480 0.6 nocap  # caption pill hidden — the semantics pass
 bun run build.js aspect <name>.html 8.5       # one moment, four window shapes
 bun run shoot.js <name>.html sample 0,3,7,11  # arbitrary timestamps
 ```
 
 **Read the generated images with the Read tool.** A filename is not a review.
 Composition fails within a frame (sheet shows it); continuity fails between
-frames (watch the loop; `build.js strip` for a suspect window); semantics
+frames (`build.js strip <name>.html <t0> <t1>` for a suspect window); semantics
 fails when every frame is fine and the film explains nothing (cover the
-captions — the nocap sheet). Budget 3-4 look-and-edit rounds for composition;
+captions — the nocap sheet; on a 3D film it hides the caption pill only, so
+mesh-built labels survive, and `references/method.md` owns the rest). Budget
+3-4 look-and-edit rounds for composition;
 the other two axes need their own passes.
 
 ### 4. Smoke-test the contract
@@ -136,30 +146,38 @@ bun run smoke.js                              # all scenes; add WEBGPU=metal to 
 bun run build.js motion <name>.html           # per-beat motion profile + dead air
 ```
 
-`smoke.js` checks: loads clean, full contract, deterministic `seekTo` — the same
-`t` twice is byte-identical, **and so is the same `t` after a page reload**, which
-is what catches a random drawn once at load: pure within a session, a different
-film every time it opens, renders something, **plays** — one load without
-`?record=1`, because every other load in the pipeline sets it and the rAF loop
-is gated on its absence, so a film can record perfectly and never move for a
-viewer — **and ships something**: a
-caption-stripped cold-page check that catches a backend compositing only the
-clear color, which four other checks passed on before it existed. Run before
-any full shoot.
+`smoke.js` checks:
+
+- **loads clean**, and the **contract** is present.
+- **deterministic `seekTo`** — the same `t` twice is byte-identical, **and so is
+  the same `t` after a page reload**. The reload half is what catches a random
+  drawn once at load: pure within a session, a different film every time it opens.
+- **plays** — one load *without* `?record=1`. Every other load in the pipeline
+  sets it and the rAF loop is gated on its absence, so a film can record
+  perfectly and never move for a viewer.
+- **ships something** — a caption-stripped cold-page check that catches a backend
+  compositing only the clear color, which four other checks passed on before it existed.
+- **fence parity** — fires only when two or more scanned scenes share a fence,
+  and says so when one does not.
+
+Run before any full shoot. `--parity-only` is the no-browser subset for a
+pre-commit hook (`references/instruments.md` owns why not to reimplement it).
 
 ### 5. Build and deliver
 
 ```bash
 bun run build.js all  <name>.html             # bundle -> frames -> mp4
-bun run build.js loop <name>.html 12 720      # .webp — inline in a README (held camera)
-bun run build.js avif <name>.html 12 720      # .avif — much smaller, decode-heavier
-bun run build.js poster <name>.html 7.2       # .jpg still + markdown
+bun run build.js loop <name>.html 12 720      # <fps> <width> -> .webp, inline in a README
+bun run build.js avif <name>.html 12 720      # <fps> <width> -> .avif, smaller, decode-heavier
+bun run build.js poster <name>.html 7.2       # <t> -> .jpg still + markdown
 ```
 
 Four peer formats — HTML (the scene itself; Pages or an Artifact, not raw
 github.com), MP4 (only format with audio; attach to an issue/PR for a player),
 WebP (held camera), AVIF (moving camera, small). Choose at spec time, not
-encode time: WebP's cost is per-pixel-changed, so it constrains the camera.
+encode time: WebP's cost is per-pixel-changed, so it constrains the camera —
+set `CONFIG.sway = 0` before shooting one, and heed the size warning `loop`
+prints *before* it shoots rather than after.
 Whatever ships, the scene file stays the single source.
 
 ## Backend policy (recorder)
@@ -176,14 +194,20 @@ ships flat frames with exit 0 (`references/webgpu-stack.md`).
 
 Pinned: `three@0.185.1`, `playwright-core@1.61.1`, ffmpeg on PATH, bun.
 
+`playwright-core` ships **no browser** — install one before the first render
+(`bunx playwright install chromium`, or set `CHROMIUM_PATH`). `loop` and `avif`
+each need an external encoder too; both probe for theirs and print the install
+command before shooting a frame, and `references/delivery.md` owns which and why.
+
 Two constraints that dictate the setup — do not "simplify" them away:
 
 - **three is vendored and EMBEDDED in the scene** (`build.js vendor` builds an
   IIFE of `three/webgpu` + `three/tsl` + display passes and splices it in;
   ~1 MB per scene, paid once; exact figure in `references/webgpu-stack.md`). Never CDN, never a sibling `.js`, never
   `type="module"`: module imports are CORS-blocked over `file://`, and opening
-  the file from disk is the point. `smoke.js` fails any scene that is not
-  self-contained.
+  the file from disk is the point. A canonical vendor tag is re-embedded in
+  place by `ensureVendor` on any `build.js` command; any other external
+  reference fails the scene in `smoke.js`.
 - **One scene = one file.** No `.bundled.html`, no shipped `three.global.js`.
 
 ## Files
@@ -195,10 +219,14 @@ Two constraints that dictate the setup — do not "simplify" them away:
   strip, aspect, motion, loop, avif, poster)
 - `templates/smoke.js` — contract, determinism, live-playback, shipped-frame checks + lints
 - `templates/bracket-liveplay.js` / `templates/bracket-determinism.js` — the
-  controls for two of smoke's checks, self-contained: each builds its own broken
-  copies of a shipped example and reports which injections fire. Run one when a
-  green result needs to mean something; a check whose bracket you cannot re-run
-  is a claim, not a control
+  controls for two of smoke's checks: each builds its own broken copies of a
+  shipped example and reports which injections fire. They read that example
+  from beside themselves, so leave them in place and invoke from your working
+  directory, which supplies `playwright-core`:
+  `NODE_PATH="$PWD/node_modules" bun run
+  "${CLAUDE_SKILL_DIR}"/templates/bracket-determinism.js`. Run one when a green
+  result needs to mean something; a check whose bracket you cannot re-run is a
+  claim, not a control
 - `templates/backend.js` — shared by shoot.js and smoke.js: Chromium
   resolution, the WEBGPU/ANGLE flag policy, the settle idiom (one copy, so
   the gate and the recorder cannot drift apart)

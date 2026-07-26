@@ -400,8 +400,9 @@ buildWorlds();
 
    SUBJECTS names the things a camera can frame. pos is a pure
    function of t returning the subject's CENTER, so a moving
-   subject is a tracking shot for free. h is the height the
-   framing math uses. Craft note: track a subject's TRAVEL, not
+   subject is a tracking shot for free. h is the framed EXTENT,
+   not the figure's height — read references/film-language.md
+   before declaring h/w. Craft note: track a subject's TRAVEL, not
    its jumps — leave vertical action out of pos so it moves in
    the frame instead of being cancelled by the camera.
 
@@ -418,7 +419,7 @@ buildWorlds();
      size2 / angle2   optional end values: a push/pull or an
               orbit eased across the shot's duration
      focus    subject the DoF plane sits on (default: subject).
-              Scenes with a BokehPass read shotFocus each frame;
+              Scenes declaring STYLE.dof read shotFocus each frame;
               two adjacent shots differing only in focus, joined
               by cut:'blend', ARE a rack focus.
      cut      how the shot ENTERS: 'hard' (default), 'whip'

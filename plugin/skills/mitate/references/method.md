@@ -50,7 +50,7 @@ frame-by-frame review untouched, which is exactly why they ship.
 const BEATS = [
   {name:'title', dur:2.4},
   {name:'scan',  dur:2.4, cap:"…"},
-  {name:'load',  dur:3.2, cap:"…", capEnd:2.85},   // caption ends early, beat does not
+  {name:'load',  dur:3.2, cap:"…"},                // caption spans the beat, fading at both edges
 ];
 ramp(t,'load',0,.56)      // fraction of the beat — stretches when you retime
 rampS(t,'load',1.8,2.3)   // seconds from beat start — does NOT stretch
@@ -637,9 +637,12 @@ three directions, all found by building films it did not fit:
   and *labelled* geometry carried the rest.
 
 So: cover the DOM caption AND the drawn words. `build.js sheet <scene> 480 0.6
-nocap` does both — every draw routed through `txt()` becomes a no-op and the DOM
-overlay hides — which is why routing scene text through the helper is worth it.
-`?nocap` removes only the caption; `?strip=text` removes everything. If you cannot tell, the
+nocap` sends `?strip=text`, which hides the DOM overlay on every backend and
+additionally no-ops every draw routed through `txt()` — which is why routing
+scene text through the helper is worth it. **`txt()` exists only in the 2D
+template.** On a 3D film `?nocap` and `?strip=text` are the same flag, neither
+touches geometry, and mesh-built labels survive the pass — strip those by hand
+before trusting the result. If you cannot tell, the
 geometry is not carrying the explanation and you have built a slideshow with a
 3D background.
 

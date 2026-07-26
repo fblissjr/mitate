@@ -7,6 +7,75 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.13
+
+### added
+
+- **`smoke.js` says when fence parity is inert.** A fence carried by only one
+  scanned scene compares nothing, and the run still printed a bare
+  `parity/integrity: ok` — a green board for a check that never ran, which is
+  the failure this repo cares most about. Bracketed both ways: silent across the
+  full carrier set, five notes against a single scene.
+- **`smoke.js` names absent soft-contract exports** (`BEATS`, `FRAME`,
+  `FLASHES`, `CAPFADE`) instead of silently falling back. The fallback stays —
+  scenes authored before a field existed must keep running — but its silence was
+  what let a rename read as a pass. Both changes replace a SKILL.md warning with
+  the tool saying it at the moment it applies.
+
+### fixed
+
+- **The bracket scripts could not be run by anyone.** Advertised as
+  "self-contained", they resolve their fixture beside themselves (so a copy in a
+  working directory fails on the missing example) and require `playwright-core`
+  (so an in-place run fails on the missing dependency). SKILL.md now gives the
+  invocation that works — run in place from the working directory, with
+  `NODE_PATH` supplying the dependency — verified end to end.
+- **`SUBJECTS` was never mentioned.** SKILL.md said to replace "the two marked
+  sections", but the 3D templates require `SUBJECTS` and `SHOTS` to be authored
+  too. Following the file literally left the camera framing the template's demo
+  geometry. The `h`-is-the-payoff-extent and declare-`w` rules are now stated at
+  the point of authoring rather than only in `film-language.md`.
+- **The semantics pass claimed more than it does.** `sheet ... nocap` sends
+  `?strip=text`, which no-ops `txt()` draws — but `txt()` exists only in the 2D
+  template. On a 3D film both flags collapse to hiding the DOM caption, so
+  mesh-built labels survive. `method.md` contradicted itself on this inside one
+  paragraph; both homes now say the same true thing.
+- **The contract's rename rule overstated enforcement.** Smoke asserts four of
+  the eight window names; the rest are read behind fallbacks, so a rename
+  misleads rather than failing. `BEATS`/`FRAME`/`CAPFADE` quietly weaken checks;
+  `FLASHES` stops the sample plan avoiding flash frames, which makes the
+  blank-frame check fire on a legitimate film — the exact regression
+  `smoke.js:242-246` records having already happened once.
+- **Fence parity's precondition is now stated** — it needs two or more scanned
+  scenes carrying the same fence, so it cannot fire in a one-scene working
+  directory.
+- `capEnd` appeared in `method.md`'s canonical beats example and is implemented
+  nowhere; removed rather than left as a silently ignored field.
+- Undocumented positionals labelled (`loop`/`avif` are `<fps> <width>`,
+  `poster` is `<t>`, `strip` takes `<t0> <t1>`); `CONFIG.sway = 0` named as the
+  actual mechanism behind the held-camera constraint; `--parity-only`
+  surfaced; the required Chromium install and the `img2webp`/`avifenc`
+  encoders added to Environment.
+- Self-containment restated precisely: a canonical vendor tag is re-embedded by
+  `ensureVendor`, it is other external references that fail the scene.
+- Stale `BokehPass` comment corrected to `STYLE.dof` across its four carriers.
+- **The `h` misconception was still being taught by the code.** The template's
+  own `SUBJECTS` comment said "`h` is the height the framing math uses" — the
+  exact belief `references/film-language.md` exists to correct, sitting one
+  paragraph from the `BokehPass` line above it in the same four files. That
+  reference also contradicted itself on the point within six lines. Both
+  corrected, and both SKILL.md and the four comments now point at that reference
+  rather than becoming further copies of the rule.
+- The brackets' own usage comments described invocations that fail — one said to
+  run from `templates/`, where the dependency does not resolve. Both now carry
+  the verified form.
+- Plugin README reduced to what a user actually needs: what it is and is not,
+  install, invocation, where to find what, and status as a pointer. Its tooling
+  and phase narratives were third copies of facts owned by `references/*.md`
+  and `docs/plan.md`, and had already begun to drift.
+- Restructured the smoke-check paragraph, which 0.16.12 left as an unreadable
+  run-on sentence.
+
 ## 0.16.12
 
 ### changed

@@ -53,6 +53,9 @@ const os = require('os');
 const { chromiumPath, angleArgs, settle, aspectShapes } = require(path.join(__dirname, 'backend.js'));
 
 const CONTRACT = ['seekTo', 'DURATION', 'stopPlayback', 'sceneReady'];
+// Read behind fallbacks rather than asserted, so a scene authored before one of
+// these existed still runs. The fallback is deliberate; its SILENCE was not.
+const SOFT_CONTRACT = ['BEATS', 'FRAME', 'FLASHES', 'CAPFADE'];
 const VIEWPORT = { width: 640, height: 360 };
 const sha256 = buf => crypto.createHash('sha256').update(buf).digest('hex');
 
@@ -448,6 +451,13 @@ async function checkScene(browser, file) {
     // Printed on the result line: a green run should say what it verified.
     backend = await page.evaluate('window.BACKEND || null');
     if (missing.length) fails.push('missing contract: ' + missing.join(', '));
+    // Absent soft names degrade checks instead of failing them: a renamed
+    // FLASHES leaves the sample plan unable to avoid flashes, and the
+    // blank-frame check then fires on a perfectly clean film. Say which are
+    // gone rather than making the reader infer it from a weaker result.
+    const soft = await page.evaluate(
+      `(${JSON.stringify(SOFT_CONTRACT)}).filter(k => window[k] === undefined)`);
+    if (soft.length) warnings.push('degraded — absent, read via fallback: ' + soft.join(', '));
     await page.evaluate('window.stopPlayback()');
     // Deliberately NOT asserting window.THREE. The contract is the product here;
     // three.js is one backend. Any scene exposing these four globals — a 2D
@@ -860,6 +870,13 @@ async function checkScene(browser, file) {
         kernelFail = true;
         console.log(`FAIL ${name} drift — these scenes carry different ${name} blocks:`);
         for (const x of found) console.log('       ' + x.f);
+      } else if (found.length === 1) {
+        // A comparison of one file compares nothing. Without this line the run
+        // prints `parity/integrity: ok` and the reader credits the fence with a
+        // check that never ran — the precise shape of a green board that means
+        // nothing. Say it out loud instead of documenting it elsewhere.
+        console.log(`note: ${name} parity inert — only ${found[0].f} carries this fence; `
+                  + `point smoke at the other carriers to actually compare`);
       }
     }
 

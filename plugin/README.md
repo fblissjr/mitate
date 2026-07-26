@@ -5,16 +5,23 @@ last updated: 2026-07-25
 Turn any input — a document, a codebase, a mechanism, a joke — into a
 deterministic animated scene of any register: an explainer, a game cutscene, a
 meme, a character short. Delivered as a self-contained HTML page, a frame-exact
-MP4, or an animated WebP/AVIF that plays inline in a README. Built on the
-three.js node stack: `WebGPURenderer` with transparent WebGL2 fallback, TSL node
-materials, and MaterialX procedural noise — zero assets, one file per scene.
+MP4, or an animated WebP/AVIF that plays inline in a README.
 
 *mitate* (見立て): to see one thing as another — the Japanese aesthetic of
 representing one thing through another. Here, seeing any input as a scene.
 
-The founding plan, architecture, and phase gates: [`docs/plan.md`](https://github.com/fblissjr/mitate/blob/main/docs/plan.md)
-in the repo (absolute, because this README ships into an install cache that has
-no `docs/`).
+## What it is, and what it is not
+
+It **is** a scene compiler: you describe a film, and the skill writes one
+self-contained HTML file whose every frame is a pure function of time, then
+renders that same file to video. Zero assets, one file per scene.
+
+It is **not** a video editor — it cannot cut an existing MP4, trim a screen
+recording, or animate a slide deck, because there is no input footage anywhere
+in the pipeline.
+
+**WebGPU is not required.** Scenes fall back to WebGL2 transparently, so any
+modern browser plays one and the recorder's default path needs no GPU.
 
 ## Installation
 
@@ -23,58 +30,48 @@ no `docs/`).
 /plugin install mitate@mitate
 ```
 
-## Skills
-
-| Skill | Description |
-|---|---|
-| `mitate` | The full pipeline: spec -> scaffold -> three-axis review -> smoke gate -> delivery, on two backends (three.js node stack 3D, Canvas2D 2D) under one window contract |
-
-## Requirements
-
-**WebGPU is NOT required.** Scenes use three.js `WebGPURenderer`, which falls
-back to its WebGL2 backend transparently when no WebGPU adapter exists — any
-WebGL2-capable browser plays a scene, and the recorder's default headless path
-is the WebGL2 fallback (CI-safe, no GPU needed). Hardware WebGPU is an opt-in
-speedup for the recorder only (`WEBGPU=metal` on macOS, measurably
-faster); see `references/webgpu-stack.md` for the flag policy.
-
-Tooling: `bun`, `three@0.185.1` + `playwright-core@1.61.1` (pinned), ffmpeg
-on PATH; `avifenc` (libavif) for AVIF loops, `img2webp` (webp) for WebP loops.
-
-## Invocation examples
+Then just ask. The skill activates on intent, not on a command:
 
 - "Make a 30-second video of how our approval process flows"
 - "Animate a boss-intro cutscene for this creature: ..."
 - "Turn a long dense paper into an explainer"
 - "Make this joke an animated meme"
 
+Each tool checks its own prerequisites — a browser binary, an encoder — and
+names what to install at the moment it needs one.
+
+## Where to find what
+
+Every fact has exactly one home. This README points; it does not restate.
+
+| you want | read |
+|---|---|
+| the workflow, and what to run in what order | `skills/mitate/SKILL.md` |
+| method, discipline, the recurring failure modes | `skills/mitate/references/method.md` |
+| shot vocabulary — sizes, cuts, focus, camera energy | `skills/mitate/references/film-language.md` |
+| backends, determinism, the node stack | `skills/mitate/references/webgpu-stack.md` |
+| formats, encoders, file size, inline delivery | `skills/mitate/references/delivery.md` |
+| what each check can and cannot see | `skills/mitate/references/instruments.md` |
+| materials, characters, style bibles | the correspondingly named `references/*.md` |
+| worked films you can open and read | `skills/mitate/examples/` |
+
 ## Status
 
-Phases 0 (foundation) and 1 (regression, post, shading) are complete:
-templates, recorder, and instruments on the node stack, gated green on both
-backends; the `gearbox` regression film judged no worse than its
-frozen-predecessor twin; the cel/SSS/glass material packs verified under
-byte-determinism; style bibles v2 with the committed `workshop`/`neon`
-control pair. Phase 2 (the character scaffold) is demonstrated: one
-parametric skeleton family with two-bone IK, planted gait, neck/tail
-chains, and fur/fabric packs — `examples/menagerie.html` walks a bear, a
-human, and an invented creature from one `buildCharacter`, squint-distinct
-and strip-checked — and its film deliverable shipped:
-`examples/bear-and-bees.html`, a comedy short whose pause-then-fast timing
-carries the register half of the gate. **Phase 2 is complete.** A chart
-tier now sits below the films: `examples/noise-chart.html` isolates shader
-primitives one cell at a time (with a deliberate drift control), and new
-primitives land there before any film uses them. Next up by
-owner priority: Phase 4, the physics bake (bake-time simulation, runtime
-determinism intact — see [`docs/physics-bake-proposal.md`](https://github.com/fblissjr/mitate/blob/main/docs/physics-bake-proposal.md)).
-Later phases (the human face rig, registers, the interactive spike) land as
-they pass their gates.
+Phases 0-2 are complete; Phase 4 (the physics bake) is next by owner priority.
+
+Phase definitions, gate criteria, and what remains live in
+[`docs/plan.md`](https://github.com/fblissjr/mitate/blob/main/docs/plan.md);
+what actually shipped, and when, is
+[`CHANGELOG.md`](https://github.com/fblissjr/mitate/blob/main/CHANGELOG.md).
+Those two are canonical — if this paragraph disagrees with them, they win.
+
+(Absolute links, because this README ships into an install cache that has no
+`docs/`.)
 
 ## Provenance
 
-mitate began as `screenwright` in the `fb-claude-skills` marketplace, itself
-the successor to that repo's `explainer-video` skill (now frozen, published,
-bugfix-only). The name changed on a real collision: an actively-maintained
-npm package and Claude Code skill in the same domain already holds
-"screenwright". Version history from 0.1.0 carries forward unbroken in
-[`CHANGELOG.md`](https://github.com/fblissjr/mitate/blob/main/CHANGELOG.md).
+mitate began as `screenwright` in the `fb-claude-skills` marketplace, itself the
+successor to that repo's `explainer-video` skill (now frozen, bugfix-only). The
+name changed on a real collision with an actively-maintained package in the same
+domain. Version history from 0.1.0 carries forward unbroken in the changelog
+linked above.

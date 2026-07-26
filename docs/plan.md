@@ -266,7 +266,9 @@ was anywhere to land a borrowed *primitive* alone — the Phase 1 lesson
 not debut inside a film. Pipeline: chart proves the primitive, showcase
 (materials.html's tier) proves the pack, film proves the register. Every
 ported primitive lands chart-first (source map: appendix at the end of this
-doc). First chart SHIPPED
+doc). That pipeline is the *proving* half of one axis; the layers it proves
+into, and what triggers a promotion between them, are in
+[Promotion](#promotion-what-enters-the-skill-and-in-what-form) below. First chart SHIPPED
 same day (mitate 0.12.0, `examples/noise-chart.html`): 8 cells —
 MaterialX baseline row (fbm, worley, aastep, palette-fbm), ported row (HWS
 value noise, HWS cells, domain warp) plus the classic sin-hash as a
@@ -668,6 +670,85 @@ carries a standing callout above the listing: the AVIF is to the film what
 a thumbnail is to a full image (720px/12fps/inline budget) — the HTML is
 the artifact. The HTML remains the full-quality deliverable; the AVIF
 exists so a browser of the repo can see the films without cloning.
+
+## Promotion: what enters the skill, and in what form
+
+The architecture section above splits the **runtime** — kernel, driver,
+contract, tooling. This is the other axis: what a scene may hand *back* to the
+skill, and what accepting it costs.
+
+Four rules already governed this and lived in four places, two of them only in
+[predecessor-record.md](predecessor-record.md), which reads as history rather
+than as a live rule set — so they were unreachable at the moment anyone needed
+them. Consolidated here.
+
+**The insight that was missing, and the reason the rules felt inconsistent: the
+promotion trigger scales with the cost of the form.** "At a third consumer" was
+always a rule about *code*; applied to an idea it is far too strict, and applied
+to a new fence it is barely strict enough. One trigger for four costs is the
+defect.
+
+### The layers
+
+| layer | what lives there | how it is proven | trigger to promote |
+|---|---|---|---|
+| **contract** | the `window.*` exports | a tool consumes it | a tool would otherwise parse scene internals |
+| **primitive** | pure functions of their arguments — `ramp`, `pulse`, noise, hashes, `solveLimb` | chart-first, byte-compared per backend | a second scene needs the same function |
+| **kit** | the six fenced blocks, material packs, the character scaffold | a showcase scene | **third consumer** — "at a third consumer, extract or marker-fence it" |
+| **vocabulary** | the declarative tables and their semantics — `BEATS`, `SHOTS`, `SIZES`, `STYLE`, `SUBJECTS` | a film that wants it | a film is blocked expressing something the tables cannot say |
+| **craft** | `method.md`, `film-language.md`, `characters.md` — rules, failure modes, idioms | a worked instance with evidence | the **second** time a scene solves the same problem better |
+| **the film** | — | — | never promotes; see Anti-template below |
+
+### The cost table, which sets the trigger
+
+| form | cost to accept | trigger |
+|---|---|---|
+| a rule or named failure mode in a reference | one paragraph | second instance |
+| a worked example cited from a reference | nothing newly tracked | first instance worth citing |
+| a vocabulary entry | an edge in the dependency graph, plus a validator case | a film blocked without it |
+| a primitive in `KERNEL` | a chart, plus the parity surface | second consumer, chart-proven |
+| a new fenced block, or a new fence | 8-9 carriers + cross-directory parity + version cascade | third consumer |
+| an instrument | a bracket fired both ways, plus a row in `instruments.md` | earn-in: a film blocked, **or** a third recorded instance of the same wrong answer |
+
+### Promotion is not code transfer
+
+What comes back from a scene is rarely a function. It may be an idea, a staging
+pattern, a design decision, or several at once — and the job is to grade it into
+the **cheapest form that carries the finding**, not to move code. Worked
+examples, all from the 2026-07-25 long film:
+
+- *"Let the subject exit the frame and pick them up already moving at the top of
+  the next beat"* → a **craft rule**, one paragraph. No code.
+- A scale-gate incantation appearing in **two different spellings** across the
+  corpus (`Math.max(1e-4,…)` and `clamp(sc,.001,1)`) → a **kit helper**, because
+  two spellings of one idea is drift, not reuse.
+- A procedural glyph alphabet → a **primitive**, so it lands chart-first: a grid
+  of all 36 glyphs byte-compared per backend, before any film uses it. Its three
+  bugs were each one letter built on a wrong assumption, which a grid exposes at
+  a glance and a title card cannot.
+- Hand-declared subject extents wrong three times out of five, while the one
+  framed from measured `rig.height`/`centerX` was right first try → not code at
+  all: **evidence for a vocabulary change**, measured extents replacing declared.
+- Multi-station travel legs → **nothing yet**. Register-specific to the presenter
+  explainer, which is one commission rather than a committed register. Deferred
+  with its trigger recorded.
+
+### Provenance is required
+
+Git makes the claim checkable, so make it. A promotion **names the scene it came
+from and what that scene did better**, in the commit message and in the
+CHANGELOG entry. "Several scenes do this" is not provenance; a commit range is.
+This is the same rule [source-of-truth.md](source-of-truth.md) applies to
+measured numbers — a thing that arrives without its origin gets trusted past its
+warrant — and the reason to enforce it here is that a promotion is permanent
+while the reasoning behind it is not.
+
+One consequence worth stating: **this section is maintainer-facing and lives in
+`docs/`, which SKILL.md may never cite** (invariant 3). An author working from an
+installed plugin cannot be routed here, and should not need to be — their job is
+to *report* candidates, not to grade them. The handoff-document convention
+already does that: the 2026-07-25 field report named everything its author built
+twice, which is exactly the input this section consumes.
 
 ## Anti-template principle
 

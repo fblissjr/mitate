@@ -1462,11 +1462,35 @@ unverified numbers get published anyway.
   runnable from a clean checkout, so the bracket `instruments.md` cites can
   actually be re-run. *Kept here as a record of what the audits found, not as
   open work.*
-- **`test-audit` over `smoke.js`.** Two green-but-blind escapes landed in one
-  session — the record-gated live path and the swallowing-host path — which is
-  the stated trigger for auditing the whole suite rather than patching
-  instance-by-instance. Recover each check's claim, verify its oracle can fail.
-  *Trigger: met 2026-07-25; see `internal/postmortems/`.*
+- **`test-audit` over `smoke.js` — RUN 2026-07-25. Four of five escapes fixed;
+  two items remain and both need design, not typing.** 25 spot mutations. The
+  worst finding was neither of the two escapes that triggered it: determinism was
+  only ever checked *within one page session*, so a scene drawing a random once at
+  init passed clean while rendering a different film on every load — the prime
+  directive broken, invisible to the whole suite. Fixed in 0.16.9 and bracketed by
+  `templates/bracket-determinism.js`. Also fixed: caption overflow could not fire
+  (resized without settling, under-measuring ~3x, and its stated rationale was
+  false), the `?strip=text` page had no error listeners, and three of four
+  contract members were shadowed by their own consumers.
+
+  **Still open, both requiring a design decision:**
+  1. **Hard checks silently degrade to advisory when a scene throws.** Framing
+     invariance, exposure and the caption blocks each wrap in
+     `try/catch → warnings.push`, so a scene that *explodes* downgrades a hard
+     fail to a warning and exits 0 — the worse the scene, the softer the verdict.
+     The intent is right (an instrument bug must not flip the exit code); the
+     implementation cannot tell an instrument bug from the scene detonating.
+     *Trigger: before anyone relies on a green from those three checks.*
+  2. **The console-noise cloak is open by construction.** An error prefixed with
+     a driver string is still dropped; 0.16.9 made every suppressed message
+     visible as an advisory rather than closing it, because origin filtering
+     fails (three.js is inlined, so its legitimate warnings carry the scene's own
+     URL) and a bounded tail is unmaintainable. *Trigger: a real defect found
+     hiding there — until then the advisory is the mitigation.*
+
+  Coverage limit worth carrying: every mutation ran on `gearbox` (3D, metal). The
+  2D backend and the WebGL2 fallback were exercised at baseline only, so a defect
+  confined to either is outside what the audit measured.
 - **A second data point on reference-reading order.** Ask the next agent to build
   a film and log which references it opened *and when* — before telling it that is
   being measured. The order matters as much as the set: `instruments.md` opened

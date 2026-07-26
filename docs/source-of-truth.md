@@ -12,35 +12,27 @@ other surface points at the home. Nothing restates.
 |---|---|---|
 | line-local invariant (a tick that guards determinism, a flag that renders black) | the comment ON that line | references may summarize and point in |
 | method, discipline, failure modes — "how to fish" | `plugin/skills/mitate/references/*.md` | SKILL.md and code comments point, never re-teach |
-| measured numbers and brackets | the one reference that owns the subject, with a date **and its conditions** | code comments name the phenomenon, not the figure |
+| measured numbers and brackets | the one reference that owns the subject, with its date, conditions, and a re-runnable harness | code comments name the phenomenon, not the figure |
 | routing and workflow order | SKILL.md | — |
 | what a check can and cannot see | `references/instruments.md` | smoke.js comments say how, not what-it-means |
 | repo invariants that bite on first edit | CLAUDE.md | — |
 | history — what happened and why | CHANGELOG.md and git | docs speak present tense only |
 
 
-**A measurement that crosses a boundary must carry its method, not just its
-value.** Added 2026-07-25 after a bare figure — "calls=71, distinct=71, passes"
-— was published as a boundary finding without stating that the probe counted
-*before* the call it was measuring. It reached a shipped `instruments.md` entry
-and outranked a local control that had already disproved it, because a specific
-number with no visible method reads as more authoritative than a result whose
-softness you can see. One clause would have prevented it.
+**A number travels with its provenance, or it gets trusted past its warrant.**
+One rule, three facets — a bracket carries its **date** (above), its
+**conditions** (how it was measured), and its **reproducibility** (a harness
+that runs from a clean checkout). A claim you cannot re-derive is soft in a way
+the reader cannot see, whether the gap is in the method or in the ability to
+run it again.
 
-The rule has two halves and they fail independently. **Receiving:** an external
-number without its conditions does not get to outrank a control you already
-ran. **Sending:** state the conditions, or the number will be trusted past its
-warrant by someone with no way to check. The date requirement above exists for
-the same reason; conditions are the other half of it.
+It fails in both directions, independently. **Sending:** state the conditions,
+or someone with no way to check will rank your figure above their own result.
+**Receiving:** an external number missing its conditions does not outrank a
+control you already ran. Make the harness self-contained when the measurement
+is taken — a minute there, unrecoverable later.
 
-**And the same rule applied to reproducibility: a bracket that cannot be re-run
-from a clean checkout does not get recorded as a bracket.** The 2026-07-25
-instance was caught only because a re-run refuted it — and the harness was
-re-runnable by accident, having depended on scratch files that were already
-deleted. It survived a housekeeping pass that could as easily have removed it.
-Make the harness self-contained when the measurement is taken, where it costs a
-minute; a claim you cannot re-derive is trusted past its warrant whether the gap
-is in its method or in its reproducibility.
+Worked instance: CHANGELOG 0.16.2.
 
 ## The rules
 

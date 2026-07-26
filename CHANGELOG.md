@@ -7,6 +7,19 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.15
+
+### changed
+
+- `SKILL.md`'s `metadata.last_verified` moves to 2026-07-25, on owner
+  authorization. It records a full line-by-line read of **the working tree**
+  (invariant 6) against `templates/`, `references/` and `examples/`, run twice
+  from independent readings and then cross-checked by a third that had seen
+  neither. What that review found is 0.16.13 and 0.16.14; this entry only dates
+  it. The date is a version cascade of its own because the frontmatter ships,
+  and an installed cache that keeps the old date is the drift the cascade
+  exists to prevent.
+
 ## 0.16.14
 
 ### fixed

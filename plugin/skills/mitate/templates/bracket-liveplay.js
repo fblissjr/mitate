@@ -1,7 +1,7 @@
 /* Bracket for the live-playback gate (shipped in 0.16.1), four ways.
  *
- * Self-contained by design: it builds its own broken copies of a shipped
- * example in a temp dir. The first version of this depended on scratch files
+ * Builds its own broken copies of a shipped example in a temp dir, so its
+ * fixtures need no upkeep. The first version of this depended on scratch files
  * that had already been deleted by the time it was preserved — a bracket you
  * cannot re-run is a claim, not a control.
  *

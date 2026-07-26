@@ -1,8 +1,8 @@
 /* Bracket for the CROSS-RELOAD determinism check (shipped in 0.16.9), three ways.
  *
- * Self-contained by design: builds its own broken copies of a shipped example
- * in a temp dir. A bracket you cannot re-run from a clean checkout is a claim,
- * not a control — and this file exists because the first version of these
+ * Builds its own broken copies of a shipped example in a temp dir, so its
+ * fixtures need no upkeep. A bracket you cannot re-run is a claim, not a
+ * control — and this file exists because the first version of these
  * controls was written as throwaway shell heredocs and was gone within the
  * hour, one release after the repo adopted that rule.
  *

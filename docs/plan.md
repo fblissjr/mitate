@@ -288,6 +288,15 @@ nothing and the chart re-runs free.
 Each phase ends at a gate a reviewer can check. No phase starts until the
 previous gate is green — except documentation, which trails every phase.
 
+**Marking a gate met here obliges one more edit: `plugin/README.md`'s Status
+line.** That line summarizes which phases are done, and this file is its only
+source. Nothing checks the two against each other, so the summary reads wrong
+from the moment a gate moves until someone notices — which is precisely the
+drift that got the README's longer status narrative deleted in 0.16.13. Write
+the gate, then fix the summary, in the same change. If keeping them in step
+ever costs more than the summary is worth, delete the summary and leave the
+pointer: this file wins any disagreement by construction.
+
 **Not a phase: the repo split (0.13.0–0.14.0, 2026-07-24).** The skill moved out
 of the `fb-claude-skills` marketplace into this repo and was renamed
 `screenwright` → `mitate` (a real name collision — see the founding decisions

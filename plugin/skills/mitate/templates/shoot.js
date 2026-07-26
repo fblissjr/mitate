@@ -125,8 +125,9 @@ async function openScenePage(browser, sceneFile) {
   page.on('pageerror', e => console.error('scene error: ' + e.message));
   page.on('console', m => { if (m.type() === 'error') console.error('console: ' + m.text()); });
   // SCENE_QUERY lets a review pass ask the scene for a variant of itself --
-  // today `strip=text`, which is how "cover everything except the geometry"
-  // became a standing pass instead of a hand-edited copy of the scene.
+  // today `strip=text`, which made the semantics pass a standing one instead of
+  // a hand-edited copy of the scene. How much it actually covers is
+  // backend-dependent — references/method.md owns that.
   const q = process.env.SCENE_QUERY ? '&' + process.env.SCENE_QUERY : '';
   await page.goto(url.pathToFileURL(path.resolve(sceneFile)).href + '?record=1' + q);
   await page.waitForFunction('window.sceneReady === true', { timeout: 20000 })

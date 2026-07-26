@@ -37,9 +37,12 @@
 //      >=99%-near-black branch is a HARD fail, not advisory; framing invariance
 //      (also a hard fail) runs inside the same block. Neither is purely advisory.
 //
-// Requires: bun, playwright-core, a Chromium (see shoot.js resolution order).
+// Requires: bun, playwright-core, a Chromium (see shoot.js resolution order) —
+// EXCEPT under --parity-only, which is pure string work over files and has to
+// run in a clone that has installed nothing. That is why playwright-core and
+// backend.js load lazily below instead of at module scope: a top-level require
+// killed the cheap pre-commit mode on a dependency it never uses.
 // Exits non-zero on any failure, so it can gate a release.
-const { chromium } = require('playwright-core');
 const { execFileSync } = require('child_process');
 const crypto = require('crypto');
 const path = require('path');
@@ -50,11 +53,21 @@ const os = require('os');
 // exact configuration the recorder ships, and the inline copies this file
 // used to carry had already drifted (the launch-args copy lost the
 // ANGLE_BACKEND allow-list).
-const { chromiumPath, angleArgs, settle, aspectShapes } = require(path.join(__dirname, 'backend.js'));
+// Assigned by loadBrowserDeps(), called only after the --parity-only early
+// exit. backend.js requires playwright-core itself, so deferring one means
+// deferring both.
+let chromium, chromiumPath, angleArgs, settle, aspectShapes;
+function loadBrowserDeps() {
+  ({ chromium } = require('playwright-core'));
+  ({ chromiumPath, angleArgs, settle, aspectShapes } =
+    require(path.join(__dirname, 'backend.js')));
+}
 
 const CONTRACT = ['seekTo', 'DURATION', 'stopPlayback', 'sceneReady'];
 // Read behind fallbacks rather than asserted, so a scene authored before one of
 // these existed still runs. The fallback is deliberate; its SILENCE was not.
+// SHOTS joins this list only for 3D scenes — a 2D scene has no shot list by
+// design, so an unconditional check would warn on every one of them.
 const SOFT_CONTRACT = ['BEATS', 'FRAME', 'FLASHES', 'CAPFADE'];
 const VIEWPORT = { width: 640, height: 360 };
 const sha256 = buf => crypto.createHash('sha256').update(buf).digest('hex');
@@ -455,8 +468,9 @@ async function checkScene(browser, file) {
     // FLASHES leaves the sample plan unable to avoid flashes, and the
     // blank-frame check then fires on a perfectly clean film. Say which are
     // gone rather than making the reader infer it from a weaker result.
+    const softNames = SOFT_CONTRACT.concat(backend ? ['SHOTS'] : []);
     const soft = await page.evaluate(
-      `(${JSON.stringify(SOFT_CONTRACT)}).filter(k => window[k] === undefined)`);
+      `(${JSON.stringify(softNames)}).filter(k => window[k] === undefined)`);
     if (soft.length) warnings.push('degraded — absent, read via fallback: ' + soft.join(', '));
     await page.evaluate('window.stopPlayback()');
     // Deliberately NOT asserting window.THREE. The contract is the product here;
@@ -870,14 +884,28 @@ async function checkScene(browser, file) {
         kernelFail = true;
         console.log(`FAIL ${name} drift — these scenes carry different ${name} blocks:`);
         for (const x of found) console.log('       ' + x.f);
-      } else if (found.length === 1) {
+      } else if (found.length === 1 && texts.size > 1) {
         // A comparison of one file compares nothing. Without this line the run
         // prints `parity/integrity: ok` and the reader credits the fence with a
         // check that never ran — the precise shape of a green board that means
         // nothing. Say it out loud instead of documenting it elsewhere.
+        //
+        // Gated on a multi-scene scan on purpose. The documented authoring loop
+        // leaves ONE film in the working directory, where every fence is
+        // trivially uncompared; firing per fence there would print six notes
+        // advising something the author cannot do, and noise that always fires
+        // is noise nobody reads. The single-scene case is stated once below.
         console.log(`note: ${name} parity inert — only ${found[0].f} carries this fence; `
-                  + `point smoke at the other carriers to actually compare`);
+                  + `add the other carriers to the scan to compare`);
       }
+    }
+
+    // The single-scene case, said once rather than once per fence. Parity is
+    // structurally inapplicable here, and a reader who does not know that reads
+    // `parity/integrity: ok` as a fence check that passed.
+    if (texts.size === 1) {
+      console.log('note: parity needs two or more scenes to compare; scanned 1, '
+                + 'so no fence was checked (integrity still was)');
     }
 
     // Template integrity, checked here because it is the same kind of property:
@@ -906,6 +934,7 @@ async function checkScene(browser, file) {
     process.exit(kernelFail ? 1 : 0);
   }
 
+  loadBrowserDeps();
   const browser = await chromium.launch({
     executablePath: chromiumPath(),
     // THE SAME angleArgs as shoot.js (backend.js), so the gate checks the

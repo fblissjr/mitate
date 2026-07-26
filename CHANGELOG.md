@@ -7,6 +7,43 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.14
+
+### fixed
+
+- **`--parity-only` could not run in a fresh clone.** `smoke.js` required
+  `playwright-core` at module scope, long before the parity path's early exit,
+  so the no-browser pre-commit mode 0.16.13 advertised died on a dependency it
+  never uses — the same "advertised runnable, needs an undeclared dependency"
+  shape 0.16.13 fixed for the brackets, reintroduced one release later for the
+  check it recommends. It and `backend.js` now load lazily; parity completes
+  with nothing installed.
+- **The DRIVER fence still taught the `nocap` claim 0.16.13 corrected.** Its
+  comment said `?strip=text` "hides every word on screen"; in a 3D scene both
+  flags are one boolean and neither touches geometry. Corrected across all eight
+  carriers together, and in `shoot.js`, which quoted the same phrase.
+- SKILL.md said the nocap sheet hides "the caption pill only" — it hides the DOM
+  title as well.
+- The plugin README lost its only mention of `ffmpeg` when 0.16.13 removed its
+  Requirements block, and `build.js` invokes ffmpeg unprobed, so a missing one
+  surfaces as a bare spawn error with nothing to explain it. Restored.
+- The bracket headers still advertised themselves as "self-contained" and
+  re-runnable "from a clean checkout" — the claim 0.16.13 recorded as false —
+  thirteen lines above the note explaining they are neither.
+
+### changed
+
+- The inert-parity note fires only on a multi-scene scan. The documented
+  authoring loop leaves one film in the working directory, where it would have
+  printed six notes per run advising something the author cannot do; that case
+  is now stated once instead.
+- `SHOTS` joins the soft-contract check for 3D scenes, gated on `window.BACKEND`
+  so 2D scenes, which legitimately have none, do not warn.
+- `docs/plan.md` now states that marking a gate met obliges updating the plugin
+  README's status line, written at the point where gates are declared. Nothing
+  can check those two against each other, so the obligation belongs where the
+  decision is made.
+
 ## 0.16.13
 
 ### added

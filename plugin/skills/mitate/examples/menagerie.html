@@ -1550,9 +1550,11 @@ const titleEl=document.getElementById('title');
 titleEl.querySelector('h1').textContent=CONFIG.title;
 titleEl.querySelector('p').textContent=CONFIG.subtitle;
 const flashEl=document.getElementById('flash');
-/* ?nocap hides the caption; ?strip=text hides every word on screen. The second
-   is the semantics instrument: "cover everything except the geometry" is the
-   test, and it used to require hand-editing a copy of the scene. */
+/* ?nocap and ?strip=text are the SAME flag in a 3D scene: both hide the DOM
+   title and caption, and neither touches geometry. What ?strip=text also
+   silences is the 2D backend's txt() helper, which this template does not
+   have — so mesh-built labels survive the semantics pass and have to be
+   stripped by hand. references/method.md owns the rest. */
 const NOCAP=location.search.includes('nocap')||location.search.includes('strip=text');
 /* Flashes anchor to beats ({beat,at}), resolved ONCE to absolute seconds with
    their half-widths: per-flash `w`, else CONFIG.flashWidth, else the

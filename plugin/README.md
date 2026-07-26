@@ -37,8 +37,9 @@ Then just ask. The skill activates on intent, not on a command:
 - "Turn a long dense paper into an explainer"
 - "Make this joke an animated meme"
 
-Each tool checks its own prerequisites — a browser binary, an encoder — and
-names what to install at the moment it needs one.
+You need `bun` and `ffmpeg` on PATH. Everything else is checked by the tool
+that needs it — a browser binary, an encoder — and named at the moment it is
+missing.
 
 ## Where to find what
 

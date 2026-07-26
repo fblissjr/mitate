@@ -134,8 +134,9 @@ bun run shoot.js <name>.html sample 0,3,7,11  # arbitrary timestamps
 Composition fails within a frame (sheet shows it); continuity fails between
 frames (`build.js strip <name>.html <t0> <t1>` for a suspect window); semantics
 fails when every frame is fine and the film explains nothing (cover the
-captions — the nocap sheet; on a 3D film it hides the caption pill only, so
-mesh-built labels survive, and `references/method.md` owns the rest). Budget
+captions — the nocap sheet; on a 3D film it hides the DOM title and caption but
+no geometry, so mesh-built labels survive it and `references/method.md` owns
+the rest). Budget
 3-4 look-and-edit rounds for composition;
 the other two axes need their own passes.
 

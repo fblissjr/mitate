@@ -1424,8 +1424,12 @@ unverified numbers get published anyway.
 - **A WebKit measurement for the site's shader-compile figure** (B3), before
   anyone calls it stale.
   *Trigger: before that figure goes on the auditor's list or gets edited on the site.*
-- **Unmount the hero iframe while the lightbox is open — leading hypothesis for
-  the blank-lightbox report, NOT yet confirmed.** Opening the lightbox calls
+- **Unmount the hero iframe while the lightbox is open — DOWNGRADED 2026-07-25,
+  probably not needed.** The 0.16.10 visibility fix resolved the report on
+  desktop and iOS Safari, which says the scene was booting all along and the
+  `opacity:0`-until-`sceneReady` gate was the bug itself, not a symptom of
+  resource contention. Slow boot is now survivable because the film's own boot
+  card is visible while it compiles. Kept only as a note, not a plan item: Opening the lightbox calls
   `stop()`, which cancels only the *parent's* rAF; the hero iframe stays mounted
   and keeps its WebGPU device, so a second scene boots alongside a live first
   one. Measured in Safari with the hero live: `menagerie` reached `sceneReady` in

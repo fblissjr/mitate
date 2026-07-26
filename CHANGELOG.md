@@ -7,6 +7,14 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.11
+
+### added
+- **`templates/bracket-determinism.js` — the control for the check 0.16.9 shipped, which had none.** Three injections against `gearbox`, self-contained: unmodified passes both halves; state-across-frames is caught in-session; a random seeded once at load is **caught ONLY by the reload**, which is the row the whole check exists for and the one that read `all scenes pass` before 0.16.9. Written because the original controls were shell heredocs that generated and deleted their fixtures in the same command, so within an hour of shipping the fix nothing could re-run it — the exact failure the repo adopted a rule against earlier the same day, repeated by the person who wrote the rule. `instruments.md`'s determinism row now names the bracket and the new reload sample.
+
+### changed
+- **The blank-lightbox diagnosis is downgraded, because the fix identified the cause.** 0.16.10 shipped visibility fixes without claiming a cause, and recorded hero-iframe WebGPU contention as the leading hypothesis. The fix resolved the report on desktop and iOS Safari — which means the scene was booting all along and the `opacity:0`-until-`sceneReady` gate *was* the bug, not a symptom of contention. Slow boot is now survivable because the film's own boot card is visible while it compiles. The unmount idea is demoted from a plan item to a note.
+
 ## 0.16.10
 
 ### fixed

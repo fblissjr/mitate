@@ -33,7 +33,7 @@ observation on both sides, or explicitly labelled unbracketed.
 |---|---|---|---|
 | page errors | per load | console/page errors, deprecation warnings | anything that fails silently |
 | contract | — | a missing `seekTo`/`DURATION`/`stopPlayback`/`sceneReady` | — |
-| determinism | **all** of 4 planned points, +up to 2 transition midpoints | state across frames, `Math.random()`, wall-clock | state that only desyncs at unsampled times |
+| determinism | **all** of 4 planned points, +up to 2 transition midpoints, **plus one across a page reload** | state across frames, `Math.random()`, wall-clock, and load-time randomness that is pure within a session | state that only desyncs at unsampled times. Bracketed by `templates/bracket-determinism.js` |
 | blank frame | **all** of 4 planned points, +up to 2 transition midpoints | a pipeline shooting empty frames | a frame that is dark but not empty |
 | shipped-frame spread | **max** over its own 4-point plan | a backend that ships nothing (half-dead adapter) | a register that is legitimately flat *and* correct |
 | live playback | 3+ `seekTo` calls, 2+ distinct `t`, on the one load without `?record=1` | a film that records perfectly and never moves for a viewer | whether the motion *reads*; a driver calling a captured reference instead of `window.seekTo` |

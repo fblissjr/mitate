@@ -7,6 +7,18 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.9
+
+### fixed
+- **Determinism was only ever checked inside one page session, and that let a prime-directive violation pass clean.** The check rendered at `t`, sought away, sought back, and compared — never reloading. A scene that draws a random ONCE at init is perfectly pure within a session and passed green, while three page loads produced three different films (measured: `d99140c980d9` three times unmodified, `47abb8be…`/`fdec2be5…`/`cd673d81…` with a load-seeded random). That is the founding claim broken — the HTML a viewer loads and the MP4 the recorder shoots are not the same film — and the entire suite was blind to it. One reload and one re-screenshot now covers the class. Bracketed: the load-seeded mutant fails, the shipped corpus stays green.
+- **The caption-overflow check could not fire, and its stated reason was false.** It resized to 1920x1080 because the caption was "sized in fixed CSS px" — but the template sizes it `calc(var(--fw)*.015625)`, frame-relative, and the pill/frame ratio measures 1.219 at 640 against 1.217 at 1920. Scale-invariant, so the resize bought nothing. It also *cost* everything: resizing without settling measured a pill still laid out at the old size against a frame computed at the new one, under-measuring by ~3x, so a caption overflowing by 32% produced no warning at all. The resize is gone; measuring at the check viewport is now equivalent and cannot go stale. The framing block's own comment already stated the rule this broke.
+- **The cold `?strip=text` page had no error listeners**, so any defect manifesting only on that load was invisible while the identical defect on the live load failed red. Same listeners attached; bracketed both ways.
+- **Three of the contract check's four members were shadowed by their own consumers.** It ran after `sceneReady` was awaited and after `stopPlayback()` was called, so only `DURATION` ever produced the `missing contract:` message — the others surfaced as a 20s timeout or a raw `TypeError`. The check now runs before `stopPlayback()`. `sceneReady` stays shadowed by its own wait, which is unavoidable and now said out loud rather than implied.
+
+### changed
+- **The console-noise filter cannot be closed, so it is made loud instead.** `console.error('GL Driver Message: <a real defect>')` was dropped silently, because the filter substring-matched driver text. Anchoring narrows it but does not close it — the real noise strings *are* prefixes. Two closes were tried and rejected: filtering on message origin fails because three.js is inlined, so three's own legitimate "WebGPU is not available" carries the scene's URL and would stop being suppressed; a bounded tail is unmaintainable against driver text nobody controls. Every suppressed message is now reported as an advisory naming what was dropped. Silent suppression was the actual defect — an error nobody can see is indistinguishable from no error.
+- **The blank-frame check stops advertising coverage it does not provide.** An audit found no mutation that fires it without the shipped-frame spread check firing first, including a fully black render where it stayed silent because the caption pill kept the PNG above the floor. Kept as a backstop for scenes with no `?strip=text` support — the one case where it adds anything — with the comment rewritten to say so.
+
 ## 0.16.8
 
 ### changed

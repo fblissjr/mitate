@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "mitate — deterministic animated scenes from any input.",
-    "version": "0.16.8"
+    "version": "0.16.9"
   },
   "plugins": [
     {
       "name": "mitate",
       "source": "./plugin",
       "description": "Turn any input — a document, a codebase, a mechanism, a joke — into a deterministic animated scene. Films of any register (explainer, game cutscene, meme, character short) on the three.js node stack (WebGPURenderer with WebGL2 fallback, TSL node materials, MaterialX procedural noise) plus a Canvas2D backend, delivered as self-contained HTML, frame-exact MP4, or animated WebP/AVIF. 見立て: to see one thing as another.",
-      "version": "0.16.8"
+      "version": "0.16.9"
     }
   ]
 }

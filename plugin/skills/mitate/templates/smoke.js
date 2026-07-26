@@ -252,6 +252,9 @@ async function checkScene(browser, file) {
   const fails = [];
   const warnings = [];
   const noise = [];
+  // Messages the NOISE filter suppressed. Surfaced as an advisory at the end so
+  // a defect cloaked behind a driver prefix is visible; see the NOISE comment.
+  const dropped = [];
   let backend = null;
   const page = await browser.newPage({ viewport: VIEWPORT, deviceScaleFactor: 1 });
   page.on('pageerror', e => noise.push('page error: ' + e.message));
@@ -266,10 +269,21 @@ async function checkScene(browser, file) {
   // "No available adapters." is the WebGPU probe finding nothing before the
   // renderer announces its WebGL2 fallback — the two lines arrive together and
   // both are informative, not defects.
-  const NOISE = /GL Driver Message|GPU stall|Automatic fallback to software WebGL|WebGPURenderer: WebGPU is not available|No available adapters/i;
+  // Anchored at the start, which narrows this filter but — measured — does NOT
+  // close the cloak: the real noise strings ARE prefixes, so
+  // console.error('GL Driver Message: <a real defect>') still matches and is
+  // still dropped. Two closes were tried and rejected. Filtering on the
+  // message's ORIGIN fails because three.js is inlined in every scene, so
+  // three's own legitimate "WebGPU is not available" carries the scene's URL and
+  // would stop being suppressed. Requiring a bounded tail is unmaintainable
+  // against driver text nobody controls.
+  // So the cloak stays open and is made LOUD instead: every dropped message is
+  // reported as an advisory. Silent dropping was the real defect — a suppressed
+  // error nobody can see is indistinguishable from no error.
+  const NOISE = /^\s*(GL Driver Message|GPU stall|Automatic fallback to software WebGL|WebGPURenderer: WebGPU is not available|No available adapters)/i;
   page.on('console', m => {
     if (m.type() !== 'error' && m.type() !== 'warning') return;
-    if (NOISE.test(m.text())) return;
+    if (NOISE.test(m.text())) { dropped.push(m.text()); return; }
     noise.push(`console ${m.type()}: ${m.text()}`);
   });
 
@@ -293,6 +307,15 @@ async function checkScene(browser, file) {
     // first condition rather than gaining false positives.
     try {
       const p2 = await browser.newPage({ viewport: VIEWPORT, deviceScaleFactor: 1 });
+      // Same listeners as `page`. Without them this load was an error blind
+      // spot: a defect that manifests ONLY under ?strip=text went green here
+      // while the identical defect on the live load went red.
+      p2.on('pageerror', e => noise.push('page error: ' + e.message));
+      p2.on('console', m => {
+        if (m.type() !== 'error' && m.type() !== 'warning') return;
+        if (NOISE.test(m.text())) { dropped.push(m.text()); return; }
+        noise.push(`console ${m.type()}: ${m.text()}`);
+      });
       try {
         await p2.goto('file://' + path.resolve(file) + '?record=1&strip=text');
         await p2.waitForFunction('window.sceneReady === true', { timeout: 20000 });
@@ -407,15 +430,25 @@ async function checkScene(browser, file) {
     }
 
     await page.goto('file://' + path.resolve(file) + '?record=1');
+    // Order matters and is a compromise, not an ideal. `sceneReady` MUST be
+    // waited on first — it is assigned at the end of the async boot, so a check
+    // before the wait reads a document where it legitimately does not exist yet
+    // (measured: doing that failed every 3D example with `missing contract:
+    // sceneReady`). So sceneReady stays shadowed by its own wait, and that is
+    // unavoidable: a scene that never sets it produces a 20s timeout rather
+    // than this message.
+    // What IS recoverable is the other two. This check now runs BEFORE
+    // stopPlayback() is called, so a missing `stopPlayback` prints the intended
+    // `missing contract:` line instead of a raw TypeError. `seekTo` is consumed
+    // earlier still by the live-playback wrapper, on a different document.
     await page.waitForFunction('window.sceneReady === true', { timeout: 20000 });
-    await page.evaluate('window.stopPlayback()');
-
     const missing = await page.evaluate(
       `(${JSON.stringify(CONTRACT)}).filter(k => window[k] === undefined)`);
     // Which backend actually rendered (3D scenes export it; 2D scenes have none).
     // Printed on the result line: a green run should say what it verified.
     backend = await page.evaluate('window.BACKEND || null');
     if (missing.length) fails.push('missing contract: ' + missing.join(', '));
+    await page.evaluate('window.stopPlayback()');
     // Deliberately NOT asserting window.THREE. The contract is the product here;
     // three.js is one backend. Any scene exposing these four globals — a 2D
     // canvas, an SVG/CSS timeline, a D3 diagram — gets frame-exact MP4s from the
@@ -466,7 +499,38 @@ async function checkScene(browser, file) {
       }
     }
 
-    // Non-blank, measured on the screenshot rather than the canvas, so this works
+    // ACROSS a page reload, not just within one session. The loop above proves
+    // seekTo is pure *inside* a load; it says nothing about a scene that seeds
+    // Math.random() ONCE at init. Such a scene is perfectly self-consistent per
+    // session and produced three different films over three loads, measured —
+    // while smoke reported `all scenes pass`. That is the prime directive
+    // broken (the HTML a viewer loads and the MP4 the recorder shoots are
+    // different films) and the whole suite was blind to it. One reload, one
+    // sampled t: the cheapest possible cover for a load-time-nondeterminism
+    // class that no in-session check can reach.
+    if (!fails.length && shots.length) {
+      await page.goto('file://' + path.resolve(file) + '?record=1');
+      await page.waitForFunction('window.sceneReady === true', { timeout: 20000 });
+      await page.evaluate('window.stopPlayback()');
+      await page.evaluate(`window.seekTo(${PLAN[0]})`);
+      await settle(page);
+      const reloaded = await page.screenshot();
+      if (sha256(reloaded) !== sha256(shots[0])) {
+        fails.push(`seekTo(${PLAN[0]}) differs ACROSS a page reload — the scene is `
+                 + `deterministic within a session but not between them, so the live `
+                 + `HTML and the recorded MP4 are different films. Usual cause: a seeded `
+                 + `or unseeded random drawn once at load rather than derived from t`);
+      }
+    }
+
+    // BACKSTOP ONLY — the shipped-frame spread check strictly dominates this
+    // one, and an audit found no mutation that fires here without firing there
+    // first (including a fully black render, where this stayed silent because
+    // the caption pill kept the PNG above the floor). It earns its place for
+    // exactly one case: a scene with no ?strip=text support, where the
+    // shipped-frame check keeps its captions and loses power. Do not read a
+    // green here as blankness coverage.
+    // Measured on the screenshot rather than the canvas, so this works
     // for any backend (WebGL, 2D canvas, SVG/CSS, plain DOM). PNG compresses a
     // uniform frame to almost nothing: at 640x360 a flat fill lands around 1-3KB,
     // while anything with real content is far larger. A heuristic, but it catches
@@ -539,7 +603,18 @@ async function checkScene(browser, file) {
         // template as overflowing, which is a measurement artifact, not a
         // finding. Anything comparing an element against the frame has to be
         // measured at the size the frame is actually rendered.
-        await page.setViewportSize(SHIP_VIEWPORT);
+        // NO resize. This used to jump to SHIP_VIEWPORT on the theory that the
+        // caption is fixed CSS px, so a ratio measured at 640 would not hold at
+        // 1920. That stopped being true: the template sizes it
+        // `calc(var(--fw)*.015625)`, i.e. frame-relative, and the pill/frame
+        // ratio measures 1.219 at 640 and 1.217 at 1920 — scale-invariant, so
+        // the resize bought nothing. It also cost everything: resizing WITHOUT
+        // settling reads a pill still laid out at the old size against a frame
+        // computed at the new one, under-measuring by ~3x, and a caption
+        // overflowing by 32% produced no warning at all. The framing block's own
+        // comment states the rule this broke — any check that changes viewport
+        // must re-settle before it measures. Measuring at VIEWPORT is now
+        // equivalent and cannot go stale.
         for (const b of beats) {
           if (!b.cap) continue;
           const { width, frameW } = await page.evaluate(`(() => {
@@ -695,6 +770,13 @@ async function checkScene(browser, file) {
   // repeats per load, and a per-frame warn inside seekTo (the nodeFrame guard,
   // say) emits once per rendered frame while the live-playback loop runs. One
   // diagnostic should read as one line, not as a flood.
+  if (dropped.length) {
+    const uniq = [...new Set(dropped)];
+    warnings.push(`suppressed ${dropped.length} console message(s) as driver noise — `
+                + `READ THEM: the filter matches a prefix, so it cannot tell a cloaked `
+                + `defect from real noise. ` + uniq.slice(0, 4).map(t => t.slice(0, 90)).join(' | ')
+                + (uniq.length > 4 ? ` (+${uniq.length - 4} more)` : ''));
+  }
   return { fails: fails.concat([...new Set(noise)]), warnings, backend };
 }
 

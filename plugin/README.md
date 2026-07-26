@@ -12,8 +12,9 @@ materials, and MaterialX procedural noise — zero assets, one file per scene.
 *mitate* (見立て): to see one thing as another — the Japanese aesthetic of
 representing one thing through another. Here, seeing any input as a scene.
 
-The founding plan, architecture, and phase gates: [`docs/plan.md`](../docs/plan.md)
-in this repo.
+The founding plan, architecture, and phase gates: [`docs/plan.md`](https://github.com/fblissjr/mitate/blob/main/docs/plan.md)
+in the repo (absolute, because this README ships into an install cache that has
+no `docs/`).
 
 ## Installation
 
@@ -44,7 +45,7 @@ on PATH; `avifenc` (libavif) for AVIF loops, `img2webp` (webp) for WebP loops.
 
 - "Make a 30-second video of how our approval process flows"
 - "Animate a boss-intro cutscene for this creature: ..."
-- "Turn docs/data-flywheel.md into an explainer"
+- "Turn a long dense paper into an explainer"
 - "Make this joke an animated meme"
 
 ## Status
@@ -65,7 +66,7 @@ tier now sits below the films: `examples/noise-chart.html` isolates shader
 primitives one cell at a time (with a deliberate drift control), and new
 primitives land there before any film uses them. Next up by
 owner priority: Phase 4, the physics bake (bake-time simulation, runtime
-determinism intact — see [`docs/physics-bake-proposal.md`](../docs/physics-bake-proposal.md)).
+determinism intact — see [`docs/physics-bake-proposal.md`](https://github.com/fblissjr/mitate/blob/main/docs/physics-bake-proposal.md)).
 Later phases (the human face rig, registers, the interactive spike) land as
 they pass their gates.
 
@@ -76,4 +77,4 @@ the successor to that repo's `explainer-video` skill (now frozen, published,
 bugfix-only). The name changed on a real collision: an actively-maintained
 npm package and Claude Code skill in the same domain already holds
 "screenwright". Version history from 0.1.0 carries forward unbroken in
-[`CHANGELOG.md`](../CHANGELOG.md).
+[`CHANGELOG.md`](https://github.com/fblissjr/mitate/blob/main/CHANGELOG.md).

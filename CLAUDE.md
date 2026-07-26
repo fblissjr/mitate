@@ -57,7 +57,11 @@ for its red lines.
    `plugin/` keeps every cached version to what the skill actually needs. For
    the same reason, SKILL.md must never cite a path outside its own subtree —
    the install cache has no `docs/`, so such a pointer dangles for every
-   installed user. (Plugin READMEs may, since a repo clone has them.)
+   installed user. **The plugin README is NOT exempt** — it ships into that same
+   cache, so a `../docs/...` link from it dangles for exactly the reader holding
+   it. Verified: the cache contains `.claude-plugin/`, `README.md` and `skills/`
+   and nothing else. Link outside the subtree with an absolute repo URL, which
+   resolves from the cache, a clone, and GitHub alike.
 
 4. **Films are tracked once.** The scenes live in
    `plugin/skills/mitate/examples/`; `scripts/stage-films.sh` copies them into
@@ -71,6 +75,19 @@ for its red lines.
 5. **Byte comparison is valid only within one backend.** WebGPU-Metal and the
    WebGL2 fallback do not produce byte-identical frames — that is expected, not
    a bug. Determinism is checked by seeking away and back on the *same* backend.
+
+6. **The installed skill is not the skill you are editing.** `mitate` is
+   normally enabled as a plugin on a machine where it is also developed, and the
+   two are different artifacts: `plugin install` copies a subtree into a
+   *version-stamped* cache, so invoking `/mitate` here loads the cached release,
+   not the working tree. During 0.16.3 development the tree was 0.16.3 while the
+   cache held 0.16.1, with differing `SKILL.md` files. Read the working tree
+   when asking *what will ship*; read the cache when asking *what users have* —
+   and say which one you checked, because they answer different questions. The
+   cache is genuinely useful as the installed-user fixture, so do not disable
+   the plugin to dodge this; label the copy instead. (mitate ships no hooks, so
+   the loaded skill cannot act on this repo on its own — the hazard is reading
+   the wrong copy, not interference.)
 
 ## Tooling
 

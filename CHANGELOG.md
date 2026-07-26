@@ -7,6 +7,14 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.4
+
+### fixed
+- **The shipped plugin README pointed three times at files an installed user does not have.** `plugin/README.md` linked `../docs/plan.md`, `../docs/physics-bake-proposal.md` and `../CHANGELOG.md`. `plugin install` copies only the plugin subtree into a version-stamped cache — verified, it contains `.claude-plugin/`, `README.md` and `skills/` and nothing else — so every one of those resolved to nothing for the reader actually holding the README. Now absolute repo URLs, which resolve from the cache, from a clone, and on GitHub alike. One more line in the same file had the same problem without being a link: the invocation example `"Turn docs/data-flywheel.md into an explainer"` reads as a path into a `docs/` the reader does not have, and was the only example of the four written as a path rather than as a request — now `"Turn a long dense paper into an explainer"`, which is the case the skill's own description already advertises. Fifth instance of the dangling-pointer class this week, and the first in a file `CLAUDE.md` had explicitly exempted: its invariant 3 said plugin READMEs may cite outside the subtree "since a repo clone has them", which is true of a clone and false of the install cache. The exemption is corrected rather than the link alone — a wrong rule outlives any single link it licensed.
+
+### changed
+- **`CLAUDE.md` gains a sixth invariant: the installed skill is not the skill you are editing.** mitate is normally enabled as a plugin on the machine where it is developed, and the two are different artifacts — invoking `/mitate` in this repo loads the version-stamped cache, not the working tree. Measured during this release: tree at 0.16.3, cache at 0.16.1, with differing `SKILL.md` files, so a check run against "the skill" could answer about either. The rule is not to disable the plugin — the cache is genuinely valuable as the installed-user fixture, and was used that way twice this week to verify what a reviewer would actually read. The rule is to say which copy was checked, because *what will ship* and *what users have* are different questions. (mitate ships no hooks, so the loaded skill cannot act on this repo by itself; the hazard is reading the wrong copy.)
+
 ## 0.16.3
 
 ### fixed

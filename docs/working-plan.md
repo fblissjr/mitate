@@ -1409,6 +1409,11 @@ unverified numbers get published anyway.
 - **A WebKit measurement for the site's shader-compile figure** (B3), before
   anyone calls it stale.
   *Trigger: before that figure goes on the auditor's list or gets edited on the site.*
+- **`test-audit` over `smoke.js`.** Two green-but-blind escapes landed in one
+  session — the record-gated live path and the swallowing-host path — which is
+  the stated trigger for auditing the whole suite rather than patching
+  instance-by-instance. Recover each check's claim, verify its oracle can fail.
+  *Trigger: met 2026-07-25; see `internal/postmortems/`.*
 - **A second data point on reference-reading order.** Ask the next agent to build
   a film and log which references it opened *and when* — before telling it that is
   being measured. The order matters as much as the set: `instruments.md` opened

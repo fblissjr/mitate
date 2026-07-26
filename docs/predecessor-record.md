@@ -731,7 +731,7 @@ flip condition the "Not doing: a 2D backend" entry below set for itself.
 | 6 | [Repo-wide version alignment check](#6-repo-wide-version-alignment-check) | open | — (not this plugin) |
 | 7 | [Spike the hostile beat first](#7-spike-the-hostile-beat-first-methodmd-addition) | **DONE** (0.2.0, in method.md) | — |
 | 8 | [The three-axis review model](#8-the-three-axis-review-model-06) | **DONE** (0.6.0) | 1 |
-| 9 | [Inline delivery: AVIF vs WebP](#9-inline-delivery-avif-vs-webp-06) | **DONE** (0.6.0), one test open | — |
+| 9 | [Inline delivery: AVIF vs WebP](#9-inline-delivery-the-format-comparison-06) | **DONE** (0.6.0), one test open | — |
 | 10 | [A committed flagship example](#10-a-committed-flagship-example) | **DONE** (0.12.0, as `examples/toybot-walk.html`) | — |
 | 11 | [Declared reference frames (`FRAME`)](#11-declared-reference-frames-frame) | **DONE** (0.16.0 containment + 0.17.0 `FRAME`) | — |
 | 12 | [Width-aware framing (`EXTENT`)](#12-width-aware-framing-extent) | **DONE** (0.17.0) | 11 |

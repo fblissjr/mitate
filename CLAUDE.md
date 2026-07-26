@@ -69,7 +69,10 @@ for its red lines.
    (`films/*.html`) so a new example needs no edit there.
    `site/films/gearbox-neon.html` is the one negated exception — a showcase-only
    variant, so `site/` is its only home. Poster stills live once in `site/posters/`, which
-   the skill's `examples/README.md` embeds by relative path. Never re-introduce
+   the skill's `examples/README.md` embeds them by **absolute raw URL** — never a
+   relative path, which climbs out of the install cache and breaks for every
+   installed user (this invariant licensed exactly that until 0.16.5). Never
+   re-introduce
    a second copy of either.
 
 5. **Byte comparison is valid only within one backend.** WebGPU-Metal and the

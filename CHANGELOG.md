@@ -7,6 +7,13 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.5
+
+### fixed
+- **Six broken images and a broken link shipped in `examples/README.md`, licensed by an invariant that contradicted the one fixed a release earlier.** Every poster reference used `../../../../site/posters/…`, which resolves in the repo — the reason nobody noticed — and climbs *past the cache root* for an installed user: from `skills/mitate/examples/` it lands on `<cache>/mitate/mitate/site/posters`, which does not exist. Verified by resolving the path against a real 0.16.1 cache. Now absolute `raw.githubusercontent.com` URLs for the embeds and a `tree/` URL for the directory, which render from the cache, a clone, and GitHub alike, and keep the tracked-once rule intact — no second copy of any poster. **The rule is the finding.** 0.16.4 corrected invariant 3's claim that plugin READMEs may cite outside the subtree, and its own entry says "a wrong rule outlives any single link it licensed" — but invariant **4** separately licensed the same defect for this file ("embeds by relative path"), so the two invariants contradicted each other for one release. Fixing a rule now means checking whether another rule licenses the same thing.
+- **`bibles.md` sent an installed reader to two files they do not have.** It cited `site/posters/gearbox-still.jpg` and its neon pair as where to look; that directory is outside the plugin subtree and absent from every install cache. Reworded to name the location and say plainly it is not in the cache — the scene itself, which *is* in the subtree, is what a reader there can actually open. Not a link, so nothing was broken; it was directions to nowhere.
+- **A contents-table anchor in `predecessor-record.md` pointed at a heading that does not exist**, written against the link text ("AVIF vs WebP") rather than the heading ("Inline delivery: the format comparison"). The file reproduces the predecessor's four planning docs verbatim, but a *merged* contents table cannot be verbatim — the source documents were separate — so the anchor is this repo's own consolidation artifact and was fixed rather than preserved. The heading is untouched.
+
 ## 0.16.4
 
 ### fixed

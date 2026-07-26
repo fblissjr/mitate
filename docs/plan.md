@@ -733,6 +733,39 @@ examples, all from the 2026-07-25 long film:
   explainer, which is one commission rather than a committed register. Deferred
   with its trigger recorded.
 
+### The inverse question, which is the more dangerous one
+
+The table above asks *did this earn its layer*. The reverse matters more, because
+it is where the corpus decays: **an agent will copy a pattern out of an example
+scene, because that is the fastest path and the reward is immediate — the copy
+works and smoke goes green, while promoting it costs a chart or three carriers
+or a cascade.** Local reward favours copying every time.
+
+The design currently invites it. `SKILL.md` and `examples/README.md` both index
+by *film*, so an agent needing a technique has one move: open a scene and read
+it. And no rule tells a reader that **unfenced code in an example is that film's
+private solution rather than sanctioned practice** — the fences mark what is
+shared; nothing marks what is not. Left alone this yields individually good
+scenes that each paid full price for the same thing, with no way to answer where
+a pattern came from or how many times it has been rebuilt.
+
+Two consequences:
+
+> **Reading an example scene to learn a technique is a bug report against the
+> references.** Examples demonstrate finished films; references teach patterns.
+> Needing the former to get the latter means a reference is missing something.
+
+> **Every trigger in the cost table above is unfireable without a count.**
+> "Second instance" and "third consumer" presume someone is counting, and nobody
+> was — the same defect earn-in had, whose "a film was blocked" bar could not fire
+> for a shape that is *not blocked, reliably wrong*. The count lives in
+> [pattern-ledger.md](pattern-ledger.md), fed by the handoff reports that already
+> name what each film built twice.
+
+The ledger's two entries at **6** are the proof: contact-measurement and declared
+extents were both far past every trigger here, both had a fix specified, and both
+were still unbuilt — one with a shipped code comment claiming the check existed.
+
 ### Provenance is required
 
 Git makes the claim checkable, so make it. A promotion **names the scene it came

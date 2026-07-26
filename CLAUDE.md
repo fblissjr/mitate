@@ -1,4 +1,4 @@
-last updated: 2026-07-24
+last updated: 2026-07-25
 
 # mitate
 
@@ -42,6 +42,14 @@ for its red lines.
    with no runtime use. Do not add them. `metadata.last_verified` asserts that a
    human reviewed the skill against its source — write it only after an actual
    review, never as part of a version bump.
+
+   A **fenced** block (`KERNEL`, `SOLVER`, `RIG`, `DRIVER`, `CHARACTER`, `HTML`)
+   is carried by more files than it looks: both 3D templates, all five examples,
+   and `site/films/gearbox-neon.html` — 8 tracked files for `SOLVER`, 9 for
+   `KERNEL`. Edit every carrier together, then verify with `smoke.js
+   --parity-only templates/*.html examples/*.html` **cross-directory**. A
+   per-directory green does not cover the template↔example boundary, and drift
+   there is silent.
 
 3. **The plugin lives under `plugin/`, not at the repo root.** `marketplace add`
    shallow-clones the whole repo, but `plugin install` copies *the plugin

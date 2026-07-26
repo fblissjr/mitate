@@ -137,8 +137,11 @@ Phases 0–2 are complete and gated: the node-stack templates, recorder, and
 instruments on both backends; the material packs and style bibles; the character
 scaffold, demonstrated by `menagerie` and delivered by `bear-and-bees`. A chart
 tier sits below the films for isolating shader primitives. Next by priority is
-Phase 4, the physics bake. Full detail in [`docs/plan.md`](docs/plan.md); version
-history in [`CHANGELOG.md`](CHANGELOG.md).
+Phase 4, the physics bake. Architecture and phase gates in
+[`docs/plan.md`](docs/plan.md); the current ranked work — instruments, doc
+routing, and what is deliberately deferred with the trigger that revives it — in
+[`docs/working-plan.md`](docs/working-plan.md); version history in
+[`CHANGELOG.md`](CHANGELOG.md).
 
 ## License
 

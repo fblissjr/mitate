@@ -33,6 +33,15 @@ ran. **Sending:** state the conditions, or the number will be trusted past its
 warrant by someone with no way to check. The date requirement above exists for
 the same reason; conditions are the other half of it.
 
+**And the same rule applied to reproducibility: a bracket that cannot be re-run
+from a clean checkout does not get recorded as a bracket.** The 2026-07-25
+instance was caught only because a re-run refuted it — and the harness was
+re-runnable by accident, having depended on scratch files that were already
+deleted. It survived a housekeeping pass that could as easily have removed it.
+Make the harness self-contained when the measurement is taken, where it costs a
+minute; a claim you cannot re-derive is trusted past its warrant whether the gap
+is in its method or in its reproducibility.
+
 ## The rules
 
 - **A number appears once.** Re-measure it → update its home plus a CHANGELOG

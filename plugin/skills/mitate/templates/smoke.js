@@ -56,10 +56,10 @@ const os = require('os');
 // Assigned by loadBrowserDeps(), called only after the --parity-only early
 // exit. backend.js requires playwright-core itself, so deferring one means
 // deferring both.
-let chromium, chromiumPath, angleArgs, settle, aspectShapes;
+let chromium, chromiumPath, angleArgs, settle, seekSynced, aspectShapes;
 function loadBrowserDeps() {
   ({ chromium } = require('playwright-core'));
-  ({ chromiumPath, angleArgs, settle, aspectShapes } =
+  ({ chromiumPath, angleArgs, settle, seekSynced, aspectShapes } =
     require(path.join(__dirname, 'backend.js')));
 }
 
@@ -369,7 +369,10 @@ async function checkScene(browser, file) {
         const PLAN2 = samplePlan(dur2, fl2, 4);
         const sigs = []; let maxSpread = 0;
         for (const ts of PLAN2) {
-          await p2.evaluate(`window.seekTo(${ts})`);
+          // seekSynced: this is the COLDEST page in the suite — loaded fresh,
+          // before the GPU process is warm — which is where the capture race was
+          // worst, and this check's verdict is a comparison of signatures.
+          await seekSynced(p2, ts);
           await settle(p2);
           const png = await p2.screenshot();
           sigs.push(sha256(png));
@@ -536,11 +539,14 @@ async function checkScene(browser, file) {
     // scene bug, which is the one thing this check must never do.
     let shots = [];
     for (const ts of PLAN) {
-      await page.evaluate(`window.seekTo(${ts})`);
+      // seekSynced, not a bare seek: this arm reported a capture race as a scene
+      // defect on a slow GL stack (40%/30%/20% on three cells; 0 of 200 once the
+      // seek and a readback shared a task). backend.js owns the why.
+      await seekSynced(page, ts);
       await settle(page);
       const x = await page.screenshot();
-      await page.evaluate(`window.seekTo(${dur})`);        // move away...
-      await page.evaluate(`window.seekTo(${ts})`);         // ...and back
+      await seekSynced(page, dur);                         // move away...
+      await seekSynced(page, ts);                          // ...and back
       await settle(page);
       const y = await page.screenshot();
       shots.push(x);
@@ -564,7 +570,12 @@ async function checkScene(browser, file) {
       await page.goto('file://' + path.resolve(file) + '?record=1');
       await page.waitForFunction('window.sceneReady === true', { timeout: 20000 });
       await page.evaluate('window.stopPlayback()');
-      await page.evaluate(`window.seekTo(${PLAN[0]})`);
+      // seekSynced, and here the SYMMETRY is the point: shots[0] below is
+      // captured through seekSynced, so a bare seek on this side would diff a
+      // race-hardened capture against a race-vulnerable one and manufacture the
+      // spurious "differs ACROSS a page reload" this check exists to rule out.
+      // Shipped that way briefly in 0.16.28's first draft; caught in review.
+      await seekSynced(page, PLAN[0]);
       await settle(page);
       const reloaded = await page.screenshot();
       if (sha256(reloaded) !== sha256(shots[0])) {

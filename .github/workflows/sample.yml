@@ -2,10 +2,16 @@
 # determinism failure per scene and per t, and — the part that matters —
 # discriminates a real scene defect from a capture race.
 #
-# Forward item 2 of the 2026-07-29 span postmortem. On Linux/WebGL2 the gate has
-# failed smoke's determinism arm four times across TWO scenes and TWO timestamps
-# against two clean runs, while macOS passes on hardware and software GL both.
-# Four runs spanning a changed config support no conclusion; a rate does.
+# It answered the question it was built for: the gate's determinism failures were
+# a capture race, not scene state. Measured 2026-07-30 on ubuntu-22.04/WebGL2, 10
+# repeats — 40%/30%/20% on three cells with `no_canvas: true` (screenshots only,
+# what smoke compares), against 0 of 200 in the readback mode. The readback was
+# the only variable, which is a completion barrier, which is a race.
+#
+# It is KEPT, as the regression instrument for that fix: `no_canvas: true` must
+# now come back 0/200. Anything else means backend.js's seekSynced is still short
+# on this stack. It is the only way to verify — the failure does not reproduce on
+# macOS (0 in 80).
 #
 # NOT on push. This is a diagnostic, and a diagnostic that runs unbidden becomes
 # noise that people learn to ignore — the failure mode already tracked for the
@@ -26,10 +32,10 @@ on:
         default: '10'
       no_canvas:
         description: >
-          Screenshots only, no in-page readback — matches what smoke.js compares.
-          The first canvas+screenshot run was 0/200 on Linux, and the readback is
-          the prime suspect for suppressing a presentation race, so run this to
-          see the failure the other mode may be hiding.
+          Screenshots only, no in-page readback. This is the mode that reproduces
+          the race and therefore the one that verifies the fix — set it true.
+          The default (false) inserts a readback and is now known to mask the
+          failure, which is what identified the mechanism.
         required: false
         default: 'false'
 
@@ -52,7 +58,7 @@ jobs:
       - name: workspace
         run: |
           mkdir -p ws
-          cp plugin/skills/mitate/templates/{build.js,backend.js} ws/
+          cp plugin/skills/mitate/templates/backend.js ws/   # all the sampler requires
           cp plugin/skills/mitate/examples/*.html ws/
           cd ws && bun add playwright-core@1.61.1
 

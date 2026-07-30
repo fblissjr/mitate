@@ -136,6 +136,38 @@ function angleArgs({ refuseSwiftshaderShip = false } = {}) {
    with no reachable failure is the earn-in shape this repo declines. */
 const settle = pg => pg.evaluate('new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))');
 
+/* seekSynced -- seek AND force the render to complete, in ONE page task.
+   Use this instead of a bare `evaluate('window.seekTo(t)')` anywhere a capture
+   follows. MEASURED 2026-07-30 on ubuntu-22.04/WebGL2, 10 repeats per cell:
+   bare seek + settle + screenshot gave 40%/30%/20% byte-differences on three
+   cells; the same sequence with a readback sharing the seek's task gave 0 of 200.
+   settle alone was not enough on that stack, and the difference is one GPU sync.
+
+   WHY THIS AND NOT A LONGER settle: two rAFs is a guess at a latency, and the
+   next slow machine invalidates it -- tuning that coefficient is the trap this
+   repo's own spine names. A readback is a completion barrier rather than a
+   duration, so it does not need re-tuning per host.
+
+   WHY IN THE SAME TASK: the drawing buffer is cleared after compositing, so a
+   readback in a LATER task reads zeros and synchronises nothing useful (see
+   references/webgpu-stack.md). smoke.js's sampleAt already renders and reads in
+   one task for this reason; the determinism arm and all three of shoot.js's
+   capture paths bypassed it, which is what shipped the flake.
+
+   1x1 is deliberate: the sync comes from requiring the pixels at all, not from
+   how many, so the transfer stays negligible against the screenshot that follows. */
+const seekSynced = (pg, t) => pg.evaluate(`(() => {
+  window.seekTo(${t});
+  const c = document.querySelector('canvas');
+  if (c) {
+    const o = document.createElement('canvas');
+    o.width = 1; o.height = 1;
+    const g = o.getContext('2d');
+    g.drawImage(c, 0, 0, 1, 1);
+    g.getImageData(0, 0, 1, 1);
+  }
+})()`);
+
 // Window shapes for the aspect-invariance instruments, expressed RELATIVE to
 // the scene's own design aspect so they stay meaningful for vertical/square
 // scenes. shoot.js `aspects` uses all four; smoke.js's framing check uses the
@@ -147,4 +179,4 @@ const aspectShapes = ar => [
   { tag: 'wide',   w: 1600, h: Math.round(1600 / (ar * 1.33)) },
 ];
 
-module.exports = { chromiumPath, angleArgs, settle, aspectShapes, ANGLE_OK, WEBGPU_OK };
+module.exports = { chromiumPath, angleArgs, settle, seekSynced, aspectShapes, ANGLE_OK, WEBGPU_OK };

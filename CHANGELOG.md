@@ -7,6 +7,51 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.28
+
+### fixed
+
+**The capture race, at its one home.** `backend.js` gains `seekSynced(page, t)`:
+seek and force the render to complete **in a single page task**, then `settle`
+waits for presentation. Two mechanisms, both needed. Measured on
+ubuntu-22.04/WebGL2, 10 repeats per cell — a bare seek gave byte-differences at
+40%/30%/20% on three cells, the same sequence with the readback sharing the seek's
+task gave **0 of 200**.
+
+Why not simply a longer `settle`: two rAFs is a guess at a latency, and the next
+slow machine invalidates it. A readback is a completion *barrier* rather than a
+duration. Scope of the evidence is stated in both homes: WebGL2 only, unverified
+on WebGPU's async queue, applied on both paths anyway because a 1x1 read is cheap
+and the failure it prevents is silent.
+
+Why it lives in `seekSynced` and not in `settle`: the drawing buffer is cleared
+after compositing, so a readback in a *later* task reads zeros and synchronises
+nothing. `smoke.js`'s `sampleAt` already renders and reads in one task for exactly
+this reason — and the six sites that bypassed it are what shipped the flake.
+
+**This was never only a gate problem.** All three of `shoot.js`'s capture paths
+used the vulnerable pattern, so every frame of every recorded MP4 went through it,
+with nothing sampling for stale frames. Cost of the fix there, measured over 30
+frames: 8.660s versus 8.657s — inside the noise, because the sync folds into an
+`evaluate` round trip that already existed.
+
+Six sites converted. Four in the first draft; review caught two more, and the
+second mattered more than a miss: the cross-reload check compared a bare-seek
+capture against a `seekSynced` one, diffing a race-hardened frame against a
+race-vulnerable one and manufacturing the spurious "differs ACROSS a page reload"
+it exists to rule out.
+
+### changed
+
+`gate.yml` and `sample.yml` headers refreshed — both still narrated the failure as
+unresolved. `sample.yml` is kept as the regression instrument (`no_canvas: true`
+must now return 0/200) and stops copying `build.js`, which the sampler never
+required.
+
+`gate.yml` also records the temptation to avoid: these runners have no GPU, and
+their slowness is the only reason the race was observable. Upgrading the runner to
+get a green board would be making the check pass by touching what it measures.
+
 ## 0.16.27
 
 ### fixed

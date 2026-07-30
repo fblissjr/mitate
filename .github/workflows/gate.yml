@@ -12,6 +12,14 @@
 # That is the fallback path, and running it here is the whole point. Do not
 # "fix" a failure in this workflow by setting a backend env var.
 #
+# NOR by moving to a bigger runner. These runners have no GPU, so Chromium runs
+# software GL on a modest shared CPU, and that slowness is an ASSET: it is the
+# only reason the capture race in 0.16.28 was ever observed. That race reached
+# every frame of every recorded MP4 through shoot.js, where nothing sampled for
+# it, and a faster machine would have hidden it rather than fixed it. Upgrading
+# the runner to get a green board is "make the check pass by touching what it
+# measures" in its purest form.
+#
 # ONE job. The cheap checks moved to static.yml once this workflow's real cost
 # was measured — they fail for different reasons and have wildly different
 # prices, and bundling them made every docs-only commit pay for a browser.
@@ -24,15 +32,16 @@
 # No figure is recorded for the container config yet — the first run of it is
 # the measurement, and the pull cost is unknown until then. Do not quote one.
 #
-# No longer unverified on Linux — it ran, and it earned itself immediately:
-# materials.html failed smoke's in-session determinism arm at seekTo(5.36) on
-# ubuntu WebGL2 three runs running, then passed twice with a CI change
-# confounding the sample. Unresolved and environment-sensitive; it does NOT
-# reproduce on macOS on hardware or software GL. See references/materials.md at
-# the ordering discipline, including the retraction of the "reproducible, not a
-# race" reading that 3-of-3 did not support. The first three runs also revealed
-# that the `brackets` step was SKIPPED every time, because a step after a
-# failing step is skipped by default — hence the `!cancelled()` below.
+# It earned itself on its first run and the finding is now closed. The
+# determinism failures it surfaced (materials.html, then menagerie.html) were a
+# CAPTURE RACE in the gate, not scene state: measured 40%/30%/20% on three cells
+# with a bare seek, 0 of 200 once the seek and a GPU readback shared a task. Fixed
+# in backend.js's seekSynced, 0.16.28. Two shipped films were wrongly accused in
+# the meantime; the chain is in references/materials.md and the span postmortem.
+#
+# The first three runs also revealed that the `brackets` step was SKIPPED every
+# time, because a step after a failing step is skipped by default — hence the
+# `!cancelled()` below.
 #
 name: gate
 

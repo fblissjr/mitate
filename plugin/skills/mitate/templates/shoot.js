@@ -43,7 +43,7 @@ const { chromium } = require('playwright-core');
 const path = require('path');
 const fs = require('fs');
 const url = require('url');
-const { chromiumPath, angleArgs, settle, aspectShapes } = require(path.join(__dirname, 'backend.js'));
+const { chromiumPath, angleArgs, settle, seekSynced, aspectShapes } = require(path.join(__dirname, 'backend.js'));
 
 // Number() on a typo yields NaN, and `for (i=0; i<NaN; i++)` runs zero times --
 // so `full 3O` printed "done: NaN frames", exited 0, and wrote nothing. A mode
@@ -200,7 +200,7 @@ async function openScenePage(browser, sceneFile) {
   const EXT = FMT === 'jpeg' ? 'jpg' : 'png';
   const fname = i => `f${String(i).padStart(5, '0')}.${EXT}`;
   const shot = async (t, file) => {
-    await page.evaluate(`window.seekTo(${t.toFixed(4)})`);
+    await seekSynced(page, t.toFixed(4));
     await settle(page);
     await page.screenshot({ path: file, ...shotOpts });
   };
@@ -242,7 +242,7 @@ async function openScenePage(browser, sceneFile) {
     let done = 0;
     const shootChunk = async (pg, a, b) => {
       for (let i = a; i < b; i++) {
-        await pg.evaluate(`window.seekTo(${(i / fps).toFixed(4)})`);
+        await seekSynced(pg, (i / fps).toFixed(4));
         await settle(pg);
         await pg.screenshot({ path: path.join(outDir, fname(i)), ...shotOpts });
         if (++done % 60 === 0) console.log(`frame ${done}/${n}`);
@@ -298,7 +298,7 @@ async function openScenePage(browser, sceneFile) {
     for (let i = 0; i < shapes.length; i++) {
       await page.setViewportSize({ width: shapes[i].w, height: shapes[i].h });
       await settle(page);                      // resize handler lands
-      await page.evaluate(`window.seekTo(${at.toFixed(4)})`);
+      await seekSynced(page, at.toFixed(4));
       await settle(page);                      // presentation lands (see settle above)
       await page.screenshot({ path: path.join(aDir, fname(i)), ...shotOpts });
     }

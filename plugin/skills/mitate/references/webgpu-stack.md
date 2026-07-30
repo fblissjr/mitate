@@ -112,15 +112,36 @@ byte-compare against a frame captured before that first render completes.
 
 ## Recorder mechanics that differ from the old stack
 
-- **Settle before screenshot.** `render()` queues GPU work; the compositor can
-  present it a frame late, so the recorder settles one double-rAF between
-  `seekTo` and every screenshot. Measured before the fix: flaky screenshot
-  hashes over byte-identical canvas content. Scene contract is unchanged —
-  `seekTo` stays synchronous.
+- **Seek WITH a sync, then settle, then screenshot.** `render()` queues GPU work
+  and the compositor can present it a frame late, so a capture can read the
+  PREVIOUS composite. Two mechanisms, and both are needed:
+  `backend.js`'s `seekSynced(page, t)` seeks and forces the render to complete
+  **in one page task**, then `settle` waits a double-rAF for presentation.
+  Scene contract unchanged — `seekTo` stays synchronous.
+
+  A double-rAF alone was not enough, measured 2026-07-30 on ubuntu-22.04/WebGL2,
+  10 repeats per cell: a bare seek gave byte-differences on three cells at
+  40%/30%/20%, and the same sequence with the readback sharing the seek's task
+  gave **0 of 200**. The failure had been misread as two shipped films carrying
+  state; it was the gate racing presentation on a slow stack, which is what the
+  original settle fix was for and what a fixed *duration* cannot guarantee.
+  A readback is a completion barrier rather than a latency guess, so it should not
+  need re-tuning per host — and tuning that coefficient is the trap named in
+  `docs/working-plan.md`'s spine. **Scope of the evidence: WebGL2 only.** WebGPU
+  submits through an async queue, so the argument is plausible there and
+  unverified; `seekSynced` is applied on both paths regardless, because a 1x1 read
+  is cheap and the failure it prevents is silent.
+
+  **Use `seekSynced` at every site where a capture follows a seek.** All three of
+  `shoot.js`'s capture paths and smoke's determinism arm used a bare
+  `evaluate('window.seekTo(t)')` until 0.16.28, which means every recorded frame
+  of every MP4 went through the vulnerable pattern, not just the gate.
 - **The drawing buffer is cleared after compositing.** An in-page
   `drawImage(canvas)` readback in a LATER task reads zeros; render-and-read
   must share one `evaluate`. smoke's exposure sampler does this; copy that
-  pattern for any new in-page pixel check.
+  pattern for any new in-page pixel check. This is also why the sync above lives
+  inside `seekSynced` rather than inside `settle`: a readback bolted into
+  `settle` is a separate task and synchronises nothing.
 - **smoke's shipped-frame check** opens a caption-stripped page (`?strip=text`)
   cold — before the main check page warms the GPU process — and fails if every
   sampled `t` ships the identical image or if the RICHEST sampled frame's luma

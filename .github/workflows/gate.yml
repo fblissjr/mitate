@@ -40,7 +40,12 @@ jobs:
     name: static (lint + fence parity)
     runs-on: ubuntu-latest
     steps:
+      # Full history: the self-check compares each doc's `last updated:` marker
+      # against its last commit date, and a shallow clone reports the tip commit
+      # for every file, which would make every marker look stale.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest

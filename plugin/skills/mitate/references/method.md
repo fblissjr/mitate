@@ -25,11 +25,13 @@ Three companion references hold what this file deliberately does not:
 - `delivery.md` — the GitHub delivery forensics: format tradeoffs, encoder
   settings, the content-type mechanism and its evidence chain.
 
-**Map.** 969 lines, six top-level sections. Deliberately unlinked — a heading map
+**Map.** Six top-level sections. Deliberately unlinked — a heading map
 costs nothing and cannot dangle, where hand-written anchors ship into an install
 cache unverified. Two outside reviews called this file monolithic; it is long, but
 the shape below is the answer to *where do I read*, and it was previously
-invisible without reading the whole thing.
+invisible without reading the whole thing. (An earlier draft opened with a line
+count. It was wrong by 23 the moment it was committed, because the Map itself
+added lines — a number describing the file it lives in cannot help but rot.)
 
 - **Method** (here) — Three ways a sequence fails · Before you build · Build the control
 - **Axis 1 — Composition**, what fails inside one frame — One frame per beat hides

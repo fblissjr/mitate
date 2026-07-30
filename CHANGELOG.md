@@ -7,6 +7,38 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.21
+
+### fixed
+
+`smoke.js`'s caption-speed comment pointed at `CPS_WARN_THRESHOLD` "for where 25
+comes from" — the constant has been 30 for as long as that comment has existed,
+with the change to 30 documented three lines above the definition. It now points
+without restating the number, which is the only version that cannot go stale.
+
+**The pins had three consumers and one checked copy.** `THREE_PIN` in `build.js`
+is the pin, but `gate.yml` `bun add`s a version and SKILL.md tells a user to. The
+CI copy is the dangerous one: bump `THREE_PIN` alone and CI installs a version
+`vendor` will refuse, while the stamp check stays green and says nothing.
+`scripts/selfcheck.js` now cross-checks every pinned `pkg@version` in the CI
+install against SKILL.md's install command, and `three` additionally against the
+code. Generalized rather than special-cased, because **Phase 4 pins Rapier** and
+this is exactly where that would have repeated.
+
+`docs/plan.md` restated the 1.09 MB / 0.77 MB bundle figures owned by
+`references/webgpu-stack.md`. Phase 4's size bracket measures against that
+number, so two copies of it was a hazard aimed at Phase 4 specifically.
+
+### documented (repo)
+
+`docs/working-plan.md` gains a **Phase 4 readiness** section: which of the bake
+proposal's eval criteria the 0.16.16-0.16.21 work actually discharged and how
+they were measured, the instruction to introduce the Rapier pin as a checked fact
+rather than prose, the boot-sequence trigger on rule 5 that a bake will likely
+fire, and the one thing still un-de-risked — **CI has never run.** The workflow's
+static half is verified locally; nothing in it has executed on Linux, so it is a
+claim until it is pushed.
+
 ## 0.16.20
 
 ### added

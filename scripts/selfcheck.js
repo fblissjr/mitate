@@ -80,6 +80,37 @@ const fail = m => fails.push(m);
   if (pin) notes.push(`three pin ${pin}, every embedding scene stamped and agreeing`);
 }
 
+/* ---- 2b. the pins have one home, including the EXECUTABLE copies -----------
+ * `THREE_PIN` in build.js is the pin. But gate.yml `bun add`s a version too,
+ * and SKILL.md tells a user to — three consumers, one fact. The CI copy is the
+ * dangerous one: bump THREE_PIN alone and CI installs a version build.js will
+ * refuse to vendor, while check 2 above (build.js vs embedded stamps) stays
+ * green and says nothing. Phase 4 pins Rapier as well, so this generalizes
+ * rather than special-cases: every pinned `pkg@version` in the CI install must
+ * appear identically in SKILL.md's install command, and three must additionally
+ * match the code. */
+{
+  const build = R(path.join(TEMPLATES, 'build.js'));
+  const pin = (build.match(/const THREE_PIN = '([^']+)'/) || [])[1];
+  const ci = R(path.join(ROOT, '.github', 'workflows', 'gate.yml'));
+  const skill = R(path.join(SUBTREE, 'SKILL.md'));
+  const pinned = [...ci.matchAll(/bun add ([^\n]+)/g)]
+    .flatMap(m => m[1].split(/\s+/))
+    .filter(t => /^[@\w./-]+@[\d.]+$/.test(t));
+  if (!pinned.length) fail('gate.yml installs nothing pinned — did the workspace step change?');
+  for (const t of pinned) {
+    const [pkg, ver] = [t.slice(0, t.lastIndexOf('@')), t.slice(t.lastIndexOf('@') + 1)];
+    if (!skill.includes(t)) {
+      fail(`CI installs ${t} but SKILL.md's install command does not — a user and CI would `
+         + `build against different versions`);
+    }
+    if (pkg === 'three' && pin && ver !== pin) {
+      fail(`CI installs three@${ver} but build.js pins ${pin} — vendor would refuse what CI installed`);
+    }
+  }
+  notes.push(`${pinned.length} pinned dependencies, agreeing across build.js, gate.yml and SKILL.md`);
+}
+
 /* ---- 3. no pointer inside the subtree escapes it (invariant 3) ------------
  * An install cache holds .claude-plugin/, README.md and skills/ — nothing else.
  * A relative link to docs/ or site/ therefore dangles for exactly the reader
@@ -224,6 +255,61 @@ const ASSERT_BUDGET = 46;
     }
   }
   notes.push(`${brackets.length} brackets, each with a failing exit path (proxy: not a correctness check)`);
+}
+
+/* ---- 7. dated freshness markers are not older than the file ---------------
+ * CLAUDE.md's Conventions section mandates a `last updated:` marker on docs and
+ * plans, and CLAUDE.md itself carried a four-day-stale one — found by an audit,
+ * which is the expensive way to find something a command can answer. Compares
+ * each marker against the file's last commit date.
+ *
+ * Skipped on a shallow clone, where `git log -- <file>` reports the tip commit
+ * for everything and every marker would look stale. The workflow sets
+ * fetch-depth: 0 so this actually runs there.
+ *
+ * Timing note: this compares against the last COMMIT, so an uncommitted edit is
+ * invisible until it lands — the run that catches a forgotten marker is the one
+ * after the commit, i.e. CI, not a pre-commit hook. That is the correct place
+ * for it to fire and not a gap to close: a marker bumped before the commit that
+ * justifies it would be the same lie in the other direction. */
+{
+  const { execFileSync } = require('child_process');
+  const git = (...a) => execFileSync('git', a, { cwd: ROOT, encoding: 'utf8' }).trim();
+  let shallow = 'true';
+  try { shallow = git('rev-parse', '--is-shallow-repository'); } catch (e) {}
+  const marked = ['CLAUDE.md', 'README.md', 'docs/plan.md', 'docs/working-plan.md',
+                  'docs/source-of-truth.md', 'docs/pattern-ledger.md',
+                  'docs/physics-bake-proposal.md', 'docs/examples-placement.md'];
+  if (shallow === 'true') {
+    notes.push('freshness markers: skipped, shallow clone (needs fetch-depth: 0)');
+  } else {
+    let n = 0;
+    for (const rel of marked) {
+      const f = path.join(ROOT, rel);
+      if (!fs.existsSync(f)) continue;
+      const m = R(f).match(/^last updated:\s*(20\d\d-\d\d-\d\d)/m);
+      if (!m) { fail(`${rel} has no "last updated:" marker`); continue; }
+      // Newest commit touching the file, EXCLUDING the migration that created
+      // the repo: 406d9ec moved every inherited doc in on 2026-07-24, so a file
+      // authored 2026-07-23 gets a later commit date without its content having
+      // changed. Found on this check's first run, against
+      // docs/physics-bake-proposal.md, whose marker was correct and whose
+      // failure was my check being too strict. One named historical event, not
+      // a growing exemption list.
+      const MIGRATION = '406d9ec';
+      let committed;
+      try {
+        committed = git('log', '--format=%h %cs', '--', rel).split('\n')
+          .filter(l => l && !l.startsWith(MIGRATION))
+          .map(l => l.split(' ')[1])[0];
+      } catch (e) { continue; }
+      if (committed && committed > m[1]) {
+        fail(`${rel} says "last updated: ${m[1]}" but was last committed ${committed}`);
+      }
+      n++;
+    }
+    notes.push(`${n} dated docs checked for marker freshness`);   // outcome is in fails, not here
+  }
 }
 
 for (const n of notes) console.log('  ok   ' + n);

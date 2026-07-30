@@ -614,7 +614,9 @@ async function checkScene(browser, file) {
     // CHECK: caption reading speed. A caption is only fully legible between its
     // fade-in and fade-out, so the readable window is (dur - 2*capFade), not the
     // whole beat. Flags a beat where the caption is too long to actually read
-    // before it fades — see CPS_WARN_THRESHOLD above for where 25 comes from.
+    // before it fades — see CPS_WARN_THRESHOLD above for where the number comes
+    // from. Deliberately does not restate it: this comment said 25 for the whole
+    // life of the 30 it was pointing at.
     try {
       if (!beats) {
         warnings.push('caption reading speed: skipped, window.BEATS not present');

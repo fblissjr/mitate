@@ -1,4 +1,4 @@
-last updated: 2026-07-25
+last updated: 2026-07-29
 
 # Working plan: instruments, routing, and the viewer
 
@@ -91,6 +91,53 @@ disputes below:
 So: prefer tools that **aim** an existing instrument over tools that add a new
 one, and prefer routing changes over new prose. Restructure the docs, but do not
 expect them to carry load the tools should be carrying.
+
+---
+
+## Phase 4 readiness (2026-07-29)
+
+**The hardening in 0.16.16-0.16.21 was a Phase 4 prerequisite, not a detour.**
+The bake proposal's red line #3 is "`smoke.js`'s determinism or seek-purity
+checks are weakened, special-cased, or given a per-scene opt-out" — which means
+Phase 4's entire defence against tier drift IS the trustworthiness of those
+checks. This session found the console filter failing every 3D scene on the
+default path, two of three brackets incapable of failing, and rule 5's control
+absent from the tree. A bake landing on top of that would have been guarded by
+instruments nobody had run.
+
+What Phase 4's eval criteria now rest on, verified rather than assumed:
+
+- **Criterion 2 ("smoke green on both backends with the UNTOUCHED checks")** —
+  measured green on WebGL2-fallback and `WEBGPU=metal`, on the full
+  template+example corpus. Before 0.16.16 the fallback half was red.
+- **Criterion 1 (`bake --verify` re-bake identity)** — a new check, so
+  CLAUDE.md invariant 6 applies by construction: it ships with a bracket that
+  can go red, or it is decorative. Model it on `bracket-determinism.js`, which
+  already injects load-time randomness and proves the reload arm catches it.
+- **The Rapier pin** (spike list, item 1) — do NOT introduce it as prose. The
+  three pin lived in a comment for the project's whole life and nothing checked
+  it; `THREE_PIN` + a per-scene stamp + `scripts/selfcheck.js` is the pattern to
+  copy, and the self-check already cross-checks pins against the CI install and
+  SKILL.md so a fourth consumer cannot silently disagree.
+- **Criterion 3 (size bracket against the 1.09 MB vendor bundle)** — that figure
+  now lives only in `references/webgpu-stack.md`. It was restated in `plan.md`
+  until 0.16.21, which was a duplicate aimed squarely at this criterion.
+
+**One thing is NOT de-risked, and it is the biggest: CI has never run.**
+`.github/workflows/gate.yml` exists and its static half is verified locally, but
+nothing in it has executed on Linux — so by this document's own standard it is a
+claim, not a control. It needs a push. Until then, "the gate runs unattended" is
+exactly the kind of sentence this session spent five commits deleting.
+
+**A trigger worth knowing before you start:** rule 5's `sortObjects` relabel
+carries "rebuild the repro on the next three bump **or any change to the boot
+sequence**." A bake that loads sampled data before `sceneReady` is a boot-sequence
+change, so expect that trigger to fire during Phase 4 rather than after it.
+
+Deliberately left undone, because none of it blocks a bake: the
+measurement-assertion sweep (ratcheted, so it cannot worsen), the
+crushed-exposure threshold, the `method.md` truncation test, the PNG-vs-JPEG and
+caption-legibility figure duplications (both already tracked above).
 
 ---
 

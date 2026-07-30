@@ -991,10 +991,41 @@ property, not the proxy.
    does not survive the directory's loss.
 
    Keep a small corpus of scenes with **characterized defects at known
-   timestamps**. Gitignored is correct: this is bracketing apparatus, not teaching
-   material, and the repo already draws that line. A new instrument then has a
-   positive control the day it is written, and a *regression* control the day
-   someone changes it.
+   timestamps**. A new instrument then has a positive control the day it is
+   written, and a *regression* control the day someone changes it.
+
+   **`circus.html` itself is NOT the answer, and must never be tracked** (owner,
+   2026-07-30). It is parody, close enough to its source that the owner does not
+   want the attention of anyone misreading it. It stays gitignored permanently —
+   this is a decision, not a deferral, and it applies to the public site too.
+
+   **Re-skin it instead.** The fixture's value is entirely mechanical and none of
+   it lives in the theme: ~60 seconds and 31 beats, multi-shot solver traffic,
+   shadowed fur shells, the character rig — the combination that makes it the
+   only candidate reproducer for the open 1-in-6 `WEBGPU=metal` failure, which
+   `noise-chart.html` explicitly failed to reproduce in 15 runs because it lacks
+   exactly those. So: **keep the script structure, the captions, the beat count
+   and durations, and every mechanic; change the scenario, the style bible, the
+   character and all world references, and do not reuse the title.** The result
+   is trackable and loses nothing the fixture was for.
+
+   Two constraints on where it lands:
+
+   - **NOT under `plugin/`.** Everything there ships into the install cache, and
+     a deliberately defective scene must not reach users as though it were an
+     example. `examples/` is teaching material; this is apparatus. A tracked
+     directory outside the plugin subtree is the home.
+   - **Decide its parity status explicitly.** A full scene carries the fenced
+     blocks, so it either joins the parity set — adding a ninth carrier to the
+     4,611 hand-held lines, which R4.4 is what makes that acceptable — or is
+     deliberately excluded, in which case say so where the exclusion lives, since
+     a file that silently leaves the parity set is the exact failure
+     `bracket-parity.js` exists to catch.
+
+   **The twelve characterized defects must be re-measured against the new build,
+   not assumed to carry over.** They are mechanical and most should survive a
+   re-skin, but "should" is not a measurement, and their timestamps will move if
+   any beat duration does.
 
    **Items 4 and 5 are the same idea pointed at two costs** — 4 stops the same
    *work* being repeated, 5 stops the same *mistakes* being repeated. Neither

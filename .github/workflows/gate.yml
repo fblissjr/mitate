@@ -114,11 +114,19 @@ jobs:
       - name: smoke
         run: cd ws && bun run smoke.js
 
-      # All three brackets. The controls are the reason a green gate means
-      # anything, and an unrunnable control is the defect this repo has already
-      # eaten once (rule 5's repro was cited as preserved and is not in the
-      # tree). Running them here is how they stay runnable. bracket-noise pins
-      # the fallback path itself, so it is meaningful wherever it runs.
+      # Every bracket under templates/ — the count is not written here, because a
+      # count in a comment goes stale the next time one lands, and this one had:
+      # it read "all three" while four were globbed. The controls are the reason a
+      # green gate means anything, and an unrunnable control is the defect this
+      # repo has already eaten once (rule 5's repro was cited as preserved and is
+      # not in the tree). Running them here is how they stay runnable.
+      # bracket-noise pins the fallback path itself, so it is meaningful wherever
+      # it runs.
+      #
+      # SCOPED TO templates/ ON PURPOSE, and this is the half that bit: the
+      # brackets over the repo's own tools live in scripts/, need the repo rather
+      # than a scene workspace, and need no browser. They run in static.yml. Until
+      # 0.16.37 they ran nowhere, because "globbed" was read as "all of them".
       - name: brackets
         # `!cancelled()` because a step after a FAILED step is skipped by
         # default, and that is exactly what happened: the brackets were added

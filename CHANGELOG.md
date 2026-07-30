@@ -7,6 +7,79 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.37
+
+### fixed
+
+**Two review findings closed, and the fixes found two more — all four the same
+shape: a claim with no control over it.**
+
+**The citation check accepted a real filename under an invented directory.** It
+compared basenames against a walk of the live filesystem, so a comment could
+point anywhere as long as *some* file somewhere carried that name; the one
+historical catch worked only because its basename existed nowhere in the tree.
+Path-shaped tokens now resolve against two bases — the repo root, and the shipped
+subtree, both of which are real shapes in the corpus and both of which are how a
+reader would follow the pointer. Bare filenames in a provenance frame keep
+basename matching, which is all they can support.
+
+**Its accept-set was environment-dependent, which is the opposite of what the
+file is for.** The walk swept in gitignored build output, so the staged film
+copies were in the accept-set on a laptop that had run a build and absent in CI —
+the same question answered two ways depending on where it ran. The set is now
+`git ls-files --cached --others --exclude-standard`: derived output is out,
+and a file you have just written and not yet staged is still in, so writing a
+comment and its target in one change does not fail on the way past.
+
+The token regex grew an optional leading dot so `.claude-plugin/marketplace.json`
+resolves as the path it is. Measured both ways before shipping: **occurrence-
+neutral, 29 → 29**, apart from that one token. An earlier form of the tightening
+excluded `/` from its lookbehind and silently dropped four real citations — the
+bracket usage lines, whose checkable part begins right after a slash. A narrowing
+that goes quiet is the failure this check exists to prevent, so it was measured
+rather than reasoned about.
+
+**`stage-films.sh` left a stale derived film behind when its guard fired.** The
+guard exists to refuse the neon derivation if the bible line it edits ever moves,
+and it worked — but the script exited 1 with the *previous* `gearbox-neon.html`
+still sitting beside freshly copied examples, with nothing saying it was stale. A
+local preview then served a film derived from a gearbox that no longer existed.
+`films/*.html` is now cleared before staging: absent is visible, stale is not.
+
+**`scripts/bracket-selfcheck.js` had never run anywhere.** `gate.yml` globs
+`templates/` only, `static.yml` did not run brackets at all, and the pre-commit
+hook runs the self-check and fence parity. So the single control over the repo's
+own claim-checker existed, passed by hand once, and was executed by no automated
+path. Worse, check 6 — the census that exists to notice exactly this — also read
+`templates/` only, and reported 4 while 5 existed. The census now covers both
+directories and reports 6; `static.yml` gained a globbed `brackets` step (both
+repo brackets are browser-free, which is why they belong in the cheap job);
+`gate.yml`'s comment now states that its glob is directory-scoped *on purpose*
+and says where the others run, instead of saying "globbed, not listed" in a way
+that reads as complete. That comment also claimed "all three brackets" while
+globbing four.
+
+**`static.yml`'s fence-parity step claimed coverage it had lost.** Its comment
+said it included "the one negated exception in `site/films/`". 0.16.35 made that
+copy derived and removed the argument, leaving the claim behind and a dangling
+`\` at end of file. The step was doing less than it said, in the one place
+nothing audits: CI config.
+
+### added
+
+**`scripts/bracket-stage-films.js`** — three arms: a clean run derives the
+variant and it differs from its source by exactly one line; output from a
+previous build does not survive a re-run; and when the bible line moves, the
+guard fires *and* leaves nothing stale. The last two were proven red against the
+pre-fix script before the fix was written. `bracket-selfcheck.js` gained two arms
+on the same discipline — MISSED before, CAUGHT after.
+
+One of those arms could not be written literally. A comment citing a real name
+under a wrong directory *is* the defect the check catches, so a literal fixture
+in the bracket's own source trips it — as it did, on the first run, and again in
+the explanatory comment inside `selfcheck.js` itself. Both are assembled or
+described instead.
+
 ## 0.16.36
 
 ### changed

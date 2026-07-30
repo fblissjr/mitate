@@ -611,31 +611,46 @@ the one thing that stops the next person re-making them.
 a measured cost — something taking too long, or a defect traced to the file's
 size rather than to its logic.
 
-## Open review findings, not yet fixed (2026-07-30)
+## Review findings — CLOSED in 0.16.37
 
-From the three-agent review of this branch. Everything else it found is fixed and
-recorded in the CHANGELOG; these two are real and outstanding.
+From the three-agent review of this branch. Both are fixed, each with a control
+that was proven red first. Fixing them surfaced two more, recorded below.
 
-1. **`selfcheck` check 6d compares BASENAME, not path.** `present` is a set of
-   bare filenames from a whole-tree walk, and `flag()` tests
-   `present.has(path.basename(tok))`. So a comment citing
-   `totally-wrong-dir/backend.js` **passes** — verified. The historical catch
-   (`probe.js`) only worked because that basename existed nowhere. The `PATHY`
-   regex specifically matches path-shaped tokens, so for those the full path
-   should be resolved; keep basename matching only for `PROV` bare filenames.
-   Secondary, same line: `present` is built from the live filesystem including
-   gitignored build output (`site/films/*.html` is swept in locally and absent in
-   CI), so the accept-set is environment-dependent — the opposite of what this
-   file is for.
+1. **`selfcheck` check 6d compared BASENAME, not path.** ~~Open~~ — fixed. A
+   citation naming a real file under an invented directory passed, because the
+   basename existed somewhere; the historical catch only worked because *its*
+   basename existed nowhere. Path-shaped tokens now resolve against two bases
+   (repo root, and the shipped subtree, both real shapes in the corpus) and bare
+   filenames keep basename matching. The accept-set moved from a live-filesystem
+   walk to `git ls-files --cached --others --exclude-standard`, so gitignored
+   build output no longer makes the answer depend on whether the machine has run
+   a build. `PATHY` grew an optional leading dot; measured occurrence-neutral
+   (29 → 29) apart from the one token it was for.
 
-2. **`stage-films.sh` does not clear `films/` first.** If the derivation guard
-   fails because the bible line moved, the script exits 1 leaving a **stale**
-   `gearbox-neon.html` beside freshly copied examples, with nothing saying so.
-   Low severity (Netlify fails the build and does not deploy), and it matters for
-   local preview, which the script's own header says it is for.
+2. **`stage-films.sh` did not clear `films/` first.** ~~Open~~ — fixed. It now
+   clears `*.html` before staging, so an aborted derivation leaves the variant
+   *absent* rather than stale. Absent is visible; stale is not.
 
-**Both need a bracket arm in `scripts/bracket-selfcheck.js` when fixed** — that
-file now exists and takes new arms cheaply, which is the point of having built it.
+### Two the fixes exposed
+
+3. **`scripts/bracket-selfcheck.js` was run by nothing.** Not `gate.yml` (globs
+   `templates/` only), not `static.yml`, not the pre-commit hook — and check 6's
+   bracket census read `templates/` too, so the count said 4 while 5 existed. The
+   one control over the repo's own claim-checker was invisible to the check whose
+   entire job is noticing that. Census now covers both directories (reports 6);
+   `static.yml` gained a globbed `brackets` step; `gate.yml`'s comment now says
+   why its glob is directory-scoped instead of implying it is complete.
+
+4. **`static.yml`'s fence-parity step had a stale claim and a dangling
+   continuation.** Its comment claimed it covered "the one negated exception in
+   `site/films/`"; 0.16.35 made that copy derived and removed the argument,
+   leaving the claim and an orphaned `\`. The command was doing less than it
+   said. Same class as everything else on this branch — a fact with no check over
+   it — but in CI config, which nothing audits.
+
+**Controls:** `scripts/bracket-stage-films.js` is new (three arms; two proven red
+against the pre-fix script). `bracket-selfcheck.js` gained two arms, both proven
+MISSED before the fix and CAUGHT after.
 
 ## R3 — Structure
 

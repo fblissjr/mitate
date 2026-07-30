@@ -54,6 +54,28 @@ const ARMS = [
     return () => fs.rmSync(f, { force: true });
   }, 'no such file exists in the repo'],
 
+  ['comment citing a real name in the wrong dir', () => {
+    const f = path.join(__dirname, '_bracket_fixture_wrongdir.js');
+    // `backend.js` is real, at plugin/skills/mitate/templates/. Only the
+    // DIRECTORY is a lie -- which a basename comparison cannot see, and which is
+    // how the check shipped in 0.16.33. Assembled for the same reason as above.
+    const strayed = ['totally', 'wrong', 'dir'].join('-') + '/' + 'backend.js';
+    fs.writeFileSync(f, `// the backend lives in ${strayed}\n`);
+    return () => fs.rmSync(f, { force: true });
+  }, 'nothing tracked resolves there'],
+
+  ['comment citing gitignored build output', () => {
+    // site/films/*.html is DERIVED by stage-films.sh and gitignored, so it is
+    // present on a laptop that has run a build and absent in CI. A check whose
+    // accept-set is the live filesystem therefore gives two different answers to
+    // the same question -- the opposite of what this file is for.
+    const html = path.join(ROOT, 'site', 'films', '_bracket_fixture_derived.html');
+    const f = path.join(__dirname, '_bracket_fixture_ignored.js');
+    fs.writeFileSync(html, '<!-- derived, not tracked -->\n');
+    fs.writeFileSync(f, `// staged from ${'site/films/'}_bracket_fixture_derived.html\n`);
+    return () => { fs.rmSync(html, { force: true }); fs.rmSync(f, { force: true }); };
+  }, 'is not tracked'],
+
   ['postmortem an index cannot read', () => {
     const dir = path.join(ROOT, 'docs', 'postmortems');
     const f = path.join(dir, '2026-01-01_session_bracket-fixture.md');

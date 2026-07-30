@@ -36,9 +36,16 @@ its own graph.
 - **Open decisions** — `docs/examples-placement.md`
 - **What happened and why** — `CHANGELOG.md`, `docs/postmortems/`
 - **Repo tools** — `scripts/selfcheck.js`, `install-hooks.sh`,
-  `stage-films.sh`, `diagnose-determinism.js`, `sample-determinism.js`
-- **CI** — `.github/workflows/gate.yml` (browser, main + PRs),
-  `static.yml` (cheap checks, every push), `sample.yml` (manual only)
+  `stage-films.sh`, `diagnose-determinism.js`, `sample-determinism.js`, plus
+  `scripts/bracket-*.js`, which are the controls over the first three
+- **CI** — `.github/workflows/gate.yml` (browser, main + PRs; runs the brackets
+  under `templates/`), `static.yml` (cheap checks, every push; runs the brackets
+  under `scripts/`), `sample.yml` (manual only). **Brackets live in two places
+  and each workflow globs one of them** — a bracket written into the directory
+  the wrong workflow watches runs nowhere, which is how `bracket-selfcheck.js`
+  went unexecuted from the day it was written until 0.16.37. The pre-commit hook
+  deliberately runs neither: it runs the self-check and fence parity, and the
+  brackets are CI's job.
 - **Repo-development agents** — `.claude/agents/control-builder.md`,
   `doc-claim-auditor.md`, `.claude/skills/audit-claims/`,
   `.claude/rules/model-delegation.md`

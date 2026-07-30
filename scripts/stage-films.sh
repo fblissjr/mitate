@@ -24,6 +24,16 @@ if [ ! -d "$examples" ]; then
 fi
 
 mkdir -p "$films"
+
+# CLEARED FIRST, and the order is the point. The derivation below can exit 1 —
+# that is what its guard is for — and an aborted run used to leave the PREVIOUS
+# gearbox-neon.html sitting beside freshly copied examples, with nothing saying
+# it was stale. A local preview then served a film derived from a gearbox that no
+# longer exists. Absent is visible; stale is not. Scoped to *.html because that is
+# exactly what this script produces and what site/.gitignore ignores; nothing else
+# in films/ is ours to delete.
+rm -f "$films"/*.html
+
 n=0
 for f in "$examples"/*.html; do
   cp "$f" "$films/"

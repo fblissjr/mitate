@@ -24,6 +24,7 @@
  */
 const fs = require('fs');
 const path = require('path');
+const { execFileSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const PLUGIN_ROOT = path.join(ROOT, 'plugin');
@@ -321,23 +322,30 @@ const ASSERT_BUDGET = 51;
  * putting one in CI buys a green that means nothing. This is a PROXY — it reads
  * for a non-zero exit path, not for correctness — and a proxy can reject, it
  * cannot approve. Running the brackets is what approves them; CI does that. */
-{
-  const brackets = [...templateJs.keys()].filter(f => /^bracket-.*\.js$/.test(f));
-  if (!brackets.length) fail('no bracket-*.js found — the controls have gone missing');
-  for (const b of brackets) {
-    if (!/process\.exit\(1\)/.test(templateJs.get(b))) {
-      fail(`${b} has no failing exit path — it cannot go red, so its green means nothing`);
-    }
-  }
-  notes.push(`${brackets.length} brackets, each with a failing exit path (proxy: not a correctness check)`);
-}
-
-/* ---- 6b. tool JS, read once -------------------------------------------- */
+/* ---- 6b. tool JS, read once. ORDERED BEFORE check 6 because the bracket
+ * census below is over both directories, and reading scripts/ twice to keep the
+ * old numbering would be the duplicate this file exists to catch. */
 const toolJs = new Map([
   ...templateJs,
   ...fs.readdirSync(__dirname).filter(f => f.endsWith('.js'))
     .map(f => ['scripts/' + f, R(path.join(__dirname, f))]),
 ]);
+
+{
+  // BOTH DIRECTORIES. The census read templates/ only, which was true when every
+  // bracket lived there and silently false afterwards: bracket-selfcheck.js sat
+  // in scripts/ uncounted here and unrun by any workflow, so the one control over
+  // the repo's own claim-checker was invisible to the check that exists to notice
+  // exactly that. Matched on basename, since a scripts/ key carries its directory.
+  const brackets = [...toolJs.keys()].filter(f => /^bracket-.*\.js$/.test(path.posix.basename(f)));
+  if (!brackets.length) fail('no bracket-*.js found — the controls have gone missing');
+  for (const b of brackets) {
+    if (!/process\.exit\(1\)/.test(toolJs.get(b))) {
+      fail(`${b} has no failing exit path — it cannot go red, so its green means nothing`);
+    }
+  }
+  notes.push(`${brackets.length} brackets, each with a failing exit path (proxy: not a correctness check)`);
+}
 
 /* ---- 6c. no bare seek before a capture ------------------------------------
  * 0.16.28 measured a bare `evaluate('window.seekTo(t)')` followed by a capture
@@ -455,21 +463,64 @@ const toolJs = new Map([
   //   PROV  -- a bare filename in a citation frame (see X, recorded in X).
   //            A "see <tool>" frame is a provenance claim; a usage line like
   //            "bun run smoke.js scene.html" is not.
-  const PATHY = /\b[\w][\w.-]*(?:\/[\w.-]+)+\.(?:js|md|html|json|yml|sh)\b/g;
+  //
+  // The lookbehind excludes word characters but deliberately NOT `/`. Excluding
+  // `/` was tried and dropped four real citations: the bracket usage lines read
+  // `"${CLAUDE_SKILL_DIR}"/templates/bracket-noise.js`, whose checkable part
+  // begins right after a slash. A tightening that silently narrows what a check
+  // sees is the failure this file exists to prevent, so it was measured both
+  // ways. The optional leading dot is what lets `.claude-plugin/marketplace.json`
+  // be resolved as the path it is rather than as a dotless near-miss.
+  const PATHY = /(?<![\w.-])\.?[\w][\w.-]*(?:\/[\w.-]+)+\.(?:js|md|html|json|yml|sh)\b/g;
   const PROV = /\b(?:see|per|recorded in|preserved in|cited in|documented in)\s+`?([\w][\w.-]*\.(?:js|md|html|json|yml|sh))`?/gi;
   // Upstream paths inside a dependency, which a comment may legitimately name
   // and this repo will never contain. One entry, and it earned it: three dropped
   // its UMD build after 0.160, which is why build.js explains the vendoring.
   const EXTERNAL_OK = new Set(['build/three.min.js']);
-  const present = new Set();
-  walkFiles(ROOT, (_, name) => present.add(name));
+  // THE ACCEPT-SET IS WHAT GIT TRACKS, not what the disk holds. Two defects, one
+  // cause -- the first version walked the live filesystem and compared BASENAMES:
+  //
+  //   * A citation naming a real file under an invented directory passed, because
+  //     the basename existed somewhere. Only the directory was a lie, and a
+  //     basename comparison cannot see one. (The fixture is assembled in
+  //     bracket-selfcheck.js rather than written here, because a literal example
+  //     of a bad citation IS one, and this check flagged this very comment.)
+  //   * The staged film copies under the site directory are derived output and
+  //     gitignored, so they are on a laptop that has built and absent in CI. The
+  //     check answered the same question two ways depending on where it ran.
+  //
+  // `--others --exclude-standard` keeps a file you have just written and not yet
+  // staged in the set, so writing a comment and its target in one change does not
+  // fail on the way past; build output stays out because it is ignored.
+  const tracked = new Set(execFileSync('git',
+    ['ls-files', '--cached', '--others', '--exclude-standard'],
+    { cwd: ROOT, encoding: 'utf8' }).split('\n').filter(Boolean));
+  const names = new Set([...tracked].map(p => path.posix.basename(p)));
+  // Two bases, because both are real shapes in the corpus and both are how a
+  // reader would follow the pointer: repo-root-relative from a repo tool
+  // (`docs/source-of-truth.md`), and subtree-relative from inside the shipped
+  // subtree (`references/method.md`), where a reader holds only that subtree.
+  const SUBTREE_REL = path.relative(ROOT, SUBTREE).split(path.sep).join('/');
   const commentRe = /(?:\/\/|\*|#).*/g;
   let cited = 0;
   const flag = (name, tok) => {
     cited++;
-    if (present.has(path.basename(tok)) || EXTERNAL_OK.has(tok)) return;
-    fail(`${name} cites \`${tok}\` in a comment and no such file exists in the repo. `
-       + `A comment may name a rule; it may not cite a path its reader cannot reach.`);
+    if (EXTERNAL_OK.has(tok)) return;
+    if (!tok.includes('/')) {                       // PROV: a bare filename
+      if (names.has(tok)) return;
+      fail(`${name} cites \`${tok}\` in a comment and no such file exists in the repo. `
+         + `A comment may name a rule; it may not cite a path its reader cannot reach.`);
+      return;
+    }
+    const tries = [tok, `${SUBTREE_REL}/${tok}`];
+    if (tries.some(p => tracked.has(p))) return;
+    const onDisk = tries.find(p => fs.existsSync(path.join(ROOT, p)));
+    fail(onDisk
+      ? `${name} cites \`${tok}\`, which exists at \`${onDisk}\` but is not tracked. `
+        + `Derived output is present on one machine and absent on another; a comment may not rest on it.`
+      : `${name} cites \`${tok}\` in a comment and nothing tracked resolves there `
+        + `(tried the repo root and the shipped subtree). A comment may name a rule; `
+        + `it may not cite a path its reader cannot reach.`);
   };
   // SCENE HTML IS IN SCOPE AS OF 0.16.32, and the order was deliberate: it
   // carried the live instance -- bear-and-bees cited a probe.js that has never
@@ -575,7 +626,6 @@ const toolJs = new Map([
  * for it to fire and not a gap to close: a marker bumped before the commit that
  * justifies it would be the same lie in the other direction. */
 {
-  const { execFileSync } = require('child_process');
   const git = (...a) => execFileSync('git', a, { cwd: ROOT, encoding: 'utf8' }).trim();
   let shallow = 'true';
   try { shallow = git('rev-parse', '--is-shallow-repository'); } catch (e) {}

@@ -154,9 +154,13 @@ never do — twice now, five months apart.
 capturing concurrently, i.e. maximum presentation contention, and its output is a
 shipped MP4 rather than a gate verdict. If `settle` can be outrun on a slow stack,
 that is where the same mechanism causes real damage, and **nothing samples it.**
-Fix `settle` first, then measure a parallel shoot for stale frames before trusting
-any recorded deliverable made on a contended machine. *Trigger: fired — the
-mechanism is now measured, so the exposure is no longer hypothetical.*
+**FIXED 0.16.28, verified as a red/green pair on Linux** (shipped path 0 of 200;
+control 10/10 on the worst cell). All three `shoot.js` capture paths route through
+`seekSynced`, so the exposure is closed *by construction* wherever it was
+reachable. What remains is narrower and honest: it has never been **measured**
+under `--workers N`, where contention is highest. *Trigger: before trusting a
+parallel-shot deliverable made on a loaded machine — shoot the same range at
+`--workers 1` and `--workers 4` and diff the frames.*
 
 The paragraph this replaces read as follows, and its escalation was right even
 though its substance was wrong:

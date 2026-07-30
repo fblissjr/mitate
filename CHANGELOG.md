@@ -7,6 +7,34 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.29
+
+### verified
+
+**0.16.28's capture-race fix holds, measured as a red/green pair on Linux.** Two
+dispatches, same runner image, same scenes, 10 repeats each, back to back:
+the shipped path (`seekSynced`) came back **0 failures across 200 samples**; the
+control (a bare seek, the pre-0.16.28 pattern) still failed at **10/10** on
+`materials.html@5.36` and 2/10 on `menagerie.html@8.52`.
+
+Both arms are the verification. A clean shipped run alone would not have been one:
+if the control had also gone quiet it would mean the instrument stopped detecting
+the race, not that the race was gone.
+
+**The mechanism is settled beyond inference.** The same cell read 40%, 80% and
+10/10 under the bare-seek pattern across three measurements — a state-carrying
+defect does not vary like that, a timing race does — and it vanishes entirely when
+a completion barrier is inserted on identical hardware.
+
+Two shipped films were accused of carrying state and never were. `references/materials.md`
+and `docs/working-plan.md` now record the verified outcome rather than the
+accusation.
+
+The residual is narrower and stated as untested rather than fixed: the pattern is
+correct at all three `shoot.js` capture sites, so the stale-frame exposure in a
+recorded MP4 is closed by construction, but it has never been *measured* under
+`--workers N`, where contention is highest.
+
 ## 0.16.28
 
 ### fixed

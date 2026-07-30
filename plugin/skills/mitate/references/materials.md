@@ -108,9 +108,12 @@ load-bearing, because CI refuted the unqualified version.
 > dependency," which four runs later was false. Both retracted. Evidence and the
 > full chain: `internal/postmortems/2026-07-29_span_instrument-hardening.md`.
 >
-> **The repair belongs in `settle` (`backend.js`), not here and not in the
-> determinism arm.** Relaxing the arm would be repairing the layer that was
-> right.
+> **FIXED and VERIFIED in 0.16.28** — `backend.js`'s `seekSynced` seeks and forces
+> render completion in one page task, at all six capture sites. Verified on Linux
+> as a red/green pair: shipped path 0 of 200, control (bare seek) 10/10 on this
+> film's worst cell. The repair was in the recorder's capture pattern, never in
+> this film and never in the determinism arm — relaxing the arm would have
+> repaired the layer that was right.
 
 ## Bloom (first observations, not yet a rule)
 

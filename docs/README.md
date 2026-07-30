@@ -13,7 +13,7 @@ reference that needs to reach an installed user goes in
 
 | If you are asking | Read | When |
 |---|---|---|
-| what is this project for, and why determinism first | `VISION.md` *(planned)* | first, once |
+| what is this project for, and why determinism first | [`../VISION.md`](../VISION.md) | first, once |
 | what is `t`, and why is it addressed by beat | [`addressing.md`](addressing.md) | before changing anything about time, seeking, or the bake |
 | what is the architecture, and what gates each phase | [`plan.md`](plan.md) | before starting anything phase-shaped |
 | **what should I work on next** | **[`restructure-2026-07.md`](restructure-2026-07.md)** while that migration is open — it carries a current-position block | at the start of a work session |

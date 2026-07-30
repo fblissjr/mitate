@@ -43,6 +43,10 @@ not the ceiling.
 *mitate* (見立て): to see one thing as another — the Japanese aesthetic of
 representing one thing through another. Here, seeing any input as a scene.
 
+**Why it is built this way, and why determinism comes first**, is
+[`VISION.md`](VISION.md) — one page, and the thing to read before deciding this
+project is just a video generator.
+
 ## Why do it this way, and what it costs
 
 **What you gain.** The output is code, not pixels. An agent can reshoot one shot

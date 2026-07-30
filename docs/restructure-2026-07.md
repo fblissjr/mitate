@@ -5,7 +5,9 @@ last updated: 2026-07-30
 > ## Current position
 >
 > **R0 MET** (0.16.30) · **R1 MET** (0.16.31) · **R2 MET** (0.16.34) ·
-> **R3 next**. R2 items 1-7 landed across 0.16.32-0.16.34, 8 retracted, 9
+> **R3 IN PROGRESS** — items 1 (`SKILL.md` trim), 2 (`README.md`) and 3
+> (`VISION.md`) are done; **4 (`delivery.md` split) and 5 (`working-plan.md`
+> pruning) remain.** R2 items 1-7 landed across 0.16.32-0.16.34, 8 retracted, 9
 > trigger-gated on a fifth bracket of one family.
 >
 > **While this document is open it is the live queue**, and
@@ -635,12 +637,12 @@ reinstalled, because the marketplace clones from the remote and `main` is still
      reference naming `docs/working-plan.md` as bare prose, which a cache reader
      cannot follow — the rule is now stated inline instead of pointed at.
 
-2. **`README.md` trim.** Real, and deliberately *after* the pair above: it is
+2. **`README.md` trim — DONE 2026-07-30**, and deliberately *after* the pair above: it is
    read on demand, so its cost is a first impression rather than a recurring
    charge. Its Layout table lists a subset of `docs/` and should point at
    `docs/README.md` instead of enumerating.
 
-3. **`VISION.md`** at repo root. The ordering argument (determinism is the
+3. **`VISION.md`** at repo root — **DONE 2026-07-30.** The ordering argument (determinism is the
    observation instrument, not a constraint accepted in exchange for one), the
    `t`-as-coordinate / state-as-driver-output formulation, films as the proving
    instrument rather than the product. **Supersedes `plan.md:821-823`**

@@ -20,8 +20,8 @@ its own graph.
 - **The skill that ships** — `plugin/skills/mitate/SKILL.md`, plus
   `references/` (start with `glossary.md` — the words this project uses as if you
   knew them), `templates/`, `examples/`, and `plugin/agents/film-reviewer.md`
-- **Why, and in what order** — `VISION.md` *(planned)*, `docs/addressing.md`
-  (what `t` is)
+- **Why, and in what order** — `VISION.md`, then `docs/addressing.md` (what `t`
+  is, and what the position-encoding literature does and does not transfer)
 - **Architecture and phase gates** — `docs/plan.md`
 - **The standing backlog** — `docs/working-plan.md` (the spine, tracks A-D, the
   ancestry table, deferred items with their triggers). Parts are superseded while

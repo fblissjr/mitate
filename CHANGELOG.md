@@ -110,10 +110,13 @@ that routing line is their only control instead of the softer "not exempt from
 being wrong".
 
 **Two errors of this session's own, both caught by the same review.** The Map
-claimed to cover "everything outside `docs/`" while omitting `site/` — the
-showcase is half of what `CLAUDE.md`'s first line says this repo is, and by the
-Map's own criterion it was unreachable from the front door. It has an entry now,
-named as a capability-claim surface. And the repo-tools line called
+claimed to cover "everything outside `docs/`" while omitting `site/`, so by its
+own stated criterion a tracked top-level directory was unreachable from the front
+door — and it is the one `/audit-claims` is required to route at. It has an entry
+now, named as the **capability-claim surface** it is: not a second half of the
+product, which is the skill, but the page that tells the public what the skill
+does, and therefore something a changed capability changes. And the repo-tools
+line called
 `scripts/bracket-*.js` "the controls over the first three" when two exist,
 covering the first and third; it now says two of five and names the three that
 are uncontrolled, which is the state invariant 6 wants visible.

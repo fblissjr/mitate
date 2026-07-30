@@ -222,7 +222,15 @@ Nothing structural. Everything here is currently false.
     check does not support.
     → Say "and no other content."
 
-**Gate R0:** `bun run scripts/selfcheck.js` green; `bracket-determinism.js`
+**Gate R0 — MET 2026-07-30, shipped as 0.16.30.** `selfcheck` green (13 dated
+docs, cascade coherent at 0.16.30); cross-directory fence parity green over all
+nine KERNEL carriers; `smoke.js` exit 0 on all six scenes, advisories only;
+`bracket-determinism.js` run before and after the capture change with all three
+rows as specified both times. One item deliberately **not** done and recorded as
+an exception: R0.3's `probe.js` comment in `bear-and-bees.html`, deferred to R2
+so the film is touched once, by the change that makes its claim true.
+
+Original gate text: `bun run scripts/selfcheck.js` green; `bracket-determinism.js`
 demonstrated red then green on the `seekSynced` change; no tracked file cites a
 path or version that does not resolve.
 

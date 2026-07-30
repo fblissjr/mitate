@@ -7,6 +7,90 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.16
+
+### fixed
+
+The console-noise allow-list in `smoke.js` matched neither of the two messages
+it most needed to, so **every 3D scene failed the gate on the default WebGL2
+path** — the whole shipped corpus, on the one path documented as CI-safe. One
+anchored regex was tested against message bodies, but both arrive with a prefix
+in front: Chromium emits `[.WebGL-0x7f…]GL Driver Message (…)` and three emits
+`THREE.WebGPURenderer: WebGPU is not available, …`. Only `No available
+adapters.` ever matched. The intent was already documented correctly in the
+comment above the filter; the regex never implemented it.
+
+It stayed invisible because nothing runs that path unattended and development
+runs `WEBGPU=metal`, where neither message is emitted at all. The absence of CI
+was not a documentation gap — it was masking a broken gate on the path CI would
+use.
+
+Also fixed, and found by the new bracket on its first run: the classifier
+existed in **two copies** — one per page the check opens — and only one was
+updated, so the cold shipped-frame page threw `ReferenceError`. There is now one
+`classify` shared by both. Two copies of a filter is the same bug shape as two
+copies of a fence.
+
+### changed
+
+`GL Driver Message` and `GPU stall` now tolerate one leading context bracket.
+Three's fallback announcement is no longer text-matched at all: it is held and
+classified **structurally** against `window.BACKEND` once the scene has booted,
+because whether it is a defect depends on state the console handler cannot see.
+Expected when the scene reports `webgl2` (or is 2D and reports nothing); a hard
+failure from a scene claiming `BACKEND='webgpu'`, which is a self-contradiction
+the old text-only filter could not catch. That arm is strictly stronger than
+what it replaced. The suppression advisory now says which of the two kinds it
+dropped.
+
+### added
+
+`templates/bracket-noise.js` — the control for the allow-list, four arms, and it
+drives the real `smoke.js` as a subprocess rather than re-implementing its
+logic, because a copy would have passed while the gate failed. It **pins the
+fallback path** by clearing `WEBGPU`, since the thing under test is a claim
+about text nobody controls and it has to be re-run where it applies, not where
+the developer happens to be. The two load-bearing arms pull opposite ways: the
+expected notice must not fail a clean scene, and a real warning must still fail
+— the second is what proves the green was not bought by widening suppression.
+
+Measured 2026-07-29, `WEBGPU` unset: corpus green on the fallback path with the
+dropped messages surfaced as advisories, corpus green on `WEBGPU=metal`
+unchanged, all four bracket arms as specified.
+
+Introduced in **0.16.9**, by the test-audit pass that added the `^\s*` anchor
+and wrote a comment asserting the anchor was measured not to close the cloak.
+The anchor was tested against message bodies rather than against what Chromium
+and three actually emit, so it matched nothing on the fallback path. A hardening
+pass broke the gate and documented the break as a measurement.
+
+### added (repo, does not ship)
+
+`.github/workflows/gate.yml` — the first CI this repo has had, and the direct
+answer to why the above shipped. Two jobs: `static` (oxlint with `no-undef` on,
+plus cross-directory fence parity including the negated `site/films/` carrier —
+seconds, cannot flake) and `gate` (the full smoke battery plus
+`bracket-noise.js`). The browser job pins **no** backend env var on purpose:
+that is the fallback path, and running it unattended is the entire point. It is
+**unverified on Linux** — every measurement in this repo was taken on macOS — so
+the first run is the measurement, not a regression.
+
+`.oxlintrc.json` — `no-undef` is **off** in oxlint's defaults, which is the one
+line that matters; `browser: true` is required because the brackets pass real
+functions into `page.evaluate`. Neither file ships: `plugin install` copies only
+the `plugin/` subtree, so there is no cascade and no install-cache weight.
+
+### removed
+
+`SHIP_VIEWPORT` in `smoke.js` — dead since the caption-overflow resize was
+removed, and its comment asserted the caption "must be measured here and not at
+VIEWPORT" while the live reasoning 500 lines below records the opposite. A
+constant that outlived its claim and then contradicted it. The incident record
+it belonged to stays where it is. Found by a `no-undef`/`no-unused-vars` pass,
+which is the first thing to run over these files that reads them statically —
+worth noting that `no-undef` is **off** in oxlint's defaults and has to be
+enabled explicitly.
+
 ## 0.16.15
 
 ### changed

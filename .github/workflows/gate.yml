@@ -1,0 +1,97 @@
+# The gate, run unattended on the path nobody runs by hand.
+#
+# This exists because of 0.16.16. The console-noise allow-list in smoke.js
+# matched neither of the two messages it most needed to, so every 3D scene
+# failed on the default WebGL2 path — the whole shipped corpus, on the one path
+# documented as CI-safe. It stayed invisible for releases because nothing ran
+# that path unattended and development runs WEBGPU=metal, where neither message
+# is emitted at all. The absence of CI was not a documentation gap; it was
+# masking a broken gate on the path CI would use.
+#
+# So the browser job deliberately pins NOTHING: no WEBGPU, no ANGLE_BACKEND.
+# That is the fallback path, and running it here is the whole point. Do not
+# "fix" a failure in this workflow by setting a backend env var.
+#
+# Two jobs, because they fail for different reasons and a reader deserves to
+# know which happened:
+#   static  — no browser, seconds, cannot flake. Catches the unresolved
+#             identifier class in ~1s (which a Playwright run catches in ~6s,
+#             several layers deep, and only if it reaches that line).
+#   gate    — the real smoke battery plus the bracket that controls it.
+#
+# UNVERIFIED ON LINUX at the time of writing. Every measurement in this repo
+# was taken on macOS; WEBGPU=vulkan is labelled unverified for the same reason.
+# The first run of this workflow IS the measurement — read it as evidence, not
+# as a regression, and record what it says.
+name: gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static:
+    name: static (lint + fence parity)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # no-undef is OFF in oxlint's defaults — .oxlintrc.json turns it on, and
+      # that one rule is the whole reason this step exists. Pinned via bunx so
+      # the repo needs no root manifest and the result stays reproducible.
+      - name: lint
+        run: bunx oxlint@1.76.0 -c .oxlintrc.json plugin/skills/mitate/templates/
+
+      # Cross-directory, and including the one negated exception in site/films/.
+      # A per-directory green does not cover the template-to-example boundary,
+      # and drift there is silent (CLAUDE.md invariant 2).
+      - name: fence parity
+        run: |
+          bun run plugin/skills/mitate/templates/smoke.js --parity-only \
+            plugin/skills/mitate/templates/*.html \
+            plugin/skills/mitate/examples/*.html \
+            site/films/gearbox-neon.html
+
+  gate:
+    name: gate (smoke on the WebGL2 fallback)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # A workspace built the way the skill tells a user to build one: the
+      # tooling resolves three and playwright-core from where the film is being
+      # built, never from the plugin. Examples ship vendored, so three is here
+      # only for the templates, which smoke auto-bundles into .smoke-PID copies.
+      - name: workspace
+        run: |
+          mkdir -p ws
+          cp plugin/skills/mitate/templates/{shoot.js,build.js,smoke.js,backend.js} ws/
+          cp plugin/skills/mitate/templates/*.template.html ws/
+          cp plugin/skills/mitate/examples/*.html ws/
+          cd ws && bun add three@0.185.1 playwright-core@1.61.1
+
+      - name: chromium
+        run: cd ws && bunx playwright install --with-deps chromium
+
+      # No WEBGPU. No ANGLE_BACKEND. This is the path that was broken.
+      - name: smoke
+        run: cd ws && bun run smoke.js
+
+      # The control for the allow-list this workflow exists because of. It pins
+      # the fallback path itself, so it is meaningful wherever it runs.
+      - name: bracket (noise classifier)
+        run: |
+          cd ws && NODE_PATH="$PWD/node_modules" \
+            bun run ../plugin/skills/mitate/templates/bracket-noise.js

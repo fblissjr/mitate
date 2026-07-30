@@ -219,9 +219,13 @@ Two constraints that dictate the setup — do not "simplify" them away:
 - `templates/shoot.js` / `templates/build.js` — recorder + pipeline (sheet,
   strip, aspect, motion, loop, avif, poster)
 - `templates/smoke.js` — contract, determinism, live-playback, shipped-frame checks + lints
-- `templates/bracket-liveplay.js` / `templates/bracket-determinism.js` — the
-  controls for two of smoke's checks: each builds its own broken copies of a
-  shipped example and reports which injections fire. They read that example
+- `templates/bracket-liveplay.js` / `templates/bracket-determinism.js` /
+  `templates/bracket-noise.js` — the
+  controls for three of smoke's checks: each builds its own broken copies of a
+  shipped example and reports which injections fire. `bracket-noise.js` pins the
+  WebGL2 fallback path (it clears `WEBGPU`), because the console allow-list it
+  brackets is a claim about text nobody controls and it silently matched nothing
+  there until 0.16.16. They read that example
   from beside themselves, so leave them in place and invoke from your working
   directory, which supplies `playwright-core`:
   `NODE_PATH="$PWD/node_modules" bun run

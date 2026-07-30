@@ -146,10 +146,12 @@ const CPS_WARN_THRESHOLD = 30;
 // just extends past the viewport with no visible error. Warn before it
 // actually reaches the edge, not exactly at it.
 const CAP_OVERFLOW_FRACTION = 0.92;
-// The viewport the film actually ships at — shoot.js renders every frame at
-// 1920x1080. The caption is sized in fixed CSS px, so it must be measured here
-// and not at VIEWPORT above, which exists only to keep the render checks cheap.
-const SHIP_VIEWPORT = { width: 1920, height: 1080 };
+// (A SHIP_VIEWPORT constant lived here, asserting the caption had to be
+// measured at 1920x1080 rather than at VIEWPORT. That claim stopped being true
+// when the template moved the caption to frame-relative sizing, and the resize
+// it existed for was removed — see the incident record at the caption-overflow
+// check. The constant outlived its claim by one release and contradicted the
+// live reasoning; found by a no-undef/no-unused lint pass, not by reading.)
 // Mean-absolute-luma tolerance for the framing-invariance check. Bracketed:
 // a correctly containing scene scores <3; the pre-fix cropping templates
 // scored 20-60. 8 sits in the gap, nearer the confirmed-good end.
@@ -268,9 +270,12 @@ async function checkScene(browser, file) {
   const fails = [];
   const warnings = [];
   const noise = [];
-  // Messages the NOISE filter suppressed. Surfaced as an advisory at the end so
-  // a defect cloaked behind a driver prefix is visible; see the NOISE comment.
+  // Messages the noise filters suppressed. Surfaced as an advisory at the end so
+  // a defect cloaked behind a driver prefix is visible; see DRIVER_NOISE below.
   const dropped = [];
+  // three's WebGL2-fallback announcement, held for classification against
+  // window.BACKEND after the page has booted; see the FALLBACK_NOTICE comment.
+  const fallbackNotices = [];
   let backend = null;
   const page = await browser.newPage({ viewport: VIEWPORT, deviceScaleFactor: 1 });
   page.on('pageerror', e => noise.push('page error: ' + e.message));
@@ -285,8 +290,8 @@ async function checkScene(browser, file) {
   // "No available adapters." is the WebGPU probe finding nothing before the
   // renderer announces its WebGL2 fallback — the two lines arrive together and
   // both are informative, not defects.
-  // Anchored at the start, which narrows this filter but — measured — does NOT
-  // close the cloak: the real noise strings ARE prefixes, so
+  // Anchored at the start, which narrows these filters but does NOT close the
+  // cloak: the noise strings are themselves prefixes, so
   // console.error('GL Driver Message: <a real defect>') still matches and is
   // still dropped. Two closes were tried and rejected. Filtering on the
   // message's ORIGIN fails because three.js is inlined in every scene, so
@@ -296,12 +301,38 @@ async function checkScene(browser, file) {
   // So the cloak stays open and is made LOUD instead: every dropped message is
   // reported as an advisory. Silent dropping was the real defect — a suppressed
   // error nobody can see is indistinguishable from no error.
-  const NOISE = /^\s*(GL Driver Message|GPU stall|Automatic fallback to software WebGL|WebGPURenderer: WebGPU is not available|No available adapters)/i;
-  page.on('console', m => {
+  //
+  // THIS REACHED A RELEASE. Until 0.16.16 both patterns were one anchored
+  // regex that matched NEITHER message it most needed to, because the anchor
+  // sat where a PREFIX arrives: Chromium emits "[.WebGL-0x7f…]GL Driver
+  // Message (…)" and three emits "THREE.WebGPURenderer: WebGPU is not
+  // available, …". Only "No available adapters." ever matched. Consequence:
+  // every 3D scene FAILED on the default WebGL2 path — the whole shipped
+  // corpus, on the one path CLAUDE.md advertises as CI-safe. It stayed
+  // invisible because there is no CI and development runs WEBGPU=metal, where
+  // neither message is emitted at all. The lesson is not about regex: an
+  // allow-list is a claim about text nobody controls, so it belongs behind a
+  // bracket that runs on the path it is written for — bracket-noise.js.
+  const DRIVER_NOISE = /^\s*(?:\[[^\]]{0,64}\]\s*)?(GL Driver Message|GPU stall|Automatic fallback to software WebGL)/i;
+  // three's fallback announcement is classified STRUCTURALLY below, against
+  // window.BACKEND, rather than dropped here — because whether it is a defect
+  // depends on state this filter cannot see. On the fallback path it is
+  // expected and informative; from a scene reporting BACKEND='webgpu' it is a
+  // self-contradiction, which the old text-only filter could not catch. The
+  // THREE. prefix is three's own and is optional because it is not ours to pin.
+  const FALLBACK_NOTICE = /^\s*(?:THREE\.)?(WebGPURenderer: WebGPU is not available|No available adapters)/i;
+  // ONE classifier, attached to every page this scene opens. It was two copies
+  // of the same body until 0.16.16, and they drifted the moment one was edited:
+  // the cold shipped-frame page below still referenced the old binding. Two
+  // copies of a filter is the same bug shape as two copies of a fence.
+  const classify = m => {
     if (m.type() !== 'error' && m.type() !== 'warning') return;
-    if (NOISE.test(m.text())) { dropped.push(m.text()); return; }
-    noise.push(`console ${m.type()}: ${m.text()}`);
-  });
+    const text = m.text();
+    if (DRIVER_NOISE.test(text)) { dropped.push(text); return; }
+    if (FALLBACK_NOTICE.test(text)) { fallbackNotices.push(text); return; }
+    noise.push(`console ${m.type()}: ${text}`);
+  };
+  page.on('console', classify);
 
   try {
     // CHECK (hard, FIRST — while the browser is cold): the SHIPPED frame both
@@ -323,15 +354,12 @@ async function checkScene(browser, file) {
     // first condition rather than gaining false positives.
     try {
       const p2 = await browser.newPage({ viewport: VIEWPORT, deviceScaleFactor: 1 });
-      // Same listeners as `page`. Without them this load was an error blind
-      // spot: a defect that manifests ONLY under ?strip=text went green here
-      // while the identical defect on the live load went red.
+      // Same listeners as `page` — and literally the same `classify`, not a
+      // second copy of it. Without them this load was an error blind spot: a
+      // defect that manifests ONLY under ?strip=text went green here while the
+      // identical defect on the live load went red.
       p2.on('pageerror', e => noise.push('page error: ' + e.message));
-      p2.on('console', m => {
-        if (m.type() !== 'error' && m.type() !== 'warning') return;
-        if (NOISE.test(m.text())) { dropped.push(m.text()); return; }
-        noise.push(`console ${m.type()}: ${m.text()}`);
-      });
+      p2.on('console', classify);
       try {
         await p2.goto('file://' + path.resolve(file) + '?record=1&strip=text');
         await p2.waitForFunction('window.sceneReady === true', { timeout: 20000 });
@@ -627,7 +655,8 @@ async function checkScene(browser, file) {
         // template as overflowing, which is a measurement artifact, not a
         // finding. Anything comparing an element against the frame has to be
         // measured at the size the frame is actually rendered.
-        // NO resize. This used to jump to SHIP_VIEWPORT on the theory that the
+        // NO resize. This used to jump to a 1920x1080 shipping viewport (a
+        // SHIP_VIEWPORT constant, since removed) on the theory that the
         // caption is fixed CSS px, so a ratio measured at 640 would not hold at
         // 1920. That stopped being true: the template sizes it
         // `calc(var(--fw)*.015625)`, i.e. frame-relative, and the pill/frame
@@ -794,11 +823,26 @@ async function checkScene(browser, file) {
   // repeats per load, and a per-frame warn inside seekTo (the nodeFrame guard,
   // say) emits once per rendered frame while the live-playback loop runs. One
   // diagnostic should read as one line, not as a flood.
+  // Classify three's fallback announcement now that window.BACKEND is known —
+  // it could not be classified when it arrived, because the console handler is
+  // registered long before the scene boots. Expected when the scene reports it
+  // fell back (or is 2D and reports nothing); a contradiction when the scene
+  // claims the hardware path anyway.
+  if (fallbackNotices.length) {
+    if (backend === 'webgpu') {
+      noise.push(`console warning: the renderer announced a WebGL2 fallback while the scene `
+               + `reports BACKEND='webgpu' — one of the two is wrong. `
+               + fallbackNotices[0].slice(0, 90));
+    } else {
+      dropped.push(...fallbackNotices);
+    }
+  }
   if (dropped.length) {
     const uniq = [...new Set(dropped)];
-    warnings.push(`suppressed ${dropped.length} console message(s) as driver noise — `
-                + `READ THEM: the filter matches a prefix, so it cannot tell a cloaked `
-                + `defect from real noise. ` + uniq.slice(0, 4).map(t => t.slice(0, 90)).join(' | ')
+    warnings.push(`suppressed ${dropped.length} console message(s) as driver noise or an `
+                + `expected backend-fallback notice — READ THEM: the driver filter matches a `
+                + `prefix, so it cannot tell a cloaked defect from real noise. `
+                + uniq.slice(0, 4).map(t => t.slice(0, 90)).join(' | ')
                 + (uniq.length > 4 ? ` (+${uniq.length - 4} more)` : ''));
   }
   return { fails: fails.concat([...new Set(noise)]), warnings, backend };

@@ -7,6 +7,27 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.25
+
+### fixed
+
+Two `last updated:` markers dated to the wrong day, and CI caught it — which is
+the point, but the mistake is worth recording because the reasoning was
+backwards. 0.16.24's derived freshness check found `predecessor-record.md` and
+`examples/README.md` carrying stale markers, and they were "fixed" by setting
+each to the date of the *previous* substantive commit. Committing that fix then
+made both stale again, immediately, because touching a file is itself an update.
+
+**The rule is what the convention already says: `last updated:` means last
+touched, not last meaningfully reviewed.** A commit that edits a dated doc dates
+it to that commit. Review semantics live in the provenance headers, which is
+exactly why both mechanisms exist. Anything else makes the check unsatisfiable.
+
+Recorded also because of how it was found: the local run that should have caught
+it before the commit was piped into `tail`, which masked the non-zero exit, so a
+red self-check reported as green. `bun run scripts/selfcheck.js | tail -2` is a
+green-looking lie; check the exit code.
+
 ## 0.16.24
 
 ### changed

@@ -1,6 +1,6 @@
 # mitate examples
 
-last updated: 2026-07-25
+last updated: 2026-07-29
 
 Each example is a complete, self-contained film: open the `.html` straight
 from disk and it plays. **WebGPU is not required** — the embedded

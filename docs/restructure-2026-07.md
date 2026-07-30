@@ -580,6 +580,37 @@ reinstalled, because the marketplace clones from the remote and `main` is still
 
 ---
 
+## Declined: a simplify pass over `scripts/selfcheck.js` (2026-07-30)
+
+Proposed after the code review, then dropped when every justification for it was
+measured and none survived. Recorded so it is not re-proposed as a fresh idea.
+
+- **"It is too long"** — 636 lines, +274 this session. It reads whole against a
+  2000-line window, so the truncation argument that would make length a
+  *correctness* problem does not apply.
+- **"The shape is wrong"** — it is eleven self-contained numbered blocks, which is
+  the same shape argued *correct* for `build.js`'s eighteen verbs earlier in this
+  same migration. Reversing that for one file would be taste, not reasoning.
+- **"Checks 5 and 6d duplicate comment scanning"** — measured, and they do not.
+  Check 5 is a per-LINE regex against a counter and a budget over `templateJs`.
+  Check 6d is per-COMMENT extraction with two token regexes resolved against a
+  file set, over `toolJs` plus length-filtered scene HTML. The only overlap is
+  that both read comment text.
+
+**And the argument that would have decided it anyway:** controls that share
+machinery share a failure mode. That reasoning declined the shared bracket
+harness in R1's gate, and it applies identically — a bug in a common
+comment-scanner would weaken both checks at once, silently.
+
+**The real reason it was on the agenda was that "review, then simplify" is a
+habit.** No cost was ever identified. The growth is mostly comment blocks
+recording specs that were wrong on the first attempt, which read as fat and are
+the one thing that stops the next person re-making them.
+
+**Trigger to revisit:** a third check that genuinely needs comment extraction, or
+a measured cost — something taking too long, or a defect traced to the file's
+size rather than to its logic.
+
 ## Open review findings, not yet fixed (2026-07-30)
 
 From the three-agent review of this branch. Everything else it found is fixed and

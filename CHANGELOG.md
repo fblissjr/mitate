@@ -91,10 +91,8 @@ malformed source, with a bracket arm proving the refusal, because a malformed
 fence makes a file *leave the parity set*, which is how this check has already
 gone quiet twice while printing `ok`.
 
-**The defect corpus — and `circus.html` is not it.** It stays gitignored and
-untracked (owner, 2026-07-30), a standing decision that applies to the site too.
-
-**New content is generated for it; the mechanics stay the same.** What the
+**The defect corpus.** New content is generated for it; the mechanics stay the
+same. What the
 fixture is for is entirely mechanical and none of it lives in the subject matter:
 ~60 seconds and 31 beats, multi-shot solver traffic, shadowed fur shells, the
 character rig. That combination is why it is the only candidate reproducer for

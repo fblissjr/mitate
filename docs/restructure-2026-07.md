@@ -787,9 +787,8 @@ MISSED before the fix and CAUGHT after.
    **The length claim is reframed rather than merely corrected.** Owner: the
    examples are short *because a project site should not ship a giant cache of
    code* — every scene embeds its own three.js — **not** because anything caps
-   duration. The site says that, and says longer films have been built.
-   **It does not name or link the 60-second one**: `internal/circus_prototype/`
-   stays off the public surface. Do not promote or link it there.
+   duration. The site says that, and says longer films have been built. It does
+   not name or link one.
 
 4. **`delivery.md` splits — DONE 2026-07-30 (0.16.38).** It was titled
    *"Delivering inline on GitHub"* and concluded at line 197 that the repo
@@ -1018,9 +1017,6 @@ property, not the proxy.
    Keep a small corpus of scenes with **characterized defects at known
    timestamps**. A new instrument then has a positive control the day it is
    written, and a *regression* control the day someone changes it.
-
-   **`circus.html` stays gitignored and untracked** (owner, 2026-07-30) — a
-   standing decision, not a deferral, and it applies to the site too.
 
    **Generate new content, keep the same mechanics.** What the fixture is for is
    entirely mechanical and none of it lives in the subject matter: ~60 seconds

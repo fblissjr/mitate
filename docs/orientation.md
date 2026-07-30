@@ -39,9 +39,17 @@ play back pure) or not had.
 
 ## Commands that tell you the truth
 
+    git status --short                              # FIRST — see below
     bun run scripts/selfcheck.js                    # claims vs code, instant
     bun run .../templates/smoke.js --parity-only …  # fence parity, no browser
-    bun run .../templates/bracket-*.js              # the controls on the checks
+    bun run scripts/bracket-*.js                    # controls on the repo tools
+    bun run .../templates/bracket-*.js              # controls on the scene checks
+
+**Check `git status` before you trust a red.** This tree is often worked by more
+than one session at once, so a failing check may be someone's in-flight edit
+rather than a defect in `main`. `git show HEAD:<file>` tells you what the
+committed version does. A cold-start run nearly reported the repo broken over a
+check that was green again five minutes later.
 
 ## Where to go next
 

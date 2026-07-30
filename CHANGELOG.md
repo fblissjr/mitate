@@ -71,6 +71,33 @@ code and produced a false accusation, which is the argument for brackets: the ar
 was written first, went MISSED, and the false positive surfaced the moment the
 check ran against the real tree rather than against an idea of it.
 
+**R3's gate is MET — the cold-start run closed it, and found three defects doing
+so.** A fresh agent with no context, asked only what to work on next: **1 hop,
+~940 lines across 11 files, answer inside the first 24 lines of the live queue**,
+no superseded document read unwarned. It also arrived independently at the
+R4.2-before-R4.1 ordering. R2's equivalent run found *nine* orientation defects,
+most self-inflicted; this one found three, and all three are in the
+**verification** layer rather than the navigation layer the gate was testing:
+
+- **Three stale doc-to-doc line anchors**, all pointing into `working-plan.md`
+  and all shifted ~140 lines by 0.16.39's own prune — which updated the pruned
+  file and nothing that cited it. Now cited **by heading**. This class is
+  uncontrolled: check 6d resolves cited *paths* in code comments, not line
+  anchors between documents.
+- **Two hand-written counts, stale, inside the document that states the
+  never-hand-write rule.** `build.js` was called "827 lines and 18 verbs"; it is
+  **971 lines and 13 verbs**. The drift made the argument stronger, which is
+  exactly why nobody noticed. Replaced with a pointer to `wc -l`.
+- **`docs/orientation.md` was unreachable from either router** — a file written
+  for precisely the reader that test simulates, missing from `CLAUDE.md`'s map
+  and from `docs/README.md`. The same failure the map exists to fix,
+  reintroduced for a newer file. Both now point at it.
+
+`orientation.md` also gains the one thing that cost that run real time and was
+not a repo defect: **check `git status` before trusting a red**, because this
+tree is often worked by more than one session and a failing check may be
+in-flight work rather than a defect.
+
 ### changed
 
 **The site now carries the language it exists to carry.** All four gaps recorded

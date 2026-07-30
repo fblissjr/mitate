@@ -15,8 +15,10 @@ in practice, and this repo's front door and its shipped skill once sat outside
 their own graph.
 
 **For everything inside `docs/`, read [`docs/README.md`](docs/README.md)** — it
-routes question → file, including what to work on next. It is not restated here;
-a second copy of a router is the exact failure this file keeps catching.
+routes question → file, including what to work on next and
+[`docs/orientation.md`](docs/orientation.md), the ~50-line briefing to hand a
+subagent (which never auto-loads this file). Neither is restated here; a second
+copy of a router is the exact failure this file keeps catching.
 
 - **What it is, for a user** — `README.md` (repo root), `plugin/README.md`
 - **Why, and in what order** — `VISION.md` (determinism first, and what for)

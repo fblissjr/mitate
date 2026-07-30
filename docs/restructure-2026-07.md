@@ -5,16 +5,17 @@ last updated: 2026-07-30
 > ## Current position
 >
 > **R0 MET** (0.16.30) · **R1 MET** (0.16.31) · **R2 MET** (0.16.34) ·
-> **R3 — all five items done, gate 4 of 5.** Items 1-3 landed earlier;
-> 4 (`delivery.md` split) in 0.16.38, 5 (`working-plan.md` prune) in 0.16.39.
-> The `CLAUDE.md` byte clause was **retired by owner call** in favour of "no rule
-> lost, no line unearned". **One item outstanding: the cold-start run**, which
-> needs a fresh agent and could not reuse an earlier result, because this pass
-> changed which documents are superseded.
+> **R3 MET (0.16.40)** — all five items done, and the cold-start run closed the
+> last gate clause. A fresh zero-context agent reached R4 in **one hop and ~24
+> lines**, read no superseded document unwarned, and independently proposed the
+> same reordering recorded below. The `CLAUDE.md` byte clause was retired by
+> owner call in favour of "no rule lost, no line unearned".
 >
 > **Next: R4 — the harness.** Its cheapest item is also its most alarming gap:
-> `build.js` is 827 lines and 18 verbs with **zero** brackets, `shoot.js` 327
-> lines with zero. R2 items 1-7 landed across 0.16.32-0.16.34, 8 retracted, 9
+> `build.js` and `shoot.js` have **zero** brackets between them. **Do R4.2 + R4.3
+> before R4.1** — the harness tier needs nothing from the `checkScene`
+> extraction, and R4.1's gate (byte-unchanged `smoke.js` behaviour) is the
+> expensive one. R2 items 1-7 landed across 0.16.32-0.16.34, 8 retracted, 9
 > trigger-gated on a fifth bracket of one family.
 >
 > **While this document is open it is the live queue**, and
@@ -839,7 +840,7 @@ contradicts; **`CLAUDE.md` and `SKILL.md` both smaller than at the start of this
 migration**; and a cold-start run reaches the right next item without reading a
 superseded document.
 
-### Gate R3 status, measured 2026-07-30 — three of four, and the fourth is a conflict
+### Gate R3: MET 2026-07-30
 
 | clause | state |
 |---|---|
@@ -847,7 +848,44 @@ superseded document.
 | no doc states a goal another contradicts | **MET** for the one known case: `plan.md`'s "mitate ships films" now carries `VISION.md`'s supersession inline, and `working-plan.md` no longer restates the resolved fence question |
 | `SKILL.md` smaller than at migration start | **MET** — 278L/15645B → 267L/13782B |
 | `CLAUDE.md` smaller than at migration start | **RETIRED by owner call** — replaced by "no rule lost, no line unearned", which a term diff verifies. 248L → 209L this pass |
-| cold-start run reaches the right next item | **NOT RUN** — needs a fresh agent, and this pass changed which documents are superseded, so an earlier result would not transfer. **The one item between R3 and closed.** |
+| cold-start run reaches the right next item | **MET** — see below |
+
+**The cold-start run, 2026-07-30.** A fresh agent with no context, asked only
+what to work on next and to log every file it opened: **1 hop, ~940 lines read
+across 11 files, and the answer (R4) inside the first 24 lines of this document.**
+Its words: *"the repo made this easy… the one document that would have wasted my
+time warned me off itself three separate ways before I opened it."* It also
+arrived independently at the R4.2-before-R4.1 ordering now recorded in the
+position block. Compare R2's run, which found **nine** orientation defects, most
+created while fixing orientation.
+
+**It found three real defects, and all three are in the verification layer rather
+than the navigation layer** — which is the useful result, because navigation is
+what the gate was testing:
+
+1. **Three stale doc-to-doc line anchors, all in this file**, pointing into
+   `working-plan.md` — every one shifted ~140 lines by 0.16.39's prune, which
+   updated the pruned file and nothing that cited it. Now cited **by heading**,
+   because a line anchor across two documents rots the moment either moves.
+   **This class is uncontrolled**: `selfcheck.js` check 6d resolves cited *paths*
+   in code comments, not line anchors between docs. Historical anchors in the
+   R0/R2 findings sections are left alone — they describe a state at a time.
+2. **Two hand-written counts, stale, inside the document that states the
+   never-hand-write rule.** `build.js` was called "827 lines and 18 verbs";
+   it is **971 lines and 13 verbs**. `bracket-determinism.js` "115 lines"; it is
+   129. The drift made the argument *stronger*, which is why nobody noticed.
+   Both replaced with a pointer to `wc -l`.
+3. **`docs/orientation.md` was unreachable from either router.** A file written
+   for exactly the reader this test simulates, absent from `CLAUDE.md`'s map and
+   from `docs/README.md`. The same failure the map was created to fix,
+   reintroduced for a newer file. Both now point at it.
+
+One friction item is worth keeping and is not a repo defect: the agent hit a
+**transient red `selfcheck.js` from concurrent in-flight work** and nearly
+reported the tree as broken. `git status` plus `git show HEAD:` disambiguated it.
+Nothing in the tracked docs warns a fresh session to check whether the tree is
+mid-edit before trusting an exit code — `orientation.md` is the right home for
+that line.
 
 **RESOLVED by the owner, 2026-07-30: the line count is not the criterion.**
 *"Ignore CLAUDE.md being smaller than start — that's fine. What matters is that
@@ -885,13 +923,17 @@ property, not the proxy.
    array. **In place, not into files**: no new install-cache files, no new
    `require` edges, no new parity surface. The payoff is not tidiness — it is
    that a bracket can then drive one check directly instead of rebuilding the
-   page setup, which is why `bracket-determinism.js` is 115 lines to test one
+   page setup, which is why `bracket-determinism.js` needs its whole length to test one
    thing.
 
-2. **A harness tier below the chart tier** (`working-plan.md:1342-1355`). Run
+2. **A harness tier below the chart tier** (`working-plan.md`, **"Add a harness tier below the chart tier"** — cited by
+   heading, not line: the 0.16.39 prune shifted every anchor in this file by ~140
+   lines and nothing caught it). Run
    every `build.js` subcommand against one tiny scene; assert exit 0 and that
-   the named artifact exists. `build.js` is 827 lines and 18 verbs with **zero**
-   brackets; `shoot.js` is 327 lines with zero. Cheapest test in the repo and it
+   the named artifact exists. `build.js` and `shoot.js` carry **zero** brackets between them — derive the
+   sizes with `wc -l` rather than reading a number here, because the two written
+   into this file went stale (827/18 against an actual 971/13) inside the
+   document that states the never-hand-write rule. Cheapest test in the repo and it
    closes the command-never-run shape permanently. State what it is not: it
    checks the path executes, not that output is correct.
 
@@ -908,7 +950,7 @@ byte-unchanged across the extraction (same verdicts on the same corpus).
 
 1. **The Track D batch, including the state seam.** `setCamera(t)` →
    `setCamera(state)` where `state` today contains only `{t}`
-   (`working-plan.md:1328-1340`). Bundled with `STYLE.palette`,
+   (`working-plan.md`, **"Discipline has not held"**). Bundled with `STYLE.palette`,
    `CONFIG.name`/`titleCard`, `hide(obj,u)` owning the `1e-4` clamp, and
    `subjectFromObject` — all touching the same 8-9 carriers, so one cascade
    instead of five. Makes Phase 6's "zero modification" gate reachable by
@@ -957,7 +999,7 @@ byte-unchanged across the extraction (same verdicts on the same corpus).
 
 **Gate R5:** cross-directory fence parity green after the batch; every untouched
 beat byte-identical or above the 70 dB bar on the three canonical edits
-(`working-plan.md:1415-1436`'s regression-by-edit case, itself still untested).
+(`working-plan.md`'s **Regression-by-edit** case, itself still untested).
 
 ---
 

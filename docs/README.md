@@ -13,6 +13,7 @@ reference that needs to reach an installed user goes in
 
 | If you are asking | Read | When |
 |---|---|---|
+| **I have no context at all — what must I not break** | **[`orientation.md`](orientation.md)** | first, if you are a fresh session or a delegated subagent. ~50 lines: the two rules, three ways to break something silently, and the commands that tell you the truth. A subagent does not auto-load `CLAUDE.md`, so this is the briefing block to paste |
 | what is this project for, and why determinism first | [`../VISION.md`](../VISION.md) | first, once |
 | what is `t`, and why is it addressed by beat | [`addressing.md`](addressing.md) | before changing anything about time, seeking, or the bake |
 | what is the architecture, and what gates each phase | [`plan.md`](plan.md) | before starting anything phase-shaped |

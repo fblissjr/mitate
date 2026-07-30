@@ -5,10 +5,14 @@ last updated: 2026-07-30
 > ## Current position
 >
 > **R0 MET** (0.16.30) · **R1 MET** (0.16.31) · **R2 MET** (0.16.34) ·
-> **R3 IN PROGRESS** — items 1 (`SKILL.md` trim), 2 (`README.md`) and 3
-> (`VISION.md`) are done; **4 (`delivery.md` split) and 5 (`working-plan.md`
-> pruning) remain.** R2 items 1-7 landed across 0.16.32-0.16.34, 8 retracted, 9
-> trigger-gated on a fifth bracket of one family.
+> **R3 — all five items done** (0.16.34 through 0.16.39); **the gate has not been
+> re-run.** Items 1-3 landed earlier; 4 (`delivery.md` split) in 0.16.38 and 5
+> (`working-plan.md` prune) in 0.16.39. R2 items 1-7 landed across
+> 0.16.32-0.16.34, 8 retracted, 9 trigger-gated on a fifth bracket of one family.
+>
+> **Next: run R3's gate**, which is not a formality here — it requires a
+> cold-start run reaching the right next item without reading a superseded
+> document, and this pass just changed which documents those are. Then R4.
 >
 > **While this document is open it is the live queue**, and
 > [`working-plan.md`](working-plan.md) is the standing backlog it executes
@@ -756,11 +760,27 @@ MISSED before the fix and CAUGHT after.
    were left as written where they describe what happened; two in `plan.md` that
    made present-tense claims about where doctrine lives were repointed.
 
-5. **`working-plan.md` pruning pass.** It carries superseded paragraphs kept
-   verbatim (correct practice) that now read as three live positions to a
-   scanner, plus edit residue at `:436-443` where a resolved question is
-   restated in its superseded conditional form. Strike, don't just annotate,
-   where the newer verdict is settled.
+5. **`working-plan.md` pruning pass — DONE 2026-07-30 (0.16.39).** It carried
+   superseded paragraphs kept verbatim (correct practice) that read as live
+   positions to a scanner, plus edit residue where a resolved question was
+   restated in its superseded conditional form. Both struck, keeping the
+   reasoning and dropping the conclusion.
+
+   **The larger finding was the sequencing table.** Twelve items, no record of
+   which had shipped, and a prose warning at the top asserting "items 1 and 2
+   have shipped" — item 2 never did. It now carries a status column verified
+   against the tree, with rows not re-checked marked as unknown rather than
+   pending. *The annotation was the bug, not the table*: a warning that states a
+   status goes stale silently, a column that records one can be shown wrong.
+   The ancestry row calling `probe` "dropped in migration" was corrected too —
+   it shipped, and that is the third independent arrival of the shape, which is
+   the count that table exists to keep.
+
+   **This exposed a DONE that was not.** R3 item 3 above is marked done, but its
+   clause requiring `source-of-truth.md` to name `site/` as a pointing surface
+   for the vision had never landed. Found by grepping for the row instead of
+   trusting the marker — which is the same lesson as the status column, one
+   document up.
 
 **Gate R3:** `selfcheck.js` green including provenance headers and "Not here"
 edges on both split references; no doc states a goal that another doc

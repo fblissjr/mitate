@@ -4,11 +4,15 @@ last updated: 2026-07-30
 
 > **Read [`restructure-2026-07.md`](restructure-2026-07.md) first while it
 > exists.** That migration is the live queue and parts of this file are
-> superseded by it — including the sequencing table below, whose items 1 and 2
-> have shipped, and the ancestry row that still calls `probe` "dropped in
-> migration". Where the two disagree, the restructure plan is newer and wins.
-> A fresh session following this file's sequencing table read 460 superseded
-> lines before finding that out.
+> superseded by it. Where the two disagree, the restructure plan is newer and
+> wins. A fresh session following this file's sequencing table read 460
+> superseded lines before finding that out.
+>
+> **The sequencing table now carries a verified status column** (checked
+> 2026-07-30 against the tree, not against this document's memory of itself).
+> An earlier version of this warning said "items 1 and 2 have shipped" — item 1
+> shipped and **item 2 never did**, which is the failure this file keeps
+> producing: an annotation asserting a state instead of a column recording one.
 
 [`plan.md`](plan.md) is the founding architecture and its phase gates. This is
 the consolidated *tactical* plan that came out of the 2026-07-25 sessions — the
@@ -242,7 +246,7 @@ information.
 
 | item | ancestor (hardening plan, 2026-07-22) | status |
 |---|---|---|
-| A1 `probe` | `build.js kinematics`, the state-space probe — **bracketed**: boundary/interior 1.0001 vs 0.0531, spread 1.003x vs 72.7x, on scenes `motion` called indistinguishable | **declined on earn-in, then dropped in migration** — see A1 |
+| A1 `probe` | `build.js kinematics`, the state-space probe — **bracketed**: boundary/interior 1.0001 vs 0.0531, spread 1.003x vs 72.7x, on scenes `motion` called indistinguishable | declined on earn-in, dropped in migration, then **REBUILT AND SHIPPED** as `build.js probe` (0.16.37 amended the prime directive to admit it). The third independent arrival of the same shape — see A1 |
 | A3 self-reporting | *"Every check states its plan and prints the samples it used. A green result becomes auditable instead of authoritative"* | **partial** — see A3 |
 | D `subjectFromObject` | *"Structural: declarations are never checked against the thing they describe"* | **specified, never built, and a comment claims it shipped** |
 | B5 `txt()` / `strip=text` | *"Structural: make the text helper good enough that turning text off is possible"* | **half-built** — 2D got both parts, 3D got the instrument only |
@@ -522,23 +526,30 @@ measuring instruments.
 
 ## Sequencing at a glance
 
-| # | item | track | fenced | blocked by |
-|---|---|---|---|---|
-| **0** | **ship `film-reviewer` with the plugin** | **A** | no | — |
-| 1 | `build.js probe` | A | no | — |
-| 2 | `build.js transitions` | A | no | — |
-| 3 | self-reported elapsed + backend hint + resolved binary | A | no | — |
-| 4 | `SKILL.md` step 3 rewrite **+ route to the reviewer + the limit-wins tiebreaker** | B | no | **0, 2** |
-| 5 | demote backend policy in `SKILL.md` | B | no | 3 |
-| 6 | provenance repairs (PNG home, 700px pointers, site row) | B | no | — |
-| 6b | **fix the false extent-check claim** in `solveShot`'s comment | B | no | — |
-| 6c | sweep code comments that assert a check exists (second instance of the class) | B | no | — |
-| 7 | the batched kit release | D | **yes** | — |
-| 8 | viewer overlay + capture | C | no | 7 |
-| 9 | camera bake + the fork | C | no | 8 |
+**Status column verified 2026-07-30 against the tree**, by checking the artifact
+each row claims rather than by reading this document. Rows marked `—` were not
+re-checked this pass and should be treated as unknown, not as pending.
 
-Items 1-3 and 6 are independent and can run in parallel today. **Item 7 is the
-only fenced work on this plan and it is batched deliberately** — see Track D.
+| # | item | track | fenced | blocked by | status (2026-07-30) |
+|---|---|---|---|---|---|
+| **0** | **ship `film-reviewer` with the plugin** | **A** | no | — | **DONE** — `plugin/agents/film-reviewer.md` ships |
+| 1 | `build.js probe` | A | no | — | **DONE** — in `build.js`'s `USAGE`, 0.16.37 amended the prime directive to admit it |
+| 2 | `build.js transitions` | A | no | — | **NOT DONE** — absent from `build.js`'s verb list |
+| 3 | self-reported elapsed + backend hint + resolved binary | A | no | — | **NOT DONE** — no elapsed or backend-hint reporting in `build.js` |
+| 4 | `SKILL.md` step 3 rewrite **+ route to the reviewer + the limit-wins tiebreaker** | B | no | **0, 2** | **PARTIAL** — SKILL.md was rewritten whole in 0.16.34 and routes to `film-reviewer`; the limit-wins tiebreaker is absent, and item 2 never landed |
+| 5 | demote backend policy in `SKILL.md` | B | no | 3 | **DONE** — carried by the 0.16.34 rewrite, which put backend policy after the workflow |
+| 6 | provenance repairs (PNG home, 700px pointers, site row) | B | no | — | **PARTIAL** — the 700px pointers resolve; the `source-of-truth.md` site row landed 2026-07-30 |
+| 6b | **fix the false extent-check claim** in `solveShot`'s comment | B | no | — | **DONE** — both 3D templates now say the guard is a lie about extent and to measure instead |
+| 6c | sweep code comments that assert a check exists (second instance of the class) | B | no | — | **SUPERSEDED** — `selfcheck.js` check 6d makes the class mechanically detectable instead of swept by hand |
+| 7 | the batched kit release | D | **yes** | — | — |
+| 8 | viewer overlay + capture | C | no | 7 | — |
+| 9 | camera bake + the fork | C | no | 8 | — |
+
+**What is actually left of Track A, after the status column:** items 2 and 3.
+They are independent of each other and of everything else, so they can run in
+parallel today; item 1 shipped and item 6b is closed. **Item 7 is the only fenced
+work on this plan and it is batched deliberately** — see Track D. Item 4's
+remaining half (the limit-wins tiebreaker) still waits on item 2.
 
 Two notes on the dependencies, because both were initially overstated:
 
@@ -556,14 +567,16 @@ Two notes on the dependencies, because both were initially overstated:
   in Track D: that escape is an 8-file change, not one line. Still right, but
   choose it knowingly.*
 
-**Owner's-call 0 is now resolved in Track C's favour**, so the argument below is
-live rather than conditional: the camera bake's role as the cheapest Phase 4
-spike is a standing reason to move items 8-9 ahead of 4-6. *(Previously written
-as provisional.)* If Track C is admitted through
-an amendment to `plan.md`'s Phase 6 fence, the camera bake's role as the cheapest
-Phase 4 spike (C0) is a live argument for moving 8-9 ahead of 4-6 — de-risking
-the owner's stated priority outranks a routing edit. The order above assumes the
-fence holds.
+**Owner's-call 0 is resolved in Track C's favour** (2026-07-25), so this is a
+standing argument rather than a conditional one: the camera bake is the cheapest
+Phase 4 spike, and de-risking the owner's stated priority outranks a routing
+edit, which is a live reason to move items 8-9 ahead of 4-6.
+
+*Struck 2026-07-30: this paragraph previously announced the resolution and then
+restated the same claim in its superseded `if Track C is admitted…` form, ending
+"the order above assumes the fence holds" — a fence that had already been
+amended. Annotating a superseded sentence leaves two readings; striking it leaves
+one.*
 
 ---
 
@@ -1606,20 +1619,29 @@ scope-fence amendment; `plan.md`'s Phase 6 entry and its Risks bullet now set
 the fence at *who owns the state stream*, and "input handling" was removed from
 the non-goals list. Viewer chrome that bounds a viewing parameter while the
 timeline driver still owns `t` is a delivery feature; an input driver that
-*replaces* the state stream stays behind the Phase 6 gate. **The paragraph below
-is the superseded question, kept because the reasoning is what earned the
-amendment — but do not act on its conclusion.** ~~This is the
-largest call here and the two documents currently disagree.~~ `plan.md`'s risk
-section names the scope fence in as many words: *"mitate ships films;
-interactivity is one spike behind a gate, and engine-shaped features (input
-handling, game state, audio mixing) are non-goals until Phase 6 reopens the
-question."* The viewer is input handling. This document treats it as delivery
-chrome, distinct from an input driver — a defensible distinction that was
-asserted rather than reconciled, and someone reading `plan.md` today would
-correctly block Track C as the exact scope creep it fences against. Either
-`plan.md` gets an amendment, or Track C waits. Note that C0.5 argues the viewer
-*is* Phase 6 arriving early, which makes "amend" the more honest option than
-"it's a different thing."
+*replaces* the state stream stays behind the Phase 6 gate.
+
+**Why it was a real question** — kept as one paragraph of reasoning, not as a
+live position. `plan.md` used to fence the scope in as many words: *"mitate ships
+films; interactivity is one spike behind a gate, and engine-shaped features
+(input handling, game state, audio mixing) are non-goals until Phase 6 reopens
+the question."* The viewer is input handling, and treating it as delivery chrome
+was a defensible distinction that had been asserted rather than reconciled — so a
+reader of `plan.md` would correctly have blocked Track C as the exact scope creep
+it fenced against. C0.5's argument that the viewer *is* Phase 6 arriving early is
+what made "amend the fence" more honest than "it's a different thing", and that
+is the route taken.
+
+**`VISION.md` has since superseded the framing that fence rested on.** "mitate
+ships films" described the product; films are the *proving instrument* for an
+engine, and `plan.md`'s Risks section is no longer the authority on the
+destination. The fence's live half — that a driver replacing the state stream
+waits for Phase 6 — survives the change.
+
+*Struck 2026-07-30: the paragraph above was previously carried verbatim with a
+single sentence crossed out, so it still read as an open dispute ending "either
+`plan.md` gets an amendment, or Track C waits" — an amendment that had already
+landed. The reasoning is worth keeping; the conclusion is not.*
 
 1. **Is the presenter explainer a register mitate commits to?** It arrived as a
    commission. If yes, `travel()` and `shapes.md` become roadmap; if no, the film

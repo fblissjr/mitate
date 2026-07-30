@@ -7,6 +7,59 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.39
+
+### changed
+
+**`working-plan.md`'s sequencing table carries a verified status column.** It
+listed twelve items with no record of which had shipped, so a session arriving
+at it had to re-derive the state of every row or trust the prose warning at the
+top — which asserted "items 1 and 2 have shipped" when **item 2 never did**.
+Checked against the tree rather than against the document's memory of itself:
+items 0, 1, 5 and 6b are done; 2 and 3 are not; 4 and 6 are partial; 6c is
+superseded by `selfcheck.js` check 6d, which makes its whole class mechanically
+detectable rather than something you sweep for by hand. Rows not re-checked this
+pass say so, because "unknown" and "pending" are different states and collapsing
+them is how the table became untrustworthy.
+
+The annotation was the bug, not the table. A warning that *states* a status goes
+stale silently; a column that *records* one can be re-derived and shown wrong.
+
+**Two superseded positions struck rather than annotated.** Both had been kept
+verbatim with a single sentence crossed out — correct practice for preserving
+reasoning, but it left each reading as a live dispute:
+
+- Owner's-call 0 announced that Track C was admitted (2026-07-25) and then
+  restated the same question in its `if Track C is admitted…` form, closing with
+  "either `plan.md` gets an amendment, or Track C waits" — an amendment that had
+  already landed. The reasoning is kept as reasoning; the conclusion is gone. It
+  also now records that `VISION.md` superseded the framing the fence rested on:
+  "mitate ships films" described the product, and films are the proving
+  instrument. The fence's live half — a driver that *replaces* the state stream
+  waits for Phase 6 — survives that.
+- The note under the sequencing table announced the same resolution and then
+  repeated the superseded conditional immediately after it, ending "the order
+  above assumes the fence holds."
+
+**The ancestry table said `probe` was "dropped in migration".** It shipped as
+`build.js probe`, and 0.16.37 amended the prime directive to admit it — this
+being the *third* independent arrival of that shape, which is the count the
+ancestry table exists to keep. A pattern ledger that misses a rebuild is
+measuring the wrong thing.
+
+**`source-of-truth.md` gained the `VISION.md` row that R3 assumed it had.** The
+restructure plan marked that item done while the clause naming `site/` as a
+pointing surface — a restatement of the vision for a public reader, never a
+second source — had never landed. Found by grepping for it instead of trusting
+the DONE.
+
+### fixed
+
+`plugin/README.md` carried a stale `last updated:` marker after 0.16.38 edited
+it. The freshness check fires one commit late by construction, which is the
+correct place for it: a marker bumped before the commit that justifies it would
+be the same lie pointed the other way.
+
 ## 0.16.38
 
 ### changed

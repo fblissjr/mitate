@@ -1,6 +1,6 @@
 # mitate
 
-last updated: 2026-07-25
+last updated: 2026-07-30
 
 Turn any input — a document, a codebase, a mechanism, a joke — into a
 deterministic animated scene of any register: an explainer, a game cutscene, a

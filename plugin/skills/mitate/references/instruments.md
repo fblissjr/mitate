@@ -8,14 +8,29 @@ fails — it is a check that **passes and should not have**.
 you are deciding whether a green result means anything.
 
 > **Provenance.** Canonical for what each check can and cannot see, and for its
-> measured brackets. **Verification date: UNKNOWN — never audited end to end.**
-> Someone should verify everything in here against the code and stamp a real
-> date. Writing one without doing that asserts a review that did not happen. Most
+> measured brackets. **Still not audited end to end** — the honest state, and the
+> earlier "Verification date: UNKNOWN" said so rather than pretending. What is
+> now dated is narrower and real: on **2026-07-29** the three shipped brackets
+> were each run and each made capable of failing (0.16.16-0.16.17), and the
+> console-noise check was found broken on the default path and fixed. Most other
 > brackets here were measured on the predecessor skill and
 > carry over, because they describe what a *check* can perceive, not what a
 > renderer draws. Anything the node stack invalidated has been re-measured or is
 > labelled. Where a number is inherited and not re-verified on this stack, it
 > says so.
+>
+> **Three kinds of claim live in this repo and only one of them rots.** An
+> *incident record* ("this reached `git add` once") is history and stays true. An
+> *intent* comment ("this tick is why the frame is deterministic") is checkable by
+> reading. A *measurement assertion* ("measured — does not close the cloak",
+> "40/40 clean", "~2.3x") is a claim about a run that happened elsewhere, and it
+> decays silently the moment the code moves. Measured 2026-07-29: **41
+> measurement-assertions in `templates/*.js` comments; 2 name a runnable
+> harness.** Two known casualties so far — 0.16.9's console anchor, whose comment
+> asserted a measurement never taken, and rule 5's `sortObjects` repro, cited as
+> preserved and absent from the tree. That ratio is the size of the class. It is
+> not a to-do list; it is the reason to distrust an unsourced number here,
+> including the ones below.
 
 ## The rule these all serve
 

@@ -1202,7 +1202,8 @@ rather than a matter of mood.
 | solver-aware staging | the proposed vocabulary fails on its own originating use case: props at fixed world positions a character walks to, which was every exhibit in the film that motivated it | a design that handles walked-to props |
 | `travel()` / `LEGS` / `shapes.md` | register-specific to the presenter explainer, which arrived as a commission rather than from the roadmap | a second presenter film asking |
 | type primitive (glyph data + renderers) | generalizes past the register — any film with a sign, an axis, a label — but it is a bigger build than it looks, and no shipped example needs it. **And it is governed by an existing rule neither review applied: a glyph alphabet is a *primitive*, so under the chart tier it lands as a chart — a grid of all 36 glyphs, byte-compared per backend — before any film uses it.** That is also the right shape on the evidence: all three glyph bugs were one letter built on a wrong assumption, which a grid makes obvious at a glance and a title card cannot | a second film needing built text, or the diagrammatic register (see B5) — entering at the chart tier, not in a film |
-| splitting `method.md` (960 lines, 45% of reference text) | it would create exactly the doc-versus-doc boundary B4 exists to patch, and `method.md`/`instruments.md` already contradict in that shape. Its own justification is honest but weak: "I read all of it, so splitting wouldn't have helped me read" | B4's tiebreaker landing first |
+| splitting `method.md` (969 lines, 50.9 KB, 42% of reference text) | it would create exactly the doc-versus-doc boundary B4 exists to patch, and `method.md`/`instruments.md` already contradict in that shape. Its own justification is honest but weak: "I read all of it, so splitting wouldn't have helped me read". **Two independent outside reviews (2026-07-29) both pushed for the split, which raises the priority but not the argument — both argued cognitive load, which is the same taste claim already recorded here.** One of them gestured at something stronger without pressing it: if a wholesale read exceeds the reading tool's byte cap, an agent gets a TRUNCATED read and cannot tell. That would be a correctness argument, not a style one, and it would revive this on a different basis than B4 | B4's tiebreaker landing first — OR the truncation question resolving yes. That test is one command and has not been run: read `method.md` wholesale with the agent's own file tool and check for a truncation notice |
+| moving films out of the shipped subtree (`docs/examples-placement.md`, option E) | **the doc exists, is undecided, and was referenced from nowhere in `docs/` or `CLAUDE.md` until 0.16.18** — which is spine rule 0 turned on this plan: an unreachable decision does not exist, and an outside reviewer independently re-derived its cost table because of that. Measured: examples are 5.47 MB, ~93% of the shipped subtree, of which ~95% is the same byte-identical three IIFE five times; three cached versions on one machine came to 18 MB. The blocker is now clearer than the doc states it: all **three** brackets hardcode `../examples/gearbox.html`, so E is really "one scene stays as a *fixture*, four films move" — a different and easier decision than example-versus-internal. **Do not** reach for the unvendoring variant a review proposed: it breaks invariant 1, fails `build.js bundle`'s own self-containment assertion, and hangs every bracket | owner deciding fixture-vs-example, which is the only open question left in it |
 | distance-space gait as the template default | the algebra is sound (`{start:0, rootX:s}` reduces identically where travel is monotone) but was argued, not measured | the PSNR comparison `method.md` prescribes |
 | `--workers` in `build.js all` | **not a bug — retracted.** Clean cold run: exit 0, 180/180 frames, 32.5s vs 38.1s. It works and buys ~1.17x, contention-bound | a workload where 15% matters |
 
@@ -1414,6 +1415,23 @@ none should be believed until it is.
 uses — an untriggered debt list sits, and this session's whole lesson is that
 unverified numbers get published anyway.
 
+- **The measurement-assertion sweep** — 41 comments in `templates/*.js` assert a
+  measurement (`measured`, `bracketed`, `confirmed`, `verified`, bare ratios); **2
+  name a runnable harness.** Two are already known-bad: 0.16.9's console anchor
+  asserted a measurement never taken and broke the gate on the default path for
+  seven releases, and rule 5's `sortObjects` repro is cited as preserved and is
+  absent from the tree. Each survivor either gains a pointer to something
+  runnable or gets relabelled as an observation. This is the parent of the two
+  fixes shipped in 0.16.18 and should not be done one instance at a time.
+  *Trigger: fired — it has two confirmed casualties. Ranked against Track A on
+  the owner's call.*
+- **Whether the crushed-exposure threshold has earned its number** — it fires on
+  44.7% (`scene.template.html`), 54.8% (`scene.character.template.html`) and
+  50.6% (`menagerie.html`): both 3D templates and one of five examples, all
+  deliberately dark. A lint that warns on most of a correct corpus is training
+  people to ignore it. It is already labelled `provisional threshold`, which is
+  honest, and that label is exactly the debt. *Trigger: fired — measured
+  2026-07-29 across the full template+example corpus.*
 - **PSNR before flipping the gait default** — same sample timestamps before and
   after, `ffmpeg -lavfi psnr`, per `method.md`'s own migration guidance.
   *Trigger: before the distance-space gait becomes a template default.*

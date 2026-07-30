@@ -7,6 +7,69 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.18
+
+### fixed
+
+`CLAUDE.md` named the wrong tool for the SwiftShader refusal, and inverted the
+intent while doing it. `shoot.js` refuses `WEBGPU=swiftshader`
+(`refuseSwiftshaderShip` in `backend.js`, overridable only by
+`WEBGPU_UNSAFE_SHIP=1`); `smoke.js` deliberately does **not**, because its
+shipped-frame check exists to demonstrate that configuration failing and so the
+gate has to be able to enter it. Anyone acting on the old line would have
+"fixed" smoke by breaking the check. `SKILL.md` had it right all along, which is
+the drift: the always-loaded invariants file was the stale copy.
+
+### changed
+
+**Rule 5 (`sortObjects = false`) relabelled from measurement to observation.**
+It claimed CONFIRMED with 40/40 and 16/16 control counts and said the repro
+scripts were "preserved in the session scratchpad." They are not in the tree —
+not tracked, not under gitignored `internal/`. So nothing there can be re-run,
+and nothing can say whether the defect still holds past r185. The counts now read
+as history, with a trigger to rebuild the repro as a tracked
+`bracket-sortobjects.js` on the next three bump. Keeping the flag off costs
+nothing meanwhile, which is why this is relabelled rather than re-derived now.
+
+`~2.3x` (WebGPU-Metal) and the `-s 6` AVIF knee now carry their conditions at
+the claim site — one machine, one sweep — in the style `delivery.md` already used
+for its decode figures. Neither number was wrong; both read as portable when
+they are directional.
+
+The skill `description` states what invoking costs: films are short (3-4s beats,
+shipped examples 12-21s) and silent, and every input is re-authored as procedural
+geometry because there is no import path for an image, document, video, or asset.
+The description is a routing surface, so a reader who needs audio or an imported
+asset should learn it before invoking rather than after. Scope unchanged —
+"re-staged from scratch" always meant this literally.
+
+`references/instruments.md` gains its first dated provenance, narrowly and
+honestly: still not audited end to end, but on 2026-07-29 all three brackets were
+run and made capable of failing. It also names the three kinds of claim in this
+repo and which one rots — incident records and intent survive; **measurement
+assertions decay silently.** Measured: 41 such assertions in `templates/*.js`
+comments, 2 naming a runnable harness.
+
+### removed
+
+`metadata.review_interval_days` from `SKILL.md`. Nothing reads it, nothing
+enforces 90 days, and the whole frontmatter loads into context on every
+activation — the same reasoning that already keeps `version` and `author` out.
+Scheduling belongs in `source-of-truth.md`'s drift-detection rule, not in every
+activation's budget.
+
+### documented (repo)
+
+`docs/working-plan.md` now routes two things that existed and were unreachable:
+`docs/examples-placement.md` (referenced from nowhere until now — spine rule 0
+turned on the plan, and an outside reviewer independently re-derived its cost
+table as a result), and the measurement-assertion sweep as a triggered debt with
+its measured scale. The `method.md` split row records that two independent
+reviews now push for it, that both argued the same taste claim already on file,
+and that the one argument which would change its basis — a wholesale read
+exceeding the reading tool's byte cap, giving a silent truncation — has not been
+tested.
+
 ## 0.16.17
 
 ### fixed

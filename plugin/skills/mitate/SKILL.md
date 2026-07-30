@@ -13,11 +13,16 @@ description: >
   MaterialX procedural noise, zero assets — plus a Canvas2D flat-vector
   backend, on one shared contract: the film is a pure function of time t, so
   one scene file drives the live HTML loop and the frame-exact render alike.
+  What that costs, so it is known before invoking rather than after: films are
+  SHORT (beats run 3-4s, shipped examples 12-21s) and SILENT (no narration, no
+  audio track; MP4 is merely the one container that could carry one), and every
+  input is RE-AUTHORED as procedural geometry — there is no import path for an
+  image, a document, a video, or any asset, which is what "re-staged from
+  scratch" means literally.
   Do NOT use for editing existing video files, screen recordings, or slide
   decks.
 metadata:
   last_verified: "2026-07-25"
-  review_interval_days: "90"
 ---
 
 # mitate

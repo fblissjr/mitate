@@ -27,7 +27,7 @@ The recorder's policy (`shoot.js` / `smoke.js`, same logic):
 | Env | Effect |
 |---|---|
 | (nothing) | No WebGPU flags. Headless usually has no adapter; WebGL2 fallback. The universal, CI-safe default. |
-| `WEBGPU=metal` | macOS hardware adapter (`--enable-unsafe-webgpu --use-angle=metal`). Verified. ~2.3x faster end to end (37 vs 87 ms/frame with post chain, screenshots included). |
+| `WEBGPU=metal` | macOS hardware adapter (`--enable-unsafe-webgpu --use-angle=metal`). Verified. ~2.3x faster end to end (37 vs 87 ms/frame with post chain, screenshots included) — **one machine, one sweep, macOS. Directional, not a portable figure**; no comparable number exists for any other host, and nothing re-measures this. |
 | `WEBGPU=vulkan` | Linux hardware adapter. UNVERIFIED here; run smoke first. |
 | `WEBGPU=auto` | metal on darwin, vulkan elsewhere. |
 | `WEBGPU=swiftshader` | Software WebGPU. Diagnostic-only: ships flat frames on the playwright headless-shell build, warmth-dependently on others. `shoot.js` refuses it without `WEBGPU_UNSAFE_SHIP=1`; smoke's shipped-frame check exists exactly for it. |
@@ -79,10 +79,20 @@ byte-compare against a frame captured before that first render completes.
 4. **No `ComputeNode` / storage buffers.** Stateful across dispatches, and the
    WebGL2 fallback cannot run them at all.
 5. **`renderer.sortObjects = false` stays off.** Found by the gearbox
-   regression film, then CONFIRMED by a minimal out-of-pipeline
-   reproduction (3 meshes, no shadows, no fog, both backends — repro
-   scripts preserved in the session scratchpad, candidate for an upstream
-   issue): with depth sorting on, REVISITING a state after the sort order
+   regression film, then reproduced once out-of-pipeline (3 meshes, no
+   shadows, no fog, both backends). **The harness is gone.** This entry
+   said the repro scripts were "preserved in the session scratchpad" and
+   they are not in the tree — not tracked, not under gitignored
+   `internal/`. So the mechanism below is a *recorded observation*, not a
+   re-runnable measurement, and nothing here can tell you whether it still
+   holds on three past r185. Read the counts as history.
+   Filing it upstream was never done and cannot be, without rebuilding the
+   repro first. TRIGGER to rebuild it as a tracked `bracket-sortobjects.js`:
+   the next three.js bump, or any change to the boot sequence. Keeping the
+   flag off costs nothing meanwhile, and its one consequence is documented
+   at the end of this entry — which is why this is relabelled rather than
+   re-derived now.
+   The observation: with depth sorting on, REVISITING a state after the sort order
    changed renders objects at the previous render's pose. First visit
    correct; every revisit wrong; 100% deterministic-wrong on revisit (the
    in-pipeline "~12% flaky" was sampling structure, not a race); sticky

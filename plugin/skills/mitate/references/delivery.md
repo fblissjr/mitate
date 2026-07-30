@@ -121,7 +121,9 @@ Under the hood: `avifenc --fps <fps> -q 60 -s 6`. Speed 6 is the measured knee
 — `-s 8` gave **2.3x larger FILES** (an encoder-effort figure, nothing to do with
 the renderer-backend speedup of the same magnitude in `webgpu-stack.md`) for one
 second less encode time, `-s 4` gave no
-further size gain for double the time. Encode cost is 11s for 288 frames,
+further size gain for double the time. **One sweep, one film, one machine, one
+`avifenc` build — the knee's *location* is the claim, not the ratio, and neither
+has been re-measured since.** Content and encoder version both move it. Encode cost is 11s for 288 frames,
 negligible against a 65s shoot.
 
 Visual check: decoded frames inspected by eye — crisp text, smooth gradients,

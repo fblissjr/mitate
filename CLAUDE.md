@@ -80,7 +80,28 @@ for its red lines.
    WebGL2 fallback do not produce byte-identical frames — that is expected, not
    a bug. Determinism is checked by seeking away and back on the *same* backend.
 
-6. **The installed skill is not the skill you are editing.** `mitate` is
+6. **Red before green, on modifications too.** Every gate check ships with a
+   bracket (`templates/bracket-*.js`) carrying at least one arm that MUST fail,
+   and the bracket exits non-zero when an arm misbehaves. A control that cannot
+   go red is decorative; two of the three shipped brackets were exactly that
+   until 0.16.17, printing rows and exiting 0 whatever the rows said.
+
+   **The rule's teeth are on edits, not features.** The 0.16.16 defect — the
+   gate failing every 3D scene on the default path — was introduced by 0.16.9's
+   *test-audit pass*: it changed a console filter and wrote a comment asserting
+   the change was measured, without re-running anything that would have shown the
+   filter now matched nothing. So: touching a check, a threshold, a filter, or a
+   flag means re-running its bracket **before** the change (prove red is
+   reachable) and after (prove green is earned). Writing "measured" in a comment
+   is not the measurement. `.github/workflows/gate.yml` runs all three brackets,
+   which is what keeps them runnable; a new check with no bracket is visibly
+   uncontrolled there.
+
+   Standing debt, measured 2026-07-29: **41 measurement-assertions in
+   `templates/*.js` comments, 2 of which name a runnable harness.** That ratio is
+   the size of the class, not a to-do list — see `references/instruments.md`.
+
+7. **The installed skill is not the skill you are editing.** `mitate` is
    normally enabled as a plugin on a machine where it is also developed, and the
    two are different artifacts: `plugin install` copies a subtree into a
    *version-stamped* cache, so invoking `/mitate` here loads the cached release,
@@ -103,8 +124,17 @@ Default headless path is the WebGL2 fallback (CI-safe, no GPU). Hardware WebGPU
 is opt-in per platform (`WEBGPU=metal` on macOS; measurably faster for
 recording — figure and conditions in `references/webgpu-stack.md`).
 **Flag landmine:** `--enable-unsafe-webgpu` on macOS headless yields a
-SwiftShader adapter that renders pure black, silently, exit 0. `smoke.js` refuses
-`WEBGPU=swiftshader` for exactly this reason.
+SwiftShader adapter that renders pure black, silently, exit 0. **`shoot.js`**
+refuses `WEBGPU=swiftshader` for exactly this reason — `refuseSwiftshaderShip`
+in `backend.js`, overridable only by `WEBGPU_UNSAFE_SHIP=1`. `smoke.js`
+deliberately does NOT refuse it: its shipped-frame check exists to demonstrate
+that configuration failing, so the gate must be able to enter it. This line named
+the wrong tool until 0.16.18, which inverted the intent — anyone acting on it
+would have "fixed" smoke by breaking the check.
+
+Also true of the default fallback path: it is CI-safe, and until 0.16.16 the
+gate was failing every 3D scene on it. Nothing ran it unattended. `.github/`
+now does.
 
 ## Conventions
 

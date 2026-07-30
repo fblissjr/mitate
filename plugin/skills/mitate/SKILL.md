@@ -31,16 +31,43 @@ description: >
 any browser, and renders frame-exact to MP4, AVIF or WebP. No player, no build
 step, no assets — the geometry is drawn live from code on every frame.
 
-**What it cannot do**, so you do not promise it: films are **short** (12-21s
-shipped) and **silent**. Every input is **re-authored as procedural geometry** —
-there is no import path for an image, a video, a logo or any asset. It will not
-edit an existing video, a screen recording or a slide deck. It is stylised by
-construction and cannot be photoreal.
+**What it cannot do**, so you do not promise it: films are **silent**, and every
+input is **re-authored as procedural geometry** — there is no import path for an
+image, a video, a logo or any asset. It will not edit an existing video, a screen
+recording or a slide deck. It is stylised by construction and cannot be photoreal.
+
+**Duration is free, and there is no ceiling.** Five minutes, twenty, five hours —
+a film lasts exactly as long as the beats written for it. A frame at `t=18000`
+costs precisely what a frame at `t=1` costs: `buildWorlds()` runs once at boot and
+`animate(t)` *restates* transforms rather than accumulating them, so nothing grows
+with length. **The HTML file is the same size for a five-hour film as for a
+twelve-second one**, because the duration is a number in `BEATS`. That is the
+opposite of how video behaves, and it is the point.
+
+60s across 31 beats has been built. The shipped examples are 12-21s because they
+are examples — **never quote that as a limit.**
+
+What does scale is narrower than it sounds: *recording* time is linear in frames,
+and authoring and review effort grow with the number of beats, so budget review
+passes per **setup** rather than per film. The artifact, the memory and the
+per-frame cost do not move.
 
 **The one rule everything rests on:** the film is a pure function of `t`. No
-state across frames, no `Math.random()` at runtime, no wall-clock. That is what
-makes one file both the live page and the source of an exact render — and what
-makes a regression byte-detectable.
+state across frames, no `Math.random()` at runtime, no wall-clock.
+
+**`t` is a position, not a clock.** It is an address you evaluate, not a cursor
+you advance — nothing ever asks "what time is it", only "what does the scene look
+like at this address". Any `t`, in any order, as many times as you like, always
+the same pixels. That is what lets the recorder shoot frames out of order, a
+check seek away and back to compare, and a viewer scrub backwards. The same
+distinction position encodings make in a transformer: a token's position is an
+index into a structure, not elapsed time, and treating it as elapsed time is what
+breaks under editing.
+
+The consequence you feel while authoring: **address by beat, never by raw
+seconds.** `ramp(t,'amble',.1,.9)`, not `ramp(t,3.2,4.1)`. Retime the beat and
+every expression anchored to it follows; hardcode a second and it silently
+desynchronises. `references/glossary.md` defines the vocabulary.
 
 The register — explainer, cutscene, meme, character short — changes the geometry,
 the pacing and the caption voice. It never changes the contract or the method.
@@ -140,21 +167,34 @@ at the same `t` **and across a reload**, actually plays without `?record=1`,
 ships a non-empty frame, and that fenced blocks are byte-identical across scenes.
 Run it before any full shoot. `--parity-only` is the no-browser subset.
 
-### 6. Deliver
+### 6. Deliver — the HTML file IS the deliverable
+
+The scene is what you hand over. It opens in any browser, needs no player and no
+build step, runs at any resolution, and is smaller over the wire than a
+mid-quality recording of itself. Nothing further is required.
 
 ```bash
-bun run build.js all    <name>.html        # bundle -> frames -> mp4
-bun run build.js loop   <name>.html 12 720 # .webp — inline in a README
-bun run build.js avif   <name>.html 12 720 # .avif — smaller, decode-heavier
-bun run build.js poster <name>.html 7.2    # .jpg still
+bun run build.js bundle <name>.html        # assert self-contained; that is the artifact
 ```
 
-Four peer formats: the **HTML scene itself** (Pages or an Artifact — github.com
-strips `<script>`), **MP4** (the only one that could carry audio; attach to an
-issue for a player), **WebP** (held camera), **AVIF** (moving camera, small).
-Choose at spec time: WebP costs per pixel changed, so it constrains the camera —
-set `CONFIG.sway = 0` before shooting one. Whatever ships, the scene file stays
-the single source. `references/delivery.md` owns the tradeoffs.
+One caveat about where it can live: github.com strips `<script>`, so the scene is
+inert *there*. GitHub Pages, a static host, or a published Artifact all run it.
+
+### 7. Export, only if the destination cannot run a page
+
+A README, a chat, a slide. Then you are shipping a recording of the film rather
+than the film, and the format is a spec-time decision:
+
+```bash
+bun run build.js poster <name>.html 7.2    # .jpg still — always cheap, always works
+bun run build.js avif   <name>.html 12 720 # small file, decode-heavy at playback
+bun run build.js loop   <name>.html 12 720 # .webp — decodes cheaply, larger file
+bun run build.js all    <name>.html        # .mp4 — the only container that could carry audio
+```
+
+WebP costs per pixel changed, so it constrains the camera — set `CONFIG.sway = 0`
+before shooting one. Whatever ships, the scene file stays the single source.
+`references/delivery.md` owns the tradeoffs.
 
 ## Rules that silently break a film
 
@@ -168,6 +208,12 @@ Not style — each was measured, and each fails quietly rather than loudly.
   overlapping transparent objects **farther-first**.
 - **No temporal post passes, no `ComputeNode`, no storage buffers** — all carry
   state across frames.
+- **Never allocate in `animate(t)`.** Build the scene graph once in
+  `buildWorlds()`; `animate` only *restates* transforms, materials and
+  visibility for the given `t`. Adding a mesh, a geometry or a material per call
+  makes the scene accumulate — which breaks purity, and is the single thing that
+  would put a ceiling on duration. Hide with scale or `visible`, do not create
+  and destroy.
 - **Fenced blocks are byte-identical across every scene that carries them**
   (`KERNEL`, and in 3D also `SOLVER`/`RIG`/`DRIVER`/`HTML`, plus `CHARACTER`).
   Edit a fence in all of them or in none.

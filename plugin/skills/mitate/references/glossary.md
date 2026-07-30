@@ -18,10 +18,15 @@ character short, diagram. It changes geometry, pacing and caption voice, and
 never changes the contract, the pipeline or the review method. The most-used
 undefined word in the project.
 
-**beat** — a named span of time with a duration, declared in `BEATS`. Everything
+**`t`** — a POSITION, not a clock. An address you evaluate, not a cursor you
+advance: any `t`, in any order, as many times as you like, always the same
+pixels. Nothing asks what time it is. That is what lets the recorder shoot out of
+order and a check seek away and back.
+
+**beat** — a named span of `t` with a duration, declared in `BEATS`. Everything
 is addressed by beat name and fraction (`ramp(t,'amble',.1,.9)`), never by raw
-seconds — a beat retimes and every expression anchored to it follows. `method.md`
-owns the craft; `addressing.md` in the repo owns why the indirection exists.
+seconds — retime the beat and every expression anchored to it follows; hardcode a
+second and it silently desynchronises. `method.md` owns the craft.
 
 **shot** — an entry in `SHOTS`: which subject, framed at which size, from which
 angle, starting at which beat. The camera is solved from these, never keyframed.

@@ -1379,7 +1379,16 @@ buildWorlds();
 // the hive, and FLEES PAST the tree off right — no turn, the gait grid and
 // the film grammar both keep their direction.
 const WALK_START=-13;
-const STOP_X=-1.2;                   // solved from the probed nose reach (see probe.js)
+// Nose reach, MEASURED not inferred, and now re-derivable — which it was not
+// until 0.16.32. This line cited a `probe.js` that has never existed in any
+// generation of this project: the measurement was almost certainly taken with
+// the hand-written page.evaluate that method.md teaches, and the harness was
+// not kept, so the number was correct and unverifiable. Re-derive it with:
+//   build.js probe bear-and-bees.html "beatAt('boop',.55)" 'sep(bear.head,hivePiv)'
+// 2026-07-30: x -0.3202, y -0.7606, z -1.0578 — overlap on ALL THREE axes, so
+// the contact is geometric and not a camera angle. That third number is the one
+// a contact sheet cannot show you.
+const STOP_X=-1.2;
 const FLEE_END=15;
 const bearXAt=t=>lerp(WALK_START,STOP_X,ss(t,beatAt('title',.45),beatAt('amble',.97)))
                +(FLEE_END-STOP_X)*ramp(t,'flee',.09,.98)

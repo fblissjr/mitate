@@ -245,7 +245,7 @@ information.
 | deferred: 2D pan/zoom (owner's-call 4) | *"No 2D shot solver.* The film built to want one concluded the `{x,y,zoom}` rail was expressively sufficient" | inherited decline, with a recorded alternative |
 | Track C viewer | none in the hardening plan; **`museum-walk` in the portfolio** | Phase 6, arriving early |
 | A2 `transitions` | **0.5.1** — smoke began sampling transition windows after review found no fixed-fraction sample ever landed in a blend window | **export shipped, the sweep did not** |
-| A0 ship `film-reviewer` | both Phase 2 gate films reviewed by it (`plan.md:471`, `:509`); catch record in 0.9.0 and 0.11.0 | **built, used on every shipped film, never shipped or routed** |
+| A0 ship `film-reviewer` | both Phase 2 gate films reviewed by it (`plan.md:471`, `:509`); catch record in 0.9.0 and 0.11.0 | **SHIPPED 0.16.32** — `plugin/agents/`, routed from SKILL.md step 3 |
 | D `STYLE.palette` | **0.9.1** — *"dispositioned, not fixed… the palette moves into STYLE"* when the first character bible pair arrives | **deferred decision, trigger fired** |
 
 Three of the deferred items turn out to be *inherited decisions with recorded

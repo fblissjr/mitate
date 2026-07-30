@@ -26,6 +26,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
+const PLUGIN_ROOT = path.join(ROOT, 'plugin');
 const SUBTREE = path.join(ROOT, 'plugin', 'skills', 'mitate');
 const REFS = path.join(SUBTREE, 'references');
 const TEMPLATES = path.join(SUBTREE, 'templates');
@@ -132,10 +133,10 @@ const fail = m => fails.push(m);
   notes.push(`${pinned.length} pinned dependencies, agreeing across build.js, gate.yml and SKILL.md`);
 }
 
-/* ---- 3. no pointer inside the subtree escapes it (invariant 3) ------------
- * An install cache holds .claude-plugin/, README.md and skills/ — nothing else.
- * A relative link to docs/ or site/ therefore dangles for exactly the reader
- * holding it. Done by RESOLVING markdown links, not by grepping for "site/":
+/* ---- 3. no pointer inside SHIPPED content escapes it (invariant 3) --------
+ * An install cache holds what is under plugin/ and nothing else -- as of
+ * 0.16.32 that is .claude-plugin/, README.md, skills/ AND agents/. A relative
+ * link to docs/ or site/ therefore dangles for exactly the reader holding it. Done by RESOLVING markdown links, not by grepping for "site/":
  * an outside audit did the grep version and reported backticked prose as broken
  * links, which is a category error. Prose may name a repo path; a LINK may not
  * leave the subtree. */
@@ -146,8 +147,12 @@ const fail = m => fails.push(m);
     if (e.isDirectory()) walk(p);
     else if (/\.md$/.test(e.name)) files.push(p);   // .md only: see note below
   });
-  walk(SUBTREE);
-  files.push(path.join(ROOT, 'plugin', 'README.md'));   // ships in the cache too
+  // EVERYTHING under plugin/ ships, not just skills/. This walked the skill
+  // subtree plus one hardcoded README until 0.16.32, when plugin/agents/ was
+  // added and would have been a shipped directory whose links nothing resolved.
+  // Walking the plugin root instead means the next shipped directory is covered
+  // the day it exists rather than the day someone remembers this check.
+  walk(PLUGIN_ROOT);
   let checked = 0;
   for (const f of files) {
     // Markdown links only, in markdown files only. Two exclusions, both
@@ -161,7 +166,7 @@ const fail = m => fails.push(m);
       if (/^(https?:|mailto:)/.test(t)) continue;
       checked++;
       const resolved = path.resolve(path.dirname(f), t);
-      const inSubtree = resolved.startsWith(SUBTREE) || resolved === path.join(ROOT, 'plugin', 'README.md');
+      const inSubtree = resolved.startsWith(PLUGIN_ROOT);
       if (!inSubtree) {
         fail(`${path.relative(ROOT, f)} links out of the install cache: ${t} — use an absolute repo URL`);
       } else if (!fs.existsSync(resolved)) {
@@ -396,20 +401,38 @@ const toolJs = new Map([
     fail(`${name} cites \`${tok}\` in a comment and no such file exists in the repo. `
        + `A comment may name a rule; it may not cite a path its reader cannot reach.`);
   };
-  for (const [name, text] of toolJs) {
-    for (const line of text.match(commentRe) || []) {
-      for (const tok of line.match(PATHY) || []) flag(name, tok);
-      let m; PROV.lastIndex = 0;
-      while ((m = PROV.exec(line))) flag(name, m[1]);
+  // SCENE HTML IS IN SCOPE AS OF 0.16.32, and the order was deliberate: it
+  // carried the live instance -- bear-and-bees cited a probe.js that has never
+  // existed, as the provenance for the constant its gag depends on. Widening
+  // the check before shipping `probe` would have meant a standing exemption for
+  // a known-bad line, which is how a ratchet rots. `probe` shipped, the constant
+  // was re-derived and now measures -0.32/-0.76/-1.06, and the scope follows.
+  //
+  // LONG LINES SKIPPED: an example embeds ~1 MB of minified three, whose license
+  // banners and single-line bodies are not authored comments. 500 chars keeps
+  // every hand-written line (the widest authored line in the corpus is far under
+  // it) and drops the bundle. Measured: 216 lines skipped, 10800 scanned.
+  const MINIFIED_LINE = 500;
+  const sceneHtml = [];
+  for (const d of [TEMPLATES, EXAMPLES]) {
+    for (const f of fs.readdirSync(d).filter(x => x.endsWith('.html'))) {
+      sceneHtml.push([path.relative(ROOT, path.join(d, f)), R(path.join(d, f))]);
     }
   }
-  // SCOPE, and why it is not wider yet: scene HTML carries the live instance of
-  // this defect -- examples/bear-and-bees.html cites a probe.js that has never
-  // existed, as the provenance for the constant that makes its gag land. That
-  // citation becomes TRUE when probe ships, so extending this check to scene
-  // HTML is queued behind it. Widening now would mean shipping the check with a
-  // standing exemption for a known-bad line, which is how a ratchet rots.
-  notes.push(`${cited} cited paths in tool comments, all resolving (scene HTML pending probe)`);
+  const sources = [
+    ...[...toolJs].map(([n, t]) => [n, t.split('\n')]),
+    ...sceneHtml.map(([n, t]) => [n, t.split('\n').filter(l => l.length <= MINIFIED_LINE)]),
+  ];
+  for (const [name, lines] of sources) {
+    for (const raw of lines) {
+      for (const line of raw.match(commentRe) || []) {
+        for (const tok of line.match(PATHY) || []) flag(name, tok);
+        let m; PROV.lastIndex = 0;
+        while ((m = PROV.exec(line))) flag(name, m[1]);
+      }
+    }
+  }
+  notes.push(`${cited} cited paths in tool and scene comments, all resolving`);
 }
 
 /* ---- 7. dated freshness markers are not older than the file ---------------

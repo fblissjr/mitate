@@ -66,9 +66,12 @@ for its red lines.
    the install cache has no `docs/`, so such a pointer dangles for every
    installed user. **The plugin README is NOT exempt** — it ships into that same
    cache, so a `../docs/...` link from it dangles for exactly the reader holding
-   it. Verified: the cache contains `.claude-plugin/`, `README.md` and `skills/`
-   and no other content (plus plugin-manager dotfiles such as `.in_use`, which
-   are bookkeeping, not yours). Link outside the subtree with an absolute repo URL, which
+   it. Verified: the cache contains `.claude-plugin/`, `README.md`, `skills/`
+   and — since 0.16.32 — `agents/`, and no other content (plus plugin-manager
+   dotfiles such as `.in_use`, which are bookkeeping, not yours). **Everything
+   under `plugin/` ships**, which is the rule to reason from rather than that
+   list; `scripts/selfcheck.js` resolves links against the plugin root for
+   exactly that reason, so a new shipped directory is covered the day it exists. Link outside the subtree with an absolute repo URL, which
    resolves from the cache, a clone, and GitHub alike.
 
 4. **Films are tracked once.** The scenes live in

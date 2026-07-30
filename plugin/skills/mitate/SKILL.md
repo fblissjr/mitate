@@ -133,9 +133,25 @@ bun run build.js sheet <name>.html 480 0.95   # every beat at its END — a stan
 bun run build.js sheet <name>.html 480 0.6 nocap  # caption pill hidden — the semantics pass
 bun run build.js aspect <name>.html 8.5       # one moment, four window shapes
 bun run shoot.js <name>.html sample 0,3,7,11  # arbitrary timestamps
+bun run build.js probe <name>.html "beatAt('hit',.5)" 'sep(a, b)'  # MEASURE a contact
 ```
 
+**Delegate the review pass to the `film-reviewer` agent**, which ships beside
+this skill. It runs these instruments, reads the images, and reports findings on
+all three axes with the bracket behind each one. It caught the defects author
+eyes missed on both gate films — a look beat that happened entirely off-frame, a
+closeup that was 70% void, a tail wag spiking 5x, a contact faked by a lucky
+camera angle. It was built for exactly this moment and was unreachable from an
+install until 0.16.32.
+
 **Read the generated images with the Read tool.** A filename is not a review.
+**And do not read a contact off an image at all** — two things that must touch is
+the most-repeated defect in this project's history, and a camera angle fakes it
+routinely. `probe` reports the gap on all three axes (negative means overlap);
+one recorded miss had an x-overlap of -1.66 and a y-overlap of 0.01, which no
+contact sheet can show. `references/method.md` owns the technique and the
+worked instances; `references/instruments.md` owns what a green check can and
+cannot see, which is the question to ask before trusting one.
 Composition fails within a frame (sheet shows it); continuity fails between
 frames (`build.js strip <name>.html <t0> <t1>` for a suspect window); semantics
 fails when every frame is fine and the film explains nothing (cover the
@@ -150,6 +166,7 @@ the other two axes need their own passes.
 ```bash
 bun run smoke.js                              # all scenes; add WEBGPU=metal to test that path
 bun run build.js motion <name>.html           # per-beat motion profile + dead air
+bun run build.js probe  <name>.html <when> 'expr'  # measure the scene's own geometry
 ```
 
 `smoke.js` checks:

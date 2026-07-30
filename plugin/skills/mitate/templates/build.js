@@ -802,7 +802,90 @@ function motion(scene, fps = 12) {
   }
 }
 
-const USAGE = 'usage: bun run build.js vendor|bundle|frames|video|all|avif|loop|poster|sheet|aspect|strip|motion <scene.html> [fps|t|t0] [width|t1] [frac|fps]';
+/* probe — measure the scene's own geometry at one t, instead of inferring it.
+ *
+ * The defect class this exists for is the most-repeated in the project's
+ * history: two things that must touch, and do not. `h` and `w` are the FRAMING
+ * extent; the contact point is a different number, so authors reach for the one
+ * that is written down. references/method.md owns the technique and the worked
+ * instances; this is that technique as a command, because the technique existed
+ * for the whole life of the project and got re-derived or skipped every time.
+ *
+ *   bun run build.js probe <scene.html> <when> '<expr>' ['<expr>' ...]
+ *
+ * <when> is a NUMBER or a JS EXPRESSION evaluated in the scene's own scope, so
+ * a probe addresses time the way the kit does: `beatAt('boop',.55)`, not 8.31.
+ * A raw second is accepted and is the thing that rots when a beat is retimed.
+ *
+ * Why it can read scene objects at all: scenes are classic scripts, so their
+ * top-level `let`/`const` live in the global lexical scope -- reachable by name
+ * from page.evaluate, and NOT on window. Verified 2026-07-30: `bear` resolves,
+ * `window.bear` is undefined. Nothing needs instrumenting, and the window
+ * contract is untouched -- this reads the scene, it does not drive it.
+ *
+ * Prelude, deliberately small:
+ *   bb(o)      world AABB. ACCEPTS A RIG OR AN Object3D -- buildCharacter
+ *              returns {root, body, head, ...}, so setFromObject(bear) throws
+ *              `updateWorldMatrix is not a function`, measured, and that trap
+ *              is why this unwraps .root rather than documenting the wrapping.
+ *   sep(a,b)   per-axis gap. NEGATIVE means overlap. All three axes, because
+ *              one recorded miss had an x-overlap of -1.66 and a y-overlap of
+ *              0.01: it arced cleanly over the body it was meant to hit.
+ *   proj(v)    NDC + whether it is on screen, for "the hit the camera cannot
+ *              see did not land".
+ *   reach(l)   L1+L2 of a limb, for "no rotation reaches a target past the arm".
+ */
+async function probe(scene, when, exprs) {
+  // Lazy, exactly like smoke.js's loadBrowserDeps: every other verb here is
+  // dependency-free string-and-ffmpeg work, and requiring playwright at module
+  // scope would make `build.js vendor` need a browser it never opens.
+  const { chromium } = require('playwright-core');
+  const { chromiumPath, angleArgs, seekSynced } = require(path.join(__dirname, 'backend.js'));
+  const PRELUDE = `
+    const __rt = o => (o && o.root && o.root.isObject3D) ? o.root : o;
+    const bb = o => new THREE.Box3().setFromObject(__rt(o));
+    const sep = (a, b) => { const A = bb(a), B = bb(b), r = {};
+      for (const k of ['x','y','z'])
+        r[k] = +(Math.max(A.min[k], B.min[k]) - Math.min(A.max[k], B.max[k])).toFixed(4);
+      r.touching = r.x <= 0 && r.y <= 0 && r.z <= 0; return r; };
+    const proj = v => { const p = (v && v.isVector3 ? v.clone()
+        : __rt(v).getWorldPosition(new THREE.Vector3())).project(camera);
+      return { x: +p.x.toFixed(3), y: +p.y.toFixed(3),
+               onScreen: Math.abs(p.x) <= 1 && Math.abs(p.y) <= 1 }; };
+    const reach = l => +(l.L1 + l.L2).toFixed(4);
+  `;
+  const browser = await chromium.launch({ executablePath: chromiumPath(), args: angleArgs() });
+  try {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1 });
+    page.on('pageerror', e => console.error('scene error: ' + e.message));
+    await page.goto('file://' + path.resolve(scene) + '?record=1');
+    await page.waitForFunction('window.sceneReady === true', { timeout: 20000 })
+      .catch(() => { throw new Error('scene never set window.sceneReady — check the errors above'); });
+    await page.evaluate('window.stopPlayback()');
+    const t = await page.evaluate(`(() => { const v = (${when}); if (!Number.isFinite(v))
+      throw new Error('<when> did not evaluate to a number: ' + JSON.stringify(v)); return v; })()`);
+    // seekSynced, not a bare seek: a probe that reads geometry does not strictly
+    // need the readback, but every capture site in this repo goes through one
+    // primitive and a second pattern here is how the first one drifted.
+    await seekSynced(page, t);
+    console.log(`${path.basename(scene)}  t=${t.toFixed(4)}  (${when})`);
+    for (const e of exprs) {
+      let out;
+      try {
+        out = await page.evaluate(`(() => { ${PRELUDE}; return (${e}); })()`);
+      } catch (err) {
+        out = 'ERROR — ' + String(err.message).split('\n')[0];
+      }
+      console.log(`  ${e}`);
+      console.log(`    ${typeof out === 'object' ? JSON.stringify(out) : out}`);
+    }
+  } finally {
+    await browser.close();
+  }
+}
+
+const USAGE = 'usage: bun run build.js vendor|bundle|frames|video|all|avif|loop|poster|sheet|aspect|strip|motion|probe <scene.html> [fps|t|t0] [width|t1] [frac|fps]\n'
+  + "       probe: bun run build.js probe <scene.html> <when> '<expr>' ['<expr>' ...]";
 // arg1/arg2/arg3 are deliberately neutral: their meaning is per-command (fps
 // for frames, t for poster, width for sheet, ...) and the old names (fpsArg,
 // widthArg) lied for most commands — each dispatch line below names what it
@@ -826,4 +909,15 @@ else if (step === 'aspect') aspectSheet(target, Number(arg1 || 0), Number(arg2 |
 else if (step === 'sheet') sheet(target, Number(arg1 || 480), arg2 === undefined ? 0.6 : Number(arg2), arg3 === 'nocap');
 else if (step === 'strip') strip(target, Number(arg1), Number(arg2), Number(arg3 || 30));
 else if (step === 'motion') motion(target, Number(arg1 || 12));
+// probe takes ALL remaining argv rather than the neutral arg1..arg3 slots: the
+// point is measuring several offsets at one t in one page load, and capping it
+// at three would send an author back to hand-written page.evaluate for the
+// fourth — which is the thing this command exists to retire.
+else if (step === 'probe') {
+  const exprs = process.argv.slice(5);
+  if (!arg1 || !exprs.length) {
+    console.error("probe: need <when> and at least one expression\n" + USAGE); process.exit(1);
+  }
+  probe(target, arg1, exprs).catch(e => { console.error(String(e.message)); process.exit(1); });
+}
 else { console.error(USAGE); process.exit(1); }

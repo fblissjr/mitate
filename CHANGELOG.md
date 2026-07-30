@@ -7,6 +7,70 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.32
+
+### added
+
+**`build.js probe` — the contact class finally has an instrument.** Two things
+that must touch, and do not, is the most-repeated authoring defect in this
+project's history: six recorded instances, a fix specified each time, never
+built. The trigger could not fire, because earn-in asks whether a film was
+*blocked* and this shape is not blocked, it is reliably wrong.
+
+    bun run build.js probe <scene.html> <when> '<expr>' ['<expr>' ...]
+
+`<when>` is a number or an expression in the scene's own scope, so a probe is
+addressed by beat like everything else in the kit; a raw second is accepted and
+is exactly what rots when a beat is retimed. The prelude is four helpers:
+`bb(o)` (world AABB, **accepting a rig or an Object3D** — `buildCharacter`
+returns `{root, body, head, ...}`, so `setFromObject(bear)` throws
+`updateWorldMatrix is not a function`, measured, and unwrapping `.root` retires
+that trap rather than documenting it); `sep(a,b)` (per-axis gap, **negative
+means overlap**, all three axes because one recorded miss had an x-overlap of
+-1.66 and a y-overlap of 0.01 and arced cleanly over its target); `proj(v)`
+(NDC and on-screen, for "a hit the camera cannot see did not land"); and
+`reach(l)`.
+
+Playwright loads lazily, the way `smoke.js` defers its browser deps, so every
+other `build.js` verb stays dependency-free. Nothing is instrumented and the
+window contract is untouched: scenes are classic scripts, so their top-level
+`let` bindings live in the global lexical scope and resolve by name inside
+`page.evaluate`. Verified 2026-07-30 — `bear` resolves, `window.bear` is
+undefined.
+
+**`film-reviewer` ships.** It has the best measured catch record in the project
+and lived outside `plugin/`, so no installed user could reach it, and `SKILL.md`
+contained zero occurrences of "agent" or "reviewer". It is now
+`plugin/agents/film-reviewer.md`, routed from step 3 at the moment a review
+happens. Moved rather than copied; the `.claude/` original is gone, because two
+copies of one agent is the drift this repo keeps finding.
+
+### fixed
+
+**`bear-and-bees.html`'s `STOP_X` is re-derivable, and the number was right.**
+Its comment cited a `probe.js` that has never existed in any generation — both
+frozen predecessors grepped — as the provenance for the constant its gag depends
+on. The measurement was almost certainly taken with the hand-written
+`page.evaluate` that `method.md` teaches, and the harness was not kept, so the
+figure was correct and unverifiable. Re-derived with the new command at
+`beatAt('boop',.55)`: x -0.3202, y -0.7606, z -1.0578 — **overlap on all three
+axes**, so the contact is geometric and not a camera angle, and the third number
+is the one a contact sheet cannot show. The claims on `SKILL.md`,
+`examples/README.md` and the showcase site are now true *and* checkable.
+
+**`selfcheck.js` check 3 resolves links against the whole plugin root**, not the
+skill subtree plus one hardcoded README. Adding `plugin/agents/` would otherwise
+have created a shipped directory whose links nothing checked — and its first
+file did cite a repo-local rules path that no installed reader can reach, which
+is the defect the check exists for. Reasoning from "everything under `plugin/`
+ships" means the next shipped directory is covered the day it exists.
+
+**The citation check now covers scene HTML.** Held back in 0.16.31 on purpose,
+because scene HTML carried the live instance and widening early would have meant
+a standing exemption for a known-bad line. `probe` shipped, the line was fixed,
+and the scope followed. Long lines are skipped so an example's embedded ~1 MB of
+minified three is not mistaken for authored comments: 216 skipped, 10800 scanned.
+
 ## 0.16.31
 
 ### added

@@ -5,10 +5,11 @@ description: Reviews a mitate scene on the three failure axes (composition, cont
 
 You review a single `mitate` scene and report what is wrong with it.
 > **Model:** deliberately inherits the session model rather than pinning a
-> cheaper tier. `.claude/rules/model-delegation.md` routes down only when a
-> task is well-specified, mechanical AND verifiable; this one is a judgment call over rendered
-> images, and its output is the thing a human acts on.
-> Pin a tier here only if that stops being true.
+> cheaper tier. Routing down is for work that is well-specified, mechanical AND
+> verifiable; this one is a judgment call over rendered images, and its output is
+> the thing a human acts on. Pin a tier here only if that stops being true.
+> (This cited a repo-local rules file until it shipped — a path no installed
+> reader can reach, which is the whole reason this agent moved.)
 
 
 The skill's own references are the authority, not this file. **Read them first**,

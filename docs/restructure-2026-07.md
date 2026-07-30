@@ -106,6 +106,7 @@ defect count but the *self-inflicted* share of it.
 | ranked tactical work | `docs/working-plan.md` | unchanged role, needs a pruning pass |
 | this migration | `docs/restructure-2026-07.md` | disposable, dated, self-retiring |
 | dated reasoning about finished work | **`docs/postmortems/`** (new) + root `.postmortem.json` | tracked; the distilled record, unlike logs |
+| what a zero-context session or subagent must know | **`docs/orientation.md`** (new) | ~50 lines, routes and does not restate. Doubles as the briefing block for delegated work, which `CLAUDE.md` cannot be because a subagent does not auto-load it |
 | what `t` is and how positions are addressed | **`docs/addressing.md`** (new) | adjacent to `VISION.md` but distinct: VISION owns *why determinism is first*, this owns *what the coordinate is* |
 | the public explanation: what it does, how it works, the vision, examples | `site/` | stays in this repo. It **restates** the vision rather than owning it, so it points at `VISION.md`; and it makes capability claims, so it enters the drift audit |
 | where facts live | `docs/source-of-truth.md` | gains two rows |
@@ -579,7 +580,7 @@ reinstalled, because the marketplace clones from the remote and `main` is still
 
 ## R3 — Structure
 
-1. **Trim the always-loaded surface: `SKILL.md` then `CLAUDE.md`.** Owner
+1. **Trim the always-loaded surface — `SKILL.md` DONE, `CLAUDE.md` partly.** Owner
    directive 2026-07-30, and the measurement backs the ordering. These are the
    only two files charged on every invocation — `SKILL.md` in full, frontmatter
    included, on every skill activation; `CLAUDE.md` on every session in this
@@ -594,9 +595,45 @@ reinstalled, because the marketplace clones from the remote and `main` is still
    single densest always-loaded block in the project and has never been audited
    for whether every clause changes a decision.
 
-   **Gate this one on a number**, not on taste: both files smaller than they
-   started this migration, with no lost rule — checked by re-running the
-   cold-start test, not by reading.
+   **`SKILL.md` DONE 2026-07-30: 326 → 220 lines, 18.8 → 11.0 KB, 41% off.** The
+   diagnosis was not length, it was **wrong audience** — this file is read by an
+   agent helping someone make a film, and it carried a provenance essay, thirteen
+   lines on bracket controls a film-maker never runs, release archaeology, a
+   62-line prose bibliography (22% of every activation), and four shell comments
+   inside code fences that parsed as h1 headings, so any outline of it reported
+   fourteen headings where there were ten. Now six workflow steps in the order the
+   work happens, each citing the one reference it needs at that moment.
+
+   **Two regressions caught by the gates, both restored:** the provenance header
+   fell outside `selfcheck` check 4's window once the intro grew above it, and
+   four load-bearing terms vanished — `DURATION`, `stopPlayback`, `swiftshader`,
+   `ANGLE_BACKEND`. The last two mattered most: "never hand-roll WebGPU flags"
+   without naming `WEBGPU=swiftshader` states a consequence with no way to avoid
+   it. **The no-rule-lost gate is a term diff, not a read.**
+
+   **Gate the rest on a number**, not on taste: both files smaller than they
+   started this migration, no rule lost — checked by a term diff and by re-running
+   the cold-start test.
+
+   **The references are NOT next, and that is a measured decision.** Blanket-
+   rewriting the nine shipped references was considered and rejected: they are
+   read-on-demand rather than always-loaded, so length is not automatically a
+   cost, and a census found 0-3 release citations each and almost no
+   wrong-audience content. `SKILL.md` was the outlier because it is charged on
+   every activation and had been accumulating for releases. The counter-argument
+   that decided it: **R2 created roughly ten defects while rewriting things for
+   orientation**, so nine more rewrites is nine more chances at that, against a
+   measured problem of one to three lines per file. Targeted instead:
+
+   - **`delivery.md` split** — already item 4 below, a real restructure.
+   - **`instruments.md`** — 338 lines, largest after `method.md`, three release
+     citations. Worth a read, probably not a rewrite.
+   - **The mechanical strip — DONE, and it was two edits, not eight.** Reading
+     every version citation in context, only one was archaeology
+     (`glossary.md`'s window-contract entry); the rest are provenance for
+     measured findings, which the discipline requires. Also fixed: a shipped
+     reference naming `docs/working-plan.md` as bare prose, which a cache reader
+     cannot follow — the rule is now stated inline instead of pointed at.
 
 2. **`README.md` trim.** Real, and deliberately *after* the pair above: it is
    read on demand, so its cost is a first impression rather than a recurring

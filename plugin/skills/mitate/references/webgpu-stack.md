@@ -126,8 +126,9 @@ byte-compare against a frame captured before that first render completes.
   state; it was the gate racing presentation on a slow stack, which is what the
   original settle fix was for and what a fixed *duration* cannot guarantee.
   A readback is a completion barrier rather than a latency guess, so it should not
-  need re-tuning per host — and tuning that coefficient is the trap named in
-  `docs/working-plan.md`'s spine. **Scope of the evidence: WebGL2 only.** WebGPU
+  need re-tuning per host — and reaching for the coefficient instead is the trap:
+  the pull toward tuning a number is strongest exactly when a thing is nearly
+  right, which is the moment to stop and instrument. **Scope of the evidence: WebGL2 only.** WebGPU
   submits through an async queue, so the argument is plausible there and
   unverified; `seekSynced` is applied on both paths regardless, because a 1x1 read
   is cheap and the failure it prevents is silent.

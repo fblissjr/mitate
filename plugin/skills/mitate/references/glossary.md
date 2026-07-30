@@ -35,7 +35,8 @@ and the rule that tooling never reaches past them into scene internals.
 (`seekTo`, `DURATION`, `stopPlayback`, `sceneReady`) and reads the rest behind
 fallbacks, so a scene missing `BEATS` is degraded, not broken. `smoke.js`'s
 `CONTRACT` / `SOFT_CONTRACT` are the authority; four different membership lists
-existed across the repo until 0.16.30, and the shortest was the wrong one.
+can disagree, and the shortest list is the one most likely to omit a name the
+gate enforces.
 
 **fence** — a block of code marked `/* ==== NAME-START ==== */ … NAME-END`,
 written byte-identically into every scene that carries it. Self-containment

@@ -80,3 +80,44 @@ rather than as a fresh idea.
   the evidence for why the promotion happened, and
   [source-of-truth.md](source-of-truth.md) requires a promotion to name its
   origin.
+
+## The flywheel this ledger is only half of
+
+Owner's direction, 2026-07-30, and the strongest unbuilt idea in the project.
+
+This file **counts** — how many times a shape has been independently rebuilt, so
+the promotion triggers in `plan.md` have something to fire on. Counting is the
+cheap half. The expensive half is noticing a pattern *while making a film* and
+getting it out of that film and into a reference where the next one inherits it.
+Today that depends on an author being reflective at the end of a long build,
+which is exactly when nobody is.
+
+> **The skill should capture reusable generalised patterns as a side effect of
+> use, not as an act of discipline afterwards.**
+
+Two shapes it could take, and they are not exclusive:
+
+- **A prompt in the workflow.** The review step already asks what went wrong.
+  It could also ask what got built twice, or what a future film would want —
+  and offer to write it where it belongs.
+- **A command that extracts.** `build.js patterns <scene>` or similar: read a
+  finished film, surface the things that look like generalised technique rather
+  than this film's own solution, and propose which reference each belongs in.
+
+Why it matters more than it sounds: the predecessor's procedural cookbook —
+eight worked shape recipes — was written once, cited from two tracked files as
+though it had been carried over, and was **not carried over**. It survived only
+because an archive audit went looking. That is the failure this closes: a pattern
+that exists, is known to be good, is referred to as though it is shipped, and is
+one directory deletion from gone.
+
+**The precedent is cinematography.** Nobody argues about whether shot sizes
+belong in a reference. `film-language.md` exists because someone noticed the same
+framing decisions recurring and wrote them down once. Shape recipes, gait
+families, contact staging, material behaviour under a palette — all the same
+move. The flywheel is making that move cheap enough that it happens by default.
+
+**Not scoped, deliberately.** It needs a design pass: what counts as a pattern,
+who decides where it lands, and how it avoids becoming a fifth place a fact can
+live. `source-of-truth.md`'s one-home rule is the constraint it must satisfy, not
+an obstacle to route around.

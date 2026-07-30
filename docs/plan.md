@@ -820,7 +820,19 @@ twice, which is exactly the input this section consumes.
 
 The recurring user fear to design against: tools so constrained they become
 WordPress themes. The rule, stated once here and enforced in review: **the
-skill ships contracts, kits, and vocabularies — never finished scenes.** A
+skill ships contracts, kits, and vocabularies — never finished scenes.**
+
+**The line is between a PRESET and a TECHNIQUE, and it reads as being about
+specificity when it is not.** "A factory-floor scene preset" is declined. "How a
+cutaway reads — anything inside the slab is invisible, so cavities must sit proud
+of the front face" is craft, and belongs in a reference exactly the way shot
+sizes and cut grammar do in `film-language.md`. Cinematography vocabulary is
+specific too, and nobody calls `SIZES` a preset. A recipe organised **by shape
+problem rather than by subject** is on the technique side by construction, since
+the same geometry then serves unrelated domains. (Owner's call, 2026-07-30, on
+promoting the predecessor's procedural cookbook into `materials.md`.)
+
+A
 style bible constrains *how* things look, not *what* is in the scene; the
 character scaffold parameterizes *any* figure rather than shipping five
 mascots; the film-language reference teaches shot grammar, not shot lists.

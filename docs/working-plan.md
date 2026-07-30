@@ -249,7 +249,7 @@ information.
 | B4 limit-wins | *"Root cause 2 — vocabulary that promises more than it measures"* | inherited diagnosis, new tiebreaker |
 | the spine | *"the pull toward tuning a coefficient is strongest exactly when a thing is nearly right"* | **written down, then violated four times in the successor** |
 | deferred: occlusion linter | *"No register-aware lint engine. Two candidate instances exist; no film has been blocked. Revisit when one is."* | inherited decline, same earn-in shape as A1 |
-| deferred: `shapes.md` | *"No content templates, scene presets, or genre scaffolds. This is the line that protects 'any scene you want'."* | inherited decline — **and a doctrinal one**, cited by the Anti-template principle |
+| deferred: `shapes.md` (**narrowed 2026-07-30** — the decline covers scene PRESETS, not shape-problem technique; the predecessor's procedural cookbook was promoted into `materials.md` under that reading, see `plan.md`'s Anti-template principle) | *"No content templates, scene presets, or genre scaffolds. This is the line that protects 'any scene you want'."* | inherited decline — **and a doctrinal one**, cited by the Anti-template principle |
 | deferred: 2D pan/zoom (owner's-call 4) | *"No 2D shot solver.* The film built to want one concluded the `{x,y,zoom}` rail was expressively sufficient" | inherited decline, with a recorded alternative |
 | Track C viewer | none in the hardening plan; **`museum-walk` in the portfolio** | Phase 6, arriving early |
 | A2 `transitions` | **0.5.1** — smoke began sampling transition windows after review found no fixed-fraction sample ever landed in a blend window | **export shipped, the sweep did not** |

@@ -113,7 +113,7 @@ scene needs `bun` to embed three into the file — skipping that is recoverable,
 since every `build.js` command embeds automatically (a direct `shoot.js` run is
 the one path that does not). Rendering to MP4 or
 AVIF, and running the review instruments, needs `bun`, ffmpeg and a Chromium.
-See [`plugin/README.md`](plugin/README.md#requirements).
+See [`plugin/README.md`](plugin/README.md#installation).
 
 That local dependency is worth knowing if you use Claude somewhere other than
 Claude Code: Cowork and cloud sessions load the skills enabled on your claude.ai

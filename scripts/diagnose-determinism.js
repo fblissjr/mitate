@@ -36,6 +36,14 @@ const GX = 32, GY = 18;
 const sha = b => crypto.createHash('sha256').update(b).digest('hex').slice(0, 16);
 
 // Seek and read in one task. Returns a coarse luma grid of the whole canvas.
+//
+// This IS backend.js's seekSynced pattern, and deliberately not a call to it:
+// the completion barrier and the diagnostic payload are the same readback here,
+// where seekSynced reads 1x1 and discards. Calling seekSynced and then reading
+// the grid would sync twice and read in a LATER task, which backend.js explains
+// reads a cleared drawing buffer. So this is one mechanism serving two purposes,
+// not a second copy to be consolidated -- do not "fix" it by swapping in
+// seekSynced, which would cost the grid this script exists to produce.
 function gridAt(page, t) {
   return page.evaluate(`(() => {
     window.seekTo(${t});

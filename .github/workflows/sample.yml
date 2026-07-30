@@ -8,10 +8,14 @@
 # what smoke compares), against 0 of 200 in the readback mode. The readback was
 # the only variable, which is a completion barrier, which is a race.
 #
-# It is KEPT, as the regression instrument for that fix: `no_canvas: true` must
-# now come back 0/200. Anything else means backend.js's seekSynced is still short
-# on this stack. It is the only way to verify — the failure does not reproduce on
-# macOS (0 in 80).
+# It is KEPT, as the regression instrument for that fix. It is the only way to
+# verify — the failure does not reproduce on macOS (0 in 80).
+#
+# THE PASS CRITERION IS NOT STATED HERE. It lives in one place, beside the flag
+# it describes: scripts/sample-determinism.js, above the NO_CANVAS constant.
+# This header carried its own copy until 0.16.30, the copy was inverted, and it
+# survived the commit that corrected the script and the input description below —
+# which is what four copies of one criterion buys. Read the script.
 #
 # NOT on push. This is a diagnostic, and a diagnostic that runs unbidden becomes
 # noise that people learn to ignore — the failure mode already tracked for the

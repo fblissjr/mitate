@@ -40,7 +40,7 @@ for its red lines.
    carries no `version` and no `author`, because the whole file including
    frontmatter loads into context on activation, so both would be standing cost
    with no runtime use. Do not add them. `metadata.last_verified` asserts that a
-   human reviewed **the working tree** against its source (invariant 6: say which
+   human reviewed **the working tree** against its source (invariant 7: say which
    copy) — write it only after an actual
    review, never as part of a version bump.
 
@@ -61,7 +61,8 @@ for its red lines.
    installed user. **The plugin README is NOT exempt** — it ships into that same
    cache, so a `../docs/...` link from it dangles for exactly the reader holding
    it. Verified: the cache contains `.claude-plugin/`, `README.md` and `skills/`
-   and nothing else. Link outside the subtree with an absolute repo URL, which
+   and no other content (plus plugin-manager dotfiles such as `.in_use`, which
+   are bookkeeping, not yours). Link outside the subtree with an absolute repo URL, which
    resolves from the cache, a clone, and GitHub alike.
 
 4. **Films are tracked once.** The scenes live in

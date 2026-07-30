@@ -462,7 +462,7 @@ class — plus the flee clipping the hive and the comedy's face never facing the
 lens.
 
 **It lives at `.claude/agents/film-reviewer.md`, outside `plugin/`.** Verified in
-the **working tree** (per invariant 6, and separately confirmed against a real
+the **working tree** (per invariant 7, and separately confirmed against a real
 install cache, which contains only `.claude-plugin/`, `README.md` and `skills/`):
 the plugin subtree ships `examples`, `references`, `SKILL.md`, `templates` and no
 agents; `SKILL.md` contains zero occurrences of "agent" or "reviewer". So the

@@ -47,6 +47,11 @@ name: gate
 
 on:
   push:
+    # `branches: [main]` because push and pull_request BOTH fired on an
+    # unfiltered push trigger, so every push to a branch with an open PR paid for
+    # two full gate runs of the same commit. Branch work is now free until a PR
+    # opens, which is also when a second opinion is worth three minutes.
+    branches: [main]
     # Skipped when a commit touches ONLY prose. A .md edit cannot break a scene,
     # and paying 3 minutes of browser time for a changelog entry is how a gate
     # becomes something people route around. Fence parity and every doc check

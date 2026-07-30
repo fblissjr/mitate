@@ -21,9 +21,11 @@
 // (macOS: brew install webp).
 // execFileSync, not execSync: no shell means no quoting rules to get wrong, and
 // a path containing a space cannot break the command. Same class of bug as the
-// exec-form rule for hooks in docs/internals/plugin-patterns.md -- that rule
-// covers hooks.json and says nothing about plugin scripts, but the surface is
-// identical.
+// exec-form rule for plugin hooks -- that rule covers hooks.json and says
+// nothing about plugin scripts, but the surface is identical. (This cited a doc
+// path in a DIFFERENT repo until 0.16.30: it resolved for nobody holding this
+// file, in a clone or an install cache. A comment may name a rule; it may not
+// cite a path it cannot reach.)
 const { execFileSync } = require('child_process');
 const run = (cmd, args, opts = {}) => execFileSync(cmd, args, { stdio: 'inherit', ...opts });
 const fs = require('fs');

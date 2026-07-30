@@ -48,10 +48,10 @@ ancestry table exists to keep. A pattern ledger that misses a rebuild is
 measuring the wrong thing.
 
 **`source-of-truth.md` gained the `VISION.md` row that R3 assumed it had.** The
-restructure plan marked that item done while the clause naming `site/` as a
-pointing surface — a restatement of the vision for a public reader, never a
-second source — had never landed. Found by grepping for it instead of trusting
-the DONE.
+restructure plan marked that item done while the row had never landed — found by
+grepping for it instead of trusting the DONE. `VISION.md` owns why determinism
+comes first; `site/` says a public-facing version of some of it and owns nothing,
+so if the two disagree the site is wrong.
 
 **`CLAUDE.md` is 39 lines lighter, and the cut was history, not rules.** It had
 grown 178 → 248 lines across this migration — the wrong direction for the one
@@ -76,6 +76,41 @@ owner's call, and the alternatives are written down in the plan. Redefining a
 gate to match what was achieved is the failure this branch exists to remove.
 
 ### fixed
+
+**A framing was corrected before it reached anything load-bearing, and the sweep
+for what it had touched found one real bad trade.** The plan had promoted `site/`
+to a **"capability-claim surface"** and a **"vision carrier"** — two roles it does
+not have. Owner, 2026-07-30: *"site is like a side thing. It should work, but it
+exists to show people what this project is in a visual way. THAT'S IT."* The
+whole `site/` folder is the website: a glorified `README.md` with example scenes.
+
+The audit for consequences: **`site/app.js` and `site/index.html` are
+byte-identical to `main`**, `VISION.md` never mentions the site, and no file
+under `plugin/` — the actual product — changed for a site-shaped reason. The
+framing had reached exactly one load-bearing place, a row added to
+`source-of-truth.md` naming `site/` a "pointing surface" that `VISION.md` had to
+be reconciled against. That file defines where facts live, so the row was one
+step from inverting the direction of truth. It now says the site owns nothing and
+is the thing that is wrong when they disagree.
+
+**The bad trade, and it was in code.** `bracket-stage-films.js` tested the
+derivation guard by rewriting the tracked 1.14 MB `gearbox.html` and restoring it
+in a `finally` — risking a **shipped** artifact to control a script that only
+serves the website. `stage-films.sh` now takes `MITATE_EXAMPLES`/`MITATE_FILMS`
+overrides (Netlify's invocation is unchanged, since both default), and the arm
+drives a throwaway fixture: two runs, one seeding a variant and one moving the
+bible line, which is a stronger assertion than before because the guard must now
+*remove* a variant it can see. Proven red against a no-clear script first, and
+`git status` confirms nothing tracked is written.
+
+**Two stale claims fell out of the same sweep, both from 0.16.35's removal of the
+tracked neon copy.** `static.yml` and `install-hooks.sh` each kept a dangling `\`
+where `site/films/gearbox-neon.html` used to be an argument, and `static.yml`'s
+comment still claimed to cover it. Dropping it loses no coverage, and that is now
+**measured rather than assumed**: the line the derivation seds sits at index 701,
+outside all five fences (HTML 5-66, KERNEL 725-877, RIG 879-963, SOLVER
+1076-1190, DRIVER 1232-1344), and re-running parity with the neon included still
+reports ok.
 
 **`.claude/` was drifting with nothing watching it, and the drift was in the
 briefings that tell agents what is true.** A review pointed at that tree found

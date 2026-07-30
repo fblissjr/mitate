@@ -9,10 +9,12 @@
  *
  *   bun run scripts/bracket-stage-films.js
  *
- * It writes into site/films/ (gitignored build output) and, for the guard arm,
- * temporarily edits the tracked example, restoring the original bytes in a
- * finally. If this is killed mid-run, `git status` shows the example as modified
- * and `git checkout` restores it.
+ * NOTHING TRACKED IS EVER WRITTEN. The guard arm used to rewrite the real 1.14 MB
+ * gearbox.html and restore it in a finally, which put a shipped artifact at risk
+ * to control a script that only serves the website — the examples are the
+ * product, the site is a showcase of it, and that is the wrong way round. It now
+ * points stage-films.sh at a throwaway fixture via MITATE_EXAMPLES/MITATE_FILMS.
+ * The clean-run arm still uses the real corpus, read-only.
  */
 const { execFileSync } = require('child_process');
 const fs = require('fs');
@@ -21,12 +23,15 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const SCRIPT = path.join(__dirname, 'stage-films.sh');
 const FILMS = path.join(ROOT, 'site', 'films');
-const GEARBOX = path.join(ROOT, 'plugin', 'skills', 'mitate', 'examples', 'gearbox.html');
 const NEON = path.join(FILMS, 'gearbox-neon.html');
 const BIBLE_LINE = 'const STYLE = BIBLES.workshop;';
+// Fixture root for the guard arm. Under site/ so it lands in gitignored
+// territory even if a run is killed before the finally.
+const FIX = path.join(FILMS, '_bracket_fixture');
 
-const run = () => {
-  try { execFileSync('bash', [SCRIPT], { cwd: ROOT, encoding: 'utf8', stdio: ['ignore','pipe','pipe'] });
+const run = (env) => {
+  try { execFileSync('bash', [SCRIPT], { cwd: ROOT, encoding: 'utf8',
+          env: { ...process.env, ...(env || {}) }, stdio: ['ignore','pipe','pipe'] });
         return { code: 0, out: '' }; }
   catch (e) { return { code: e.status ?? 1, out: String(e.stdout || '') + String(e.stderr || '') }; }
 };
@@ -68,27 +73,40 @@ const check = (label, ok, detail) => { results.push([label, ok, detail]); };
 
 // ---- arm 3: the guard fires, and leaves nothing stale behind ----------------
 // The failure this brackets is not "the guard exits 1" alone -- it is that an
-// exit-1 run must not leave the PREVIOUS neon in place. Arm 1 has already
-// produced one, so its survival here would be exactly the defect.
+// exit-1 run must not leave the PREVIOUS neon in place, since a stale film is
+// indistinguishable from a fresh one by looking at it.
+//
+// ENTIRELY ON A FIXTURE. Two runs against a throwaway examples dir: the first
+// carries the bible line and must produce a neon, the second does not and must
+// fail while REMOVING the neon the first produced. That sequencing is what makes
+// "not left stale" a real assertion rather than a coincidence, and it is why the
+// old version reached for the tracked example -- it needed a prior good run.
+// A fixture supplies one for a few hundred bytes instead of 1.14 MB of product.
 {
-  const original = fs.readFileSync(GEARBOX, 'utf8');
   let ok, detail;
+  const exDir = path.join(FIX, 'examples'), filmDir = path.join(FIX, 'films');
+  const env = { MITATE_EXAMPLES: exDir, MITATE_FILMS: filmDir };
+  const fixNeon = path.join(filmDir, 'gearbox-neon.html');
   try {
-    if (!original.includes(BIBLE_LINE)) {
-      ok = false; detail = 'gearbox.html no longer contains the line this arm moves — arm is inert';
-    } else {
-      fs.writeFileSync(GEARBOX, original.replace(BIBLE_LINE, 'const STYLE = BIBLES["workshop"];'));
-      const r = run();
-      const survived = fs.existsSync(NEON);
-      ok = r.code !== 0 && r.out.includes('no longer selects its bible') && !survived;
-      detail = `exit ${r.code}, neon ${survived ? 'SURVIVED (stale)' : 'absent'}`;
-    }
-  } finally { fs.writeFileSync(GEARBOX, original); }
+    fs.mkdirSync(exDir, { recursive: true }); fs.mkdirSync(filmDir, { recursive: true });
+    fs.writeFileSync(path.join(exDir, 'gearbox.html'), `<!-- fixture -->\n${BIBLE_LINE}\n`);
+    const good = run(env);
+    const seeded = fs.existsSync(fixNeon);
+
+    fs.writeFileSync(path.join(exDir, 'gearbox.html'), '<!-- fixture -->\nconst STYLE = BIBLES["workshop"];\n');
+    const r = run(env);
+    const survived = fs.existsSync(fixNeon);
+
+    ok = good.code === 0 && seeded
+      && r.code !== 0 && r.out.includes('no longer selects its bible') && !survived;
+    detail = `seed exit ${good.code} (neon ${seeded ? 'made' : 'MISSING'}), `
+           + `guard exit ${r.code}, neon ${survived ? 'SURVIVED (stale)' : 'absent'}`;
+  } finally { fs.rmSync(FIX, { recursive: true, force: true }); }
   check('bible line moved: guard fires, neon not left stale', ok, detail);
 }
 
-// Leave the tree in the state a build would: the arms above ran the script with
-// a broken example last, so films/ is missing the variant the site expects.
+// Leave films/ as a build would. Arm 2 ran against the real corpus, so this is
+// belt-and-braces rather than repair -- the fixture arm never touched it.
 run();
 
 let wrong = 0;

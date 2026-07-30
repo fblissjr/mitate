@@ -19,7 +19,7 @@ other surface points at the home. Nothing restates.
 | **delivery-side** facts — shipping the scene itself: bundle size over the wire, hosting and mount policy, posters | `references/delivery.md` | — |
 | **recording-side** facts — formats, encoders, decode cost, what GitHub renders inline | `references/recordings.md` | — |
 | repo invariants that bite on first edit | CLAUDE.md | — |
-| **why determinism comes first**, and what it is first for | `VISION.md` | `site/` is a POINTING SURFACE for this and no other fact — it restates the vision for a public reader, in a different register, and must be reconciled against `VISION.md` whenever either moves. A restatement, never a second source |
+| **why determinism comes first**, and what it is first for | `VISION.md` | `site/` says a public-facing version of some of this. It is a website, not a home — if it disagrees with `VISION.md`, the site is wrong |
 | history — what happened and why | CHANGELOG.md and git | docs speak present tense only |
 | **a check's pass criterion** | the code that implements the check, beside the flag or constant it governs | CI config and session logs POINT; they never restate it |
 | **what a session did** | `internal/` session logs, one per day | a finding worth keeping is promoted to a postmortem; the log is narration and is not cited by tracked content |

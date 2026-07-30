@@ -29,9 +29,10 @@ a second copy of a router is the exact failure this file keeps catching.
   `scripts/bracket-*.js` are their controls, and **cover two of the five** —
   `selfcheck.js` and `stage-films.sh`. The other three are uncontrolled, which
   invariant 6 wants visible rather than glossed
-- **The showcase site** — `site/` (`index.html`, `app.js`, `posters/`; films are
-  staged in, never tracked). It is a **capability-claim surface**: it tells the
-  public what this code does, so a changed capability is a change to it
+- **The website** — `site/` (`index.html`, `app.js`, `posters/`; films are staged
+  in, never tracked). A glorified `README.md` with example scenes, for showing
+  people what this is. It should work and it should not say false things about
+  the code; it is not part of the architecture and nothing depends on it
 - **CI** — `.github/workflows/gate.yml` (browser, main + PRs; brackets under
   `templates/`), `static.yml` (cheap checks, every push; brackets under
   `scripts/`), `sample.yml` (manual only). **Brackets live in two directories and

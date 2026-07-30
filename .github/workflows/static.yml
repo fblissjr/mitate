@@ -48,11 +48,15 @@ jobs:
 
       # Cross-directory: a per-directory green does not cover the
       # template-to-example boundary, and drift there is silent (CLAUDE.md
-      # invariant 2). site/films/ is deliberately NOT listed — it is derived
-      # output, and gearbox-neon is a one-line sed of a file already in the set,
-      # so its fences cannot differ. This comment used to claim it covered "the
-      # one negated exception in site/films/"; 0.16.35 made that copy derived and
-      # took the argument away, leaving the claim and a dangling continuation.
+      # invariant 2). site/films/gearbox-neon.html WAS an argument here until
+      # 0.16.35 made that copy derived; dropping it loses no coverage, and that
+      # is MEASURED rather than assumed: the line the derivation seds
+      # (`const STYLE = BIBLES.workshop;`) sits at index 701, outside all five
+      # fences (HTML 5-66, KERNEL 725-877, RIG 879-963, SOLVER 1076-1190,
+      # DRIVER 1232-1344), so the variant's fences are byte-identical to
+      # gearbox.html's, which is in the set. Re-running parity with the neon
+      # included still reports ok. The comment here previously claimed to cover
+      # that file after the argument had already gone.
       - name: fence parity
         run: |
           bun run plugin/skills/mitate/templates/smoke.js --parity-only \
@@ -63,12 +67,13 @@ jobs:
       # ran nowhere until 0.16.37: gate.yml globs templates/ only, so the bracket
       # over selfcheck.js -- the repo's own claim-checker -- had never executed in
       # CI. Both are browser-free, which is why they belong in the cheap job.
-      # bracket-stage-films.js edits a tracked example and restores it; a failure
-      # mid-run leaves that as an ordinary dirty file, not a corrupt commit.
+      # Neither writes anything tracked: bracket-stage-films.js drives
+      # stage-films.sh at a throwaway fixture via MITATE_EXAMPLES/MITATE_FILMS.
+      # It used to rewrite the real 1.14 MB gearbox.html and restore it, which
+      # risked a shipped artifact to control a script that only serves the site.
       - name: brackets
         run: |
           for b in scripts/bracket-*.js; do
             echo "--- $b"
             bun run "$b"
           done
-          

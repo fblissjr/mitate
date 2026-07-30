@@ -31,12 +31,18 @@ It covers `internal/`, `docs/`, `plugin/`, `.claude/`, `scripts/`,
 `.github/workflows/` and the gates.
 
 **`site/` is out of scope for restructuring** (owner's call, 2026-07-30) and
-**in scope for truth**. The distinction matters because of what the site is for
-(owner, 2026-07-30): *"here's mitate and here's what it does and how it works
-and here's the longer term vision and here's some examples."* That makes it two
-things this plan cares about — a **capability-claim surface** and a **vision
-carrier** — and nothing currently audits either. It stays in this repo; the
-split question is settled below.
+**in scope for truth** — meaning only that it should not say false things about
+the code, which is the bar for anything public, not a special status.
+
+**It is a side thing, and this plan previously said otherwise.** Owner,
+2026-07-30, correcting an earlier reading: *"site is like a side thing. It should
+work, but it exists to show people what this project is in a visual way. THAT'S
+IT. The whole site folder is for the website that just is a glorified readme.md
+with examples of scenes."* An earlier version of this paragraph promoted it to a
+**"capability-claim surface"** and a **"vision carrier"** — two load-bearing
+roles it does not have. The vision lives in `VISION.md`; the site shows people
+what the thing looks like. It stays in this repo; the split question is settled
+below.
 
 ## The finding that organizes all of it
 
@@ -117,7 +123,7 @@ defect count but the *self-inflicted* share of it.
 | dated reasoning about finished work | **`docs/postmortems/`** (new) + root `.postmortem.json` | tracked; the distilled record, unlike logs |
 | what a zero-context session or subagent must know | **`docs/orientation.md`** (new) | ~50 lines, routes and does not restate. Doubles as the briefing block for delegated work, which `CLAUDE.md` cannot be because a subagent does not auto-load it |
 | what `t` is and how positions are addressed | **`docs/addressing.md`** (new) | adjacent to `VISION.md` but distinct: VISION owns *why determinism is first*, this owns *what the coordinate is* |
-| the public explanation: what it does, how it works, the vision, examples | `site/` | stays in this repo. It **restates** the vision rather than owning it, so it points at `VISION.md`; and it makes capability claims, so it enters the drift audit |
+| the public explanation: what it does, how it works, examples | `site/` | stays in this repo. **Owns nothing.** A website — a glorified README with example scenes. If it disagrees with anything, it is the thing that is wrong. It enters the drift audit only because a public page should not state a capability the code lacks |
 | where facts live | `docs/source-of-truth.md` | gains two rows |
 | the count that fires promotion triggers | `docs/pattern-ledger.md` | unchanged |
 | Phase 4 constraints | `docs/physics-bake-proposal.md` | gains the kinematic-body option |
@@ -366,10 +372,12 @@ Each item here is a check, not a cleanup.
 
 6. **The claim audit gains `site/index.html`.** The `audit-claims` skill
    dispatches `doc-claim-auditor` at reference docs, `CLAUDE.md`, and the
-   load-bearing comments in `templates/*.js`. The site is a **capability-claim
-   surface** — `site/index.html:205` states *"Every contact is probe-measured"*
-   and `:209` ships a primitive chip reading `Box3 contact probes` — and nothing
-   audits it. A public page asserting a capability is exactly what that agent
+   load-bearing comments in `templates/*.js`. The site states things about the
+   code — `site/index.html:205` says *"Every contact is probe-measured"* and
+   `:209` ships a primitive chip reading `Box3 contact probes` — and nothing
+   audits it. **This is the only reason the site is in scope for anything**: not
+   a role in the document graph, just the ordinary bar that a public page should
+   not claim a capability the code lacks. A public page asserting a capability is exactly what that agent
    exists to check. One line in the skill's scope.
 
 **Gate R1 — MET 2026-07-30, shipped as 0.16.31.** `bracket-parity.js` green on
@@ -730,13 +738,12 @@ MISSED before the fix and CAUGHT after.
    today — confirmed absent from all three planning docs by two independent
    passes.
 
-   **The site is the other vision carrier**, by design: its stated job includes
-   *"here's the longer term vision."* So `VISION.md` is the home and the site
-   restates it for a public audience — which is legitimate (different register,
-   different reader) but must be a **restatement of one source, not a second
-   source**. When `VISION.md` lands, reconcile the site's vision copy against it
-   in the same commit, and note in `source-of-truth.md` that the site is a
-   pointing surface for this fact.
+   ~~**The site is the other vision carrier**~~ — **struck 2026-07-30 on owner
+   correction.** It is not a carrier of anything. `VISION.md` is the home, full
+   stop; the site is a website that shows people what this looks like, and if its
+   copy disagrees with `VISION.md` the site is simply wrong and gets fixed. That
+   is the ordinary bar for a public page, not a role in the document graph. The
+   `source-of-truth.md` row says exactly that much and no more.
 
 4. **`delivery.md` splits — DONE 2026-07-30 (0.16.38).** It was titled
    *"Delivering inline on GitHub"* and concluded at line 197 that the repo

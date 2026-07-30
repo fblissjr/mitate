@@ -15,8 +15,14 @@
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-examples="$root/plugin/skills/mitate/examples"
-films="$root/site/films"
+# Both overridable, and the reason is worth stating: bracket-stage-films.js used
+# to test the derivation guard by editing the tracked 1.14 MB gearbox.html and
+# restoring it in a finally. That put a SHIPPED artifact at risk to control a
+# script that only serves the website — a bad trade, since the examples are the
+# product and the site is a showcase of it. With these, the bracket builds a
+# throwaway fixture instead and nothing tracked is ever written.
+examples="${MITATE_EXAMPLES:-$root/plugin/skills/mitate/examples}"
+films="${MITATE_FILMS:-$root/site/films}"
 
 if [ ! -d "$examples" ]; then
   echo "stage-films: no examples at $examples" >&2

@@ -2,6 +2,14 @@ last updated: 2026-07-30
 
 # Working plan: instruments, routing, and the viewer
 
+> **Read [`restructure-2026-07.md`](restructure-2026-07.md) first while it
+> exists.** That migration is the live queue and parts of this file are
+> superseded by it — including the sequencing table below, whose items 1 and 2
+> have shipped, and the ancestry row that still calls `probe` "dropped in
+> migration". Where the two disagree, the restructure plan is newer and wins.
+> A fresh session following this file's sequencing table read 460 superseded
+> lines before finding that out.
+
 [`plan.md`](plan.md) is the founding architecture and its phase gates. This is
 the consolidated *tactical* plan that came out of the 2026-07-25 sessions — the
 first film built at ~3x the length of any shipped example, a viewer prototype,

@@ -21,11 +21,17 @@ description: >
   scratch" means literally.
   Do NOT use for editing existing video files, screen recordings, or slide
   decks.
-metadata:
-  last_verified: "2026-07-25"
 ---
 
 # mitate
+
+> **Provenance.** Canonical for routing and workflow order. **Verified
+> 2026-07-30** against `templates/` and `references/` — the commands in each step
+> exist, the references each step cites exist, and `probe` and `film-reviewer`
+> are reachable from an install. This replaced a `metadata.last_verified`
+> frontmatter field in 0.16.34: that field asserted a human review, went stale on
+> every edit, was stale by four days and two releases when it was removed, and
+> nothing checked it. This line is checked.
 
 One idea powers everything here: **the entire film is a pure function of `t`**.
 No simulation state, no `Math.random()` at runtime, no wall-clock dependence.
@@ -106,6 +112,14 @@ The 3D templates additionally carry `SUBJECTS[]` and `SHOTS[]` with the
 match-cut constraint (the 2D template keeps its simpler `KEYS[]` camera rail)
 and export `window.BACKEND` (`'webgpu' | 'webgl2'` — which backend actually
 rendered; smoke tags each scene with it, and 2D scenes set none).
+
+**Before authoring any surface beyond flat colour, read
+`references/materials.md`** — the toon/SSS/glass packs, what blooms and what
+does not, and the palette-conditional findings. **Before choosing the look at
+all, read `references/bibles.md`**: a style bible is one object switched by one
+line, and reaching for a loose palette const beside `STYLE` instead is how a
+film ends up unable to swap bibles. Both were bibliography-only until 0.16.34,
+cited nowhere near the moment their own entries name.
 
 Replace the marked sections: `buildWorlds()` (geometry) and `animate(t)`
 (per-beat motion, every property a function of `t`) in every template — plus

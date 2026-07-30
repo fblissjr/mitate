@@ -194,6 +194,29 @@ const fail = m => fails.push(m);
   // here would be a stale claim with a timer on it — the class this whole file
   // exists to catch. Every reference is checked; the population is reported.
   const refs = fs.readdirSync(REFS).filter(f => f.endsWith('.md'));
+  // SKILL.md carries one too, as of 0.16.34. It used to carry
+  // `metadata.last_verified` instead: frontmatter, so standing context cost on
+  // every activation, asserting a HUMAN review, going stale on every edit, and
+  // checked by nothing -- it was four days and two releases stale when removed.
+  // The provenance form is per-file, records what was verified against what, and
+  // is checked here. It is exempt from the "Not here" edge below: that edge maps
+  // ownership BETWEEN references, and SKILL.md is the router, not a peer.
+  const SKILL_MD = path.join(SUBTREE, 'SKILL.md');
+  {
+    const head = R(SKILL_MD).slice(0, HEADER_WINDOW);
+    if (!/>\s*\*\*Provenance\.\*\*/.test(head)) fail('SKILL.md has no provenance header');
+    else if (!/\b20\d\d-\d\d-\d\d\b/.test(head)) fail('SKILL.md provenance names no date');
+    // Scoped to the FRONTMATTER, not the whole head. The first version grepped
+    // the head for the string and fired on the provenance header immediately
+    // below, which explains why the field was removed -- a check that cannot
+    // tell carrying a field from describing one, which is the same
+    // false-accusation shape as the two seek-check specs before it.
+    const fm = (R(SKILL_MD).match(/^---\n([\s\S]*?)\n---/) || [])[1] || '';
+    if (/^\s*last_verified:/m.test(fm)) {
+      fail('SKILL.md still carries metadata.last_verified — removed in 0.16.34 as an '
+         + 'unenforced claim in always-loaded frontmatter; use the provenance header');
+    }
+  }
   for (const f of refs) {
     const head = R(path.join(REFS, f)).slice(0, HEADER_WINDOW);
     if (!/>\s*\*\*Provenance\.\*\*/.test(head)) { fail(`${f} has no provenance header`); continue; }

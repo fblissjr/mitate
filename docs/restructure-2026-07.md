@@ -2,6 +2,17 @@ last updated: 2026-07-30
 
 # Restructure plan, 2026-07
 
+> ## Current position
+>
+> **R0 MET** (0.16.30) · **R1 MET** (0.16.31) · **R2 MET** (0.16.34) ·
+> **R3 next**. R2 items 1-7 landed across 0.16.32-0.16.34, 8 retracted, 9
+> trigger-gated on a fifth bracket of one family.
+>
+> **While this document is open it is the live queue**, and
+> [`working-plan.md`](working-plan.md) is the standing backlog it executes
+> against. A fresh session found the live queue only by reading `git log` commit
+> prefixes; that is what this block is for.
+
 A one-time migration plan. **This document is disposable**: when the last gate
 below is green it gets deleted, and the CHANGELOG entries it produced are the
 permanent record. Dated in the filename so it sorts with the postmortems and
@@ -360,12 +371,12 @@ dispositioned.
 Things that exist and cannot be reached do not exist
 (`working-plan.md:61-62`, the parent rule).
 
-1. **Ship `film-reviewer`** as `plugin/agents/film-reviewer.md`. It gates
+1. **Ship `film-reviewer`** — **DONE 0.16.32**, as `plugin/agents/film-reviewer.md`. It gates
    nothing formally (R0.5), but it has the best measured catch record in the
    project and no installed user can reach it. Plugins ship agents; this is a
    one-file move plus a `SKILL.md` routing line. **Version cascade.**
 
-2. **Ship `build.js probe`** — ranked 1 in `working-plan.md:405`, unblocked,
+2. **Ship `build.js probe`** — **DONE 0.16.32.** Ranked 1 in `working-plan.md:405`, unblocked,
    **no new dependency for an installed user**. It is the instrument for the
    defect class at count 6 in the ledger, which just produced instance 7 inside
    a shipped example. Ship the eval prelude (`bb(o)` → `Box3().setFromObject`,
@@ -387,7 +398,7 @@ Things that exist and cannot be reached do not exist
      1.1s beat in an FSA shot. Unrendered; `build.js strip` over that window
      settles whether it reads.
 
-3. **Postmortems become tracked.** `docs/postmortems/`, root `.postmortem.json`
+3. **Postmortems become tracked** — **DONE 0.16.33.** `docs/postmortems/`, root `.postmortem.json`
    = `{"dir": "docs/postmortems"}` so placement is a decision rather than the
    filing skill's rung-3 inference. Convert `2026-07-25_session_handoff-review.md`
    to frontmatter form — it currently starts with `last updated:`, which is
@@ -397,7 +408,7 @@ Things that exist and cannot be reached do not exist
    existing pattern). New rule: a tracked postmortem may cite a local-only
    artifact but must label it `(local)` and must not rest a claim on it.
 
-4. **Routing, now with a measured baseline.** A cold session assuming no
+4. **Routing, now with a measured baseline** — **DONE 0.16.33 + `bb8e269`.** A cold session assuming no
    machine-local memory takes **3 hops and ~4,900 lines** to reach the working
    plan, and these never arrive at all:
 
@@ -428,8 +439,8 @@ Things that exist and cannot be reached do not exist
      summary; a summary is the copy this plan is about. The root README's Layout
      table lists all seven and points here.
 
-5. **`references/glossary.md`** — there is definitively no glossary; verified
-   three ways. It goes in the subtree because that is reachable from **both**
+5. **`references/glossary.md`** — **DONE 0.16.33.** There was definitively no
+   glossary; verified three ways before writing one. It goes in the subtree because that is reachable from **both**
    cold starts, and it loads on demand so it costs no standing context. The four
    worst by use-to-definition ratio:
    **`register`** (98 uses across 16 files, defined nowhere),
@@ -441,7 +452,7 @@ Things that exist and cannot be reached do not exist
    Also unreachable from the cache: **"Phase N"** as a numbering scheme, used by
    three references with no resolver.
 
-6. **Two placement fixes inside `SKILL.md`**, both bibliography-only today
+6. **DONE 0.16.34 — two placement fixes inside `SKILL.md`**, both bibliography-only today
    despite their own entries naming a moment: **`materials.md`** says "read
    before authoring any surface beyond flat color" and is not cited at step 2's
    `buildWorlds()`; **`bibles.md`** says "read at art-direction time" and no step
@@ -449,7 +460,7 @@ Things that exist and cannot be reached do not exist
    (`:170`, `:259`) but neither is the moment it exists for — deciding whether a
    green result means anything, which is steps 3 and 4.
 
-7. **Remove `metadata.last_verified` and bring `SKILL.md` under the provenance
+7. **DONE 0.16.34 — removed `metadata.last_verified` and bring `SKILL.md` under the provenance
    header rule instead.** Owner's call delegated 2026-07-30, on the criterion of
    long-term viability across many sessions. The decision and its reasoning:
 
@@ -478,7 +489,7 @@ Things that exist and cannot be reached do not exist
    plugin content), and `CLAUDE.md:39-45` loses the paragraph describing the
    field.
 
-5. **`internal/` — RETRACTED 2026-07-30, and the retraction is the finding.**
+8. **`internal/` — RETRACTED 2026-07-30, and the retraction is the finding.**
 
    This item existed to fix "63-75% of grep hits for core symbols are
    non-authoritative". **That measurement was taken with shell `grep -r`, which
@@ -493,7 +504,8 @@ Things that exist and cannot be reached do not exist
    — is real but is a *meaning* problem with no measured cost, and the concrete
    instances are already resolved: postmortems are tracked (R2.3), `outside_comms`
    is private by gitignore, and `legacy/` is invisible to search. So this is
-   **dropped**, not deferred, and the last-copy question about the predecessors is
+   **dropped**, not deferred (this was R2.5 before the renumber; the CHANGELOG
+   0.16.33 entry calls it that), and the last-copy question about the predecessors is
    the only thing worth keeping from it.
 
    **The lesson generalizes past this item, which is why it is written here
@@ -501,7 +513,7 @@ Things that exist and cannot be reached do not exist
    actually uses will manufacture a problem. Measure with the tool whose behaviour
    you are reasoning about.
 
-6. **Triage `internal/circus_prototype/bench/`.** Nine measurement harnesses —
+9. **Triage `internal/circus_prototype/bench/`.** Nine measurement harnesses —
    `bench_viewer_{desktop,mobile,loop}`, `bench_playback`, `bench_capture`,
    `bench_reviewloop`, `bench_scene`, `bench_liveplay_{corpus,bracket}` — all
    built on `backend.js`, all aimed at the viewer and playback questions the
@@ -513,9 +525,17 @@ Things that exist and cannot be reached do not exist
    `bracket-*.js` — if three of them promote, that is the fourth-bracket trigger
    `working-plan.md` already records for extracting a shared bracket harness.
 
-**Gate R2:** `film-reviewer` and `probe` present in a real install cache;
-`postmortem-index` renders both postmortems; a grep for `solveShot` returns only
-authoritative hits.
+**Gate R2 — MET 2026-07-30, shipped across 0.16.32-0.16.34.** `film-reviewer`
+and `probe` are in `plugin/` and routed from `SKILL.md` at their moments; both
+postmortems carry frontmatter an index can read, checked; `solveShot` under
+ripgrep returns 13 files, none from `internal/` — which is the measurement that
+retracted item 8.
+
+**One part of this gate is deferred and named rather than skipped:** "present in
+a real install cache" cannot be checked until the branch is pushed and
+reinstalled, because the marketplace clones from the remote and `main` is still
+0.16.29. That is the first thing to verify after a merge, and
+`plugin/agents/` being a new shipped directory makes it worth doing deliberately.
 
 ---
 

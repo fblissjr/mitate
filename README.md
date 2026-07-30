@@ -138,8 +138,10 @@ staged into `site/films/` at deploy. Edit them where they live.
 Phases 0–2 are complete and gated: the node-stack templates, recorder, and
 instruments on both backends; the material packs and style bibles; the character
 scaffold, demonstrated by `menagerie` and delivered by `bear-and-bees`. A chart
-tier sits below the films for isolating shader primitives. Next by priority is
-Phase 4, the physics bake. Architecture and phase gates in
+tier sits below the films for isolating shader primitives. Phase 4, the physics
+bake, is next by phase priority — though the repo is currently mid-migration and
+[`docs/restructure-2026-07.md`](docs/restructure-2026-07.md) is the live queue.
+Architecture and phase gates in
 [`docs/plan.md`](docs/plan.md); the current ranked work — instruments, doc
 routing, and what is deliberately deferred with the trigger that revives it — in
 [`docs/working-plan.md`](docs/working-plan.md); version history in

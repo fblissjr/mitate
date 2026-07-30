@@ -7,6 +7,52 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.34
+
+### changed
+
+**A cold-start test found nine orientation defects, most of them created in the
+previous two releases.** A fresh agent with no context was asked to get up to
+speed and say what to work on next; it reached the answer in ~13 files and ~2,000
+lines, of which roughly 460 were superseded. What it found:
+
+- **`docs/README.md` routed "what should I work on next" at
+  `working-plan.md`**, which is partly superseded. One table row cost 460 lines.
+  It now points at the live migration, with the working plan demoted to the
+  standing backlog it executes against.
+- **Three documents gave three different answers** to what is next
+  (`README.md` said Phase 4, the working plan's sequencing table said items that
+  had already shipped, the migration said R2). All three now agree.
+- **`working-plan.md` did not know the migration exists** — one grep hit, and it
+  was the ordinary English word. It now says so in its first paragraph, including
+  that its own sequencing table is superseded.
+- **The migration had no "you are here"**; the live queue was findable only from
+  `git log` commit prefixes. It now opens with a current-position block, and R2's
+  items carry `DONE <version>` markers the way R0's already did — reconstructing
+  that from the changelog plus tree greps was the single largest block of wasted
+  effort.
+- **R2's item numbering collided** (two 5s, two 6s), and 0.16.33's entry cites
+  "R2.5" by number. Renumbered, with the old number recorded.
+- **`CLAUDE.md`'s new Map said `references/` (8)** one commit after it was
+  written. There are 9; the glossary shipped in the same release as the Map and
+  the Map missed it. It also filed the migration under "Open decisions", which is
+  why the tester did not open it first.
+- **The glossary was named only after the router's table**, so it was found late
+  and by accident. It is a row now.
+
+**`metadata.last_verified` is removed from `SKILL.md`.** It asserted a *human*
+review, sat in always-loaded frontmatter, went stale on every edit, and nothing
+checked it — it was four days and two releases stale when removed, and
+`CLAUDE.md` was simultaneously instructing readers to write it while the
+migration was scheduled to delete it. `SKILL.md` now carries a provenance header
+in the body, the same form the nine references use, and `selfcheck.js` check 4
+verifies it and fails if the field returns. Demonstrated red by putting it back.
+
+**`materials.md` and `bibles.md` are cited at their moment.** Both were
+bibliography-only, despite their own entries naming when to read them ("before
+authoring any surface beyond flat color", "at art-direction time"). Neither cue
+could fire from a bibliography.
+
 ## 0.16.33
 
 ### added

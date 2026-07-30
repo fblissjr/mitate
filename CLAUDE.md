@@ -18,18 +18,22 @@ its own graph.
 
 - **What it is, for a user** — `README.md` (repo root), `plugin/README.md`
 - **The skill that ships** — `plugin/skills/mitate/SKILL.md`, plus
-  `references/` (8), `templates/`, `examples/`, and `plugin/agents/film-reviewer.md`
+  `references/` (9, including `glossary.md` — the words this project uses as if
+  you knew them), `templates/`, `examples/`, and `plugin/agents/film-reviewer.md`
 - **Why, and in what order** — `VISION.md` *(planned)*, `docs/addressing.md`
   (what `t` is)
 - **Architecture and phase gates** — `docs/plan.md`
-- **The current ranked work** — `docs/working-plan.md` (the spine, tracks A-D,
-  the ancestry table, deferred items with their triggers)
+- **The standing backlog** — `docs/working-plan.md` (the spine, tracks A-D, the
+  ancestry table, deferred items with their triggers). Parts are superseded while
+  the migration below is open; that plan wins where they disagree
 - **Where each kind of fact lives** — `docs/source-of-truth.md`
 - **How many times a shape has been rebuilt** — `docs/pattern-ledger.md`
 - **Phase 4 constraints and red lines** — `docs/physics-bake-proposal.md`
 - **Inherited measured findings** — `docs/predecessor-record.md` (2,770 lines;
   exceeds a default read window, so read it in ranges)
-- **Open decisions** — `docs/examples-placement.md`, `docs/restructure-2026-07.md`
+- **What to work on next** — `docs/restructure-2026-07.md` while it exists. It is
+  the live queue, not a decision record, and it carries a current-position block.
+- **Open decisions** — `docs/examples-placement.md`
 - **What happened and why** — `CHANGELOG.md`, `docs/postmortems/`
 - **Repo tools** — `scripts/selfcheck.js`, `install-hooks.sh`,
   `stage-films.sh`, `diagnose-determinism.js`, `sample-determinism.js`
@@ -77,10 +81,13 @@ for its red lines.
    prose — is plugin content. **SKILL.md is deliberately NOT in the cascade:** it
    carries no `version` and no `author`, because the whole file including
    frontmatter loads into context on activation, so both would be standing cost
-   with no runtime use. Do not add them. `metadata.last_verified` asserts that a
-   human reviewed **the working tree** against its source (invariant 7: say which
-   copy) — write it only after an actual
-   review, never as part of a version bump.
+   with no runtime use. Do not add them. SKILL.md carried a
+   `metadata.last_verified` field until 0.16.34 and no longer does: it asserted a
+   human review, sat in always-loaded frontmatter, went stale on every edit, and
+   nothing checked it — it was four days and two releases stale when removed. It
+   now carries a **provenance header** in the body, the same form the references
+   use, which records what was verified against what and IS checked
+   (`selfcheck.js` check 4).
 
    A **fenced** block (`KERNEL`, `SOLVER`, `RIG`, `DRIVER`, `CHARACTER`, `HTML`)
    is carried by more files than it looks: both 3D templates, all five examples,

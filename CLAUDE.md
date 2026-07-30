@@ -53,7 +53,20 @@ Two rules. Everything else derives from them, and neither is negotiable.
   renders independently and identically, which is what makes one scene file both
   the live HTML artifact and the source of a frame-exact MP4 — and what makes
   duration free, since a frame at `t=18000` costs what a frame at `t=1` costs.
-- **Tooling talks only to the window contract**, never to scene internals.
+- **Tooling that DRIVES a scene talks only to the window contract**, never to
+  scene internals. That is what keeps the recorder, the gate and the site generic
+  — any scene is swappable for any other because none of them knows a film's
+  variable names.
+
+  **Amended 0.16.37: a read-only authoring instrument is admitted.**
+  `build.js probe` evaluates scene-specific expressions (`sep(bear.head, hivePiv)`)
+  because measuring a contact requires naming the two things. It is permitted on
+  three conditions, all currently true and all checkable: it only reads, it runs
+  at authoring time, and **it is in no pipeline that produces an artifact** — no
+  other `build.js` verb calls it, no workflow invokes it, the pre-commit hook does
+  not. Break any of those and the exception lapses. Stated here rather than argued
+  in a docstring, because a rule bent quietly is a rule gone.
+
   **The membership list is not here.** `smoke.js` hard-asserts four names and
   reads the rest behind fallbacks; that tiering is the fact, and its home is
   `smoke.js`'s `CONTRACT` / `SOFT_CONTRACT` with the reader-facing version in

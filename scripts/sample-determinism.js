@@ -140,6 +140,12 @@ const plan = dur => [1, 2, 3, 4].map(i => +(dur * i / 5).toFixed(4));
             else await seekSynced(page, t);
             await settle(page);
             const a = sha(await page.screenshot());
+            // selfcheck: bare-seek-is-the-control — the away-and-back pair, same
+            // reason as the seek above. Both arms of this experiment must stay
+            // bare or the pair stops being an experiment. Declared here as well
+            // as above because the marker is per-SITE: a reader meeting this
+            // block should not have to scroll to learn it is deliberate.
+            // selfcheck: bare-seek-is-the-control
             if (NO_CANVAS) {
               await page.evaluate(`window.seekTo(${dur})`);
               await page.evaluate(`window.seekTo(${t})`);

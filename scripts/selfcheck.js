@@ -274,7 +274,7 @@ const templateJs = new Map(
 // recorded high-water mark: derive this from the code and the check passes
 // always and measures nothing. Every other count here is computed. Lower it
 // when you retire a claim; never raise it.
-const ASSERT_BUDGET = 46;
+const ASSERT_BUDGET = 51;
 {
   // Per LINE, and only lines that do NOT name their control: a comment saying
   // "measured — see bracket-noise.js" is exactly what this wants more of, so
@@ -282,7 +282,19 @@ const ASSERT_BUDGET = 46;
   // reported 46 against a budget of 41 because the 41 came from a coarser
   // shell grep that counted controlled and uncontrolled alike — the number is
   // defined by this check, not by that grep.
-  const re = /\/\/.{0,80}?\b(measured|bracketed|confirmed|verified)\b/i;
+  // BLOCK COMMENTS COUNT AS OF 0.16.37. The scan was `//`-only, and this file's
+  // biggest neighbours (build.js, smoke.js) carry their heaviest prose in `/* */`
+  // headers -- so the ratchet was blind to exactly where a "measured" claim is
+  // most likely to be written. Found by reading, then walked into: two new block
+  // claims landed in build.js's probe docstring in the very session that found
+  // the hole. Review caught them.
+  //
+  // The budget MOVED UP, once, and only because the measurement changed
+  // DEFINITION -- 46 `//` lines became 52 across both comment forms. That is a
+  // re-baseline, not a rise, and it is the only kind permitted: widening what is
+  // counted is not the same as tolerating more debt. From here it may fall and
+  // never rise.
+  const re = /(?:\/\/|^\s*\*).{0,80}?\b(measured|bracketed|confirmed|verified)\b/i;
   let n = 0;
   for (const [, text] of templateJs) {
     for (const line of text.split('\n')) {
@@ -355,35 +367,70 @@ const toolJs = new Map([
   // and no readback between them. Measured against the pre-fix
   // bracket-determinism.js, which it catches, and against the tree, which is
   // clean but for one declared control.
-  const WINDOW = 6;
-  // A deliberate bare seek declares itself HERE, at the site, not in an
-  // allowlist in this file. sample-determinism.js's --no-canvas arm is the
-  // control for 0.16.28: it must keep bare-seeking or it stops measuring
-  // anything. Same idiom as path-privacy's skip-file marker — an exemption a
-  // reader meets next to the code it excuses.
+  // SAME TASK, not "a readback appears nearby". backend.js's seekSynced comment
+  // is explicit about the mechanism: the drawing buffer is cleared after
+  // compositing, so a readback in a LATER task reads zeros and synchronises
+  // nothing. Review caught that the first version tested `/getImageData/` against
+  // raw window text, which would exempt a seek whose readback sat in a SEPARATE
+  // evaluate -- a pattern that does not fix the race at all. So the body is now
+  // extracted per call with a balanced-paren scan, and the readback must be in it.
+  const evaluateSites = text => {
+    const out = [];
+    const re = /\.evaluate\(/g;
+    let m;
+    while ((m = re.exec(text))) {
+      let i = m.index + m[0].length, depth = 1;
+      while (i < text.length && depth > 0) {
+        if (text[i] === '(') depth++; else if (text[i] === ')') depth--;
+        i++;
+      }
+      if (depth !== 0) continue;
+      out.push({
+        body: text.slice(m.index + m[0].length, i - 1),
+        line: text.slice(0, m.index).split('\n').length,
+        endLine: text.slice(0, i).split('\n').length,
+      });
+    }
+    return out;
+  };
+  // WINDOW is a heuristic and cannot be made exact -- that is stated rather than
+  // hidden, because the note below would otherwise read as a guarantee it does
+  // not give. 8 lines, chosen to cover the widest real gap in the tree
+  // (sample-determinism's control arm: seek at 145, capture at 151) rather than
+  // by taste. A capture further from its seek than this is not caught.
+  //
+  // KNOWN FALSE-POSITIVE SHAPE, do not "fix" by widening further: smoke.js's
+  // sampleAt seeks and then interpolates `reader.toString()` into the SAME
+  // evaluate, so its readback exists at runtime and is invisible to any static
+  // scan. Widening until that trips is how this check starts condemning correct
+  // code, which it did twice during development.
+  const WINDOW = 8;
   const OPT_OUT = /selfcheck: bare-seek-is-the-control/;
-  let captures = 0;
+  const LOOKBACK = 6;   // a declaration sits ABOVE the line it excuses
+  let bare = 0, flagged = 0;
   for (const [name, text] of toolJs) {
     const lines = text.split('\n');
-    for (let i = 0; i < lines.length; i++) {
-      if (!/\.evaluate\(/.test(lines[i])) continue;
-      const win = lines.slice(i, i + WINDOW).join('\n');
-      if (!/window\.seekTo/.test(win) || !/\.screenshot\(/.test(win)) continue;
-      if (/getImageData/.test(win)) continue;      // readback present: synced
-      captures++;
-      // Look BEHIND as well as ahead for the marker: a comment explaining a
-      // deliberate bare seek sits above the line it excuses, not below it. The
-      // first version searched only forward and rejected the one declared
-      // control in the tree, which is the same false-accusation failure the
-      // spec notes above were written about.
-      if (OPT_OUT.test(lines.slice(Math.max(0, i - 5), i + WINDOW).join('\n'))) continue;
-      fail(`${name}:${i + 1} seeks in a page.evaluate and captures within ${WINDOW} lines `
-         + `with no pixel readback between — the capture race measured at 40/30/20 on a `
-         + `slow GL stack, 0 of 200 once seek and readback shared a task. Use backend.js's `
-         + `seekSynced. If the bare seek IS the control, say so on the line.`);
+    for (const site of evaluateSites(text)) {
+      if (!/window\.seekTo/.test(site.body)) continue;
+      if (/getImageData/.test(site.body)) continue;          // synced, same task
+      bare++;
+      const after = lines.slice(site.endLine, site.endLine + WINDOW).join('\n');
+      if (!/\.screenshot\(/.test(after)) continue;            // seek is not captured
+      flagged++;
+      // site.line is 1-indexed; `lines` is 0-indexed. Converting explicitly
+      // rather than folding the -1 into the constant: the first version used
+      // `site.line - 6` and started the slice one line PAST the marker, which
+      // read as a missing declaration rather than an off-by-one.
+      const from = Math.max(0, (site.line - 1) - LOOKBACK);
+      if (OPT_OUT.test(lines.slice(from, site.endLine + WINDOW).join('\n'))) continue;
+      fail(`${name}:${site.line} seeks in a page.evaluate with no readback in that same `
+         + `call, and captures within ${WINDOW} lines — the race measured at 40/30/20 on a `
+         + `slow GL stack, 0 of 200 once seek and readback shared a task. Use seekSynced. `
+         + `If the bare seek IS the control, say so on the line.`);
     }
   }
-  notes.push(`seek-then-capture sites: ${captures}, all synced or declared controls`);
+  notes.push(`${bare} bare seeks scanned, ${flagged} of them captured within ${WINDOW} lines `
+    + `— all synced or declared (a capture further than ${WINDOW} lines from its seek is not seen)`);
 }
 
 /* ---- 6d. a comment may not cite a file that does not exist ----------------
@@ -434,7 +481,10 @@ const toolJs = new Map([
   // LONG LINES SKIPPED: an example embeds ~1 MB of minified three, whose license
   // banners and single-line bodies are not authored comments. 500 chars keeps
   // every hand-written line (the widest authored line in the corpus is far under
-  // it) and drops the bundle. Measured: 216 lines skipped, 10800 scanned.
+  // it) and drops the bundle. The counts are REPORTED below rather than written
+  // here: this file's own rule is that a number a command produces does not get
+  // hand-written, and a frozen figure would go stale the next time an example
+  // lands with nothing to catch it. Review flagged that it was written here.
   const MINIFIED_LINE = 500;
   const sceneHtml = [];
   for (const d of [TEMPLATES, EXAMPLES]) {
@@ -442,9 +492,15 @@ const toolJs = new Map([
       sceneHtml.push([path.relative(ROOT, path.join(d, f)), R(path.join(d, f))]);
     }
   }
+  let skipped = 0, scanned = 0;
   const sources = [
     ...[...toolJs].map(([n, t]) => [n, t.split('\n')]),
-    ...sceneHtml.map(([n, t]) => [n, t.split('\n').filter(l => l.length <= MINIFIED_LINE)]),
+    ...sceneHtml.map(([n, t]) => {
+      const all = t.split('\n');
+      const keep = all.filter(l => l.length <= MINIFIED_LINE);
+      skipped += all.length - keep.length; scanned += keep.length;
+      return [n, keep];
+    }),
   ];
   for (const [name, lines] of sources) {
     for (const raw of lines) {
@@ -455,7 +511,8 @@ const toolJs = new Map([
       }
     }
   }
-  notes.push(`${cited} cited paths in tool and scene comments, all resolving`);
+  notes.push(`${cited} cited paths in tool and scene comments, all resolving `
+    + `(scene HTML: ${scanned} lines scanned, ${skipped} minified lines skipped)`);
 }
 
 /* ---- 6e. tracked postmortems are readable by the thing that indexes them ---

@@ -819,9 +819,14 @@ function motion(scene, fps = 12) {
  *
  * Why it can read scene objects at all: scenes are classic scripts, so their
  * top-level `let`/`const` live in the global lexical scope -- reachable by name
- * from page.evaluate, and NOT on window. Verified 2026-07-30: `bear` resolves,
- * `window.bear` is undefined. Nothing needs instrumenting, and the window
- * contract is untouched -- this reads the scene, it does not drive it.
+ * from page.evaluate, and NOT on window (`bear` resolves; `window.bear` does
+ * not). Nothing needs instrumenting.
+ *
+ * This names scene internals, which the prime directive forbids of tooling that
+ * DRIVES a scene. The exception is written into that rule rather than argued
+ * here, and it is conditional: read-only, authoring-time, and in no pipeline
+ * that produces an artifact. If probe ever gets called by another verb, a
+ * workflow, or a hook, the exception lapses and this needs rethinking.
  *
  * Prelude, deliberately small:
  *   bb(o)      world AABB. ACCEPTS A RIG OR AN Object3D -- buildCharacter

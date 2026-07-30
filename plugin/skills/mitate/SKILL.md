@@ -138,6 +138,7 @@ bun run build.js sheet <name>.html 480 0.6 nocap  # captions hidden — the sema
 bun run build.js strip <name>.html <t0> <t1>      # consecutive frames — continuity
 bun run build.js aspect <name>.html 8.5           # one moment, four window shapes
 bun run build.js probe <name>.html "beatAt('hit',.5)" 'sep(a, b)'
+bun run build.js probe <name>.html 4 'shape(bear)'   # what IS this thing?
 ```
 
 **Delegate this to the `film-reviewer` agent**, which ships beside this skill. It
@@ -153,7 +154,9 @@ for composition; the other two axes need their own passes.
 the most repeated defect in this project's history, and a camera angle fakes it
 routinely. `probe` reports the gap on all three axes, negative meaning overlap;
 one recorded miss had an x-overlap of -1.66 and a y-overlap of 0.01 and arced
-cleanly over its target. `references/instruments.md` owns what a green check can
+cleanly over its target. `shape(x)` answers "what is this" when a name's
+structure is not obvious — a rig's limbs are keyed `HL/HR/FL/FR`, not indexed —
+and a failed expression tells you which `shape()` call to run next. `references/instruments.md` owns what a green check can
 and cannot see — the question to ask before trusting one.
 
 ### 5. Smoke-test the contract

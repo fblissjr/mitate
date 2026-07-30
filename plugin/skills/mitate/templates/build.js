@@ -834,6 +834,10 @@ function motion(scene, fps = 12) {
  *   proj(v)    NDC + whether it is on screen, for "the hit the camera cannot
  *              see did not land".
  *   reach(l)   L1+L2 of a limb, for "no rotation reaches a target past the arm".
+ *   shape(x)   what a thing IS -- keys, array length, Object3D type. Scene
+ *              names live in the global lexical scope and cannot be listed, so
+ *              this is the half that is possible: stop guessing at STRUCTURE
+ *              once you have a name.
  */
 async function probe(scene, when, exprs) {
   // Lazy, exactly like smoke.js's loadBrowserDeps: every other verb here is
@@ -853,6 +857,20 @@ async function probe(scene, when, exprs) {
       return { x: +p.x.toFixed(3), y: +p.y.toFixed(3),
                onScreen: Math.abs(p.x) <= 1 && Math.abs(p.y) <= 1 }; };
     const reach = l => +(l.L1 + l.L2).toFixed(4);
+    // shape(x) -- what IS this thing? A scene's top-level let/const live in the
+    // global lexical environment, which is not enumerable, so probe can never
+    // list what exists; you must know a name. What it can do is stop you
+    // guessing at a name's STRUCTURE. Built after two wasted page loads spent
+    // discovering that a rig's limbs are keyed HL/HR/FL/FR rather than indexed.
+    const shape = x => {
+      if (x === null || x === undefined) return String(x);
+      if (Array.isArray(x)) return 'Array(' + x.length + ') of ' + shape(x[0]);
+      if (x.isObject3D) return (x.type || 'Object3D') + (x.name ? ' "' + x.name + '"' : '')
+        + ' children:' + x.children.length;
+      if (x.isVector3) return 'Vector3';
+      if (typeof x === 'object') return '{ ' + Object.keys(x).join(', ') + ' }';
+      return typeof x + ' ' + String(x);
+    };
   `;
   const browser = await chromium.launch({ executablePath: chromiumPath(), args: angleArgs() });
   try {
@@ -874,7 +892,32 @@ async function probe(scene, when, exprs) {
       try {
         out = await page.evaluate(`(() => { ${PRELUDE}; return (${e}); })()`);
       } catch (err) {
-        out = 'ERROR — ' + String(err.message).split('\n')[0];
+        const msg = String(err.message).split('\n')[0];
+        out = 'ERROR — ' + msg;
+        // A "cannot read properties of undefined" here almost always means the
+        // shape was guessed, not that the object is missing. Say what to run
+        // next instead of leaving the reader to invent a second probe call.
+        // Suggest the SCENE object, not the prelude helper that wrapped it. The
+        // first version matched the leading identifier and proposed `shape(bb)`,
+        // which is this file's own function -- useless, and a small instance of
+        // the thing probe exists to stop: answering with what is easy to compute
+        // rather than what was asked.
+        if (/undefined|not a function/.test(msg)) {
+          const HELPERS = new Set(['bb', 'sep', 'proj', 'reach', 'shape', 'JSON', 'Math', 'Object', 'Array']);
+          const chains = (e.match(/[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)+/g) || [])
+            .filter(c => !HELPERS.has(c.split('.')[0]));
+          const best = chains.sort((a, b) => b.length - a.length)[0];
+          if (best) {
+            // Indexing something that is not an array is the common case, and
+            // there the chain ITSELF is what you want described -- `bear.limbs[0]`
+            // failing means `shape(bear.limbs)`, not `shape(bear)`. Otherwise the
+            // last component is the property that came back undefined, so drop it.
+            const indexed = e.includes(best + '[');
+            const parts = best.split('.');
+            const target = indexed ? best : parts.slice(0, Math.max(1, parts.length - 1)).join('.');
+            out += `\n    try: 'shape(${target})'`;
+          }
+        }
       }
       console.log(`  ${e}`);
       console.log(`    ${typeof out === 'object' ? JSON.stringify(out) : out}`);

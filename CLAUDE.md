@@ -25,8 +25,13 @@ a second copy of a router is the exact failure this file keeps catching.
   knew them), `templates/`, `examples/`, and `plugin/agents/film-reviewer.md`
 - **What happened and why** — `CHANGELOG.md`
 - **Repo tools** — `scripts/selfcheck.js`, `install-hooks.sh`,
-  `stage-films.sh`, `diagnose-determinism.js`, `sample-determinism.js`, plus
-  `scripts/bracket-*.js`, which are the controls over the first three
+  `stage-films.sh`, `diagnose-determinism.js`, `sample-determinism.js`.
+  `scripts/bracket-*.js` are their controls, and **cover two of the five** —
+  `selfcheck.js` and `stage-films.sh`. The other three are uncontrolled, which
+  invariant 6 wants visible rather than glossed
+- **The showcase site** — `site/` (`index.html`, `app.js`, `posters/`; films are
+  staged in, never tracked). It is a **capability-claim surface**: it tells the
+  public what this code does, so a changed capability is a change to it
 - **CI** — `.github/workflows/gate.yml` (browser, main + PRs; brackets under
   `templates/`), `static.yml` (cheap checks, every push; brackets under
   `scripts/`), `sample.yml` (manual only). **Brackets live in two directories and
@@ -192,8 +197,10 @@ the check.
   `THIRD_PARTY_LICENSES.md`). `scripts/selfcheck.js` enforces this over every
   tracked `.md` carrying the marker, deriving that set rather than listing it.
   `.claude/agents/*` and `.claude/rules/*` are behaviour definitions, not
-  documentation — their freshness is git history — but they still make
-  drift-prone claims and are not exempt from being wrong.
+  documentation — their freshness is git history — so **nothing mechanical covers
+  them**, and a review found four stale claims in one agent file, each of which
+  would have made it report a working capability as drift. `/audit-claims` routes
+  at them explicitly for that reason; it is their only control.
 - **Two controls exist to be used, not rediscovered.** `/audit-claims` dispatches
   `doc-claim-auditor` at whatever the diff touched — the executable form of the
   drift rule in `source-of-truth.md`, which went unrun for this repo's whole life

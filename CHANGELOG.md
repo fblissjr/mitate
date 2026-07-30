@@ -77,6 +77,47 @@ gate to match what was achieved is the failure this branch exists to remove.
 
 ### fixed
 
+**`.claude/` was drifting with nothing watching it, and the drift was in the
+briefings that tell agents what is true.** A review pointed at that tree found
+six stale claims. They are worse than ordinary doc drift because they are *priors*:
+an agent reads them before it looks at any code, so a stale one turns every
+downstream verdict wrong.
+
+- **`doc-claim-auditor` taught four working capabilities as broken.** Its "five
+  real instances" of drift were written in the present tense and four had since
+  been fixed: `focus` (both 3D templates wire `STYLE.dof` through `THREE.dof`
+  with a `uFocus` uniform driven from `shotFocus`), `aspect` (`shoot.js` reads
+  `window.FRAME.aspect` and feeds `aspectShapes`), `whip` (`film-language.md`
+  now states it is a fast cut, not a whip pan), and `h` (documented as framed
+  extent). The fifth cites a reference that does not exist in this repo. An
+  auditor dispatched at `film-language.md` would have returned `focus` as dead.
+  The list is now past-tense with each resolution, and says plainly that none of
+  it is a current defect. *The pattern ate its own briefing.*
+- **`/audit-claims` asserted that `build.js probe` "is not built"** — it shipped
+  in 0.16.37, which is what backs the site's *"Every contact is probe-measured"*
+  claim. Every run was a standing false positive against a working path. It now
+  asks the harder and correct question: is the claim true of the current corpus.
+- **`model-delegation.md` named `fast-executor` and `task-coder`** as agents "in
+  `.claude/agents/`". Neither has ever existed here; the directory holds
+  `control-builder` and `doc-claim-auditor`. The rule now says to list the
+  directory rather than trust a name written in prose.
+
+**The structural half: nothing mechanical covers `.claude/`.** Those files carry
+no freshness marker by design, and `selfcheck.js` derives its set from files that
+do — correct, and it means the tree is uncovered. `/audit-claims` now routes at
+`.claude/agents/*`, `.claude/rules/*` and itself explicitly, and `CLAUDE.md` says
+that routing line is their only control instead of the softer "not exempt from
+being wrong".
+
+**Two errors of this session's own, both caught by the same review.** The Map
+claimed to cover "everything outside `docs/`" while omitting `site/` — the
+showcase is half of what `CLAUDE.md`'s first line says this repo is, and by the
+Map's own criterion it was unreachable from the front door. It has an entry now,
+named as a capability-claim surface. And the repo-tools line called
+`scripts/bracket-*.js` "the controls over the first three" when two exist,
+covering the first and third; it now says two of five and names the three that
+are uncontrolled, which is the state invariant 6 wants visible.
+
 `plugin/README.md` carried a stale `last updated:` marker after 0.16.38 edited
 it. The freshness check fires one commit late by construction, which is the
 correct place for it: a marker bumped before the commit that justifies it would

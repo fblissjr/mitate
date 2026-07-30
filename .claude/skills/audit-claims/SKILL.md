@@ -50,12 +50,27 @@ there:
      asserting a measurement.
    - Changed invariants or conventions → `CLAUDE.md`, and check it against the
      code it claims to describe.
+   - **Changed behaviour of any tool an agent describes → `.claude/agents/*`,
+     `.claude/rules/*`, and this file.** These are the blind spot: they carry no
+     freshness marker by design, `selfcheck.js` derives its set from files that
+     do, so **nothing mechanical covers them at all** — this routing line is the
+     only control they have. It is not a theoretical gap. A review found
+     `doc-claim-auditor` teaching four capabilities as broken that the code had
+     since fixed, this file asserting an instrument "is not built" three
+     versions after it shipped, and `model-delegation` naming two agents that
+     never existed. A briefing that primes an auditor with stale claims makes
+     every downstream verdict wrong, so these files are worth *more* scrutiny
+     than an ordinary doc, not less.
    - **Changed capability, or a claim about one → `site/index.html`.** The site
-     is a claim surface and was out of scope until 0.16.30. It says *"Every
-     contact is probe-measured"* and ships a primitive chip reading `Box3
-     contact probes`; the tool that would make that re-derivable is not built.
-     A page telling the public what the code does is exactly what this agent is
-     for, and it is the copy nobody was reading.
+     is a claim surface and was out of scope until 0.16.30. A page telling the
+     public what the code does is exactly what this agent is for, and it is the
+     copy nobody was reading. Its *"Every contact is probe-measured"* line and
+     its `Box3 contact probes` chip are **now backed** — `build.js probe` shipped
+     in 0.16.37 and is that tool. So audit whether the claim is *true of the
+     current corpus*, which is a different and harder question than whether the
+     instrument exists. (This bullet previously said the tool "is not built",
+     which turned every run into a standing false positive against a working
+     path.)
 
 3. **Include the claims this diff ADDS.** This is the step most likely to be
    skipped and it is where both of the founding findings were: `method.md`'s Map
@@ -77,8 +92,10 @@ there:
 
 ## Judging what comes back
 
-Weigh every finding against the code yourself before relaying it. Tonight's
-audits produced three verdicts worth remembering, and only one was a defect:
+Weigh every finding against the code yourself before relaying it. Three verdicts
+from the audits that motivated this skill are worth remembering, and only one was
+a defect (undated on purpose — the shapes are what transfer, and a relative date
+in a durable instruction file resolves to nothing in a later session):
 
 - a **real** finding (the stale line count) — act on it;
 - a finding that was **already disclosed** one file over in its proper home —

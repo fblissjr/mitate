@@ -23,6 +23,29 @@ Three companion references hold what this file deliberately does not:
 - `delivery.md` — the GitHub delivery forensics: format tradeoffs, encoder
   settings, the content-type mechanism and its evidence chain.
 
+**Map.** 969 lines, six top-level sections. Deliberately unlinked — a heading map
+costs nothing and cannot dangle, where hand-written anchors ship into an install
+cache unverified. Two outside reviews called this file monolithic; it is long, but
+the shape below is the answer to *where do I read*, and it was previously
+invisible without reading the whole thing.
+
+- **Method** (here) — Three ways a sequence fails · Before you build · Build the control
+- **Axis 1 — Composition**, what fails inside one frame — One frame per beat hides
+  systematic error · Generated keyframes replicate their errors · Subject versus
+  apparatus · Silhouette and its instrument · Dwell: measured, not derived
+- **Axis 2 — Continuity**, what fails between frames — `ss()` has zero derivative
+  at both ends · `during()` is a step function · An effect that finishes does not
+  leave · Cyclic motion derives from progress, not `t` · Hard cuts are the one
+  discontinuity you want
+- **Axis 3 — Semantics**, what fails when it looks right — Cover everything except
+  the geometry · A beat that asserts has no geometry · The hazard of building a
+  film from a document · Two things that must touch · Motion that reads versus
+  causality that reads
+- **The iteration loop** — the actual method, eight steps
+- **Framing rules** and **Determinism rules** — the hard ones; breaking either
+  breaks video/HTML parity. Includes: mutating a shared material is pure only if
+  you restate it · where you will be tempted to break this
+
 ## Three ways a sequence fails
 
 A film can fail on three independent axes, and they need different instruments.

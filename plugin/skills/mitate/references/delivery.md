@@ -13,6 +13,19 @@ specifics are `webgpu-stack.md` and `materials.md`.
 > so they carry over; they have not been re-measured on the node stack. The
 > GitHub content-type findings are about GitHub and are unaffected by either.
 
+**Map.** Deliberately unlinked — a heading map costs nothing and cannot dangle,
+where hand-written anchors ship into an install cache unverified.
+
+- The size win costs decode at playback
+- Encoding AVIF
+- On a page you control, ship the scene — not a recording of it
+- Stills come from the scene, never from the loop
+- Why WebP (and, provisionally, AVIF) embed and mp4 does not
+
+The FORMAT DECISION is not here — it is in SKILL.md, at spec time, which is when
+it has to be made ("four peer formats… choose at spec time, not encode time").
+This file is the operational half: what each format costs and how to produce it.
+
 GitHub renders animated WebP and GIF inline, and — per one confirmed
 still-image fetch plus one real-world report, see below — animated AVIF as
 well. It does **not** render a repo-relative mp4 as a player, and it strips

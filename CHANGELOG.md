@@ -7,6 +7,35 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.19
+
+### changed
+
+The three long references — `method.md` (969 lines), `instruments.md`,
+`delivery.md` — carry a heading map at the top. **Deliberately unlinked:** a map
+costs nothing and cannot dangle, where hand-written anchors would ship into an
+install cache unverified, and this repo has already paid for unverified pointers
+more than once.
+
+This is the cheap answer to the split pressure two independent outside reviews
+applied to `method.md`, and it comes with a hypothesis worth testing: that
+"monolithic" was a NAVIGATION complaint wearing a structure costume. The file has
+27 headings under 6 well-ordered top-level sections and no way to see that
+without reading all 969 lines. If the next reader still wants a split after
+seeing the map, that is the evidence the deferred row has always lacked.
+
+`delivery.md`'s map also states what is NOT in it: the format decision lives in
+SKILL.md, at spec time, which is when it has to be made. The file is the
+operational half. That was already true and unstated — the reason a rename to
+`export.md` was considered and declined is that the content is delivery (where a
+thing renders, what GitHub strips, why stills come from the scene) and only about
+a quarter of it is export. Renaming would have made the name narrower than the
+file and invited a per-format split that the comparative content resists.
+
+`source-of-truth.md` instead moves to the accurate label: **render-side versus
+delivery-side**, not export-side. One line, no pointer cascade, and it closes the
+vocabulary seam that prompted the rename question.
+
 ## 0.16.18
 
 ### fixed

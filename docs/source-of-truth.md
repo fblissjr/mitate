@@ -16,12 +16,12 @@ other surface points at the home. Nothing restates.
 | routing and workflow order | SKILL.md | — |
 | what a check can and cannot see | `references/instruments.md` | smoke.js comments say how, not what-it-means |
 | **render-side** facts — backends, determinism, node stack, per-frame cost | `references/webgpu-stack.md` | — |
-| **export-side** facts — formats, encoders, file size, inline delivery | `references/delivery.md` | — |
+| **delivery-side** facts — formats, encoders, file size, where a thing renders | `references/delivery.md` | — |
 | repo invariants that bite on first edit | CLAUDE.md | — |
 | history — what happened and why | CHANGELOG.md and git | docs speak present tense only |
 
 
-**Render and export are separate domains and must not share a home.** They
+**Render and delivery are separate domains and must not share a home.** They
 measure different things and their figures collide: a "2.3x" exists in each — the
 renderer backend speedup and an AVIF encoder-effort ratio — and a consolidation
 pass nearly merged them as duplicates of one fact. When a figure could belong to

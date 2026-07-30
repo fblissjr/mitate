@@ -32,6 +32,15 @@ you are deciding whether a green result means anything.
 > not a to-do list; it is the reason to distrust an unsourced number here,
 > including the ones below.
 
+**Map.** Deliberately unlinked — a heading map costs nothing and cannot dangle,
+where hand-written anchors ship into an install cache unverified.
+
+- The rule these all serve — *a proxy can reject; it cannot approve*
+- `smoke.js` — the gate, check by check
+- `build.js motion` · `strip` · `sheet` · `aspect` · `poster` — the review tools
+- Where a check belongs: the tool path or the artifact
+- What has no instrument
+
 ## The rule these all serve
 
 > **A proxy can reject. It cannot approve.**

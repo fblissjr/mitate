@@ -157,12 +157,16 @@ const plan = dur => [1, 2, 3, 4].map(i => +(dur * i / 5).toFixed(4));
   for (const [key, r] of rows) {
     if (r.fail) anyFail++;
     const pct = (100 * r.fail / r.n).toFixed(0);
-    const why = r.fail ? (r.race === r.fail ? '  CAPTURE RACE (canvas identical)'
-                        : r.race ? `  ${r.race}/${r.fail} capture race, rest real`
-                        : '  SCENE STATE (canvas differed)')
-                     : '';
-    // In --no-canvas mode there is no label to give, and claiming one would be
-    // inventing a mechanism from a screenshot diff.
+    // NO_CANVAS first, and this ordering is load-bearing. The first version fell
+    // through to 'SCENE STATE (canvas differed)' in --no-canvas mode, where the
+    // canvas is never read — a label asserting a measurement nobody took, printed
+    // by the very instrument built to catch that class. It said so in a comment
+    // and did not implement it.
+    const why = !r.fail ? ''
+      : NO_CANVAS ? '  mechanism UNLABELLED (no readback taken)'
+      : r.race === r.fail ? '  CAPTURE RACE (canvas identical)'
+      : r.race ? `  ${r.race}/${r.fail} capture race, rest real`
+      : '  SCENE STATE (canvas differed)';
     console.log(`  ${r.fail ? 'FAIL' : ' ok '} ${key.padEnd(34)} ${r.fail}/${r.n} (${pct}%)${why}`);
   }
   console.log(anyFail

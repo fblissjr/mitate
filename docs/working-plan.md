@@ -142,7 +142,26 @@ the finding:
 Postmortem of the span that found it:
 `internal/postmortems/2026-07-29_span_instrument-hardening.md` (gitignored, local).
 
-**This is now the top item before Phase 4**, ahead of everything else on this
+**RESOLVED 2026-07-30 — and demoted, then replaced by something worse.** Measured:
+screenshots-only 40%/30%/20% on three cells, versus 0 of 200 with an in-page GPU
+readback inserted, same runner and scenes. The readback is the only variable, so
+the mechanism is a capture race and `settle`'s double rAF is too short on a slow
+GL stack. The corpus was never broken; `smoke.js` was reporting a capture race as
+a scene defect, which the comment above that check says is the one thing it must
+never do — twice now, five months apart.
+
+**The replacement item, which is worse:** `shoot.js --workers N` runs N pages
+capturing concurrently, i.e. maximum presentation contention, and its output is a
+shipped MP4 rather than a gate verdict. If `settle` can be outrun on a slow stack,
+that is where the same mechanism causes real damage, and **nothing samples it.**
+Fix `settle` first, then measure a parallel shoot for stale frames before trusting
+any recorded deliverable made on a contended machine. *Trigger: fired — the
+mechanism is now measured, so the exposure is no longer hypothetical.*
+
+The paragraph this replaces read as follows, and its escalation was right even
+though its substance was wrong:
+
+**This was the top item before Phase 4**, ahead of everything else on this
 page. Not because a bake depends on it, but because the bake's eval criterion 2
 is "smoke green on both backends with the UNTOUCHED checks" and main is currently
 red — and a permanently-red CI teaches people to ignore CI, which is the

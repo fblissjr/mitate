@@ -7,6 +7,42 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.27
+
+### fixed
+
+**The Linux determinism failure was a capture race in the gate, not a defect in
+any film.** Measured on ubuntu-22.04 / WebGL2, 10 repeats: screenshots only gives
+`materials.html@5.36` 40%, `menagerie.html@8.52` 30%, `menagerie.html@5.68` 20%,
+every other cell 0%. The identical run with an in-page GPU readback inserted
+before each screenshot gives **0 of 200** — same runner, same scenes, identical
+`seekTo` sequence.
+
+The readback is the only variable and it eliminates the failure, so the mechanism
+is presentation latency: a real state divergence would survive a readback, which
+reads the canvas and cannot repair it. `settle`'s double rAF (~33ms) is sufficient
+on macOS hardware GL and insufficient on a slow software-GL runner. Every
+previously unexplained property follows — the intermittency, the Linux-only-ness,
+and the failing scene moving between gate runs — and the two affected films are
+the two heaviest to render, which is what a latency-sensitive race predicts.
+
+`references/materials.md` accused a shipped film of carrying state and
+`docs/working-plan.md` made it the top item before Phase 4. Both corrected. The
+escalation was right; the substance was wrong. **`smoke.js` has now reported a
+capture race as a scene defect twice, five months apart, in the same place** —
+which the comment above that check names as the one thing it must never do.
+
+The repair belongs in `settle` (`backend.js`), NOT in the determinism arm.
+Relaxing the arm would be repairing the layer that was correct.
+
+### open, and larger than what closed
+
+`shoot.js --workers N` captures frames from N pages concurrently — maximum
+presentation contention — and its output is a shipped MP4 rather than a gate
+verdict. If `settle` can be outrun on a slow stack, that is where this mechanism
+does real damage, and nothing samples it. Raised by the owner while the
+measurement was running.
+
 ## 0.16.26
 
 ### changed

@@ -87,51 +87,30 @@ then near orb. Verified: the overlap zone composites correctly and the scene
 is byte-deterministic on both backends **on macOS** — and that qualifier is
 load-bearing, because CI refuted the unqualified version.
 
-> **UNRESOLVED on Linux, 2026-07-30. Environment-sensitive, NOT scene-specific,
-> cause unknown.** `materials.html` failed smoke's in-session determinism arm on
-> Linux / WebGL2 — `seekTo(5.36) not deterministic` — on three consecutive CI
-> runs, then passed on two. The next failure was a **different scene at a
-> different timestamp**: `menagerie.html` at `seekTo(8.52)`. Tally on Linux
-> WebGL2: four failures across two scenes and two timestamps, two clean runs.
+> **RESOLVED 2026-07-30: this was never a defect in this film.** `materials.html`
+> failed smoke's in-session determinism arm on Linux/WebGL2 at `seekTo(5.36)`, as
+> did `menagerie.html` at 8.52 and 5.68. Measured rate with screenshots only:
+> 40%, 30%, 20% over 10 repeats. Measured rate with an in-page GPU readback
+> inserted before each screenshot, same runner, same scenes, identical `seekTo`
+> sequence: **0 of 200**.
 >
-> **So this is a class, not a defect in this film**, and it is recorded here only
-> because this is where it was first seen — 3D scenes intermittently failing the
-> in-session determinism arm on Linux, where macOS passes on both hardware and
-> software GL. The two scenes are the two most shading-heavy in the corpus
-> (cel/SSS/glass here, fur/fabric/characters there), which is suggestive and is
-> not evidence. Characterise the rate before diagnosing the mechanism: repeated
-> `workflow_dispatch` runs on an unchanged SHA, counting failures per scene.
+> The readback is the only variable, and it eliminates the failure — so the
+> mechanism is a presentation/capture race, not scene state. A real divergence
+> would survive a readback, which reads the canvas and cannot repair it.
+> `settle`'s double rAF (~33ms) is enough on macOS hardware GL and not enough on
+> a slow software-GL runner. The intermittency, the Linux-only-ness, and the
+> failing scene moving between runs all follow; the two affected films are the
+> two heaviest to render, which is what a latency-sensitive race predicts.
 >
-> **RETRACTION, same day.** After the three failures this entry read
-> "reproducible … so it is a state dependency, not a race." That was wrong, and
-> wrong in this repo's signature way: 3-of-3 was read as proof of determinism
-> when it only ever supported "3 so far," and run four refuted it. Worse, the two
-> passing runs also changed the CI environment (browser install path, an added
-> cache step), so the sample is **confounded** — intermittency and an
-> environment change are indistinguishable in it. No conclusion is available from
-> these five runs, and the correct move is not more samples from an environment
-> nobody pinned. It is to pin the environment first.
+> The ordering discipline above is unaffected and still correct. What was wrong
+> was an earlier version of this note accusing the film of carrying state — and
+> before that, calling three identical failures "reproducible, therefore a state
+> dependency," which four runs later was false. Both retracted. Evidence and the
+> full chain: `internal/postmortems/2026-07-29_span_instrument-hardening.md`.
 >
-> Still notable and still unexplained: every failure landed on the same `t`. A
-> uniformly random flake would not. What is ruled
-> OUT: `t=5.36` falls in the **toon** beat (beats run title 0-2.2, toon 2.2-5.6,
-> skin 5.6-9.2, glass 9.2-13.4), the orbs only move on `pulse(t,'glass',…)`, and
-> no `renderOrder` is set anywhere — so the depth-swapping-transparent-pair
-> exemption below does NOT explain it, and neither does the transmission
-> backdrop. NOT reproducible on macOS: hardware GL and software GL
-> (`ANGLE_BACKEND=swiftshader`) both pass, so there is no local repro loop yet
-> and CI is currently the only instrument that sees it.
->
-> **This must not be resolved by exempting the scene or relaxing the check.**
-> It also must not be declared fixed because it went green — five runs of an
-> unpinned environment cannot support that either.
-> That is the physics-bake proposal's red line #3 verbatim ("smoke's determinism
-> checks are weakened, special-cased, or given a per-scene opt-out"), and the
-> check is behaving correctly: it found something on a platform the claim above
-> was never measured on. When creation order cannot express
-the ordering (objects that swap depth mid-film), set `renderOrder` explicitly
-— and accept that a genuinely depth-swapping transparent pair is currently
-outside the guarantee.
+> **The repair belongs in `settle` (`backend.js`), not here and not in the
+> determinism arm.** Relaxing the arm would be repairing the layer that was
+> right.
 
 ## Bloom (first observations, not yet a rule)
 

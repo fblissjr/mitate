@@ -7,6 +7,43 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.17
+
+### fixed
+
+`build.js vendor` wrote its two build inputs — `.three-entry.js` and the
+intermediate `three.global.js` — to unsalted names in the scene folder, while
+`workspace()` two functions below has been PID-isolated all along. Two
+concurrent `build.js` runs in one scene folder shared both, and the loser's
+`finally` deleted the winner's entry file mid-build. Both are now PID-salted.
+Reachable in exactly the case this repo already documents: more than one session
+live in one checkout. Raised by an outside review; verified by reading, then by
+running an unvendored template through the gate.
+
+### changed
+
+**`bracket-determinism.js` and `bracket-liveplay.js` can now fail.** Both
+printed their rows and exited 0 whatever those rows said — so adding them to CI
+would have bought a green that could not go red, which is the exact shape this
+repo spends its instruments budget arguing against. Each row now carries the
+verdict it must produce, mismatches print `BRACKET FAILED (expected: …)`, and
+the script exits 1. `bracket-determinism.js` also gains the injection-point
+guard `bracket-liveplay.js` already had: a mutation that silently no-ops makes
+a row read like `unmodified` and is how a bracket stops testing anything.
+
+CI now runs all three brackets rather than only the new one. An unrunnable
+control is a defect this repo has already eaten once — rule 5's repro is cited
+as preserved and is not in the tree — and running them is how they stay runnable.
+
+### documented
+
+`settle()` in `backend.js` carries its known limit: two rAFs is ~33ms, so a
+scene that debounced its resize handler past that would be captured mid-relayout.
+No shipped scene or template debounces, so nothing is exposed and the closing
+assertion is deliberately not written. Recorded with a trigger — the first scene
+that debounces, or any resize handler that awaits — because a check with no
+reachable failure is the earn-in shape this repo declines.
+
 ## 0.16.16
 
 ### fixed

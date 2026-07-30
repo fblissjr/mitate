@@ -89,9 +89,15 @@ jobs:
       - name: smoke
         run: cd ws && bun run smoke.js
 
-      # The control for the allow-list this workflow exists because of. It pins
+      # All three brackets. The controls are the reason a green gate means
+      # anything, and an unrunnable control is the defect this repo has already
+      # eaten once (rule 5's repro was cited as preserved and is not in the
+      # tree). Running them here is how they stay runnable. bracket-noise pins
       # the fallback path itself, so it is meaningful wherever it runs.
-      - name: bracket (noise classifier)
+      - name: brackets
         run: |
-          cd ws && NODE_PATH="$PWD/node_modules" \
-            bun run ../plugin/skills/mitate/templates/bracket-noise.js
+          cd ws && for b in noise determinism liveplay; do
+            echo "--- bracket-$b ---"
+            NODE_PATH="$PWD/node_modules" \
+              bun run "../plugin/skills/mitate/templates/bracket-$b.js"
+          done

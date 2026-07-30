@@ -61,8 +61,14 @@ function vendor(dir, target) {
     if (embedded.length) console.log('embedded three (cached) into: ' + embedded.join(', '));
     return embedded;
   }
-  const out = path.join(dir, VENDOR);
-  const entry = path.join(dir, '.three-entry.js');
+  // PID-salted, like workspace() below. Both are build inputs that this
+  // function creates, reads, and unlinks — nothing else on disk names them (the
+  // scene matches VENDOR_TAG's TEXT, not a file). Unsalted, two concurrent
+  // build.js runs in one scene folder shared them, and the loser's `finally`
+  // deleted the winner's entry file mid-build. Reachable in exactly the case
+  // this repo already documents: more than one session live in one checkout.
+  const out = path.join(dir, `.${process.pid}-${VENDOR}`);
+  const entry = path.join(dir, `.three-entry-${process.pid}.js`);
   // The NODE stack: three/webgpu (WebGPURenderer with transparent WebGL2
   // fallback, node materials) + three/tsl (the shading-language node functions,
   // spread flat onto THREE so scene code writes THREE.uniform, THREE.mix,

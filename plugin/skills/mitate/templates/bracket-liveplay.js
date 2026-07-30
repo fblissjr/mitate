@@ -44,20 +44,25 @@ const path = require('path');
 const os = require('os');
 
 const EXAMPLE = path.join(__dirname, '..', 'examples', 'gearbox.html');
+let wrong = 0;
 
+// [tag, patch, expectPlaying] — expectPlaying is what the DETECTOR must
+// conclude. Encoded (0.16.17) because without it this script printed four rows
+// and exited 0 whatever they said: a control that cannot fail is decorative,
+// and putting one in CI buys a green that means nothing.
 const INJECTIONS = [
-  ['unmodified', null],
+  ['unmodified', null, true],
   ['throw in the rAF loop', s => s.replace(
     'function loop(now){if(!playing)return;',
-    'function loop(now){if(!playing)return;if(now>0)throw new Error("injected: loop");', 1)],
+    'function loop(now){if(!playing)return;if(now>0)throw new Error("injected: loop");', 1), false],
   ['throw inside seekTo', s => s.replace(
     'window.seekTo=function(t){',
-    'window.seekTo=function(t){if(t>0)throw new Error("injected: seekTo");', 1)],
+    'window.seekTo=function(t){if(t>0)throw new Error("injected: seekTo");', 1), false],
   ['host swallows the throw', s => s
     .replace('window.seekTo(((now-t0)/1000)%TOTAL);',
              'try{window.seekTo(((now-t0)/1000)%TOTAL);}catch(e){}', 1)
     .replace('window.seekTo=function(t){',
-             'window.seekTo=function(t){if(t>0)throw new Error("injected: swallowed");', 1)],
+             'window.seekTo=function(t){if(t>0)throw new Error("injected: swallowed");', 1), false],
 ];
 
 (async () => {
@@ -65,10 +70,11 @@ const INJECTIONS = [
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'liveplay-'));
   const browser = await chromium.launch({ executablePath: chromiumPath(), args: angleArgs() });
   try {
-    for (const [tag, patch] of INJECTIONS) {
+    for (const [tag, patch, expectPlaying] of INJECTIONS) {
       const body = patch ? patch(src) : src;
       if (patch && body === src) {
         console.log(`${tag.padEnd(26)} SKIPPED — injection point not found (template drifted)`);
+        wrong++;
         continue;
       }
       const out = path.join(dir, tag.replace(/\W+/g, '_') + '.html');
@@ -84,11 +90,20 @@ const INJECTIONS = [
       await page.waitForTimeout(1000);
       const r = await page.evaluate(() => ({ calls: window.__n, distinct: window.__ts.size }));
       const passes = r.calls > 2 && r.distinct > 1;
-      console.log(`${tag.padEnd(26)} calls=${String(r.calls).padStart(3)} distinct=${String(r.distinct).padStart(3)}  -> ${passes ? 'PLAYING' : 'FROZEN (check fires)'}`);
+      const ok = passes === expectPlaying;
+      if (!ok) wrong++;
+      console.log(`${tag.padEnd(26)} calls=${String(r.calls).padStart(3)} distinct=${String(r.distinct).padStart(3)}  -> ${passes ? 'PLAYING' : 'FROZEN (check fires)'}`
+                + `${ok ? '' : `  BRACKET FAILED (expected ${expectPlaying ? 'PLAYING' : 'FROZEN'})`}`);
       await page.close();
     }
   } finally {
     await browser.close();
     fs.rmSync(dir, { recursive: true, force: true });
   }
+  if (wrong) {
+    console.log(`\n${wrong} row(s) did not behave as specified — the live-playback check is not`
+              + ` doing what this bracket claims. Do not trust a green smoke run until this is 0.`);
+    process.exit(1);
+  }
+  console.log('\nall rows as specified');
 })();

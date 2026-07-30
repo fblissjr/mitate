@@ -123,7 +123,17 @@ function angleArgs({ refuseSwiftshaderShip = false } = {}) {
    The double-rAF forces at least one composite containing the new frame
    before the capture's own BeginFrame. Scene contract unchanged: seekTo
    stays synchronous. ONE copy here — this incantation is determinism-
-   critical and was hand-typed at four sites before it was shared. */
+   critical and was hand-typed at four sites before it was shared.
+
+   KNOWN LIMIT, not a defect today. Two rAFs is ~33ms, so a scene that
+   DEBOUNCED its resize handler past that would be captured mid-relayout: the
+   canvas still at the old size, the frame computed at the new one. No shipped
+   scene or template debounces — they resize synchronously — so nothing is
+   currently exposed, and the closing assertion (poll until canvas.width
+   matches the target before settling) is not written for that reason. TRIGGER:
+   the first scene that debounces, or any resize handler that awaits. Raised by
+   an outside review 2026-07-29; recorded rather than fixed, because a check
+   with no reachable failure is the earn-in shape this repo declines. */
 const settle = pg => pg.evaluate('new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))');
 
 // Window shapes for the aspect-invariance instruments, expressed RELATIVE to

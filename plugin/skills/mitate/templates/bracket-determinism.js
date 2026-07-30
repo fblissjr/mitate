@@ -40,24 +40,40 @@ const EXAMPLE = path.join(__dirname, '..', 'examples', 'gearbox.html');
 const T = 3.3;
 const sha = b => crypto.createHash('sha256').update(b).digest('hex').slice(0, 12);
 
+// [label, mutate, expected] — expected is the verdict this row MUST produce.
+// Encoded (0.16.17) because without it this script printed three rows and
+// exited 0 whatever they said: a control that cannot fail is decorative, and
+// putting one in CI buys a green that means nothing.
 const INJECTIONS = [
-  ['unmodified', null],
+  ['unmodified', null, 'PASS'],
   ['state across frames', s => s.replace(
     'window.seekTo=function(t){',
-    'let _acc=0;window.seekTo=function(t){_acc+=0.001;t=t+_acc;', 1)],
+    'let _acc=0;window.seekTo=function(t){_acc+=0.001;t=t+_acc;', 1),
+    'caught in session'],
   ['random seeded at load', s => s.replace(
     'window.seekTo=function(t){',
-    'const _SEED=Math.random()*0.7;window.seekTo=function(t){t=t+_SEED;', 1)],
+    'const _SEED=Math.random()*0.7;window.seekTo=function(t){t=t+_SEED;', 1),
+    'caught ONLY by reload'],
 ];
+let wrong = 0;
 
 (async () => {
   const src = fs.readFileSync(EXAMPLE, 'utf8');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mitate-det-'));
   const browser = await chromium.launch({ executablePath: chromiumPath(), args: angleArgs() });
   try {
-    for (const [label, mutate] of INJECTIONS) {
+    for (const [label, mutate, expected] of INJECTIONS) {
       const file = path.join(dir, 'scene.html');
-      fs.writeFileSync(file, mutate ? mutate(src) : src);
+      const body = mutate ? mutate(src) : src;
+      // Silent injection-point drift is how a bracket quietly stops testing
+      // anything: the mutation no-ops, the row reads like `unmodified`, and the
+      // script still exits 0. bracket-liveplay.js already guarded this.
+      if (mutate && body === src) {
+        console.log(`${label.padEnd(24)} SKIPPED — injection point not found (example drifted)`);
+        wrong++;
+        continue;
+      }
+      fs.writeFileSync(file, body);
       const url = 'file://' + file + '?record=1';
       const shot = async page => {
         await page.evaluate(`window.seekTo(${T})`);
@@ -81,10 +97,19 @@ const INJECTIONS = [
       const verdict = a !== b ? 'caught in session'
                     : a !== c ? 'caught ONLY by reload'
                     : 'PASS';
-      console.log(`${label.padEnd(24)} in-session: ${inSession}  across reload: ${across}  -> ${verdict}`);
+      const ok = verdict === expected;
+      if (!ok) wrong++;
+      console.log(`${label.padEnd(24)} in-session: ${inSession}  across reload: ${across}`
+                + `  -> ${verdict}${ok ? '' : `  BRACKET FAILED (expected: ${expected})`}`);
     }
   } finally {
     await browser.close();
     fs.rmSync(dir, { recursive: true, force: true });
   }
+  if (wrong) {
+    console.log(`\n${wrong} row(s) did not behave as specified — the determinism checks are not`
+              + ` doing what this bracket claims. Do not trust a green smoke run until this is 0.`);
+    process.exit(1);
+  }
+  console.log('\nall rows as specified');
 })();

@@ -91,7 +91,9 @@ malformed source, with a bracket arm proving the refusal, because a malformed
 fence makes a file *leave the parity set*, which is how this check has already
 gone quiet twice while printing `ok`.
 
-**The defect corpus.** New content is generated for it; the mechanics stay the
+**The defect corpus.** It is built from the `circus` scene with a new theme,
+character, name, opening title font and style, set somewhere else with a
+different character; the script stays, and content and captions can stay the
 same. What the
 fixture is for is entirely mechanical and none of it lives in the subject matter:
 ~60 seconds and 31 beats, multi-shot solver traffic, shadowed fur shells, the

@@ -1018,17 +1018,18 @@ property, not the proxy.
    timestamps**. A new instrument then has a positive control the day it is
    written, and a *regression* control the day someone changes it.
 
-   **Generate new content, keep the same mechanics.** What the fixture is for is
-   entirely mechanical and none of it lives in the subject matter: ~60 seconds
-   and 31 beats, multi-shot solver traffic, shadowed fur shells, the character
-   rig. That combination is why it is the only candidate reproducer for the open
-   1-in-6 `WEBGPU=metal` failure — `noise-chart.html` failed to reproduce it in
-   15 runs precisely because it lacks them.
+   **The scene to build it from is `circus`.** Change the theme, the character,
+   the name, the opening title font and the style; set it somewhere else with a
+   different character. **Keep the script** — content and captions can stay the
+   same.
 
-   So **keep** the script structure, the caption cadence, the beat count and
-   durations, the shot pattern and every mechanic; **generate new** scenario,
-   style bible, character, world and title. Same instrument, new content, and
-   trackable.
+   That works because what the fixture is *for* is mechanical and none of it
+   lives in the theme: ~60 seconds and 31 beats, multi-shot solver traffic,
+   shadowed fur shells, the character rig. That combination is why it is the only
+   candidate reproducer for the open 1-in-6 `WEBGPU=metal` failure —
+   `noise-chart.html` failed to reproduce it in 15 runs precisely because it
+   lacks them. So the beat count, durations, caption cadence and shot pattern
+   carry over unchanged, and the instrument keeps its value.
 
    Two constraints on where it lands:
 

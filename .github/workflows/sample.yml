@@ -1,0 +1,58 @@
+# Manual instrument, never automatic. Measures the RATE of the in-session
+# determinism failure per scene and per t, and — the part that matters —
+# discriminates a real scene defect from a capture race.
+#
+# Forward item 2 of the 2026-07-29 span postmortem. On Linux/WebGL2 the gate has
+# failed smoke's determinism arm four times across TWO scenes and TWO timestamps
+# against two clean runs, while macOS passes on hardware and software GL both.
+# Four runs spanning a changed config support no conclusion; a rate does.
+#
+# NOT on push. This is a diagnostic, and a diagnostic that runs unbidden becomes
+# noise that people learn to ignore — the failure mode already tracked for the
+# crushed-exposure threshold.
+#
+# The concurrency group deliberately includes run_id, so repeated dispatches do
+# NOT cancel each other. gate.yml's group intentionally does the opposite: there,
+# superseding an in-flight run of an older commit is correct. Here, cancelling a
+# sibling would destroy exactly the sample being gathered.
+name: sample-determinism
+
+on:
+  workflow_dispatch:
+    inputs:
+      repeats:
+        description: Samples per scene per timestamp
+        required: false
+        default: '10'
+
+concurrency:
+  group: sample-${{ github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  sample:
+    name: determinism rate (Linux WebGL2)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # Examples only: they ship vendored, so three is not needed and the
+      # templates are not what failed.
+      - name: workspace
+        run: |
+          mkdir -p ws
+          cp plugin/skills/mitate/templates/{build.js,backend.js} ws/
+          cp plugin/skills/mitate/examples/*.html ws/
+          cd ws && bun add playwright-core@1.61.1
+
+      - name: chromium
+        run: cd ws && bunx playwright install --with-deps chromium
+
+      # No WEBGPU: the fallback path is where the failure lives.
+      - name: sample
+        run: |
+          cd ws && NODE_PATH="$PWD/node_modules" \
+            bun run ../scripts/sample-determinism.js --repeats ${{ inputs.repeats }}

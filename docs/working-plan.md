@@ -129,9 +129,15 @@ git-based freshness check (`fetch-depth: 0` was required — a shallow clone mak
 every marker look stale). The gate job is 7 of 8 scenes green, and the eighth is
 the finding:
 
-> **`materials.html` fails smoke's in-session determinism arm on ubuntu-latest /
-> WebGL2 — `seekTo(5.36) not deterministic` — reproducibly across three runs,
-> and it does not reproduce on macOS on either hardware or software GL.**
+> **`materials.html` failed smoke's in-session determinism arm on ubuntu-latest /
+> WebGL2 — `seekTo(5.36) not deterministic` — on three consecutive runs, then
+> passed on two. It does not reproduce on macOS on hardware or software GL.**
+>
+> The three-then-two pattern is confounded: the passing runs also changed the CI
+> environment. Intermittency and an environment change cannot be separated in
+> that sample, and an earlier version of this entry called it "reproducible …
+> a state dependency, not a race" on 3-of-3 — retracted. Every failure did land
+> on the same `t`, which a uniform flake would not.
 
 **This is now the top item before Phase 4**, ahead of everything else on this
 page. Not because a bake depends on it, but because the bake's eval criterion 2

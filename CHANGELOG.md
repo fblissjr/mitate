@@ -7,6 +7,58 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.24
+
+### changed
+
+**The playwright container was adopted, measured, and rejected in the same
+session.** It pins the OS and driver stack, which is the variable
+`materials.html` implicates — but it measures **2.31 GB**, of which chromium is
+958 MB and firefox (270 MB) plus webkit (273 MB) are browsers this project will
+never open. GitHub gives each job a fresh VM, so that is a full pull every run,
+replacing a 22-second install of the one browser needed. Two of its three
+justifications did not survive contact: it does not remove the download, it
+multiplies it, and it does not provide a local repro either, because this is an
+arm64 host and the runners are amd64 — a local run is a third environment, not a
+reproduction. Recorded in `gate.yml`'s header so it is not re-adopted on the same
+reasoning.
+
+What survives is the cheap half: `runs-on` is now pinned to **`ubuntu-22.04`**
+rather than `ubuntu-latest`, so "byte-identical within one backend" stops quietly
+meaning "on whatever the runner was today." The Mesa/GL driver stack inside that
+image remains unpinned, and that is stated rather than papered over.
+
+**`selfcheck.js`'s freshness check now derives its own population.** It named
+eight docs, and the list had already gone stale: `docs/predecessor-record.md`
+carries the marker and was silently unchecked — the same hardcoded-count bandaid
+the *adjacent* check in the same file explicitly refuses ("a stale claim with a
+timer on it"). It now takes whatever tracked `.md` actually carries a
+`last updated:` marker, finds **11**, and reports the count instead of asserting
+it. That immediately caught two genuinely stale markers, in
+`docs/predecessor-record.md` and `examples/README.md`, both from substantive
+commits — fixed here.
+
+### quality pass
+
+Applied: the shared one-read of `templates/*.js` (the ratchet and the
+bracket-exit check each walked the directory and re-read the bracket files), and
+`THREE_PIN` scraped once instead of by two regex sites a few lines apart — one
+fact, one read.
+
+Skipped deliberately, with reasons. **The bracket harness is triplicated** —
+temp-dir setup, injection-point drift detection, and the tally/exit report now
+exist three times, which is this repo's own "extract at the third consumer"
+trigger firing for tooling instead of scene code. Real, and tracked, but not done
+at the end of a session: it would refactor three controls that are currently
+verified green, and a broken control is worse than a duplicated one. **The luma
+grid in `diagnose-determinism.js`** duplicates `smoke.js`'s `framingReader`, but
+the only shareable home is `backend.js`, which ships to every installed user — so
+sharing it would add bytes to the install cache for a maintainer-only diagnostic.
+Batching the freshness check's git spawns and parallelising the brackets were both
+declined on measurement: the spawns are tens of milliseconds against an 8s job,
+and `bracket-liveplay.js` asserts on a fixed one-second rAF window that CPU
+contention would flake.
+
 ## 0.16.23
 
 ### fixed

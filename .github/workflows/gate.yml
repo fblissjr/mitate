@@ -16,18 +16,23 @@
 # was measured — they fail for different reasons and have wildly different
 # prices, and bundling them made every docs-only commit pay for a browser.
 #
-# MEASURED on ubuntu-latest, 2026-07-30, three runs:
+# MEASURED on ubuntu-latest, 2026-07-30, five runs on the pre-container config:
 #   static.yml            8s        every push, unfiltered
-#   this workflow      ~3m 04s      of which: chromium 22s (now cached),
-#                                   smoke 2m 36s over 8 scenes, setup ~5s
+#   this workflow    3m04s-5m05s    of which smoke 2m36s over 8 scenes; the
+#                                   chromium install it used to do (22s + apt)
+#                                   is gone, the image carries the browsers
+# No figure is recorded for the container config yet — the first run of it is
+# the measurement, and the pull cost is unknown until then. Do not quote one.
 #
 # No longer unverified on Linux — it ran, and it earned itself immediately:
-# materials.html fails smoke's in-session determinism arm at seekTo(5.36) on
-# ubuntu WebGL2, reproducibly, and does NOT reproduce on macOS on either
-# hardware or software GL. See references/materials.md at the ordering
-# discipline. The first three runs also revealed that the `brackets` step was
-# being SKIPPED every time, because a step after a failing step is skipped by
-# default — hence the `!cancelled()` below.
+# materials.html failed smoke's in-session determinism arm at seekTo(5.36) on
+# ubuntu WebGL2 three runs running, then passed twice with a CI change
+# confounding the sample. Unresolved and environment-sensitive; it does NOT
+# reproduce on macOS on hardware or software GL. See references/materials.md at
+# the ordering discipline, including the retraction of the "reproducible, not a
+# race" reading that 3-of-3 did not support. The first three runs also revealed
+# that the `brackets` step was SKIPPED every time, because a step after a
+# failing step is skipped by default — hence the `!cancelled()` below.
 #
 name: gate
 
@@ -49,15 +54,31 @@ concurrency:
 jobs:
   gate:
     name: gate (smoke on the WebGL2 fallback)
-    runs-on: ubuntu-latest
-    # Browsers land inside the workspace rather than a user-level cache: the
-    # path stays repo-relative, and the run is self-contained the same way a
-    # scene is. playwright-core honours this, so backend.js's resolution finds
-    # it without changes.
-    env:
-      PLAYWRIGHT_BROWSERS_PATH: ws/.pw-browsers
+    runs-on: ubuntu-22.04
+    # PINNED, not `ubuntu-latest`. The reason is the materials.html determinism
+    # failure: it failed three runs, then passed twice with a CI change
+    # confounding the sample, and "byte-identical within one backend" quietly
+    # meant "on whatever ubuntu-latest happened to be today". Naming the runner
+    # is the cheap half of fixing that.
+    #
+    # The expensive half was tried and REJECTED on measurement. A
+    # mcr.microsoft.com/playwright container pins the OS and driver stack too,
+    # and was committed here briefly — then measured at **2.31 GB**, of which
+    # chromium is 958 MB and firefox (270 MB) plus webkit (273 MB) are browsers
+    # this project will never open. GitHub gives each job a fresh VM, so that is
+    # a full pull EVERY run, replacing a 22-second install of the one browser we
+    # need. The container's other two justifications did not survive either: it
+    # does not remove the download, it multiplies it; and it does not give a
+    # local repro, because this is an arm64 host and the runners are amd64, so a
+    # local run is a third environment rather than a reproduction.
+    #
+    # What remains unpinned here: the Mesa/GL driver stack inside the runner
+    # image. That is the variable materials.html implicates, and it is NOT
+    # addressed. Characterizing that failure needs repeated runs, not a heavier
+    # environment — see references/materials.md.
     steps:
       - uses: actions/checkout@v4
+
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
@@ -73,16 +94,6 @@ jobs:
           cp plugin/skills/mitate/templates/*.template.html ws/
           cp plugin/skills/mitate/examples/*.html ws/
           cd ws && bun add three@0.185.1 playwright-core@1.61.1
-
-      # 22s measured, and identical every run — the pin is in the workspace step.
-      - name: cache chromium
-        uses: actions/cache@v4
-        with:
-          path: ws/.pw-browsers
-          key: playwright-1.61.1-${{ runner.os }}
-
-      - name: chromium
-        run: cd ws && bunx playwright install --with-deps chromium
 
       # No WEBGPU. No ANGLE_BACKEND. This is the path that was broken.
       - name: smoke

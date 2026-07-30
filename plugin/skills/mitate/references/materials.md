@@ -87,10 +87,23 @@ then near orb. Verified: the overlap zone composites correctly and the scene
 is byte-deterministic on both backends **on macOS** — and that qualifier is
 load-bearing, because CI refuted the unqualified version.
 
-> **REFUTED on Linux, 2026-07-30, cause unknown.** `materials.html` fails
-> smoke's in-session determinism arm on ubuntu-latest / WebGL2:
-> `seekTo(5.36) not deterministic`. Reproducible — same scene, same `t`, three
-> independent CI runs — so it is a state dependency, not a race. What is ruled
+> **UNRESOLVED on Linux, 2026-07-30. Environment-sensitive; cause unknown.**
+> `materials.html` failed smoke's in-session determinism arm on ubuntu-latest /
+> WebGL2 — `seekTo(5.36) not deterministic` — on three consecutive CI runs, then
+> PASSED on the next two.
+>
+> **RETRACTION, same day.** After the three failures this entry read
+> "reproducible … so it is a state dependency, not a race." That was wrong, and
+> wrong in this repo's signature way: 3-of-3 was read as proof of determinism
+> when it only ever supported "3 so far," and run four refuted it. Worse, the two
+> passing runs also changed the CI environment (browser install path, an added
+> cache step), so the sample is **confounded** — intermittency and an
+> environment change are indistinguishable in it. No conclusion is available from
+> these five runs, and the correct move is not more samples from an environment
+> nobody pinned. It is to pin the environment first.
+>
+> Still notable and still unexplained: every failure landed on the same `t`. A
+> uniformly random flake would not. What is ruled
 > OUT: `t=5.36` falls in the **toon** beat (beats run title 0-2.2, toon 2.2-5.6,
 > skin 5.6-9.2, glass 9.2-13.4), the orbs only move on `pulse(t,'glass',…)`, and
 > no `renderOrder` is set anywhere — so the depth-swapping-transparent-pair
@@ -100,6 +113,8 @@ load-bearing, because CI refuted the unqualified version.
 > and CI is currently the only instrument that sees it.
 >
 > **This must not be resolved by exempting the scene or relaxing the check.**
+> It also must not be declared fixed because it went green — five runs of an
+> unpinned environment cannot support that either.
 > That is the physics-bake proposal's red line #3 verbatim ("smoke's determinism
 > checks are weakened, special-cased, or given a per-scene opt-out"), and the
 > check is behaving correctly: it found something on a platform the claim above

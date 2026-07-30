@@ -32,6 +32,12 @@ const TEMPLATES = path.join(SUBTREE, 'templates');
 const EXAMPLES = path.join(SUBTREE, 'examples');
 
 const R = f => fs.readFileSync(f, 'utf8');
+// THE pin, scraped once. build.js has no require.main guard, so requiring it as
+// a library would run its CLI -- the regex is the only safe read, and doing it
+// in one place keeps this file from becoming a second copy of the fact.
+const threePin = (fs.readFileSync(path.join(__dirname, '..', 'plugin', 'skills',
+  'mitate', 'templates', 'build.js'), 'utf8')
+  .match(/const THREE_PIN = '([^']+)'/) || [])[1];
 // Thresholds, named. Neither is a count of anything in the repo — one
 // distinguishes a vendored library from scene code, the other bounds how far
 // into a file a provenance header may sit.
@@ -65,9 +71,8 @@ const fail = m => fails.push(m);
  * claim; `build.js` refuses to write a wrong one. This asserts every scene
  * carries one and they all agree with the pin declared in build.js. */
 {
-  const build = R(path.join(TEMPLATES, 'build.js'));
-  const pin = (build.match(/const THREE_PIN = '([^']+)'/) || [])[1];
-  if (!pin) fail('build.js no longer declares THREE_PIN — the pin has gone back to being prose');
+  if (!threePin) fail('build.js no longer declares THREE_PIN — the pin has gone back to being prose');
+  const pin = threePin;
   const stamp = /<!-- three (\d+\.\d+\.\d+) embedded by build\.js vendor -->/;
   for (const f of fs.readdirSync(EXAMPLES).filter(f => f.endsWith('.html'))) {
     const s = R(path.join(EXAMPLES, f));
@@ -90,8 +95,7 @@ const fail = m => fails.push(m);
  * appear identically in SKILL.md's install command, and three must additionally
  * match the code. */
 {
-  const build = R(path.join(TEMPLATES, 'build.js'));
-  const pin = (build.match(/const THREE_PIN = '([^']+)'/) || [])[1];
+  const pin = threePin;
   const ci = R(path.join(ROOT, '.github', 'workflows', 'gate.yml'));
   const skill = R(path.join(SUBTREE, 'SKILL.md'));
   const pinned = [...ci.matchAll(/bun add ([^\n]+)/g)]
@@ -107,6 +111,23 @@ const fail = m => fails.push(m);
     if (pkg === 'three' && pin && ver !== pin) {
       fail(`CI installs three@${ver} but build.js pins ${pin} — vendor would refuse what CI installed`);
     }
+  }
+  // The container tag is a FOURTH consumer of the playwright version. An image
+  // shipping browsers for one playwright and a playwright-core pinned to another
+  // is a version skew that presents as mysterious rendering behaviour — exactly
+  // the thing the container was adopted to eliminate.
+  const img = ci.match(/image:\s*mcr\.microsoft\.com\/playwright:v([\d.]+)/);
+  const pw = pinned.find(t => t.startsWith('playwright-core@'));
+  if (img && pw) {
+    const pwVer = pw.split('@').pop();
+    if (img[1] !== pwVer) {
+      fail(`CI's container is playwright v${img[1]} but playwright-core is pinned ${pwVer} `
+         + `— the image's browsers and the client would disagree`);
+    } else {
+      notes.push(`container image v${img[1]} matches the playwright-core pin`);
+    }
+  } else if (img && !pw) {
+    fail('CI pins a playwright container image but installs no pinned playwright-core');
   }
   notes.push(`${pinned.length} pinned dependencies, agreeing across build.js, gate.yml and SKILL.md`);
 }
@@ -194,6 +215,13 @@ const fail = m => fails.push(m);
   notes.push(`${refs.length} references, each with a provenance header and a "Not here" edge`);
 }
 
+// templates/*.js, read ONCE. Checks 5 and 6 below both walk this directory and
+// both read the bracket files; they used to do it separately, which is the same
+// read-it-twice shape the parity check in smoke.js keeps a Map to avoid.
+const templateJs = new Map(
+  fs.readdirSync(TEMPLATES).filter(f => f.endsWith('.js'))
+    .map(f => [f, R(path.join(TEMPLATES, f))]));
+
 /* ---- 5. the measurement-assertion RATCHET --------------------------------
  * Comments in templates/*.js that assert a measurement WITHOUT naming the
  * control that backs it. Auditing them all at once is a chore that recurs; a
@@ -221,8 +249,8 @@ const ASSERT_BUDGET = 46;
   // defined by this check, not by that grep.
   const re = /\/\/.{0,80}?\b(measured|bracketed|confirmed|verified)\b/i;
   let n = 0;
-  for (const f of fs.readdirSync(TEMPLATES).filter(f => f.endsWith('.js'))) {
-    for (const line of R(path.join(TEMPLATES, f)).split('\n')) {
+  for (const [, text] of templateJs) {
+    for (const line of text.split('\n')) {
       // A claim is CONTROLLED if it names something runnable — a bracket or
       // this self-check. The first version recognised only bracket-*.js and so
       // counted "verified by scripts/selfcheck.js" as debt, which punishes
@@ -247,10 +275,10 @@ const ASSERT_BUDGET = 46;
  * for a non-zero exit path, not for correctness — and a proxy can reject, it
  * cannot approve. Running the brackets is what approves them; CI does that. */
 {
-  const brackets = fs.readdirSync(TEMPLATES).filter(f => /^bracket-.*\.js$/.test(f));
+  const brackets = [...templateJs.keys()].filter(f => /^bracket-.*\.js$/.test(f));
   if (!brackets.length) fail('no bracket-*.js found — the controls have gone missing');
   for (const b of brackets) {
-    if (!/process\.exit\(1\)/.test(R(path.join(TEMPLATES, b)))) {
+    if (!/process\.exit\(1\)/.test(templateJs.get(b))) {
       fail(`${b} has no failing exit path — it cannot go red, so its green means nothing`);
     }
   }
@@ -277,9 +305,21 @@ const ASSERT_BUDGET = 46;
   const git = (...a) => execFileSync('git', a, { cwd: ROOT, encoding: 'utf8' }).trim();
   let shallow = 'true';
   try { shallow = git('rev-parse', '--is-shallow-repository'); } catch (e) {}
-  const marked = ['CLAUDE.md', 'README.md', 'docs/plan.md', 'docs/working-plan.md',
-                  'docs/source-of-truth.md', 'docs/pattern-ledger.md',
-                  'docs/physics-bake-proposal.md', 'docs/examples-placement.md'];
+  // DERIVED, not listed. An earlier version named eight paths, and it had
+  // already gone stale: docs/predecessor-record.md carries the marker and was
+  // silently unchecked. That is the same bandaid check 4 above explicitly
+  // refuses ("A hardcoded 8 here would be a stale claim with a timer on it") —
+  // twelve lines away from the comment warning against it. The population is
+  // whatever tracked .md actually carries the marker; the check reports the
+  // count instead of asserting it.
+  let marked = [];
+  try {
+    marked = git('ls-files', '*.md').split('\n').filter(f => {
+      if (!f) return false;
+      const abs = path.join(ROOT, f);
+      return fs.existsSync(abs) && /^last updated:/m.test(R(abs).slice(0, 200));
+    });
+  } catch (e) {}
   if (shallow === 'true') {
     notes.push('freshness markers: skipped, shallow clone (needs fetch-depth: 0)');
   } else {

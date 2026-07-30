@@ -2,7 +2,8 @@
   "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
   "env": { "node": true, "browser": true, "es2024": true },
   "rules": {
-    "no-undef": "error"
+    "no-undef": "error",
+    "no-unused-vars": ["warn", { "caughtErrors": "none" }]
   },
   "ignorePatterns": ["internal/", "site/vendor/", "**/*.html"]
 }

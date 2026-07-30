@@ -4,6 +4,8 @@
 > the templates and shipped examples 2026-07-24 (full source audit;
 > corrections recorded in the changelog). If this file and the code
 > disagree, audit before trusting either — then fix the stale one.
+>
+> **Not here.** node-stack specifics → `webgpu-stack.md`; what each check can and cannot see → `instruments.md`.
 
 
 The backend-agnostic core: the three failure axes, the beats discipline, the

@@ -51,6 +51,13 @@ jobs:
       - name: lint
         run: bunx oxlint@1.76.0 -c .oxlintrc.json plugin/skills/mitate/templates/
 
+      # The instrument pointed at the repo's own claims: version cascade, the
+      # three pin and its per-scene stamps, subtree link resolution, provenance
+      # headers, the measurement-assertion ratchet, and that every bracket has a
+      # failing exit path. No browser, no node_modules, ~instant.
+      - name: self-check
+        run: bun run scripts/selfcheck.js
+
       # Cross-directory, and including the one negated exception in site/films/.
       # A per-directory green does not cover the template-to-example boundary,
       # and drift there is silent (CLAUDE.md invariant 2).
@@ -95,9 +102,10 @@ jobs:
       # tree). Running them here is how they stay runnable. bracket-noise pins
       # the fallback path itself, so it is meaningful wherever it runs.
       - name: brackets
+        # Globbed, not listed: a hardcoded set means a NEW bracket silently
+        # never runs here, which is how a control goes decorative.
         run: |
-          cd ws && for b in noise determinism liveplay; do
-            echo "--- bracket-$b ---"
-            NODE_PATH="$PWD/node_modules" \
-              bun run "../plugin/skills/mitate/templates/bracket-$b.js"
+          cd ws && for b in ../plugin/skills/mitate/templates/bracket-*.js; do
+            echo "--- $(basename "$b") ---"
+            NODE_PATH="$PWD/node_modules" bun run "$b"
           done

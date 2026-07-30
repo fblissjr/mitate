@@ -24,13 +24,15 @@ you are deciding whether a green result means anything.
 > *intent* comment ("this tick is why the frame is deterministic") is checkable by
 > reading. A *measurement assertion* ("measured — does not close the cloak",
 > "40/40 clean", "~2.3x") is a claim about a run that happened elsewhere, and it
-> decays silently the moment the code moves. Measured 2026-07-29: **41
-> measurement-assertions in `templates/*.js` comments; 2 name a runnable
-> harness.** Two known casualties so far — 0.16.9's console anchor, whose comment
+> decays silently the moment the code moves. The repo's own self-check counts the
+> uncontrolled ones and **ratchets** them — the count lives there, once, and is
+> not restated here. Two known casualties so far — 0.16.9's console anchor, whose comment
 > asserted a measurement never taken, and rule 5's `sortObjects` repro, cited as
 > preserved and absent from the tree. That ratio is the size of the class. It is
 > not a to-do list; it is the reason to distrust an unsourced number here,
 > including the ones below.
+>
+> **Not here.** the method itself → `method.md`; backend policy → `webgpu-stack.md`.
 
 **Map.** Deliberately unlinked — a heading map costs nothing and cannot dangle,
 where hand-written anchors ship into an install cache unverified.

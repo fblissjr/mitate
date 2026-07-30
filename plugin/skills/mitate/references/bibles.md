@@ -4,6 +4,8 @@
 > the templates and shipped examples 2026-07-24 (full source audit;
 > corrections recorded in the changelog). If this file and the code
 > disagree, audit before trusting either — then fix the stale one.
+>
+> **Not here.** material recipes → `materials.md`; shot vocabulary → `film-language.md`.
 
 
 A bible is a single object that constrains everything about a film's look —

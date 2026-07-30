@@ -1415,9 +1415,12 @@ none should be believed until it is.
 uses — an untriggered debt list sits, and this session's whole lesson is that
 unverified numbers get published anyway.
 
-- **The measurement-assertion sweep** — 41 comments in `templates/*.js` assert a
-  measurement (`measured`, `bracketed`, `confirmed`, `verified`, bare ratios); **2
-  name a runnable harness.** Two are already known-bad: 0.16.9's console anchor
+- **The measurement-assertion sweep** — comments in `templates/*.js` that assert a
+  measurement (`measured`, `bracketed`, `confirmed`, `verified`) without naming
+  the control behind it. **`scripts/selfcheck.js` owns the count, its definition,
+  and ratchets it**; the figure is deliberately not restated here, because it was
+  published as "41" in three files from a coarser grep and disagreed with the
+  check within a day of being written. Two are known-bad: 0.16.9's console anchor
   asserted a measurement never taken and broke the gate on the default path for
   seven releases, and rule 5's `sortObjects` repro is cited as preserved and is
   absent from the tree. Each survivor either gains a pointer to something

@@ -7,6 +7,64 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.20
+
+### added
+
+**`scripts/selfcheck.js` — the instrument pointed at the repo's own claims.**
+`smoke.js` checks the film; nothing checked the claims about the film, the tools,
+or the pins, and every defect in the 0.16.16-0.16.20 span was exactly that: an
+assertion nobody re-read. Prose could not hold that line, because prose is what
+rotted. Six checks, no browser, no `node_modules`, instant, in CI's cheap stage:
+version-cascade coherence across all three files plus the newest CHANGELOG
+heading; the three pin and its per-scene stamps; markdown links inside the
+shipped subtree resolving *within* it; a provenance header and a `Not here` edge
+on every reference; the measurement-assertion ratchet; and that every bracket has
+a failing exit path. Not in the plugin subtree on purpose — it reads CHANGELOG.md
+and marketplace.json, which no install cache has. It does not read `site/`.
+
+**The three pin is now a fact, not prose.** It lived in a comment
+(`bun add three@0.185.1`) and nothing checked it, so a workspace where someone
+ran `bun add three` without the version embedded whatever it had — silently,
+permanently, into a scene that then looks self-contained and correct.
+Minification mangles three's own `REVISION` into a getter (`REVISION:()=>bK`), so
+the shipped bytes cannot be interrogated after the fact. So: `THREE_PIN` declared
+once in `build.js`, `vendor` resolves the installed version and **refuses to
+embed a mismatch** (`VENDOR_ANY_THREE=1` overrides deliberately), and every
+vendored scene carries a readable stamp naming the version inside it.
+
+Verified both ways before shipping: a fresh IIFE built from `three@0.185.1` is
+**byte-identical** to the one already embedded in `gearbox.html`, which is what
+licensed stamping the five examples as 0.185.1 rather than asserting it — and all
+five carry the identical library. The refusal path was confirmed by faking an
+installed 0.186.0 and watching it refuse.
+
+**A `Not here` edge on all eight references.** Each said what it was canonical
+FOR; none said where the adjacent thing lived, so a reader who guessed wrong had
+nowhere to go — and the ownership map existed only in `docs/source-of-truth.md`,
+outside the subtree, unreachable from an install cache.
+`grep -A1 'Not here' references/*.md` is now the entire relationship graph. That
+is the one thing a schema document or a database would have bought, obtained
+without either, and the self-check fails if an edge goes missing.
+
+### changed
+
+The measurement-assertion count moved out of prose and into the check that
+computes it. It was published as "41" in three files from a coarse shell grep and
+disagreed with the check within a day of being written — so `CLAUDE.md`,
+`instruments.md` and `working-plan.md` now point at `scripts/selfcheck.js` and
+state no figure. The ratchet's budget is the one hardcoded count in that file, and
+it has to be: derive it from the code and the check passes always and measures
+nothing. Every other count there is computed — an earlier draft asserted
+"8 references" and that was a stale claim with a timer on it.
+
+`.oxlintrc.json` stops flagging the deliberate `catch (e) {}` idiom. Fourteen
+warnings on every run is how lint output becomes something people scroll past —
+the same failure the crushed-exposure threshold has.
+
+CI globs `bracket-*.js` instead of listing three names, so a new bracket cannot
+silently never run.
+
 ## 0.16.19
 
 ### changed

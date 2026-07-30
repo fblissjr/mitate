@@ -4,6 +4,8 @@
 > the templates and shipped examples 2026-07-24 (full source audit;
 > corrections recorded in the changelog). If this file and the code
 > disagree, audit before trusting either — then fix the stale one.
+>
+> **Not here.** the determinism rules → `webgpu-stack.md`; the review passes → `method.md`.
 
 
 The cinematography layer: framing described the way a cinematographer would —

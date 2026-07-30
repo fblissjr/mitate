@@ -12,6 +12,8 @@ specifics are `webgpu-stack.md` and `materials.md`.
 > predecessor skill. They operate on encoded output rather than on the renderer,
 > so they carry over; they have not been re-measured on the node stack. The
 > GitHub content-type findings are about GitHub and are unaffected by either.
+>
+> **Not here.** the format DECISION → SKILL.md, at spec time; render-side cost → `webgpu-stack.md`.
 
 **Map.** Deliberately unlinked — a heading map costs nothing and cannot dangle,
 where hand-written anchors ship into an install cache unverified.

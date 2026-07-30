@@ -46,8 +46,38 @@ const REVIEW_EXT = REVIEW_FMT === 'jpeg' ? 'jpg' : 'png';
 const outBase = s => s.replace(/(\.bundled)?\.html$/, '');
 const VENDOR = 'three.global.js';
 const VENDOR_TAG = /<script src="\.\/three\.global\.js"><\/script>/;
+// THE pin, in one place. It was prose in a comment at the top of this file and
+// nothing checked it, so a workspace where someone ran `bun add three` without
+// the version embedded whatever it had — silently, permanently, into a scene
+// that then looks self-contained and correct. Minification mangles three's own
+// REVISION into a getter (`REVISION:()=>bK`), so the shipped bytes cannot be
+// interrogated for a version after the fact. Hence the stamp below: the scene
+// carries, in readable text, which three is inside it.
+const THREE_PIN = '0.185.1';
+// Written here, verified by scripts/selfcheck.js — which fails loudly on every
+// scene at once if this format ever changes, so the format needs no second copy
+// on this side.
+const STAMP = v => `<!-- three ${v} embedded by build.js vendor -->`;
 
 function vendor(dir, target) {
+  // Which three is actually about to be embedded — resolved from the workspace,
+  // not read off the pin, because the pin is what we WANT and this is what we
+  // HAVE. Refuse on mismatch: an unnoticed version swap is undetectable in the
+  // output afterwards (see THREE_PIN). VENDOR_ANY_THREE=1 for a deliberate
+  // upgrade spike, which then has to re-stamp every scene it touches.
+  // Resolved BEFORE the cache check, because the cached path embeds too and a
+  // stamp reading "three undefined" would be worse than no stamp at all.
+  let resolved;
+  try {
+    resolved = require(require.resolve('three/package.json', { paths: [dir, process.cwd()] })).version;
+  } catch (e) {
+    throw new Error(`cannot resolve three from ${dir} — run: bun add three@${THREE_PIN}`);
+  }
+  if (resolved !== THREE_PIN && process.env.VENDOR_ANY_THREE !== '1') {
+    throw new Error(`three ${resolved} installed, but this skill pins ${THREE_PIN}. `
+      + `Embedding the wrong version is invisible in the output. `
+      + `Run: bun add three@${THREE_PIN}   (or VENDOR_ANY_THREE=1 to override deliberately)`);
+  }
   // VENDOR_CACHE: reuse the built library text across calls within one run.
   // The bundle is a pure function of the pinned three version, but smoke.js
   // bundles every template scene through a per-scene `build.js bundle` call,
@@ -57,7 +87,7 @@ function vendor(dir, target) {
   // normal single-scene invocation is unaffected.
   const cache = process.env.VENDOR_CACHE;
   if (cache && fs.existsSync(cache)) {
-    const embedded = target ? embedInto(target, fs.readFileSync(cache, 'utf8')) : [];
+    const embedded = target ? embedInto(target, fs.readFileSync(cache, 'utf8'), resolved) : [];
     if (embedded.length) console.log('embedded three (cached) into: ' + embedded.join(', '));
     return embedded;
   }
@@ -114,7 +144,7 @@ function vendor(dir, target) {
   const lib = fs.readFileSync(out, 'utf8');
   fs.unlinkSync(out);
   if (cache) fs.writeFileSync(cache, lib);
-  const embedded = target ? embedInto(target, lib) : [];
+  const embedded = target ? embedInto(target, lib, resolved) : [];
   if (embedded.length) console.log('embedded three into: ' + embedded.join(', '));
   else console.log('three already embedded (no vendor tag in ' + target + ')');
   return embedded;
@@ -125,13 +155,13 @@ function vendor(dir, target) {
 // `$&`, `$'` and `` $` `` are substitution patterns and minified three contains
 // `$&`, which would splice the matched tag into the middle of the library. Also
 // split any literal </script> so the library cannot terminate the host tag.
-function embedInto(target, lib) {
+function embedInto(target, lib, version) {
   // ONE file: the scene we were asked about. An earlier version walked the whole
   // directory and rewrote every .html carrying the tag, which meant running any
   // command on a scene sitting beside the template it was copied from silently
   // rewrote `scene.template.html` itself with 0.77 MB of inlined three.js — and
   // the result looks idempotent, so nothing ever flags it.
-  const inline = '<script>' + lib.replace(/<\/script>/gi, '<\\/script>') + '</script>';
+  const inline = STAMP(version) + '\n<script>' + lib.replace(/<\/script>/gi, '<\\/script>') + '</script>';
   const html = fs.readFileSync(target, 'utf8');
   if (!VENDOR_TAG.test(html)) return [];
   fs.writeFileSync(target, html.replace(VENDOR_TAG, () => inline));

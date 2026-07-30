@@ -4,6 +4,8 @@
 > the templates and shipped examples 2026-07-24 (full source audit;
 > corrections recorded in the changelog). If this file and the code
 > disagree, audit before trusting either — then fix the stale one.
+>
+> **Not here.** surface and shading packs → `materials.md`; per-beat motion discipline → `method.md`.
 
 
 One parametric skeleton family. A character is a **point in proportion

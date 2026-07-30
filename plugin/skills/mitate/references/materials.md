@@ -4,6 +4,8 @@
 > the templates and shipped examples 2026-07-24 (full source audit;
 > corrections recorded in the changelog). If this file and the code
 > disagree, audit before trusting either — then fix the stale one.
+>
+> **Not here.** the character scaffold → `characters.md`; backend and determinism → `webgpu-stack.md`.
 
 
 Three verified recipes on the node stack, each shipped in

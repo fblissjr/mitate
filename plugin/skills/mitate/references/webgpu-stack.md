@@ -4,6 +4,8 @@
 > the templates and shipped examples 2026-07-24 (full source audit;
 > corrections recorded in the changelog). If this file and the code
 > disagree, audit before trusting either — then fix the stale one.
+>
+> **Not here.** export and delivery formats → `delivery.md`; material recipes → `materials.md`.
 
 
 The renderer-specific half of mitate's 3D backend. The universal method —

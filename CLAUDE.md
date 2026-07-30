@@ -97,9 +97,11 @@ for its red lines.
    which is what keeps them runnable; a new check with no bracket is visibly
    uncontrolled there.
 
-   Standing debt, measured 2026-07-29: **41 measurement-assertions in
-   `templates/*.js` comments, 2 of which name a runnable harness.** That ratio is
-   the size of the class, not a to-do list — see `references/instruments.md`.
+   Standing debt: comments in `templates/*.js` that assert a measurement without
+   naming the control behind it. **`scripts/selfcheck.js` owns the count and its
+   definition, and ratchets it** — the budget may fall, never rise. Do not restate
+   the figure here; it was briefly published in three files from a coarser grep
+   and disagreed with the check within a day.
 
 7. **The installed skill is not the skill you are editing.** `mitate` is
    normally enabled as a plugin on a machine where it is also developed, and the

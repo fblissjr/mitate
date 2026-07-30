@@ -18,8 +18,8 @@ its own graph.
 
 - **What it is, for a user** — `README.md` (repo root), `plugin/README.md`
 - **The skill that ships** — `plugin/skills/mitate/SKILL.md`, plus
-  `references/` (9, including `glossary.md` — the words this project uses as if
-  you knew them), `templates/`, `examples/`, and `plugin/agents/film-reviewer.md`
+  `references/` (start with `glossary.md` — the words this project uses as if you
+  knew them), `templates/`, `examples/`, and `plugin/agents/film-reviewer.md`
 - **Why, and in what order** — `VISION.md` *(planned)*, `docs/addressing.md`
   (what `t` is)
 - **Architecture and phase gates** — `docs/plan.md`
@@ -55,10 +55,9 @@ Two rules. Everything else derives from them, and neither is negotiable.
   **The membership list is not here.** `smoke.js` hard-asserts four names and
   reads the rest behind fallbacks; that tiering is the fact, and its home is
   `smoke.js`'s `CONTRACT` / `SOFT_CONTRACT` with the reader-facing version in
-  [`README.md`](README.md#the-window-contract). This line carried a fourth,
-  shorter list until 0.16.30 — six names, omitting `stopPlayback`, which is one
-  of the four the gate actually enforces. Four copies of one membership, and the
-  only wrong one was in the file that auto-loads.
+  [`README.md`](README.md#the-window-contract). A membership list written here
+  is a fourth copy of a fact the gate already owns, and the copy in the
+  always-loaded file is the one nobody re-reads.
 
 Anything that cannot be had under those rules gets reformulated (bake at build
 time, play back pure) or not had. The Phase 4 bake proposal is exactly that
@@ -81,18 +80,16 @@ for its red lines.
    prose — is plugin content. **SKILL.md is deliberately NOT in the cascade:** it
    carries no `version` and no `author`, because the whole file including
    frontmatter loads into context on activation, so both would be standing cost
-   with no runtime use. Do not add them. SKILL.md carried a
-   `metadata.last_verified` field until 0.16.34 and no longer does: it asserted a
-   human review, sat in always-loaded frontmatter, went stale on every edit, and
-   nothing checked it — it was four days and two releases stale when removed. It
-   now carries a **provenance header** in the body, the same form the references
-   use, which records what was verified against what and IS checked
-   (`selfcheck.js` check 4).
+   with no runtime use. Do not add them, and do not add a
+   freshness field either: SKILL.md's dating lives in a **provenance header** in
+   the body, the same form the references use, because it records what was
+   verified against what and `selfcheck.js` check 4 verifies it.
 
    A **fenced** block (`KERNEL`, `SOLVER`, `RIG`, `DRIVER`, `CHARACTER`, `HTML`)
-   is carried by more files than it looks: both 3D templates, all five examples,
-   and `site/films/gearbox-neon.html` — 8 tracked files for `SOLVER`, 9 for
-   `KERNEL`. Edit every carrier together, then verify with `smoke.js
+   is carried by more files than it looks: both 3D templates, every example, and
+   `site/films/gearbox-neon.html`. The count grows with the corpus and
+   `--parity-only` reports it, so do not write it here. Edit every carrier
+   together, then verify with `smoke.js
    --parity-only templates/*.html examples/*.html` **cross-directory**. A
    per-directory green does not cover the template↔example boundary, and drift
    there is silent.
@@ -105,13 +102,12 @@ for its red lines.
    the install cache has no `docs/`, so such a pointer dangles for every
    installed user. **The plugin README is NOT exempt** — it ships into that same
    cache, so a `../docs/...` link from it dangles for exactly the reader holding
-   it. Verified: the cache contains `.claude-plugin/`, `README.md`, `skills/`
-   and — since 0.16.32 — `agents/`, and no other content (plus plugin-manager
-   dotfiles such as `.in_use`, which are bookkeeping, not yours). **Everything
-   under `plugin/` ships**, which is the rule to reason from rather than that
-   list; `scripts/selfcheck.js` resolves links against the plugin root for
-   exactly that reason, so a new shipped directory is covered the day it exists. Link outside the subtree with an absolute repo URL, which
-   resolves from the cache, a clone, and GitHub alike.
+   it. **Everything under `plugin/` ships** — that is the rule to reason from,
+   rather than a list that goes stale the next time a directory is added.
+   `scripts/selfcheck.js` resolves links against the plugin root for exactly that
+   reason, so a new shipped directory is covered the day it exists. Link outside
+   the subtree with an absolute repo URL, which resolves from the cache, a clone,
+   and GitHub alike.
 
 4. **Films are tracked once.** The scenes live in
    `plugin/skills/mitate/examples/`; `scripts/stage-films.sh` copies them into
@@ -121,9 +117,7 @@ for its red lines.
    variant, so `site/` is its only home. Poster stills live once in `site/posters/`, which
    the skill's `examples/README.md` embeds them by **absolute raw URL** — never a
    relative path, which climbs out of the install cache and breaks for every
-   installed user (this invariant licensed exactly that until 0.16.5). Never
-   re-introduce
-   a second copy of either.
+   installed user. Never re-introduce a second copy of either.
 
 5. **Byte comparison is valid only within one backend.** WebGPU-Metal and the
    WebGL2 fallback do not produce byte-identical frames — that is expected, not
@@ -132,8 +126,8 @@ for its red lines.
 6. **Red before green, on modifications too.** Every gate check ships with a
    bracket (`templates/bracket-*.js`) carrying at least one arm that MUST fail,
    and the bracket exits non-zero when an arm misbehaves. A control that cannot
-   go red is decorative; two of the three shipped brackets were exactly that
-   until 0.16.17, printing rows and exiting 0 whatever the rows said.
+   go red is decorative — a bracket that prints its rows and exits 0 whatever
+   they say is the shape to watch for.
 
    **The rule's teeth are on edits, not features.** The 0.16.16 defect — the
    gate failing every 3D scene on the default path — was introduced by 0.16.9's
@@ -142,15 +136,15 @@ for its red lines.
    filter now matched nothing. So: touching a check, a threshold, a filter, or a
    flag means re-running its bracket **before** the change (prove red is
    reachable) and after (prove green is earned). Writing "measured" in a comment
-   is not the measurement. `.github/workflows/gate.yml` runs all three brackets,
-   which is what keeps them runnable; a new check with no bracket is visibly
-   uncontrolled there.
+   is not the measurement. `.github/workflows/gate.yml` globs `bracket-*.js`, so
+   every bracket runs and a new one is covered the day it is written; a check with
+   no bracket is visibly uncontrolled there.
 
    Standing debt: comments in `templates/*.js` that assert a measurement without
    naming the control behind it. **`scripts/selfcheck.js` owns the count and its
    definition, and ratchets it** — the budget may fall, never rise. Do not restate
-   the figure here; it was briefly published in three files from a coarser grep
-   and disagreed with the check within a day.
+   the figure here: a count written in prose disagrees with the check that
+   derives it, and the check is the one that runs.
 
 7. **The installed skill is not the skill you are editing.** `mitate` is
    normally enabled as a plugin on a machine where it is also developed, and the
@@ -179,13 +173,12 @@ SwiftShader adapter that renders pure black, silently, exit 0. **`shoot.js`**
 refuses `WEBGPU=swiftshader` for exactly this reason — `refuseSwiftshaderShip`
 in `backend.js`, overridable only by `WEBGPU_UNSAFE_SHIP=1`. `smoke.js`
 deliberately does NOT refuse it: its shipped-frame check exists to demonstrate
-that configuration failing, so the gate must be able to enter it. This line named
-the wrong tool until 0.16.18, which inverted the intent — anyone acting on it
-would have "fixed" smoke by breaking the check.
+that configuration failing, so the gate must be able to enter it. Naming the
+wrong tool here inverts the intent: anyone acting on it "fixes" smoke by breaking
+the check.
 
-Also true of the default fallback path: it is CI-safe, and until 0.16.16 the
-gate was failing every 3D scene on it. Nothing ran it unattended. `.github/`
-now does.
+The default fallback path is CI-safe and `.github/` runs it unattended, which is
+the only reason a gate failing every 3D scene on it would be noticed.
 
 ## Conventions
 
@@ -193,9 +186,7 @@ now does.
 - **Postmortems are TRACKED, in [`docs/postmortems/`](docs/postmortems/), named
   `YYYY-MM-DD_<mode>_<slug>.md`** so the listing sorts chronologically and a slug
   grep finds a topic. `.postmortem.json` pins that location so it is a decision
-  rather than an inference. They were gitignored under `internal/` until 0.16.33,
-  which made five tracked files — one of them shipped plugin content — cite
-  evidence that existed on one machine. **Session logs stay local**: the log is
+  rather than an inference. **Session logs stay local**: the log is
   narration, the postmortem is the distilled finding, and only the second is
   citable. A tracked postmortem MAY cite a local-only artifact, but must label it
   `(local)` and must not rest a claim on it. Deliberately no
@@ -204,10 +195,10 @@ now does.
   from frontmatter when you want it. Start with the newest — a postmortem carries
   dated annotations, so its later corrections matter more than its first verdict.
 - Documentation carries a **dated freshness marker**, in whichever of these
-  three forms fits: a `last updated:` line (docs, plans), a dated **provenance
-  header** saying what was verified against what (all eight references — the
-  better instrument, since it records the check and not just the touch), or
-  `metadata.last_verified` (SKILL.md only). A file that is itself a dated record
+  two forms fits: a `last updated:` line (docs, plans), or a dated **provenance
+  header** saying what was verified against what (every reference, and SKILL.md —
+  the better instrument, since it records the check and not just the touch).
+  A file that is itself a dated record
   needs none: `CHANGELOG.md` is dated by entry, and `THIRD_PARTY_LICENSES.md` is
   static legal text. `last updated:` means last **touched**, not last reviewed: a
   commit that edits a dated doc dates it to that commit, or the rule is

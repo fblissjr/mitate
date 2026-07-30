@@ -87,10 +87,20 @@ then near orb. Verified: the overlap zone composites correctly and the scene
 is byte-deterministic on both backends **on macOS** — and that qualifier is
 load-bearing, because CI refuted the unqualified version.
 
-> **UNRESOLVED on Linux, 2026-07-30. Environment-sensitive; cause unknown.**
-> `materials.html` failed smoke's in-session determinism arm on ubuntu-latest /
-> WebGL2 — `seekTo(5.36) not deterministic` — on three consecutive CI runs, then
-> PASSED on the next two.
+> **UNRESOLVED on Linux, 2026-07-30. Environment-sensitive, NOT scene-specific,
+> cause unknown.** `materials.html` failed smoke's in-session determinism arm on
+> Linux / WebGL2 — `seekTo(5.36) not deterministic` — on three consecutive CI
+> runs, then passed on two. The next failure was a **different scene at a
+> different timestamp**: `menagerie.html` at `seekTo(8.52)`. Tally on Linux
+> WebGL2: four failures across two scenes and two timestamps, two clean runs.
+>
+> **So this is a class, not a defect in this film**, and it is recorded here only
+> because this is where it was first seen — 3D scenes intermittently failing the
+> in-session determinism arm on Linux, where macOS passes on both hardware and
+> software GL. The two scenes are the two most shading-heavy in the corpus
+> (cel/SSS/glass here, fur/fabric/characters there), which is suggestive and is
+> not evidence. Characterise the rate before diagnosing the mechanism: repeated
+> `workflow_dispatch` runs on an unchanged SHA, counting failures per scene.
 >
 > **RETRACTION, same day.** After the three failures this entry read
 > "reproducible … so it is a state dependency, not a race." That was wrong, and

@@ -139,6 +139,9 @@ the finding:
 > a state dependency, not a race" on 3-of-3 — retracted. Every failure did land
 > on the same `t`, which a uniform flake would not.
 
+Postmortem of the span that found it:
+`internal/postmortems/2026-07-29_span_instrument-hardening.md` (gitignored, local).
+
 **This is now the top item before Phase 4**, ahead of everything else on this
 page. Not because a bake depends on it, but because the bake's eval criterion 2
 is "smoke green on both backends with the UNTOUCHED checks" and main is currently

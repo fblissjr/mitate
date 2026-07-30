@@ -7,6 +7,24 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.26
+
+### changed
+
+**The Linux determinism failure is a class, not a scene bug.** It was recorded in
+`references/materials.md` as `materials.html` at `seekTo(5.36)`; the next failure
+was a different scene at a different timestamp — `menagerie.html` at
+`seekTo(8.52)`. Tally on Linux WebGL2 is now four failures across two scenes and
+two timestamps against two clean runs, where macOS passes on both hardware and
+software GL. The entry stays where it was first seen but no longer claims to be
+about one film. The two affected scenes are the two most shading-heavy in the
+corpus, which is suggestive and is not evidence.
+
+The instruction that goes with it: characterise the rate before diagnosing the
+mechanism — repeated `workflow_dispatch` runs on an unchanged SHA, counting
+failures per scene. Four runs across a changed configuration supported no
+conclusion, which is what the earlier retraction in this entry already records.
+
 ## 0.16.25
 
 ### fixed

@@ -56,14 +56,23 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const { chromium } = require('playwright-core');
-const { chromiumPath, angleArgs, settle } = require(
+const { chromiumPath, angleArgs, settle, seekSynced } = require(
   path.join(__dirname, '..', 'plugin', 'skills', 'mitate', 'templates', 'backend.js'));
 
 const argv = process.argv.slice(2);
 const ri = argv.indexOf('--repeats');
 const REPEATS = ri >= 0 ? parseInt(argv[ri + 1], 10) : 5;
-// Screenshots only, no in-page readback: matches smoke.js exactly. Loses the
-// mechanism label and gains the ability to see a race the readback would hide.
+// --no-canvas is the CONTROL: a bare seek, which is what smoke.js did BEFORE
+// 0.16.28. It must still fail, or this instrument has stopped detecting anything.
+// Default is the shipped path: backend.js's seekSynced, the actual fix.
+//
+// CORRECTED 2026-07-30, and the error is worth keeping. The first version of this
+// script had two modes and NEITHER exercised seekSynced -- the default used its own
+// bespoke canvasHashAt readback, --no-canvas used a bare seek -- yet the workflow
+// header and the session log both claimed "no_canvas: true must now return 0/200"
+// as the fix's verification criterion. A criterion that cannot test the thing it
+// names is worse than none, and this is the same defect as a comment asserting an
+// untaken measurement: it reads like evidence and is not.
 const NO_CANVAS = argv.includes('--no-canvas');
 let scenes = argv.filter((a, i) => a.endsWith('.html') && (ri < 0 || i !== ri + 1));
 if (!scenes.length) {
@@ -117,16 +126,21 @@ const plan = dur => [1, 2, 3, 4].map(i => +(dur * i / 5).toFixed(4));
             const key = `${scene}@${t}`;
             const rec = tally.get(key) || { fail: 0, race: 0, n: 0 };
             let ca = null, cb = null;
+            // The seek is the ONLY difference between the two modes, which is what
+            // makes the pair an experiment: bare (pre-0.16.28) versus seekSynced
+            // (shipped). canvasHashAt is still available for a mechanism label, but
+            // it is deliberately NOT the thing under test -- testing a bespoke
+            // readback told us about the bespoke readback.
             if (NO_CANVAS) await page.evaluate(`window.seekTo(${t})`);
-            else ca = await canvasHashAt(page, t);
+            else await seekSynced(page, t);
             await settle(page);
             const a = sha(await page.screenshot());
             if (NO_CANVAS) {
               await page.evaluate(`window.seekTo(${dur})`);
               await page.evaluate(`window.seekTo(${t})`);
             } else {
-              await canvasHashAt(page, dur);
-              cb = await canvasHashAt(page, t);
+              await seekSynced(page, dur);
+              await seekSynced(page, t);
             }
             await settle(page);
             const b = sha(await page.screenshot());
@@ -151,7 +165,8 @@ const plan = dur => [1, 2, 3, 4].map(i => +(dur * i / 5).toFixed(4));
   }
 
   console.log(`\nbackend: ${backendSeen}   repeats: ${REPEATS}   platform: ${process.platform}`
-            + `   mode: ${NO_CANVAS ? 'screenshots only (no readback, matches smoke)' : 'canvas + screenshot'}`);
+            + `   mode: ${NO_CANVAS ? 'BARE seek (control: pre-0.16.28, must still fail)'
+                                    : 'seekSynced (shipped path: must be 0 failures)'}`);
   const rows = [...tally.entries()].sort((x, y) => (y[1].fail / y[1].n) - (x[1].fail / x[1].n));
   let anyFail = 0;
   for (const [key, r] of rows) {
@@ -163,7 +178,7 @@ const plan = dur => [1, 2, 3, 4].map(i => +(dur * i / 5).toFixed(4));
     // by the very instrument built to catch that class. It said so in a comment
     // and did not implement it.
     const why = !r.fail ? ''
-      : NO_CANVAS ? '  mechanism UNLABELLED (no readback taken)'
+      : NO_CANVAS ? '  expected — this mode is the control'
       : r.race === r.fail ? '  CAPTURE RACE (canvas identical)'
       : r.race ? `  ${r.race}/${r.fail} capture race, rest real`
       : '  SCENE STATE (canvas differed)';
@@ -171,6 +186,10 @@ const plan = dur => [1, 2, 3, 4].map(i => +(dur * i / 5).toFixed(4));
   }
   console.log(anyFail
     ? `\n${anyFail} of ${rows.length} cells non-deterministic at least once — that is the rate.`
-    : `\nall ${rows.length} cells deterministic in every repeat. A zero rate here is a`
-      + ` result about THIS platform only; the failure has only been seen on Linux.`);
+      + (NO_CANVAS ? ' Expected: this is the control arm.'
+                   : ' NOT expected on the shipped path — seekSynced is still insufficient here.')
+    : `\nall ${rows.length} cells deterministic in every repeat.`
+      + (NO_CANVAS ? ' PROBLEM: the control arm found nothing, so this instrument has'
+                   + ' stopped detecting the race and proves nothing about the fix.'
+                   : ' On the shipped path, on this platform.'));
 })();

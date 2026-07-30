@@ -32,10 +32,10 @@ on:
         default: '10'
       no_canvas:
         description: >
-          Screenshots only, no in-page readback. This is the mode that reproduces
-          the race and therefore the one that verifies the fix — set it true.
-          The default (false) inserts a readback and is now known to mask the
-          failure, which is what identified the mechanism.
+          Run the CONTROL arm: a bare seek, what smoke did before 0.16.28, which
+          must still fail. Leave false to test the SHIPPED path (seekSynced),
+          which must come back clean. Both runs together are the verification;
+          neither alone is.
         required: false
         default: 'false'
 

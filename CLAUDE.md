@@ -141,6 +141,13 @@ now does.
 ## Conventions
 
 - Session logs and scratch renders go under `internal/` (gitignored).
+- **Postmortems live in `internal/postmortems/`, named `YYYY-MM-DD_<mode>_<slug>.md`
+  so the directory listing sorts chronologically and a slug grep finds a topic** —
+  gitignored, so local to one machine, like the session logs. Deliberately no
+  hand-written index: that is a copy whose only consumer is the check that it
+  matches the directory. `/postmortem:postmortem-index` generates a browsable one
+  from frontmatter when you want it. Start with the newest — a postmortem carries
+  dated annotations, so its later corrections matter more than its first verdict.
 - Documentation carries a **dated freshness marker**, in whichever of these
   three forms fits: a `last updated:` line (docs, plans), a dated **provenance
   header** saying what was verified against what (all eight references — the

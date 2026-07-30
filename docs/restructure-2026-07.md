@@ -794,8 +794,10 @@ beat byte-identical or above the 70 dB bar on the three canonical edits
   `films/gearbox-neon.html` is a fence carrier in the parity set;
   `site/posters/` is embedded by `examples/README.md` via absolute raw URL into
   every install cache; `scripts/stage-films.sh` would need a submodule or a
-  duplicate, and duplication breaks films-tracked-once; `static.yml` is the
-  deploy job *and* the `selfcheck.js` gate; and `site/app.js` is the only
+  duplicate, and duplication breaks films-tracked-once; **Netlify's build command
+  IS `scripts/stage-films.sh`** (`site/netlify.toml`), so the site's build depends
+  on a script outside `site/` — verified 2026-07-30 that it works from Netlify's
+  base dir, and the neon variant now derives there; and `site/app.js` is the only
   evidence the window contract drives an external, non-monotonic consumer —
   which R4 wants closer to the tests, not further.
   **Trigger to revisit:** the site grows its own build step or dependency set,

@@ -1,4 +1,4 @@
-last updated: 2026-07-29
+last updated: 2026-07-30
 
 # Where truth lives
 
@@ -19,6 +19,8 @@ other surface points at the home. Nothing restates.
 | **delivery-side** facts — formats, encoders, file size, where a thing renders | `references/delivery.md` | — |
 | repo invariants that bite on first edit | CLAUDE.md | — |
 | history — what happened and why | CHANGELOG.md and git | docs speak present tense only |
+| **a check's pass criterion** | the code that implements the check, beside the flag or constant it governs | CI config and session logs POINT; they never restate it |
+| **what a session did** | `internal/` session logs, one per day | a finding worth keeping is promoted to a postmortem; the log is narration and is not cited by tracked content |
 
 
 **Render and delivery are separate domains and must not share a home.** They
@@ -41,6 +43,30 @@ control you already ran. Make the harness self-contained when the measurement
 is taken — a minute there, unrecoverable later.
 
 Worked instance: CHANGELOG 0.16.2.
+
+## A code comment may not assert what another file does
+
+The boundary every claim-defect in this repo has crossed. Stated as a rule
+because five instances shared it and none was careless:
+
+> **A code comment may assert what its own line does. It may not assert what
+> another file does.** A claim about another file's behaviour belongs in the
+> reference that owns the subject; the comment points and does not restate.
+> Anything else is a claim that cannot be checked from where it lives.
+
+The instances: a solver comment asserting *"the extent check in smoke.js is what
+catches it"* when there is no extent check; a shipped example citing a probe tool
+that has never existed in any generation; `build.js` naming a docs path belonging
+to a different repository; a workflow header carrying a verification criterion
+owned by a script, until the two contradicted each other; and a KERNEL comment
+asserting that different noise tracks are independent when a quarter of the pairs
+alias exactly.
+
+**Two halves, and only one of them is decidable.** Whether a claim about
+behaviour is *true* needs a reader. Whether a cited path *exists* does not, so
+`scripts/selfcheck.js` checks that half on every commit — path-shaped citations
+and bare filenames in a provenance frame, both measured for precision before
+being trusted. The other half is what `doc-claim-auditor` is for.
 
 ## The rules
 

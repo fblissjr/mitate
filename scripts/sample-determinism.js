@@ -131,6 +131,10 @@ const plan = dur => [1, 2, 3, 4].map(i => +(dur * i / 5).toFixed(4));
             // (shipped). canvasHashAt is still available for a mechanism label, but
             // it is deliberately NOT the thing under test -- testing a bespoke
             // readback told us about the bespoke readback.
+            // selfcheck: bare-seek-is-the-control — this arm MUST stay bare. It
+            // reproduces the pre-0.16.28 pattern so the pair is an experiment;
+            // "fixing" it to seekSynced would make both arms the shipped path
+            // and the instrument would measure nothing.
             if (NO_CANVAS) await page.evaluate(`window.seekTo(${t})`);
             else await seekSynced(page, t);
             await settle(page);

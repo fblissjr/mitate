@@ -313,7 +313,29 @@ Each item here is a check, not a cleanup.
    audits it. A public page asserting a capability is exactly what that agent
    exists to check. One line in the skill's scope.
 
-**Gate R1:** each new arm demonstrated red on a deliberately broken copy, then
+**Gate R1 — MET 2026-07-30, shipped as 0.16.31.** `bracket-parity.js` green on
+all five arms, and demonstrated **red against the real regression** rather than a
+synthetic one: with the half-fenced guard reverted in a scratch `smoke.js`, both
+mangled-marker arms flip to `inert` and it exits 1. The seek arm demonstrated red
+by dropping the pre-fix `bracket-determinism.js` into the tree and green when
+removed. `selfcheck` green at 4 brackets; `gate.yml` globs `bracket-*.js`, so the
+new control was in CI the moment it existed.
+
+**Two items deliberately not done, with reasons rather than silence:**
+- **The `artifacts:` resolver moves to R2.** `docs/postmortems/` does not exist
+  yet, so the arm would scan zero files and print ok — a decorative check, which
+  is what this phase exists to stop shipping.
+- **`doc-claim-auditor` over `site/index.html` is scoped, not yet run.** Its one
+  known finding is the probe claim, which R2 resolves by shipping the tool. Running
+  it now would produce a report whose only item is already scheduled.
+
+**One trigger fired and is recorded, not acted on:** `working-plan.md` defers
+"extracting a shared bracket harness" until *the fourth bracket*. This is the
+fourth. It named `bracket-sortobjects.js` specifically, so the letter has not
+fired but the count has — and all four now duplicate temp-dir setup, fixture
+mutation and an expected-verdict table. Worth revisiting when a fifth is written.
+
+Original gate text: each new arm demonstrated red on a deliberately broken copy, then
 green. `.github/workflows/gate.yml` runs the new bracket (its glob already
 picks it up). `doc-claim-auditor` run once over `site/index.html`, findings
 dispositioned.

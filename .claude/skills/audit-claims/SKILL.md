@@ -1,6 +1,6 @@
 ---
 name: audit-claims
-description: Check that this repo's claims still match its code — reference docs, CLAUDE.md, and the load-bearing comments in templates/*.js — by dispatching doc-claim-auditor at whatever the current diff touched. Use before committing a change that edits code a reference describes, after writing or revising any reference or invariant, or when a claim's freshness is in doubt. Read-only: reports drift, does not rewrite.
+description: Check that this repo's claims still match its code — reference docs, CLAUDE.md, the load-bearing comments in templates/*.js, and the public capability claims on the showcase site — by dispatching doc-claim-auditor at whatever the current diff touched. Use before committing a change that edits code a reference describes, after writing or revising any reference or invariant, or when a claim's freshness is in doubt. Read-only: reports drift, does not rewrite.
 ---
 
 # audit-claims
@@ -50,6 +50,12 @@ there:
      asserting a measurement.
    - Changed invariants or conventions → `CLAUDE.md`, and check it against the
      code it claims to describe.
+   - **Changed capability, or a claim about one → `site/index.html`.** The site
+     is a claim surface and was out of scope until 0.16.30. It says *"Every
+     contact is probe-measured"* and ships a primitive chip reading `Box3
+     contact probes`; the tool that would make that re-derivable is not built.
+     A page telling the public what the code does is exactly what this agent is
+     for, and it is the copy nobody was reading.
 
 3. **Include the claims this diff ADDS.** This is the step most likely to be
    skipped and it is where both of the founding findings were: `method.md`'s Map

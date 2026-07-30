@@ -285,6 +285,133 @@ const ASSERT_BUDGET = 46;
   notes.push(`${brackets.length} brackets, each with a failing exit path (proxy: not a correctness check)`);
 }
 
+/* ---- 6b. tool JS, read once -------------------------------------------- */
+const toolJs = new Map([
+  ...templateJs,
+  ...fs.readdirSync(__dirname).filter(f => f.endsWith('.js'))
+    .map(f => ['scripts/' + f, R(path.join(__dirname, f))]),
+]);
+
+/* ---- 6c. no bare seek before a capture ------------------------------------
+ * 0.16.28 measured a bare `evaluate('window.seekTo(t)')` followed by a capture
+ * at 40/30/20 percent byte-differences on ubuntu-22.04/WebGL2, against 0 of 200
+ * once the seek and a GPU readback shared one page task. backend.js's seekSynced
+ * is that fix. It did not reach every consumer: bracket-determinism.js still
+ * bare-seeked through 0.16.29, passing while exercising a pattern nothing ships.
+ *
+ * SPEC'D ON THE PATTERN, NOT THE IMPORT, and the difference is the whole check.
+ * The obvious version -- "requires backend.js and screenshots but never calls
+ * seekSynced" -- condemns scripts/diagnose-determinism.js, which is CORRECT: its
+ * gridAt seeks and reads back in one evaluate, and it cannot delegate to
+ * seekSynced because there the completion barrier and the diagnostic payload are
+ * the same readback. A check whose first act is to condemn a correct file is
+ * worse than no check. So: does this evaluate seek AND read pixels back? */
+{
+  // THE SPEC TOOK THREE TRIES AND THE FIRST TWO WERE WRONG, which is recorded
+  // because the wrong ones look reasonable:
+  //   1. "requires backend.js, screenshots, never calls seekSynced" — condemns
+  //      diagnose-determinism.js, which is correct.
+  //   2. "any evaluate that seeks without reading back" — condemns
+  //      bracket-liveplay.js (it wraps seekTo to COUNT calls, never captures)
+  //      and sample-determinism.js's control arm. Forbidding the control that
+  //      proves the fix works is worse than not checking at all.
+  // What is actually wrong is narrower: a bare seek WHOSE RESULT IS CAPTURED.
+  // Hence the window: an evaluate that seeks, a .screenshot() within six lines,
+  // and no readback between them. Measured against the pre-fix
+  // bracket-determinism.js, which it catches, and against the tree, which is
+  // clean but for one declared control.
+  const WINDOW = 6;
+  // A deliberate bare seek declares itself HERE, at the site, not in an
+  // allowlist in this file. sample-determinism.js's --no-canvas arm is the
+  // control for 0.16.28: it must keep bare-seeking or it stops measuring
+  // anything. Same idiom as path-privacy's skip-file marker — an exemption a
+  // reader meets next to the code it excuses.
+  const OPT_OUT = /selfcheck: bare-seek-is-the-control/;
+  let captures = 0;
+  for (const [name, text] of toolJs) {
+    const lines = text.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      if (!/\.evaluate\(/.test(lines[i])) continue;
+      const win = lines.slice(i, i + WINDOW).join('\n');
+      if (!/window\.seekTo/.test(win) || !/\.screenshot\(/.test(win)) continue;
+      if (/getImageData/.test(win)) continue;      // readback present: synced
+      captures++;
+      // Look BEHIND as well as ahead for the marker: a comment explaining a
+      // deliberate bare seek sits above the line it excuses, not below it. The
+      // first version searched only forward and rejected the one declared
+      // control in the tree, which is the same false-accusation failure the
+      // spec notes above were written about.
+      if (OPT_OUT.test(lines.slice(Math.max(0, i - 5), i + WINDOW).join('\n'))) continue;
+      fail(`${name}:${i + 1} seeks in a page.evaluate and captures within ${WINDOW} lines `
+         + `with no pixel readback between — the capture race measured at 40/30/20 on a `
+         + `slow GL stack, 0 of 200 once seek and readback shared a task. Use backend.js's `
+         + `seekSynced. If the bare seek IS the control, say so on the line.`);
+    }
+  }
+  notes.push(`seek-then-capture sites: ${captures}, all synced or declared controls`);
+}
+
+/* ---- 6d. a comment may not cite a file that does not exist ----------------
+ * The boundary every claim-defect in this repo has crossed: a comment may assert
+ * what its own line does; it may not assert what another file does. The
+ * unfalsifiable half of that is decidable, so it gets a check.
+ *
+ * Caught, had it existed: a shipped example pointing at a probe tool that has
+ * never existed in ANY generation of this project (both frozen predecessors
+ * grepped), cited as the provenance for the one constant that makes its gag
+ * land; and build.js naming a docs path belonging to a different repo. Both read
+ * as evidence and were not. */
+{
+  // TWO NARROW PATTERNS, chosen by measurement rather than by taste. The broad
+  // version -- any `\w+\.(js|md|html)` token in a comment -- was written first
+  // and reported 46 failures, of which 45 were `scene.html`, `template.html` and
+  // `three.js`: usage-string placeholders and a library's name. Precision is
+  // what separates a gate from noise, so it was narrowed until the hits were
+  // explicable, and the two that survive are exactly the shapes that went wrong.
+  //
+  //   PATHY -- a token containing a slash. Placeholders never do.
+  //   PROV  -- a bare filename in a citation frame (see X, recorded in X).
+  //            A "see <tool>" frame is a provenance claim; a usage line like
+  //            "bun run smoke.js scene.html" is not.
+  const PATHY = /\b[\w][\w.-]*(?:\/[\w.-]+)+\.(?:js|md|html|json|yml|sh)\b/g;
+  const PROV = /\b(?:see|per|recorded in|preserved in|cited in|documented in)\s+`?([\w][\w.-]*\.(?:js|md|html|json|yml|sh))`?/gi;
+  // Upstream paths inside a dependency, which a comment may legitimately name
+  // and this repo will never contain. One entry, and it earned it: three dropped
+  // its UMD build after 0.160, which is why build.js explains the vendoring.
+  const EXTERNAL_OK = new Set(['build/three.min.js']);
+  const present = new Set();
+  const walk = d => {
+    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+      if (/^(\.git|node_modules|internal)$/.test(e.name)) continue;
+      const p = path.join(d, e.name);
+      if (e.isDirectory()) walk(p); else present.add(e.name);
+    }
+  };
+  walk(ROOT);
+  const commentRe = /(?:\/\/|\*|#).*/g;
+  let cited = 0;
+  const flag = (name, tok) => {
+    cited++;
+    if (present.has(path.basename(tok)) || EXTERNAL_OK.has(tok)) return;
+    fail(`${name} cites \`${tok}\` in a comment and no such file exists in the repo. `
+       + `A comment may name a rule; it may not cite a path its reader cannot reach.`);
+  };
+  for (const [name, text] of toolJs) {
+    for (const line of text.match(commentRe) || []) {
+      for (const tok of line.match(PATHY) || []) flag(name, tok);
+      let m; PROV.lastIndex = 0;
+      while ((m = PROV.exec(line))) flag(name, m[1]);
+    }
+  }
+  // SCOPE, and why it is not wider yet: scene HTML carries the live instance of
+  // this defect -- examples/bear-and-bees.html cites a probe.js that has never
+  // existed, as the provenance for the constant that makes its gag land. That
+  // citation becomes TRUE when probe ships, so extending this check to scene
+  // HTML is queued behind it. Widening now would mean shipping the check with a
+  // standing exemption for a known-bad line, which is how a ratchet rots.
+  notes.push(`${cited} cited paths in tool comments, all resolving (scene HTML pending probe)`);
+}
+
 /* ---- 7. dated freshness markers are not older than the file ---------------
  * CLAUDE.md's Conventions section mandates a `last updated:` marker on docs and
  * plans, and CLAUDE.md itself carried a four-day-stale one — found by an audit,

@@ -7,6 +7,70 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.31
+
+### added
+
+**`bracket-parity.js` — the fence check finally has a control.** Parity is this
+repo's entire answer to duplication: self-containment forbids a shared import, so
+six fenced blocks are written into nine files and a check reports divergence.
+That makes it load-bearing in a way most checks are not — if it goes quiet, the
+DRY guarantee goes with it and nothing announces the loss. It has gone quiet
+twice, both recorded in `smoke.js`: a mangled `KERNEL-ENDX` satisfied an
+`includes()` test, so the block stopped extracting, the file dropped out of the
+parity set, and the run stayed green; and a scan where one file carried a fence
+printed `parity/integrity: ok` for a comparison that never happened. Both are
+guarded now, and until this release nothing proved the guards work.
+
+Five arms: identical carriers pass, drifted KERNEL fails, mangled END fails,
+mangled START fails, single carrier reports inert rather than passing silently.
+Verified red against the real regression, not a synthetic one — with the
+half-fenced guard reverted in a scratch copy of `smoke.js`, the two mangled-marker
+arms flip to `inert` and the bracket exits 1. No browser and no `node_modules`:
+`--parity-only` is pure string work, so it runs from a clean checkout, and
+`gate.yml` globs `bracket-*.js` so it was already in CI the moment it existed.
+
+**Two `selfcheck.js` arms, both spec'd by measurement rather than by taste.**
+
+*No bare seek before a capture.* An evaluate that seeks, a `.screenshot()` within
+six lines, and no pixel readback between — the pattern measured at 40/30/20 on a
+slow GL stack against 0 of 200 when seek and readback share a task. **The first
+two specs were wrong and are recorded in the source, because both looked
+reasonable.** "Requires backend.js, screenshots, never calls seekSynced" condemns
+`diagnose-determinism.js`, which is correct. "Any evaluate that seeks without
+reading back" condemns `bracket-liveplay.js`, which counts seek calls and never
+captures, and `sample-determinism.js`'s control arm — forbidding the control that
+proves the fix works is worse than not checking. A deliberate bare seek now
+declares itself at the site with a marker, the way path-privacy's skip-file works,
+rather than hiding in an allowlist. Demonstrated red by dropping the pre-fix
+bracket into the tree, and green when removed.
+
+*A comment may not cite a file that does not exist.* The decidable half of the
+boundary rule below. The broad version — any `\w+.(js|md|html)` token in a
+comment — was written first and reported 46 failures, of which 45 were
+`scene.html`, `template.html` and `three.js`: usage placeholders and a library's
+name. Narrowed to path-shaped tokens and bare filenames in a provenance frame,
+which leaves two hits in the whole tree, both explicable. Scene HTML is
+deliberately still out of scope: it carries the live instance, and that citation
+becomes true when `probe` ships, so widening now would mean shipping a check with
+a standing exemption for a known-bad line.
+
+### changed
+
+**`source-of-truth.md` gains the rule every claim-defect in this repo has
+broken:** a code comment may assert what its own line does, and may not assert
+what another file does. Five instances shared that shape and none was careless.
+Its table also gains two rows for the surfaces where the one-home rule was never
+applied and where it consequently failed — a check's pass criterion belongs to
+the code that implements it, and CI config and session logs point rather than
+restate.
+
+**`audit-claims` now covers `site/index.html`.** The site is a capability-claim
+surface and was out of scope: it states *"Every contact is probe-measured"* and
+ships a chip reading `Box3 contact probes` while the tool that would make either
+re-derivable does not exist. A public page describing what the code does is
+exactly what `doc-claim-auditor` is for, and it was the copy nobody read.
+
 ## 0.16.30
 
 ### fixed

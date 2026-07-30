@@ -52,7 +52,9 @@ roughly 700px of frame width.
 **Where it is.** There's a balance in building in AI between "unfinished" and
 "over-engineered", and this sits on the unfinished side (I think). Everything
 here runs 12 to 21 seconds — kept short so the examples open as live HTML on
-ordinary devices; nothing caps duration, but longer has not been shipped.
+ordinary devices. **Nothing caps duration**: a 60-second film has been built, and
+a frame at t=18000 costs what a frame at t=1 costs, because the scene graph is
+built once and every frame restates it rather than accumulating.
 Characters are one skeleton family. I don't know yet whether this is useful — it
 is fun to tinker with and see what it can do, and that is why it is public.
 
@@ -100,9 +102,11 @@ approval process flows"*, *"make a boss-intro cutscene for this creature"*,
 *"turn docs/data-flywheel.md into an explainer"*, *"make this joke an animated
 meme"*.
 
-The shipped examples run 12 to 21 seconds. A film lasts exactly as long as the
-beats written for it, so there is no built-in ceiling — but nothing longer has
-been built or gated yet, so treat longer as untested rather than promised.
+The shipped examples run 12 to 21 seconds; a 60-second one has been built. A film
+lasts exactly as long as the beats written for it, and the HTML file is the same
+size either way, because the duration is a number in a table. What grows with
+length is recording time and the number of beats to author and review — not the
+artifact, the memory, or the cost of a frame.
 
 **WebGPU is not required** — scenes use three.js `WebGPURenderer`, which falls
 back to WebGL2 transparently, so any WebGL2 browser plays one.

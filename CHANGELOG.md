@@ -7,6 +7,80 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.36
+
+### changed
+
+**The skill description was measured, not edited to taste.** 232 → 191 words,
+1354 → 1093 characters, with an empirically identical trigger rate. Run against a
+20-query eval set (10 should-trigger, 10 near-miss negatives), 5 runs per query,
+on the same model this session used, from a neutral project root so this repo's
+own `CLAUDE.md` could not bias the decisions.
+
+| description | words | passes | false triggers |
+|---|---|---|---|
+| baseline | 232 | 18/20 | 0/50 |
+| **shipped (architecture cut, NOT INTERACTIVE added)** | **191** | **18/20** | **0/50** |
+| red arm — constraint disclosure removed | 149 | 17/20 | **4/50** |
+
+Two results, and the second is the one that matters:
+
+**The 53-word renderer-architecture clause gates nothing.** TSL, MaterialX,
+`WebGPURenderer`, the Canvas2D backend, "pure function of time t" — 24% of the
+description's characters, and removing it verbatim changed no measured outcome.
+Nobody asks for an animation differently because of TSL.
+
+**The constraint disclosure is load-bearing, and that is now measured rather than
+assumed.** Strip it and a "10-minute animated course module with chapters and
+quiz cards" — a near-miss negative — flips from 0/5 to 4/5 false triggers. That
+is the only false trigger observed in 1,000+ negative runs across six
+descriptions, so the negative half of the eval set can detect a mis-trigger, and
+the disclosure is what prevents it.
+
+**The false duration ceiling is gone from the description too.** `films are SHORT
+(beats run 3-4s, shipped examples 12-21s)` was replaced by `NOT INTERACTIVE (a
+film plays; it does not respond to clicks…)`, and the course-module negative
+still holds at 0/5 — confirmed at 0/10 on a re-run at double the sample. So the
+false claim was never doing the discriminating work, and the description no
+longer contradicts the body. `README.md`'s two carriers of the same figure are
+corrected in the same pass.
+
+**A defect in the measuring tool had to be fixed before any number meant
+anything.** `skill-creator`'s `run_eval.py` writes every parallel worker's command
+file into one shared `.claude/commands/`, so with N workers Claude sees N
+identically-described skills, names whichever it picked, and the membership test
+reads False for the other N−1 *even though the skill triggered*. Measured rate
+collapses to roughly (true rate)/N. Proven with a control on a patched scratch
+copy: same positives, same 12 workers, `0/5, 0/5, 1/5, 2/5` before → `3/3, 3/3,
+3/3, 0/3` after. **Anyone running that tool with `--num-workers > 1` is reading
+noise.** Reported upstream-worthy; the patch was not applied to this repo, which
+does not vendor it.
+
+### added
+
+**`build.js probe` learns `shape(x)`.** Probing the erupt foot-slide cost two
+page loads to discover that a rig's limbs are keyed `HL/HR/FL/FR` rather than
+indexed — guessing at structure, in the instrument built so that measuring beats
+inferring. `shape()` reports keys for an object, length and element shape for an
+array, type and child count for an `Object3D`; a failed expression now names the
+`shape()` call to run next, collapsing that two-call sequence into one.
+
+Checked before building: probe **cannot** list what a scene exposes. A classic
+script's top-level `let`/`const` live in the global lexical environment, which is
+not enumerable — which is exactly why they are reachable by name and absent from
+`window`. So auto-discovery is impossible and only the structural half was built.
+
+**`bibles.md` separates the contract from the per-backend vocabulary.** Its own
+heading was already "The v2 shape (node stack)" while `scene2d.template.html`
+ships with no art-direction reference at all. The contract — the whole look as
+one object switched by one line, constraining *how* and never *what* — holds on
+any backend; the field list does not, since a flat-vector bible cannot mean lens
+or depth of field. A backend table now carries that, with 2D's real surface named
+and the brief for whoever writes it. Flat files rather than a `bibles/` subfolder,
+for a checkable reason: `selfcheck`'s provenance check reads `references/*.md`
+non-recursively, so a subfoldered reference would ship with no provenance
+enforcement. The trigger to subfolder is one backend needing more than one file.
+
 ## 0.16.35
 
 ### added

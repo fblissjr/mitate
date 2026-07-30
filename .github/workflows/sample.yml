@@ -24,6 +24,14 @@ on:
         description: Samples per scene per timestamp
         required: false
         default: '10'
+      no_canvas:
+        description: >
+          Screenshots only, no in-page readback — matches what smoke.js compares.
+          The first canvas+screenshot run was 0/200 on Linux, and the readback is
+          the prime suspect for suppressing a presentation race, so run this to
+          see the failure the other mode may be hiding.
+        required: false
+        default: 'false'
 
 concurrency:
   group: sample-${{ github.run_id }}
@@ -55,4 +63,5 @@ jobs:
       - name: sample
         run: |
           cd ws && NODE_PATH="$PWD/node_modules" \
-            bun run ../scripts/sample-determinism.js --repeats ${{ inputs.repeats }}
+            bun run ../scripts/sample-determinism.js --repeats ${{ inputs.repeats }} \
+              ${{ inputs.no_canvas == 'true' && '--no-canvas' || '' }}

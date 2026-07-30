@@ -33,6 +33,22 @@
  *
  * If the Linux failures are the second row, the films are fine and `settle` is
  * the thing to fix.
+ *
+ * OBSERVER EFFECT, measured the hard way. The first Linux run of this script was
+ * 0 failures in 200 samples, on the platform where the gate had failed four
+ * times — and the likeliest reason is this script itself. `canvasHashAt` does a
+ * drawImage + getImageData, which is a GPU READBACK, which forces a
+ * synchronization point. If the failure is a presentation race, the discriminator
+ * suppresses the phenomenon it exists to observe.
+ *
+ * Hence --no-canvas: screenshots only, exactly what smoke.js compares, no
+ * readback. Run BOTH and the pair is the experiment:
+ *
+ *   fails without the readback, clean with it -> a capture race, near-proven,
+ *     and the readback is what masks it
+ *   clean both ways -> the difference is elsewhere in what smoke does per page
+ *     (a cold ?strip=text page, a live-playback page, three viewport resizes for
+ *     framing, exposure sampling) and this script is too gentle to reproduce it
  * Exits 0 whatever it finds: this is an instrument, not a gate. A rate of zero is
  * a result, and a non-zero rate is the finding it exists to produce.
  */
@@ -46,6 +62,9 @@ const { chromiumPath, angleArgs, settle } = require(
 const argv = process.argv.slice(2);
 const ri = argv.indexOf('--repeats');
 const REPEATS = ri >= 0 ? parseInt(argv[ri + 1], 10) : 5;
+// Screenshots only, no in-page readback: matches smoke.js exactly. Loses the
+// mechanism label and gains the ability to see a race the readback would hide.
+const NO_CANVAS = argv.includes('--no-canvas');
 let scenes = argv.filter((a, i) => a.endsWith('.html') && (ri < 0 || i !== ri + 1));
 if (!scenes.length) {
   scenes = fs.readdirSync(process.cwd())
@@ -97,18 +116,25 @@ const plan = dur => [1, 2, 3, 4].map(i => +(dur * i / 5).toFixed(4));
           for (const t of plan(dur)) {
             const key = `${scene}@${t}`;
             const rec = tally.get(key) || { fail: 0, race: 0, n: 0 };
-            const ca = await canvasHashAt(page, t);
+            let ca = null, cb = null;
+            if (NO_CANVAS) await page.evaluate(`window.seekTo(${t})`);
+            else ca = await canvasHashAt(page, t);
             await settle(page);
             const a = sha(await page.screenshot());
-            await canvasHashAt(page, dur);
-            const cb = await canvasHashAt(page, t);
+            if (NO_CANVAS) {
+              await page.evaluate(`window.seekTo(${dur})`);
+              await page.evaluate(`window.seekTo(${t})`);
+            } else {
+              await canvasHashAt(page, dur);
+              cb = await canvasHashAt(page, t);
+            }
             await settle(page);
             const b = sha(await page.screenshot());
             rec.n++;
             if (a !== b) {
               rec.fail++;
               // Canvas identical but capture differed: the compositor, not the scene.
-              if (ca === cb) rec.race++;
+              if (ca !== null && ca === cb) rec.race++;
             }
             tally.set(key, rec);
           }
@@ -124,7 +150,8 @@ const plan = dur => [1, 2, 3, 4].map(i => +(dur * i / 5).toFixed(4));
     await browser.close();
   }
 
-  console.log(`\nbackend: ${backendSeen}   repeats: ${REPEATS}   platform: ${process.platform}`);
+  console.log(`\nbackend: ${backendSeen}   repeats: ${REPEATS}   platform: ${process.platform}`
+            + `   mode: ${NO_CANVAS ? 'screenshots only (no readback, matches smoke)' : 'canvas + screenshot'}`);
   const rows = [...tally.entries()].sort((x, y) => (y[1].fail / y[1].n) - (x[1].fail / x[1].n));
   let anyFail = 0;
   for (const [key, r] of rows) {
@@ -132,7 +159,10 @@ const plan = dur => [1, 2, 3, 4].map(i => +(dur * i / 5).toFixed(4));
     const pct = (100 * r.fail / r.n).toFixed(0);
     const why = r.fail ? (r.race === r.fail ? '  CAPTURE RACE (canvas identical)'
                         : r.race ? `  ${r.race}/${r.fail} capture race, rest real`
-                        : '  SCENE STATE (canvas differed)') : '';
+                        : '  SCENE STATE (canvas differed)')
+                     : '';
+    // In --no-canvas mode there is no label to give, and claiming one would be
+    // inventing a mechanism from a screenshot diff.
     console.log(`  ${r.fail ? 'FAIL' : ' ok '} ${key.padEnd(34)} ${r.fail}/${r.n} (${pct}%)${why}`);
   }
   console.log(anyFail

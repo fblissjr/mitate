@@ -12,23 +12,34 @@
 # That is the fallback path, and running it here is the whole point. Do not
 # "fix" a failure in this workflow by setting a backend env var.
 #
-# Two jobs, because they fail for different reasons and a reader deserves to
-# know which happened:
-#   static  — no browser, seconds, cannot flake. Catches the unresolved
-#             identifier class in ~1s (which a Playwright run catches in ~6s,
-#             several layers deep, and only if it reaches that line).
-#   gate    — the real smoke battery plus the bracket that controls it.
+# ONE job. The cheap checks moved to static.yml once this workflow's real cost
+# was measured — they fail for different reasons and have wildly different
+# prices, and bundling them made every docs-only commit pay for a browser.
 #
-# UNVERIFIED ON LINUX at the time of writing. Every measurement in this repo
-# was taken on macOS; WEBGPU=vulkan is labelled unverified for the same reason.
-# The first run of this workflow IS the measurement — read it as evidence, not
-# as a regression, and record what it says.
+# MEASURED on ubuntu-latest, 2026-07-30, three runs:
+#   static.yml            8s        every push, unfiltered
+#   this workflow      ~3m 04s      of which: chromium 22s (now cached),
+#                                   smoke 2m 36s over 8 scenes, setup ~5s
+#
+# No longer unverified on Linux — it ran, and it earned itself immediately:
+# materials.html fails smoke's in-session determinism arm at seekTo(5.36) on
+# ubuntu WebGL2, reproducibly, and does NOT reproduce on macOS on either
+# hardware or software GL. See references/materials.md at the ordering
+# discipline. The first three runs also revealed that the `brackets` step was
+# being SKIPPED every time, because a step after a failing step is skipped by
+# default — hence the `!cancelled()` below.
+#
 name: gate
 
 on:
   push:
-    branches: [main]
+    # Skipped when a commit touches ONLY prose. A .md edit cannot break a scene,
+    # and paying 3 minutes of browser time for a changelog entry is how a gate
+    # becomes something people route around. Fence parity and every doc check
+    # live in static.yml, which is not filtered and runs regardless.
+    paths-ignore: ['**/*.md', 'docs/**', 'site/**']
   pull_request:
+    paths-ignore: ['**/*.md', 'docs/**', 'site/**']
   workflow_dispatch:
 
 concurrency:
@@ -36,46 +47,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  static:
-    name: static (lint + fence parity)
-    runs-on: ubuntu-latest
-    steps:
-      # Full history: the self-check compares each doc's `last updated:` marker
-      # against its last commit date, and a shallow clone reports the tip commit
-      # for every file, which would make every marker look stale.
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
-      # no-undef is OFF in oxlint's defaults — .oxlintrc.json turns it on, and
-      # that one rule is the whole reason this step exists. Pinned via bunx so
-      # the repo needs no root manifest and the result stays reproducible.
-      - name: lint
-        run: bunx oxlint@1.76.0 -c .oxlintrc.json plugin/skills/mitate/templates/
-
-      # The instrument pointed at the repo's own claims: version cascade, the
-      # three pin and its per-scene stamps, subtree link resolution, provenance
-      # headers, the measurement-assertion ratchet, and that every bracket has a
-      # failing exit path. No browser, no node_modules, ~instant.
-      - name: self-check
-        run: bun run scripts/selfcheck.js
-
-      # Cross-directory, and including the one negated exception in site/films/.
-      # A per-directory green does not cover the template-to-example boundary,
-      # and drift there is silent (CLAUDE.md invariant 2).
-      - name: fence parity
-        run: |
-          bun run plugin/skills/mitate/templates/smoke.js --parity-only \
-            plugin/skills/mitate/templates/*.html \
-            plugin/skills/mitate/examples/*.html \
-            site/films/gearbox-neon.html
-
   gate:
     name: gate (smoke on the WebGL2 fallback)
     runs-on: ubuntu-latest
+    # Browsers land inside the workspace rather than a user-level cache: the
+    # path stays repo-relative, and the run is self-contained the same way a
+    # scene is. playwright-core honours this, so backend.js's resolution finds
+    # it without changes.
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: ws/.pw-browsers
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -94,6 +74,13 @@ jobs:
           cp plugin/skills/mitate/examples/*.html ws/
           cd ws && bun add three@0.185.1 playwright-core@1.61.1
 
+      # 22s measured, and identical every run — the pin is in the workspace step.
+      - name: cache chromium
+        uses: actions/cache@v4
+        with:
+          path: ws/.pw-browsers
+          key: playwright-1.61.1-${{ runner.os }}
+
       - name: chromium
         run: cd ws && bunx playwright install --with-deps chromium
 
@@ -107,6 +94,13 @@ jobs:
       # tree). Running them here is how they stay runnable. bracket-noise pins
       # the fallback path itself, so it is meaningful wherever it runs.
       - name: brackets
+        # `!cancelled()` because a step after a FAILED step is skipped by
+        # default, and that is exactly what happened: the brackets were added
+        # here to keep them runnable and were skipped in all three of the first
+        # runs, because smoke fails first. A control that does not run is the
+        # defect this workflow exists to prevent, reintroduced by step ordering.
+        # The brackets are independent of smoke's verdict; they must run anyway.
+        if: '!cancelled()'
         # Globbed, not listed: a hardcoded set means a NEW bracket silently
         # never runs here, which is how a control goes decorative.
         run: |
@@ -114,3 +108,22 @@ jobs:
             echo "--- $(basename "$b") ---"
             NODE_PATH="$PWD/node_modules" bun run "$b"
           done
+
+      # Only on failure, so the green path pays nothing. Turns "seekTo(5.36) not
+      # deterministic" into which grid cells moved and whether it is localized to
+      # one object or spread across the frame — the difference between a lead and
+      # a three-minute blind run. Needed because this failure does not reproduce
+      # on macOS, so CI is the only instrument that sees it.
+      - name: diagnose (only when smoke failed)
+        if: failure()
+        run: |
+          cd ws && NODE_PATH="$PWD/node_modules" \
+            bun run ../scripts/diagnose-determinism.js materials.html 5.36
+
+      - name: upload diagnostic frames
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: determinism-diagnostic
+          path: ws/diag-*.png
+          if-no-files-found: ignore

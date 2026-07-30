@@ -7,6 +7,46 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.23
+
+### fixed
+
+**The `brackets` step had been skipped in every CI run.** A step after a failing
+step is skipped by default, and `smoke` fails first — so the controls added to CI
+in 0.16.17 specifically to keep them runnable had never once executed there. The
+same defect this workflow exists to prevent, reintroduced by step ordering.
+`if: '!cancelled()'` now runs them regardless of smoke's verdict, which is correct
+independently: the brackets test the detectors, not the corpus.
+
+### changed
+
+**Split into `static.yml` and `gate.yml`, on measured cost.** Three runs put the
+cheap stage at **8 seconds** and the browser gate at **~3m04s** (chromium 22s,
+smoke 2m36s over 8 scenes). Eleven consecutive commits paid the full price while
+touching no scene at all. Now:
+
+- `static.yml` — lint, self-check, fence parity. Every push, **not**
+  path-filtered, because it checks docs as hard as code: the cascade, the
+  freshness markers, subtree links, the provenance headers. A docs-only commit is
+  when it has the most to say.
+- `gate.yml` — the browser battery, `paths-ignore` on `**/*.md`, `docs/**` and
+  `site/**`. A prose edit cannot break a scene, and paying three minutes for a
+  changelog entry is how a gate becomes something people route around.
+
+Chromium is cached (22s → seconds), keyed on the playwright pin.
+
+### added
+
+`scripts/diagnose-determinism.js` — reproduces smoke's in-session determinism arm
+and reports **where** the two renders differ: which coarse grid cells moved, and
+whether the change is localized to one object or spread across the frame. The
+distinction is the whole lead. Wired as a `if: failure()` step, so the green path
+pays nothing, with the two frames uploaded as artifacts.
+
+It exists because the failure it targets does not reproduce on macOS — verified
+again here, where it reports `IDENTICAL — did not reproduce`, which is the correct
+answer locally and the reason CI has to be the loop.
+
 ## 0.16.22
 
 ### changed

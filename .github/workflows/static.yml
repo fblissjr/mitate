@@ -1,0 +1,57 @@
+# The cheap stage: no browser, ~8 seconds measured, runs on EVERY push.
+#
+# Deliberately NOT path-filtered. It checks docs as much as code — the version
+# cascade, the "last updated" markers, subtree link resolution, the provenance
+# headers — so a docs-only commit is exactly when it has the most to say.
+#
+# Split out of gate.yml once the browser gate's real cost was measured: 2m36s of
+# smoke over 8 scenes, paid by eleven consecutive commits that touched no scene
+# at all. Fast feedback belongs on every push; a 3-minute browser gate does not.
+name: static
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: static-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static:
+    name: static (lint + fence parity)
+    runs-on: ubuntu-latest
+    steps:
+      # Full history: the self-check compares each doc's `last updated:` marker
+      # against its last commit date, and a shallow clone reports the tip commit
+      # for every file, which would make every marker look stale.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # no-undef is OFF in oxlint's defaults — .oxlintrc.json turns it on, and
+      # that one rule is the whole reason this step exists. Pinned via bunx so
+      # the repo needs no root manifest and the result stays reproducible.
+      - name: lint
+        run: bunx oxlint@1.76.0 -c .oxlintrc.json plugin/skills/mitate/templates/
+
+      # The instrument pointed at the repo's own claims: version cascade, the
+      # three pin and its per-scene stamps, subtree link resolution, provenance
+      # headers, the measurement-assertion ratchet, and that every bracket has a
+      # failing exit path. No browser, no node_modules, ~instant.
+      - name: self-check
+        run: bun run scripts/selfcheck.js
+
+      # Cross-directory, and including the one negated exception in site/films/.
+      # A per-directory green does not cover the template-to-example boundary,
+      # and drift there is silent (CLAUDE.md invariant 2).
+      - name: fence parity
+        run: |
+          bun run plugin/skills/mitate/templates/smoke.js --parity-only \
+            plugin/skills/mitate/templates/*.html \
+            plugin/skills/mitate/examples/*.html \
+            site/films/gearbox-neon.html

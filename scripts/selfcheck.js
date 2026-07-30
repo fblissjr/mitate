@@ -143,8 +143,21 @@ const fail = m => fails.push(m);
     // unreachable from the install cache. `grep -A1 'Not here' references/*.md`
     // is now the whole relationship graph, which is the one thing a database
     // would have bought, without the database.
-    if (!/\*\*Not here\.\*\*/.test(head)) {
+    const edge = head.match(/\*\*Not here\.\*\*(.*)/);
+    if (!edge) {
       fail(`${f} has no "Not here" edge — say where the adjacent thing lives`);
+    } else {
+      // The edge names its targets in BACKTICKS, as prose, so it cannot dangle
+      // as a link out of an install cache. The cost of that choice is that
+      // nothing would notice a renamed target — seven edges pointing at a ghost,
+      // silently. So resolve the backticked .md names too. Presence only: this
+      // cannot tell whether the target is the RIGHT owner, which is the usual
+      // proxy limit — it can reject a broken edge, it cannot approve a correct one.
+      for (const m of edge[1].matchAll(/`([\w.-]+\.md)`/g)) {
+        if (!fs.existsSync(path.join(REFS, m[1]))) {
+          fail(`${f}'s "Not here" edge points at ${m[1]}, which is not in references/`);
+        }
+      }
     }
   }
   notes.push(`${refs.length} references, each with a provenance header and a "Not here" edge`);

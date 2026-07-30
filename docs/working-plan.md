@@ -293,6 +293,37 @@ over it. What did not ship, and is still worth having:
   a lineage earlier. `smoke.js` has since all-quantified three checks; the
   *discipline* — every check names its quantifier and its n — has not landed.
 
+## Confirmed defect: the erupt recoil slides all four paws (2026-07-30)
+
+`examples/bear-and-bees.html` — **measured, not inferred.** During `erupt`
+(t=14.2-15.3, 1.1s) `bearXAt` adds `-.38*pulse(t,'erupt',.12,1)`, while `vAmp` is
+0 because the amble ramp has completed and the flee has not begun. `gaitPose`'s
+blend collapses fully to the body-relative rest stance, so the IK targets become
+constant in root-local space:
+
+| t | root x | hind-left paw | fore-right paw | paw − root |
+|---|---|---|---|---|
+| 14.20 | −1.200 | −1.217 | 0.347 | **−0.017** |
+| 14.75 | −1.571 | −1.588 | −0.024 | **−0.017** |
+| 15.30 | −1.200 | −1.217 | 0.347 | **−0.017** |
+
+`paw − root` constant to three decimals: the paws translate rigidly with the
+body instead of holding ground, across a 0.371-unit recoil, in an FSA shot that
+frames the whole animal. Found by reading in this session and confirmed with
+`build.js probe` in three page loads — **the first use of that instrument on
+something nobody had already measured by hand.**
+
+**Not fixed, and the fix is a judgement call rather than a mechanic.** Either
+plant the feet through the recoil (drive `gaitPose` with a non-zero `vAmp`
+derived from the recoil's own displacement, so the grid holds), or accept it as
+a whole-body flinch and make it read as one. The second is legitimate — a real
+animal recoiling on its haunches does drag its feet — but right now it is an
+accident of `vAmp` hitting zero, not a decision.
+
+**Trigger to act:** the next edit to `bear-and-bees.html`'s erupt beat, or the
+next character film whose body translates while `vAmp` is 0, which is the general
+shape.
+
 ## What the predecessor already knew
 
 `internal/prior_artifacts/` holds the four explainer-video planning documents and

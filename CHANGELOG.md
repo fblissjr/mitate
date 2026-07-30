@@ -7,6 +7,58 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.35
+
+### added
+
+**The predecessor's procedural-asset cookbook, promoted before the ancestor tree
+is archived off-machine.** 94 lines, eight worked shape recipes organised by
+shape *problem* rather than by subject. `CHANGELOG.md:1094` and
+`references/method.md:274` have both asserted these live in `materials.md` since
+the reference split; the citations were repointed and the content never moved, so
+a reader following a shipped pointer found nothing. Now they do.
+
+**The preset-versus-technique line, drawn in `plan.md`'s Anti-template
+principle.** The doctrine declines scene presets and genre scaffolds; it does not
+decline craft. "How a cutaway reads" belongs in a reference exactly the way shot
+sizes do in `film-language.md` — cinematography vocabulary is specific too, and
+nobody calls `SIZES` a preset. `working-plan.md`'s `shapes.md` decline is
+narrowed rather than left reading as blanket.
+
+**The pattern flywheel, homed in `pattern-ledger.md`.** That file counts how
+often a shape gets rebuilt; nothing extracts. The direction: the skill should
+capture reusable generalised patterns as a **side effect of use** rather than as
+an act of discipline afterwards — a prompt in the review step, or a command that
+reads a finished film and proposes which reference each pattern belongs in.
+Deliberately unscoped. The cookbook is its argument: written once, cited as
+though shipped, not shipped, one directory deletion from gone.
+
+### changed
+
+**`site/films/gearbox-neon.html` is derived, not stored.** It was a tracked
+1.14 MB file — **66% of the site's tracked bytes** — and measured against
+`gearbox.html` it differed by **one line**: `BIBLES.workshop` → `BIBLES.neon`.
+`bibles.md` claims a whole look is one object switched by one line;
+`stage-films.sh` now executes that claim instead of asserting it, and **fails
+loudly** if the line it edits ever stops existing. The generated file is strictly
+better than the copy it replaces: it carries the `build.js vendor` stamp the
+stored one was missing. `CLAUDE.md` invariant 4 has no exceptions now, and the
+file is out of the parity path lists because a derived file cannot drift from its
+source.
+
+### fixed
+
+**The erupt recoil slides all four paws in `bear-and-bees.html`** — measured, not
+inferred, and recorded in `working-plan.md` with the numbers. During `erupt`
+(1.1s) the body translates 0.371 units while `vAmp` is 0, so `gaitPose` collapses
+to the body-relative rest stance and `paw − root` stays constant to three
+decimals across the whole beat, in a shot framing the whole animal. Found by
+reading, confirmed with `build.js probe` in three page loads — **the first use of
+that instrument on something nobody had already measured by hand.** Not fixed:
+whether the feet should plant through the recoil or the flinch should read as a
+whole-body drag is a judgement call, and right now it is an accident of `vAmp`
+hitting zero rather than a decision. Trigger recorded.
+
 ## 0.16.34
 
 ### changed

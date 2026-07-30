@@ -3,6 +3,8 @@
 # than a list, so a sixth example needs no edit here.
 films/*.html
 
-# ...except gearbox-neon.html, which is a showcase-only variant
-# (STYLE = BIBLES.neon), not a skill example, so site/ is its only home.
-!films/gearbox-neon.html
+# NO exceptions, as of 0.16.35. gearbox-neon.html was the one negated file — a
+# showcase-only neon variant — and was untracked on the owner's call: it was 66%
+# of the site's tracked bytes for a variant the site does not need. If it returns,
+# stage-films.sh should GENERATE it from gearbox.html plus the neon bible rather
+# than storing a second 1.14 MB copy, which is what bibles.md claims is possible.

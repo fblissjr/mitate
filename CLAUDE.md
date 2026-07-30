@@ -86,8 +86,8 @@ for its red lines.
    verified against what and `selfcheck.js` check 4 verifies it.
 
    A **fenced** block (`KERNEL`, `SOLVER`, `RIG`, `DRIVER`, `CHARACTER`, `HTML`)
-   is carried by more files than it looks: both 3D templates, every example, and
-   `site/films/gearbox-neon.html`. The count grows with the corpus and
+   is carried by more files than it looks: both 3D templates and every example.
+   The count grows with the corpus and
    `--parity-only` reports it, so do not write it here. Edit every carrier
    together, then verify with `smoke.js
    --parity-only templates/*.html examples/*.html` **cross-directory**. A
@@ -113,8 +113,10 @@ for its red lines.
    `plugin/skills/mitate/examples/`; `scripts/stage-films.sh` copies them into
    `site/films/` at build, which `site/.gitignore` ignores wholesale
    (`films/*.html`) so a new example needs no edit there.
-   `site/films/gearbox-neon.html` is the one negated exception — a showcase-only
-   variant, so `site/` is its only home. Poster stills live once in `site/posters/`, which
+   **There are no exceptions.** `gearbox-neon.html` was one until 0.16.35 — a
+   tracked 1.14 MB second copy of `gearbox.html` differing by a single line — and
+   is now DERIVED by `stage-films.sh`, which is `bibles.md`'s "one object, one
+   line" claim executed rather than asserted. Poster stills live once in `site/posters/`, which
    the skill's `examples/README.md` embeds them by **absolute raw URL** — never a
    relative path, which climbs out of the install cache and breaks for every
    installed user. Never re-introduce a second copy of either.

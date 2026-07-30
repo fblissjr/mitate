@@ -331,11 +331,22 @@ new control was in CI the moment it existed.
   known finding is the probe claim, which R2 resolves by shipping the tool. Running
   it now would produce a report whose only item is already scheduled.
 
-**One trigger fired and is recorded, not acted on:** `working-plan.md` defers
-"extracting a shared bracket harness" until *the fourth bracket*. This is the
-fourth. It named `bracket-sortobjects.js` specifically, so the letter has not
-fired but the count has — and all four now duplicate temp-dir setup, fixture
-mutation and an expected-verdict table. Worth revisiting when a fifth is written.
+**The shared-bracket-harness trigger fired, and was declined on measurement.**
+`working-plan.md` defers extraction until *the fourth bracket*; this is the
+fourth, and all four do duplicate temp-dir setup, fixture mutation and an
+expected-verdict table. Declined for two reasons, both checkable:
+
+- **They are two families, not one.** `bracket-determinism` and
+  `bracket-liveplay` drive playwright directly (zero `execFileSync`);
+  `bracket-noise` and `bracket-parity` shell out to `smoke.js` (two each). A
+  harness spanning both would abstract over a real difference.
+- **Controls that share a harness share a failure mode.** These four exist
+  because two shipped brackets could not go red. A bug in a common harness makes
+  all four decorative at once, silently — the exact defect they were built after.
+
+Revisit when a third bracket of *one* family exists. Duplication that buys
+independence is a different thing from duplication that hides drift, and the
+distinction is worth stating because this repo's default is to collapse copies.
 
 Original gate text: each new arm demonstrated red on a deliberately broken copy, then
 green. `.github/workflows/gate.yml` runs the new bracket (its glob already

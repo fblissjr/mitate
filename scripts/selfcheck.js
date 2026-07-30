@@ -33,6 +33,18 @@ const TEMPLATES = path.join(SUBTREE, 'templates');
 const EXAMPLES = path.join(SUBTREE, 'examples');
 
 const R = f => fs.readFileSync(f, 'utf8');
+// ONE directory walk. There were two, written a session apart for checks 3 and
+// 6d, differing only in what they collected and what they skipped -- which is
+// the same duplicate-with-a-small-difference shape this file exists to catch,
+// in this file.
+const SKIP = /^(\.git|node_modules|internal)$/;
+const walkFiles = (dir, onFile) => {
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (SKIP.test(e.name)) continue;
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) walkFiles(p, onFile); else onFile(p, e.name);
+  }
+};
 // THE pin, scraped once. build.js has no require.main guard, so requiring it as
 // a library would run its CLI -- the regex is the only safe read, and doing it
 // in one place keeps this file from becoming a second copy of the fact.
@@ -142,17 +154,12 @@ const fail = m => fails.push(m);
  * leave the subtree. */
 {
   const files = [];
-  const walk = d => fs.readdirSync(d, { withFileTypes: true }).forEach(e => {
-    const p = path.join(d, e.name);
-    if (e.isDirectory()) walk(p);
-    else if (/\.md$/.test(e.name)) files.push(p);   // .md only: see note below
-  });
   // EVERYTHING under plugin/ ships, not just skills/. This walked the skill
   // subtree plus one hardcoded README until 0.16.32, when plugin/agents/ was
   // added and would have been a shipped directory whose links nothing resolved.
   // Walking the plugin root instead means the next shipped directory is covered
   // the day it exists rather than the day someone remembers this check.
-  walk(PLUGIN_ROOT);
+  walkFiles(PLUGIN_ROOT, (p, n) => { if (/\.md$/.test(n)) files.push(p); });   // .md only: see note below
   let checked = 0;
   for (const f of files) {
     // Markdown links only, in markdown files only. Two exclusions, both
@@ -385,14 +392,7 @@ const toolJs = new Map([
   // its UMD build after 0.160, which is why build.js explains the vendoring.
   const EXTERNAL_OK = new Set(['build/three.min.js']);
   const present = new Set();
-  const walk = d => {
-    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
-      if (/^(\.git|node_modules|internal)$/.test(e.name)) continue;
-      const p = path.join(d, e.name);
-      if (e.isDirectory()) walk(p); else present.add(e.name);
-    }
-  };
-  walk(ROOT);
+  walkFiles(ROOT, (_, name) => present.add(name));
   const commentRe = /(?:\/\/|\*|#).*/g;
   let cited = 0;
   const flag = (name, tok) => {

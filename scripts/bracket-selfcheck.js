@@ -76,6 +76,32 @@ const ARMS = [
     return () => { fs.rmSync(html, { force: true }); fs.rmSync(f, { force: true }); };
   }, 'is not tracked'],
 
+  // CLAUDE.md's prime directive admits ONE exception -- `build.js probe` reads
+  // scene-specific expressions -- on three conditions it calls "all currently
+  // true and all checkable". Nothing checked them, so the exception could lapse
+  // in silence, which is the one way a bent rule becomes a gone rule. Both arms
+  // use a FIXTURE, never build.js: mutating a shipped 1.14 MB artifact to test a
+  // rule about it is the trade this repo just removed from bracket-stage-films.
+  // ASSEMBLED, like the citation arm above and for the same reason: a literal
+  // `function probe(){ writeFileSync(...) }` sitting in THIS file's source IS the
+  // defect, and check 6f scans scripts/*.js -- so writing the fixture plainly
+  // makes the control fail on itself. It did, on the first run.
+  ['a probe instrument that writes', () => {
+    const f = path.join(__dirname, '_bracket_fixture_probew.js');
+    const head = ['async', 'function', 'probe'].join(' ') + '(scene, when, exprs) {';
+    const bad = 'fs.' + 'writeFileSync' + '("out.json", "{}");';
+    fs.writeFileSync(f, `${head}\n  ${bad}\n}\n${'probe'}(1, 2, 3);\n`);
+    return () => fs.rmSync(f, { force: true });
+  }, 'must only READ'],
+
+  ['a probe instrument with a second caller', () => {
+    const f = path.join(__dirname, '_bracket_fixture_probec.js');
+    const head = ['async', 'function', 'probe'].join(' ') + '(scene, when, exprs) {';
+    fs.writeFileSync(f, `${head}\n  return 1;\n}\n`
+      + `function bundle(t) { return ${'probe'}(t, 0, []); }\n${'probe'}(1, 2, 3);\n`);
+    return () => fs.rmSync(f, { force: true });
+  }, 'call site'],
+
   ['postmortem an index cannot read', () => {
     const dir = path.join(ROOT, 'docs', 'postmortems');
     const f = path.join(dir, '2026-01-01_session_bracket-fixture.md');

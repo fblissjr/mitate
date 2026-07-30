@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>mitate — an animated three.js scene as native HTML, written by a Claude Code skill</title>
-<meta name="description" content="mitate (見立て) is a Claude Code skill that writes an animated three.js scene as native HTML. Ask for one from a prompt, a document, a codebase, or an image, and you get a single self-contained file that opens in any browser — not a video. Deterministic: a pure function of time t.">
+<meta name="description" content="mitate (見立て) is a Claude Code skill that writes an animated three.js scene as native HTML. Ask for one from a prompt, a document, a codebase, or an image, and you get a single self-contained file that opens in any browser — not a video. Deterministic: a scene is a pure function of t, and t is a position, not a clock.">
 <meta property="og:title" content="mitate — an animated three.js scene as native HTML">
-<meta property="og:description" content="A Claude Code skill that writes an animated three.js scene as native HTML — one self-contained file, no player, no build step, a pure function of time t.">
+<meta property="og:description" content="A Claude Code skill that writes an animated three.js scene as native HTML — one self-contained file, no player, no build step. A pure function of t — and t is a position you evaluate, not a clock you advance.">
 <meta property="og:type" content="website">
 <!-- The .ico is declared with a fixed size and the .svg without one, so a modern
      browser takes the vector and an old one falls back. It also has to exist at
@@ -119,8 +119,8 @@
     <div class="thesis-grid">
       <div class="claim reveal">
         <div class="n">01 · deterministic</div>
-        <h2>A film is a pure function of time.</h2>
-        <p>No simulation state, no wall clock, no <span class="mono">random()</span> at runtime. <b>seekTo(8) after seekTo(2) equals seekTo(8) cold.</b> One scene file is both the live HTML and the source of a frame-exact render.</p>
+        <h2>A film is a pure function of <span class="mono">t</span> — and <span class="mono">t</span> is a position, not a clock.</h2>
+        <p>An address you evaluate, not a cursor you advance: nothing ever asks what time it is, only what the scene looks like at this address. No simulation state, no wall clock, no <span class="mono">random()</span> at runtime. <b>seekTo(8) after seekTo(2) equals seekTo(8) cold.</b> One scene file is both the live HTML and the source of a frame-exact render — and the recorder can shoot frames out of order, because there is no order to be in. <a href="https://github.com/fblissjr/mitate/blob/main/VISION.md" rel="noopener">Why determinism comes first</a>, and what it is first <em>for</em>, is one page.</p>
       </div>
       <div class="claim reveal">
         <div class="n">02 · agent-directed</div>
@@ -153,7 +153,7 @@
       <div class="claim reveal">
         <div class="n">where it is</div>
         <h2>There's a balance in building in AI between "unfinished" and "over-engineered" — this currently sits on the side of unfinished (I think).</h2>
-        <p>A tinkering idea, in the open because <b>it is fun to see what it can do</b>. The examples here run 12 to 21 seconds, kept short so each one opens as live HTML on ordinary devices — <b>but nothing caps duration</b>: a frame at <span class="mono">t=18000</span> costs what a frame at <span class="mono">t=1</span> costs, and the file is the same size either way, because the duration is a number in a table. A 60-second film has been built. Characters are one skeleton family.</p>
+        <p>A tinkering idea, in the open because <b>it is fun to see what it can do</b>. The examples here run 12 to 21 seconds, and that is a choice about <em>this page</em>, not a limit: each one embeds its own copy of three.js, so a project site that shipped long films would be a giant cache of code for no reason. <b>Nothing caps duration.</b> A frame at <span class="mono">t=18000</span> costs what a frame at <span class="mono">t=1</span> costs, and the file is the same size either way, because the duration is a number in a table rather than anything accumulated. Longer films have been built; they just do not belong here. Characters are one skeleton family.</p>
       </div>
     </div>
   </div>
@@ -164,7 +164,7 @@
   <div class="wrap">
     <div class="sec-head reveal"><span class="idx">02</span><span>The films</span><span class="ln"></span><span>five works · one pipeline</span></div>
     <h2 class="sec-title reveal">Lit on the stage. Each one a single file that plays from disk.</h2>
-    <p class="sec-lede reveal">Every title below is one self-contained HTML page — three.js embedded, zero fetched assets. <b>These run 12 to 21 seconds</b> — a film lasts exactly as long as the beats written for it, and these are kept short so every example opens live everywhere, not because length costs anything. The thumbnails are poster frames rendered from the scenes; open a film and the scene itself runs. Each is tagged with the <b>primitives an agent composed it from</b>. This is what composes easily today — the <a href="#roadmap">roadmap</a> is the rest of it, abstracted one primitive at a time.</p>
+    <p class="sec-lede reveal">Every title below is one self-contained HTML page — three.js embedded, zero fetched assets. <b>These run 12 to 21 seconds</b> — a film lasts exactly as long as the beats written for it, and these are short so the page stays light, since every one carries its own three.js. Length costs nothing at runtime. The thumbnails are poster frames rendered from the scenes; open a film and the scene itself runs. Each is tagged with the <b>primitives an agent composed it from</b>. This is what composes easily today — the <a href="#roadmap">roadmap</a> is the rest of it, abstracted one primitive at a time.</p>
 
     <div class="films">
 
@@ -342,7 +342,7 @@ phase = { HL:<span class="c-v">0</span>,  FL:<span class="c-v">.25</span>,
     <div class="layers reveal">
       <div class="layer"><div class="lname">kernel</div><div class="ldesc">Pure functions — <b>pose(state)</b>, <b>materials(state)</b>, <b>camera(state)</b>. No clock, no input, no side effects. State is a plain value.</div></div>
       <div class="layer emph"><div class="lname">driver</div><div class="ldesc">Produces the state stream. The <b>timeline driver</b> is <span class="mono">state = g(t)</span> from the beats — that is the film. An <b>input driver</b> (<span class="mono">state = g(events)</span>) reuses the same kernel later — that is the interactive spike.</div></div>
-      <div class="layer"><div class="lname">contract</div><div class="ldesc"><span class="mono">seekTo · DURATION · BEATS · FRAME · sceneReady</span> — unchanged, implemented by the timeline driver. The one seam tooling is allowed to touch.</div></div>
+      <div class="layer"><div class="lname">contract</div><div class="ldesc"><span class="mono">seekTo · DURATION · stopPlayback · sceneReady</span> hard, <span class="mono">BEATS · FRAME · …</span> behind fallbacks — unchanged, implemented by the timeline driver. The one seam tooling is allowed to touch, and it is <b>tiered</b>: a scene missing a soft name is degraded, not broken.</div></div>
       <div class="layer"><div class="lname">tooling</div><div class="ldesc">Build, shoot, smoke, instruments — talk <b>only</b> to the contract. Which is why the recorder and the live page can never disagree about <em>when</em>.</div></div>
     </div>
 
@@ -389,12 +389,12 @@ window.stopPlayback =
   <div class="wrap">
     <div class="sec-head reveal"><span class="idx">05</span><span>Roadmap</span><span class="ln"></span><span>built · next · later</span></div>
     <h2 class="sec-title reveal">The scaffold grows by adding primitives, not characters.</h2>
-    <p class="sec-lede reveal">Every phase raises the ceiling for <em>all</em> registers at once, because it lands as a reusable primitive — a material pack, a rig generalization, a bake step — not a one-off asset. Here is what exists and what comes next.</p>
+    <p class="sec-lede reveal">The thing being built is an <b>engine</b> — primitives, and the abstractions that let you say what you mean instead of how to compute it. Every phase adds a <b>declarative layer</b>: you declare beats and never write timestamps, declare a shot and never write camera coordinates, declare a look as one object and never touch a material value. Films are how each layer gets proven, not the product. So every phase raises the ceiling for <em>all</em> registers at once, because it lands as a reusable primitive rather than a one-off asset. Here is what exists and what comes next.</p>
 
     <div class="road reveal">
       <div class="phase"><div class="pnum">0 · 1</div><div class="pmain"><h3>Foundation, regression &amp; shading.</h3><p>The node-stack templates, recorder, and instruments — gated green on both backends. Cel, subsurface, and glass material packs, verified under byte-determinism.</p></div><div class="pstate done">done</div></div>
       <div class="phase"><div class="pnum">2</div><div class="pmain"><h3>Character scaffold.</h3><p>One parametric skeleton family with two-bone IK, distance-driven gait, neck and tail chains, and fur/fabric packs. A bear, a human, and an invented creature from one buildCharacter.</p></div><div class="pstate done">done</div></div>
-      <div class="phase is-next"><div class="pnum">4</div><div class="pmain"><h3>Physics bake.</h3><p>A build-time simulation step: simulate once, bake to keyframes, play back pure. Cloth, secondary motion, and soft contact — with runtime determinism fully intact. Moved ahead of faces by choice.</p></div><div class="pstate next">next</div></div>
+      <div class="phase is-next"><div class="pnum">4</div><div class="pmain"><h3>Physics bake.</h3><p>A build-time simulation step: simulate once, bake to keyframes, play back pure. Cloth, secondary motion, and soft contact — with runtime determinism fully intact. This is <b>the declarative layer for interaction</b>, the way lighting is one for illumination: declare mass and solidity, and let the system work out what happens when two things meet, instead of hand-tuning sine waves that approximate a swing. Opt-in and per-object, never a global mode — clipping through a wall as a joke is a legitimate authoring choice. Moved ahead of faces by choice.</p></div><div class="pstate next">next</div></div>
       <div class="phase"><div class="pnum">3</div><div class="pmain"><h3>The human — faces &amp; expressions.</h3><p>A face morph basis, an expression library, hands, and hair. The bar: expressions carry the beat in the caption-covered pass — the words are not doing the work. Scaffolded as generalizable primitives, not per-character rigs.</p></div><div class="pstate later">planned</div></div>
       <div class="phase"><div class="pnum">5 · 6</div><div class="pmain"><h3>Registers &amp; the interactive spike.</h3><p>Cutscene and meme film-language extensions; then an input driver over the unchanged kernel — the same characters, materials, and camera solver, now responding to events instead of a clock.</p></div><div class="pstate later">planned</div></div>
     </div>

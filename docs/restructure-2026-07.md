@@ -771,8 +771,20 @@ MISSED before the fix and CAUGHT after.
      is the one most likely to omit a name the gate enforces."*
    - **No pointer to `VISION.md`.** The site's `#why` section predates the file.
 
-   The last three are **wording, which is the owner's voice and the owner's
-   call** — listed here rather than changed.
+   **All four closed 0.16.40 (owner-directed).** The `t` framing now leads with
+   position-not-clock in the `<meta>`, the `og:description` and the `#why`
+   heading, and `#why` links `VISION.md`. The contract layer shows the tier
+   split. The roadmap lede states the engine/declarative-layer framing and
+   Phase 4 is named as the declarative layer for interaction.
+
+   **The length claim is reframed rather than merely corrected.** Owner: the
+   examples are short *because a project site should not ship a giant cache of
+   code* — every scene embeds its own three.js — **not** because anything caps
+   duration. The site says that, and says longer films have been built.
+   **It does not name or link the 60-second one**: `internal/circus_prototype/`
+   is parody, close enough to its source that the owner does not want the
+   attention of anyone misreading it, so it stays off the public surface. Do not
+   promote it there.
 
 4. **`delivery.md` splits — DONE 2026-07-30 (0.16.38).** It was titled
    *"Delivering inline on GitHub"* and concluded at line 197 that the repo

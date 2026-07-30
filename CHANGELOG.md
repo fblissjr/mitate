@@ -48,6 +48,51 @@ hard-asserted name (`stopPlayback`) while including two soft ones, exactly the
 disagreement `glossary.md` warns about; and the `#why` section predates
 `VISION.md` and does not point at it.
 
+### added
+
+**The prime directive's one exception is now bracketed, three releases after it
+was granted.** `CLAUDE.md` admits `build.js probe` past "tooling talks only to
+the window contract" on three conditions, and calls them *"all currently true and
+all checkable"* — then nothing checked them, so the exception could have lapsed
+in silence, which is exactly how a bent rule becomes a gone rule. `selfcheck.js`
+check 6f enforces the two that are mechanical: the instrument must not write or
+spawn, and it must have exactly one call site (its CLI dispatch), with a second
+check that no workflow or hook invokes `build.js probe`. Written over every tool
+file rather than over `build.js` by name, so a probe copied elsewhere inherits
+the rule — and so its two bracket arms use a fixture instead of mutating a
+shipped artifact, the trade removed from `bracket-stage-films.js` in this same
+release.
+
+**Its first version reported the exception had already lapsed, and was wrong.**
+`build.js` carries a comment reading *"a step-halving probe("* as ordinary prose,
+which the call-site counter read as a second caller. Comments are stripped before
+counting now. That is the third time in this repo a checker has read prose as
+code and produced a false accusation, which is the argument for brackets: the arm
+was written first, went MISSED, and the false positive surfaced the moment the
+check ran against the real tree rather than against an idea of it.
+
+### changed
+
+**The site now carries the language it exists to carry.** All four gaps recorded
+above are closed. `t` leads with **position, not a clock** in the `<meta>`
+description, the `og:description` that drives every link preview, and the `#why`
+heading — which now also links `VISION.md`. The contract layer shows the tier
+split (`seekTo · DURATION · stopPlayback · sceneReady` hard, the rest behind
+fallbacks) instead of a flat list that omitted a hard-asserted name. The roadmap
+lede states what is actually being built — an engine, and a **declarative layer**
+per phase: declare beats and never write timestamps, declare a shot and never
+write camera coordinates — with films as how each layer gets proven rather than
+the product. Phase 4 is named as **the declarative layer for interaction**, the
+way lighting is one for illumination, opt-in and per-object.
+
+**The length claim is reframed, not just corrected.** The examples are short
+because a project site should not ship a giant cache of code — every scene embeds
+its own three.js — **not** because anything caps duration. A frame at `t=18000`
+costs what a frame at `t=1` costs, and the file is the same size either way,
+because duration is a number in a table rather than anything accumulated. Longer
+films have been built; the site says so and deliberately neither names nor links
+one.
+
 ## 0.16.39
 
 ### changed

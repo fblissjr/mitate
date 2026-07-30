@@ -566,6 +566,76 @@ const toolJs = new Map([
     + `(scene HTML: ${scanned} lines scanned, ${skipped} minified lines skipped)`);
 }
 
+/* ---- 6f. the ONE exception to the prime directive has not quietly lapsed ----
+ * CLAUDE.md admits `build.js probe` past "tooling talks only to the window
+ * contract", because measuring a contact requires naming the two things being
+ * measured. It admits it on three conditions and calls them "all currently true
+ * and all checkable" -- and then nothing checked them, which is how a bent rule
+ * becomes a gone rule. Two of the three are mechanical and are checked here;
+ * "runs at authoring time" is not decidable from source and is carried by the
+ * third (nothing in an artifact pipeline can invoke it).
+ *
+ * Written over every tool file rather than over build.js by name, so a probe
+ * copied into a second tool inherits the same rule, and so the bracket can
+ * exercise it with a fixture instead of mutating a shipped artifact. */
+{
+  // Deliberately broad: anything that spawns, writes, or removes. A probe that
+  // shells out is not read-only however careful the command looks.
+  const WRITES = /\b(writeFileSync|appendFileSync|mkdirSync|rmSync|unlinkSync|createWriteStream|execFileSync|spawnSync|execSync)\s*\(/;
+  // COMMENTS STRIPPED FIRST, and this is not a nicety: build.js has a comment
+  // reading "a step-halving probe(" as ordinary prose, which the first version
+  // counted as a second call site and reported the exception lapsed. A checker
+  // that reads prose as code produces exactly the false accusation this file
+  // exists to prevent -- the third time that shape has appeared here.
+  const stripComments = s => s
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/(^|[^:])\/\/.*$/gm, '$1');
+  let probes = 0;
+  for (const [name, raw] of toolJs) {
+    const text = stripComments(raw);
+    const def = /(?:async\s+)?function\s+probe\s*\(/.exec(text);
+    if (!def) continue;
+    probes++;
+    // Balanced-brace extraction from the definition's opening brace, the same
+    // shape check 6c uses for evaluate() -- a regex to the next `}` would stop
+    // at the first nested block and read almost nothing.
+    let i = text.indexOf('{', def.index + def[0].length - 1), depth = 0, end = -1;
+    for (let j = i; j < text.length && i >= 0; j++) {
+      if (text[j] === '{') depth++;
+      else if (text[j] === '}' && --depth === 0) { end = j; break; }
+    }
+    const body = end > 0 ? text.slice(i, end) : '';
+    const w = body.match(WRITES);
+    if (w) {
+      fail(`${name}: \`probe\` calls ${w[1]} — the prime directive admits this instrument `
+         + `ONLY because it must only READ (CLAUDE.md). Writing from it lapses the exception.`);
+    }
+    // Call sites excluding the definition. Exactly one is expected: the CLI
+    // dispatch. A second means some other verb reaches through it, which is the
+    // "in no pipeline that produces an artifact" condition failing.
+    const calls = [...text.matchAll(/\bprobe\s*\(/g)]
+      .filter(m => m.index !== def.index && !/function\s+$/.test(text.slice(0, m.index)));
+    if (calls.length > 1) {
+      fail(`${name}: \`probe\` has ${calls.length} call sites; the exception holds only while it `
+         + `is in no pipeline that produces an artifact, i.e. the CLI dispatch and nothing else.`);
+    }
+  }
+  // The same condition from the other side: nothing automated may invoke it.
+  const WF = path.join(ROOT, '.github', 'workflows');
+  const auto = [
+    ...fs.readdirSync(WF).map(f => [`.github/workflows/${f}`, R(path.join(WF, f))]),
+    ['scripts/install-hooks.sh', R(path.join(__dirname, 'install-hooks.sh'))],
+  ];
+  for (const [name, text] of auto) {
+    if (/build\.js\s+probe\b/.test(text)) {
+      fail(`${name} invokes \`build.js probe\` — an authoring instrument in an automated `
+         + `pipeline. That is the condition CLAUDE.md says lapses the exception.`);
+    }
+  }
+  if (!probes) fail('no `probe` instrument found — check 6f is guarding nothing');
+  notes.push(`${probes} probe instrument, read-only and single-call-site (the prime directive's one exception)`);
+}
+
 /* ---- 6e. tracked postmortems are readable by the thing that indexes them ---
  * NOT an existence check on `artifacts:`, which is what the plan specified and
  * which would have been wrong. A postmortem is a DATED RECORD: its citations are

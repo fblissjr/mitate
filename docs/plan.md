@@ -56,8 +56,13 @@ conditions have changed; the fourth was that plan's own stated revisit trigger.
    mitate imports the conclusions and re-verifies only what the renderer
    change invalidates (per-backend calibrations), appending to its own ledger.
 
-**explainer-video's disposition: frozen, published, bugfix-only.** It works,
-it has examples, it stays installed. mitate supersedes it when its
+**explainer-video's disposition: frozen, and NO LONGER PUBLISHED.** Verified
+2026-07-30 against the `fb-claude-skills` marketplace manifest: neither
+`explainer-video` nor `screenwright` is among its entries. This said "it stays
+installed" for the whole life of this repo and was wrong, which matters more than
+a stale line usually would — it is why `internal/legacy/` may hold the only
+surviving copy of both ancestors, and it was the premise under which archiving
+them looked safe. mitate supersedes it when its
 explainer register is verifiably better on the same test cases; then the
 marketplace `renames` map retires it, the same mechanism that retired
 env-forge.

@@ -293,6 +293,31 @@ over it. What did not ship, and is still worth having:
   a lineage earlier. `smoke.js` has since all-quantified three checks; the
   *discipline* — every check names its quantifier and its n — has not landed.
 
+## Salvaged from the ancestors, and what was deliberately left behind (2026-07-30)
+
+`internal/legacy/` is being archived off this machine. An audit checked every
+prose file in it against `predecessor-record.md`, `plan.md` and this file before
+calling anything uncaptured. **The consolidation held** — the four explainer-video
+planning docs, `screenwright_plan.md` and all twelve carried-over references are
+verbatim or corrected in the tracked corpus, and `internal/prior_artifacts/` is
+byte-identical to `internal/legacy/docs/`, so it is fully redundant.
+
+**Promoted (0.16.35):** the procedural-asset cookbook into `materials.md`, which
+two shipped files already claimed contained it.
+
+**Corrected (0.16.35):** the depth-swap limitation restored to `materials.md`;
+the marketplace claim in `plan.md` and `predecessor-record.md`, which is what made
+archiving look free.
+
+**Left behind deliberately. Each has a trigger; none is silently dropped.**
+
+| what | where it was | why not promoted | trigger to go get it |
+|---|---|---|---|
+| `references/audio.md` (47 lines) — the ffmpeg assembly recipe (`anullsrc` base, `adelay` per clip, `amix`, `sidechaincompress` ducking) and the HTML sync sketch (`audioEl.currentTime = t` on seek) | explainer-video | Audio is a stated non-goal until after Phase 5, and `plan.md` already records the designed-but-unwired status. The *spec* survives in `predecessor-record.md`; only the assembly mechanics are going | **Phase 5 closing, or any decision to wire audio.** Three citations in `predecessor-record.md` point at this file — they are now pointers into the archive, not the repo, and should be read that way |
+| three 2D style packs (140 lines) — paper-cutout, blueprint, neon-dark: palettes, register rules, per-pack hazards labelled observed vs predicted | explainer-video | The 2D backend has shipped no film since the rename, so register documentation for it would be doctrine ahead of demand | **The first 2D film anyone actually builds.** Note the real gap this exposes: `bibles.md` is v2 and 3D-only (`lens`, `energy`, `cutDur`, `bloom`, `dof`), so `scene2d.template.html` ships with **no art-direction reference of any kind** |
+| `one-scene-every-format.html` (32 KB) — the only worked 2D film in existence | explainer-video | Superseded in stack terms only by 18 diff lines; `plan.md` explicitly exempts the 2D backend from the node-stack rebuild, so it is not superseded by construction the way the five 3D films are | **The first 2D film**, again — it is the only worked reference for one, and `examples/` ships five 3D and zero 2D |
+| the committed-artifact-versus-re-render argument | explainer-video's `bibles.md` | *"a committed artifact can go stale against the scene, a re-render cannot."* This repo took the opposite decision and, as of 0.16.35, has effectively come back around to it — `gearbox-neon.html` is now derived rather than stored | none; recorded here so the reversal is not rediscovered as a fresh idea |
+
 ## Confirmed defect: the erupt recoil slides all four paws (2026-07-30)
 
 `examples/bear-and-bees.html` — **measured, not inferred.** During `erupt`

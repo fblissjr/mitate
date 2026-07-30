@@ -87,6 +87,12 @@ then near orb. Verified: the overlap zone composites correctly and the scene
 is byte-deterministic on both backends **on macOS** — and that qualifier is
 load-bearing, because CI refuted the unqualified version.
 
+**Where creation order cannot express it** — objects that swap depth mid-film —
+set `renderOrder` explicitly, and **accept that a genuinely depth-swapping
+transparent pair is outside the guarantee.** That last clause was carried in the
+predecessor and dropped in an edit, leaving this reference stating a remedy for a
+case it no longer admitted was unsolved. Restored 2026-07-30.
+
 > **RESOLVED 2026-07-30: this was never a defect in this film.** `materials.html`
 > failed smoke's in-session determinism arm on Linux/WebGL2 at `seekTo(5.36)`, as
 > did `menagerie.html` at 8.52 and 5.68. Measured rate with screenshots only:

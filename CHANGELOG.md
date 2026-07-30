@@ -53,6 +53,28 @@ pointing surface — a restatement of the vision for a public reader, never a
 second source — had never landed. Found by grepping for it instead of trusting
 the DONE.
 
+**`CLAUDE.md` is 39 lines lighter, and the cut was history, not rules.** It had
+grown 178 → 248 lines across this migration — the wrong direction for the one
+file charged on every session in this repo. Nearly every clause carried the
+defect that motivated it, and those anecdotes are already in this changelog,
+which is where the repo's own rule sends them. **A term diff against the
+pre-trim file confirms no rule was lost**; every dropped token is an anecdote, an
+illustrative example, or a path still reachable.
+
+The largest single cut was structural: the Map's `docs/` half was a second copy
+of [`docs/README.md`](docs/README.md), which already routes those nine entries by
+question. `CLAUDE.md` now maps everything *outside* `docs/` and points at that
+router for the rest — the one-home rule applied to the file that states it.
+
+**Gate R3 is three of four, and the fourth is recorded as a conflict rather than
+quietly redefined.** `SKILL.md` is smaller than at migration start (278 → 267
+lines); `CLAUDE.md` is not (178 → 209), because the Map did not exist before and
+was added to fix a measured orientation failure — the repo's front door and its
+shipped skill were unreachable from its own graph. The always-loaded *pair* is
+smaller (26,835 → 26,577 bytes). Which of those is the real budget is the
+owner's call, and the alternatives are written down in the plan. Redefining a
+gate to match what was achieved is the failure this branch exists to remove.
+
 ### fixed
 
 `plugin/README.md` carried a stale `last updated:` marker after 0.16.38 edited

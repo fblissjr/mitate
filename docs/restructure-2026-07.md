@@ -788,6 +788,40 @@ contradicts; **`CLAUDE.md` and `SKILL.md` both smaller than at the start of this
 migration**; and a cold-start run reaches the right next item without reading a
 superseded document.
 
+### Gate R3 status, measured 2026-07-30 — three of four, and the fourth is a conflict
+
+| clause | state |
+|---|---|
+| `selfcheck.js` green, both split references carrying a provenance header and a "Not here" edge | **MET** — 10 references |
+| no doc states a goal another contradicts | **MET** for the one known case: `plan.md`'s "mitate ships films" now carries `VISION.md`'s supersession inline, and `working-plan.md` no longer restates the resolved fence question |
+| `SKILL.md` smaller than at migration start | **MET** — 278L/15645B → 267L/13782B |
+| `CLAUDE.md` smaller than at migration start | **NOT MET** — 178L/11190B → 209L/12795B |
+| cold-start run reaches the right next item | **NOT RUN** — needs a fresh agent, and this pass just changed which documents are superseded, so an earlier result would not transfer |
+
+**The `CLAUDE.md` clause conflicts with R2, and the conflict is real rather than
+a shortfall of effort.** 0.16.39 cut it 248 → 209 lines by removing history to
+`CHANGELOG.md` and collapsing the Map's `docs/` half into a pointer at
+`docs/README.md`, which already routes those nine entries — a duplicate this file
+was carrying against its own one-home rule. A term diff confirms **no rule was
+lost**; every dropped token is either an anecdote, or a `docs/*` path now
+reachable in one hop.
+
+What remains over the 178-line baseline is **the Map itself**, which did not
+exist in `main` and which R2 added to fix a *measured* orientation failure: the
+repo's front door and its shipped skill were unreachable from its own graph.
+Meeting the letter of this clause now means deleting a structure an earlier gate
+required. Two honest readings:
+
+- **The pair is the real budget, and it is met.** `CLAUDE.md` + `SKILL.md`
+  together: 26,835B → 26,577B. These two are the always-loaded surface, the cost
+  is what they charge jointly, and the migration moved orientation *into* the
+  cheaper of them while cutting more than that from the other.
+- **Or the clause stands and the Map goes**, in which case `docs/README.md`
+  absorbs the last four entries and `CLAUDE.md` opens by pointing at it.
+
+**Owner's call.** Recorded rather than decided, because redefining a gate to
+match what was achieved is the failure mode this whole branch exists to remove.
+
 ---
 
 ## R4 — Harness

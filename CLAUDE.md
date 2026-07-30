@@ -9,43 +9,29 @@ first edit.
 
 ## Map
 
-Deliberately unlinked, and deliberately complete — a heading map costs nothing
-and cannot dangle. Measured 2026-07-30: from this file a cold session reached the
-working plan in **3 hops and ~4,900 lines**, and never reached `README.md`,
-`SKILL.md`, `sample.yml` or two of the agents at all, because nothing pointed at
-them. The repo's front door and its primary shipped artifact were both outside
-its own graph.
+Deliberately unlinked — a heading map costs nothing and cannot dangle. It covers
+**everything outside `docs/`**, because anything absent from a map is unreachable
+in practice, and this repo's front door and its shipped skill once sat outside
+their own graph.
+
+**For everything inside `docs/`, read [`docs/README.md`](docs/README.md)** — it
+routes question → file, including what to work on next. It is not restated here;
+a second copy of a router is the exact failure this file keeps catching.
 
 - **What it is, for a user** — `README.md` (repo root), `plugin/README.md`
+- **Why, and in what order** — `VISION.md` (determinism first, and what for)
 - **The skill that ships** — `plugin/skills/mitate/SKILL.md`, plus
   `references/` (start with `glossary.md` — the words this project uses as if you
   knew them), `templates/`, `examples/`, and `plugin/agents/film-reviewer.md`
-- **Why, and in what order** — `VISION.md`, then `docs/addressing.md` (what `t`
-  is, and what the position-encoding literature does and does not transfer)
-- **Architecture and phase gates** — `docs/plan.md`
-- **The standing backlog** — `docs/working-plan.md` (the spine, tracks A-D, the
-  ancestry table, deferred items with their triggers). Parts are superseded while
-  the migration below is open; that plan wins where they disagree
-- **Where each kind of fact lives** — `docs/source-of-truth.md`
-- **How many times a shape has been rebuilt** — `docs/pattern-ledger.md`
-- **Phase 4 constraints and red lines** — `docs/physics-bake-proposal.md`
-- **Inherited measured findings** — `docs/predecessor-record.md` (2,770 lines;
-  exceeds a default read window, so read it in ranges)
-- **What to work on next** — `docs/restructure-2026-07.md` while it exists. It is
-  the live queue, not a decision record, and it carries a current-position block.
-- **Open decisions** — `docs/examples-placement.md`
-- **What happened and why** — `CHANGELOG.md`, `docs/postmortems/`
+- **What happened and why** — `CHANGELOG.md`
 - **Repo tools** — `scripts/selfcheck.js`, `install-hooks.sh`,
   `stage-films.sh`, `diagnose-determinism.js`, `sample-determinism.js`, plus
   `scripts/bracket-*.js`, which are the controls over the first three
-- **CI** — `.github/workflows/gate.yml` (browser, main + PRs; runs the brackets
-  under `templates/`), `static.yml` (cheap checks, every push; runs the brackets
-  under `scripts/`), `sample.yml` (manual only). **Brackets live in two places
-  and each workflow globs one of them** — a bracket written into the directory
-  the wrong workflow watches runs nowhere, which is how `bracket-selfcheck.js`
-  went unexecuted from the day it was written until 0.16.37. The pre-commit hook
-  deliberately runs neither: it runs the self-check and fence parity, and the
-  brackets are CI's job.
+- **CI** — `.github/workflows/gate.yml` (browser, main + PRs; brackets under
+  `templates/`), `static.yml` (cheap checks, every push; brackets under
+  `scripts/`), `sample.yml` (manual only). **Brackets live in two directories and
+  each workflow globs one** — put one in the wrong directory and it runs nowhere.
+  The pre-commit hook runs neither, by design.
 - **Repo-development agents** — `.claude/agents/control-builder.md`,
   `doc-claim-auditor.md`, `.claude/skills/audit-claims/`,
   `.claude/rules/model-delegation.md`
@@ -65,21 +51,15 @@ Two rules. Everything else derives from them, and neither is negotiable.
   — any scene is swappable for any other because none of them knows a film's
   variable names.
 
-  **Amended 0.16.37: a read-only authoring instrument is admitted.**
-  `build.js probe` evaluates scene-specific expressions (`sep(bear.head, hivePiv)`)
-  because measuring a contact requires naming the two things. It is permitted on
-  three conditions, all currently true and all checkable: it only reads, it runs
-  at authoring time, and **it is in no pipeline that produces an artifact** — no
-  other `build.js` verb calls it, no workflow invokes it, the pre-commit hook does
-  not. Break any of those and the exception lapses. Stated here rather than argued
-  in a docstring, because a rule bent quietly is a rule gone.
+  **One admitted exception: `build.js probe`**, which evaluates scene-specific
+  expressions because measuring a contact requires naming the two things. It
+  holds on three conditions, all checkable: it only reads, it runs at authoring
+  time, and **it is in no pipeline that produces an artifact.** Break any and the
+  exception lapses.
 
-  **The membership list is not here.** `smoke.js` hard-asserts four names and
-  reads the rest behind fallbacks; that tiering is the fact, and its home is
-  `smoke.js`'s `CONTRACT` / `SOFT_CONTRACT` with the reader-facing version in
-  [`README.md`](README.md#the-window-contract). A membership list written here
-  is a fourth copy of a fact the gate already owns, and the copy in the
-  always-loaded file is the one nobody re-reads.
+  **The membership list is not here** — it is `smoke.js`'s `CONTRACT` /
+  `SOFT_CONTRACT` (tiered: four names hard-asserted, the rest behind fallbacks),
+  with the reader-facing copy in [`README.md`](README.md#the-window-contract).
 
 Anything that cannot be had under those rules gets reformulated (bake at build
 time, play back pure) or not had. The Phase 4 bake proposal is exactly that
@@ -100,19 +80,16 @@ for its red lines.
    update` never reaches installed users. Editing anything under
    `plugin/skills/mitate/` — templates, references, examples, not just SKILL.md
    prose — is plugin content. **SKILL.md is deliberately NOT in the cascade:** it
-   carries no `version` and no `author`, because the whole file including
-   frontmatter loads into context on activation, so both would be standing cost
-   with no runtime use. Do not add them, and do not add a
-   freshness field either: SKILL.md's dating lives in a **provenance header** in
-   the body, the same form the references use, because it records what was
-   verified against what and `selfcheck.js` check 4 verifies it.
+   carries no `version`, no `author` and no freshness field, because the whole
+   file loads into context on activation and none of the three has a runtime use.
+   Its dating lives in a **provenance header** in the body, which `selfcheck.js`
+   check 4 verifies.
 
    A **fenced** block (`KERNEL`, `SOLVER`, `RIG`, `DRIVER`, `CHARACTER`, `HTML`)
-   is carried by more files than it looks: both 3D templates and every example.
-   The count grows with the corpus and
-   `--parity-only` reports it, so do not write it here. Edit every carrier
-   together, then verify with `smoke.js
-   --parity-only templates/*.html examples/*.html` **cross-directory**. A
+   is carried by both 3D templates and every example — more files than it looks,
+   and the count grows with the corpus, so `--parity-only` reports it rather than
+   this file stating it. Edit every carrier together, then verify with `smoke.js
+   --parity-only templates/*.html examples/*.html` **cross-directory**: a
    per-directory green does not cover the template↔example boundary, and drift
    there is silent.
 
@@ -135,10 +112,8 @@ for its red lines.
    `plugin/skills/mitate/examples/`; `scripts/stage-films.sh` copies them into
    `site/films/` at build, which `site/.gitignore` ignores wholesale
    (`films/*.html`) so a new example needs no edit there.
-   **There are no exceptions.** `gearbox-neon.html` was one until 0.16.35 — a
-   tracked 1.14 MB second copy of `gearbox.html` differing by a single line — and
-   is now DERIVED by `stage-films.sh`, which is `bibles.md`'s "one object, one
-   line" claim executed rather than asserted. Poster stills live once in `site/posters/`, which
+   **There are no exceptions.** `gearbox-neon.html` is DERIVED by
+   `stage-films.sh`, not stored. Poster stills live once in `site/posters/`, and
    the skill's `examples/README.md` embeds them by **absolute raw URL** — never a
    relative path, which climbs out of the install cache and breaks for every
    installed user. Never re-introduce a second copy of either.
@@ -153,16 +128,12 @@ for its red lines.
    go red is decorative — a bracket that prints its rows and exits 0 whatever
    they say is the shape to watch for.
 
-   **The rule's teeth are on edits, not features.** The 0.16.16 defect — the
-   gate failing every 3D scene on the default path — was introduced by 0.16.9's
-   *test-audit pass*: it changed a console filter and wrote a comment asserting
-   the change was measured, without re-running anything that would have shown the
-   filter now matched nothing. So: touching a check, a threshold, a filter, or a
-   flag means re-running its bracket **before** the change (prove red is
-   reachable) and after (prove green is earned). Writing "measured" in a comment
-   is not the measurement. `.github/workflows/gate.yml` globs `bracket-*.js`, so
-   every bracket runs and a new one is covered the day it is written; a check with
-   no bracket is visibly uncontrolled there.
+   **The rule's teeth are on edits, not features.** Touching a check, a
+   threshold, a filter or a flag means re-running its bracket **before** the
+   change (prove red is reachable) and after (prove green is earned). Writing
+   "measured" in a comment is not the measurement — a test-audit pass that
+   changed a console filter and asserted the change was measured is how the gate
+   came to fail every 3D scene on its default path.
 
    Standing debt: comments in `templates/*.js` that assert a measurement without
    naming the control behind it. **`scripts/selfcheck.js` owns the count and its
@@ -174,14 +145,12 @@ for its red lines.
    normally enabled as a plugin on a machine where it is also developed, and the
    two are different artifacts: `plugin install` copies a subtree into a
    *version-stamped* cache, so invoking `/mitate` here loads the cached release,
-   not the working tree. During 0.16.3 development the tree was 0.16.3 while the
-   cache held 0.16.1, with differing `SKILL.md` files. Read the working tree
-   when asking *what will ship*; read the cache when asking *what users have* —
-   and say which one you checked, because they answer different questions. The
-   cache is genuinely useful as the installed-user fixture, so do not disable
-   the plugin to dodge this; label the copy instead. (mitate ships no hooks, so
-   the loaded skill cannot act on this repo on its own — the hazard is reading
-   the wrong copy, not interference.)
+   not the working tree, and the two routinely differ by several versions and a
+   whole `SKILL.md`. Read the working tree when asking *what will ship*; read the
+   cache when asking *what users have* — and say which one you checked. The cache
+   is the installed-user fixture, so do not disable the plugin to dodge this;
+   label the copy instead. (mitate ships no hooks, so the hazard is reading the
+   wrong copy, not interference.)
 
 ## Tooling
 
@@ -201,38 +170,30 @@ that configuration failing, so the gate must be able to enter it. Naming the
 wrong tool here inverts the intent: anyone acting on it "fixes" smoke by breaking
 the check.
 
-The default fallback path is CI-safe and `.github/` runs it unattended, which is
-the only reason a gate failing every 3D scene on it would be noticed.
-
 ## Conventions
 
 - Session logs and scratch renders go under `internal/` (gitignored).
 - **Postmortems are TRACKED, in [`docs/postmortems/`](docs/postmortems/), named
   `YYYY-MM-DD_<mode>_<slug>.md`** so the listing sorts chronologically and a slug
-  grep finds a topic. `.postmortem.json` pins that location so it is a decision
-  rather than an inference. **Session logs stay local**: the log is
-  narration, the postmortem is the distilled finding, and only the second is
-  citable. A tracked postmortem MAY cite a local-only artifact, but must label it
-  `(local)` and must not rest a claim on it. Deliberately no
-  hand-written index: that is a copy whose only consumer is the check that it
-  matches the directory. `/postmortem:postmortem-index` generates a browsable one
-  from frontmatter when you want it. Start with the newest — a postmortem carries
-  dated annotations, so its later corrections matter more than its first verdict.
-- Documentation carries a **dated freshness marker**, in whichever of these
-  two forms fits: a `last updated:` line (docs, plans), or a dated **provenance
-  header** saying what was verified against what (every reference, and SKILL.md —
-  the better instrument, since it records the check and not just the touch).
-  A file that is itself a dated record
-  needs none: `CHANGELOG.md` is dated by entry, and `THIRD_PARTY_LICENSES.md` is
-  static legal text. `last updated:` means last **touched**, not last reviewed: a
-  commit that edits a dated doc dates it to that commit, or the rule is
-  unsatisfiable — review semantics are the provenance header's job, which is why
-  both forms exist. `scripts/selfcheck.js` enforces this over every tracked `.md`
-  carrying the marker, deriving that set rather than listing it. `.claude/agents/*` and `.claude/rules/*` are behaviour
-  definitions rather than documentation — their freshness is git history — but
-  note that they still make drift-prone claims: `doc-claim-auditor` cites "five
-  real instances" of doc drift and that count is already low. An earlier version of this rule demanded one specific form
-  and so read as violated by eleven files that all carried a better one.
+  grep finds a topic; `.postmortem.json` pins that location. **Session logs stay
+  local**: the log is narration, the postmortem is the distilled finding, and
+  only the second is citable. A tracked postmortem MAY cite a local-only
+  artifact, but must label it `(local)` and must not rest a claim on it.
+  Deliberately no hand-written index — `/postmortem:postmortem-index` generates
+  one from frontmatter. Read the newest first: a postmortem carries dated
+  annotations, so its later corrections outrank its first verdict.
+- Documentation carries a **dated freshness marker**, in whichever of the two
+  forms fits: a `last updated:` line (docs, plans), or a dated **provenance
+  header** saying what was verified against what (every reference, and SKILL.md).
+  The second is the better instrument — it records the check, not just the touch —
+  and both exist because `last updated:` means last **touched**: a commit that
+  edits a dated doc dates it to that commit, or the rule is unsatisfiable. A file
+  that is itself a dated record needs neither (`CHANGELOG.md`,
+  `THIRD_PARTY_LICENSES.md`). `scripts/selfcheck.js` enforces this over every
+  tracked `.md` carrying the marker, deriving that set rather than listing it.
+  `.claude/agents/*` and `.claude/rules/*` are behaviour definitions, not
+  documentation — their freshness is git history — but they still make
+  drift-prone claims and are not exempt from being wrong.
 - **Two controls exist to be used, not rediscovered.** `/audit-claims` dispatches
   `doc-claim-auditor` at whatever the diff touched — the executable form of the
   drift rule in `source-of-truth.md`, which went unrun for this repo's whole life

@@ -7,6 +7,47 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.40
+
+### fixed
+
+**`site/` is strictly downstream, and the direction was stated wrong in both
+directions before this landed.** Owner, 2026-07-30: *"the vision defines and
+informs site language, and plan informs site copy of plan... fundamentally the
+vision and the code tracked out of site is the source of truth. The site is just
+how you and I choose to communicate it out."*
+
+0.16.39 corrected an inflation — the plan had promoted the site to a "vision
+carrier" — but over-corrected by striking the reconciliation obligation with it.
+Both errors are the same mistake about direction. The site owns nothing and
+settles nothing, **and** a language change in `VISION.md`, `plan.md` or
+`README.md` is real work on the site, because the site is how that language
+reaches anyone. `source-of-truth.md` now states the one-directional flow;
+`CLAUDE.md`'s map entry says the site is never the tiebreaker but is never exempt.
+
+**The obligation had already been missed, and it was measurable.**
+`site/index.html` is byte-identical to `main` while this branch rewrote the
+language it exists to carry. Four gaps found; one was not a wording question and
+is fixed here:
+
+- **The false duration ceiling.** `site:156` carried *"nothing caps duration, but
+  longer has not been shipped"* — the superseded `README.md` sentence **verbatim**,
+  the same claim the owner struck from `SKILL.md` and `README.md` earlier in this
+  session — and `site:167` led with *"These run 12 to 21 seconds."* Both now say
+  the examples are short **by choice**, and that a frame at `t=18000` costs what a
+  frame at `t=1` costs because the duration is a number in a table. A public page
+  asserting something the owner has explicitly called false is not a style
+  preference.
+
+Three remain, recorded in the plan and left for the owner because they are voice:
+`t` is framed as *"a pure function of **time** t"* three times including the
+`<meta>` and `og:description` that drive every social preview, where `VISION.md`
+and `README.md` now lead with **`t` as a position, not a clock**; the window
+contract is shown flat at `site:345` with a membership list that omits a
+hard-asserted name (`stopPlayback`) while including two soft ones, exactly the
+disagreement `glossary.md` warns about; and the `#why` section predates
+`VISION.md` and does not point at it.
+
 ## 0.16.39
 
 ### changed

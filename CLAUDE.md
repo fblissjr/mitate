@@ -30,9 +30,11 @@ a second copy of a router is the exact failure this file keeps catching.
   `selfcheck.js` and `stage-films.sh`. The other three are uncontrolled, which
   invariant 6 wants visible rather than glossed
 - **The website** — `site/` (`index.html`, `app.js`, `posters/`; films are staged
-  in, never tracked). A glorified `README.md` with example scenes, for showing
-  people what this is. It should work and it should not say false things about
-  the code; it is not part of the architecture and nothing depends on it
+  in, never tracked). A glorified `README.md` with example scenes: how the vision
+  and the plan get communicated outward. **Strictly downstream** — `VISION.md`,
+  `plan.md`, `README.md` and the code inform its language; nothing flows back,
+  and it settles no question. It owns nothing, so it is never the tiebreaker —
+  but a wording change upstream is work on the site, or the two drift
 - **CI** — `.github/workflows/gate.yml` (browser, main + PRs; brackets under
   `templates/`), `static.yml` (cheap checks, every push; brackets under
   `scripts/`), `sample.yml` (manual only). **Brackets live in two directories and

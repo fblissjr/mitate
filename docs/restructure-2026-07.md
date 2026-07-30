@@ -738,12 +738,41 @@ MISSED before the fix and CAUGHT after.
    today — confirmed absent from all three planning docs by two independent
    passes.
 
-   ~~**The site is the other vision carrier**~~ — **struck 2026-07-30 on owner
-   correction.** It is not a carrier of anything. `VISION.md` is the home, full
-   stop; the site is a website that shows people what this looks like, and if its
-   copy disagrees with `VISION.md` the site is simply wrong and gets fixed. That
-   is the ordinary bar for a public page, not a role in the document graph. The
-   `source-of-truth.md` row says exactly that much and no more.
+   ~~**The site is the other vision carrier**~~ — **struck 2026-07-30.** It
+   carries nothing; `VISION.md` is the home, full stop.
+
+   **But the reconciliation obligation is real, and striking the whole clause
+   over-corrected it.** Owner, 2026-07-30: *"the vision defines and informs site
+   language, and plan informs site copy of plan... the site is just how you and I
+   choose to communicate it out."* That is a one-directional derivation, not a
+   shared ownership: upstream language change **⇒ work on the site**, and never
+   the reverse. `source-of-truth.md` now states it.
+
+   **Outstanding, measured 2026-07-30 — `site/index.html` is byte-identical to
+   `main` while this branch rewrote the language it is supposed to carry:**
+
+   - **The false duration ceiling**, which the owner corrected in `SKILL.md` and
+     `README.md` this session. `site:156` still read *"nothing caps duration, but
+     longer has not been shipped"* — the superseded README sentence verbatim —
+     and `site:167` *"These run 12 to 21 seconds."* **Fixed 0.16.40**, because a
+     public page asserting something the owner has explicitly called false is not
+     a wording preference.
+   - **`t` framed as time, not position.** The site says *"a pure function of
+     time t"* three times, including the `<meta>` description and `og:description`
+     that drive every social preview, plus *"A film is a pure function of time."*
+     `VISION.md` and `README.md` now open on `t` being **a position, not a
+     clock** — an address you evaluate, not a cursor you advance.
+   - **The window contract shown flat, with a different membership list.**
+     `site:345` lists `seekTo · DURATION · BEATS · FRAME · sceneReady`. The
+     contract is **tiered** — four hard-asserted (`seekTo`, `DURATION`,
+     `stopPlayback`, `sceneReady`) and the rest behind fallbacks — and this list
+     omits a hard name while including two soft ones. `glossary.md` warns exactly
+     this: *"four different membership lists can disagree, and the shortest list
+     is the one most likely to omit a name the gate enforces."*
+   - **No pointer to `VISION.md`.** The site's `#why` section predates the file.
+
+   The last three are **wording, which is the owner's voice and the owner's
+   call** — listed here rather than changed.
 
 4. **`delivery.md` splits — DONE 2026-07-30 (0.16.38).** It was titled
    *"Delivering inline on GitHub"* and concluded at line 197 that the repo

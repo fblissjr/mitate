@@ -19,7 +19,7 @@ other surface points at the home. Nothing restates.
 | **delivery-side** facts — shipping the scene itself: bundle size over the wire, hosting and mount policy, posters | `references/delivery.md` | — |
 | **recording-side** facts — formats, encoders, decode cost, what GitHub renders inline | `references/recordings.md` | — |
 | repo invariants that bite on first edit | CLAUDE.md | — |
-| **why determinism comes first**, and what it is first for | `VISION.md` | `site/` says a public-facing version of some of this. It is a website, not a home — if it disagrees with `VISION.md`, the site is wrong |
+| **why determinism comes first**, and what it is first for | `VISION.md` | `site/` is DOWNSTREAM of this, one-directionally — see below |
 | history — what happened and why | CHANGELOG.md and git | docs speak present tense only |
 | **a check's pass criterion** | the code that implements the check, beside the flag or constant it governs | CI config and session logs POINT; they never restate it |
 | **what a session did** | `internal/` session logs, one per day | a finding worth keeping is promoted to a postmortem; the log is narration and is not cited by tracked content |
@@ -31,6 +31,28 @@ in two of them — the renderer backend speedup (`webgpu-stack.md`) and an AVIF
 encoder-effort ratio (`recordings.md`) — and a consolidation pass nearly merged
 them as duplicates of one fact. When a figure could belong to more than one, say
 which side it is on.
+
+**`site/` is downstream of everything, and nothing is downstream of it.** Owner,
+2026-07-30: *"the vision defines and informs site language, and plan informs site
+copy of plan. Fundamentally the vision and the code tracked out of site is the
+source of truth. The site is just how you and I choose to communicate it out."*
+
+So the flow is one-directional — `VISION.md`, `docs/plan.md`, `README.md` and the
+code **→** `site/` — and it never runs the other way. Two consequences that are
+easy to miss in opposite directions:
+
+- **The site is not a source, so it settles nothing.** If it disagrees with
+  `VISION.md`, the site is what is wrong. It is not a "vision carrier" and it
+  owns no fact; an earlier version of this repo's plan promoted it to one.
+- **But it is not exempt either.** A language change in `VISION.md`, `plan.md` or
+  `README.md` creates real work on the site, because the site is how that
+  language reaches anyone. Changing the wording upstream and leaving the site on
+  the old wording is drift, not independence. **Measured 2026-07-30:** this
+  branch rewrote `README.md`'s `t` framing and deleted a false duration ceiling,
+  and `site/index.html` still carried the superseded sentence verbatim.
+
+How the copy *reads* is the owner's call and may change over time; what it
+asserts is not.
 
 The delivery/recording line was drawn in 0.16.38, and it is the line between
 **the artifact and a copy of it**: `delivery.md` owns shipping the scene, which

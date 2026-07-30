@@ -739,8 +739,15 @@ const bump=(t,t0,t1)=>{if(t1===t0)return 0;const u=clamp((t-t0)/(t1-t0),0,1);ret
                    the quantized t is a pure function of t. Quantize per-object,
                    never inside seekTo itself.
    noise1(t,f,k) : seeded 1-D value noise in [-0.5,0.5] at frequency f Hz, from
-                   the frozen R pool. Same k = same track, different k =
-                   independent track. Handheld/idle wobble; keep amplitudes small.
+                   the frozen R pool. Same k = same track. DIFFERENT k IS NOT
+                   ALWAYS INDEPENDENT: stride 997 into a 4000-draw pool, and
+                   4*997 = -12 (mod 4000), so k and k+4 are the SAME wobble
+                   lagged 12 index samples -- 6.3s at f=1.9, inside a normal
+                   film. Never pick two k differing by a multiple of 4. Shipped
+                   scenes are clear (3D solver 11-14, 2D 1-2), and selfcheck
+                   fails any scene whose LITERAL k values collide; a computed k
+                   is past what a static check can see, which is why this says
+                   it. Handheld/idle wobble; keep amplitudes small.
    GATE ON THE RAW RAMP u, NEVER ON AN EASED VALUE: backOut(0) carries positive
    floating-point residue (~2e-16), so `if(eased<=0)` leaks one frame where
    scaled geometry is invisible but anything unscaled beside it renders. */

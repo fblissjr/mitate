@@ -7,6 +7,77 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.30
+
+### fixed
+
+**`noise1`'s tracks are not all independent, and the KERNEL comment said they
+were.** The pool is 4000 draws and the per-track stride is 997, so
+`4 * 997 = -12 (mod 4000)`: tracks `k` and `k+4` are the **same** wobble lagged
+12 index samples, which at the handheld 1.9 Hz is 6.3 seconds — inside a normal
+film. Verified empirically before the comment was written: `k=4` against `k=0`
+lagged `12/f` agrees to 3.9e-15 over 1539 samples, while the control (`k=1`
+against `k=0`, same lag) differs by 0.92. No shipped scene hits it — the 3D
+solver uses tracks 11-14 and the 2D template 1-2, no pair differing by 4 — so
+this is luck in the constants rather than design. Corrected in the comment
+across all nine KERNEL carriers rather than by changing the stride, because a
+new stride changes every value `noise1` returns and would break byte comparison
+against every shipped film, every poster still and the site hero, to close a
+trap nothing currently reaches. A `selfcheck` arm for literal colliding `k`
+values is queued; a computed `k` stays beyond a static check, which the comment
+now says.
+
+**`bracket-determinism.js` captured with a bare seek on both sides**, so it
+passed while exercising a capture pattern nothing has shipped since 0.16.28.
+Now `seekSynced` + `settle`, mirroring `smoke.js`'s determinism arm. Run before
+the change (three rows as specified, both failing arms reachable) and after
+(same three verdicts) on macOS/WebGL2 — which proves the control still works,
+not that the change fixed anything there, since the race does not reproduce on
+macOS at 0 in 80. `scripts/diagnose-determinism.js` was accused of the same
+defect and is **not** guilty: its `gridAt` seeks and reads back inside one
+`page.evaluate`, which is `seekSynced`'s mechanism, and it cannot call
+`seekSynced` because there the barrier and the diagnostic payload are the same
+readback. That relationship is now a comment, so nobody consolidates it and
+loses the grid.
+
+**`build.js` cited a documentation path in a different repository**, which
+resolved for no reader holding that file — not in a clone, not in an install
+cache. The rule it names survives; the unreachable pointer does not.
+
+### changed
+
+**One criterion, one home.** `sample.yml`'s header stated a pass criterion that
+contradicted its own input description and its own recorded measurement, and it
+survived the commit that corrected the other two copies. The criterion now lives
+beside the flag it describes in `scripts/sample-determinism.js`, and the
+workflow points at it.
+
+**`gate.yml` no longer double-fires.** It triggered on `push` with no branch
+filter *and* on `pull_request`, so every push to a branch with an open PR bought
+two full runs of the same commit. Push is now `main`-only; branch work is free
+until a PR opens.
+
+**Claims that nothing could check from where they lived.** `CLAUDE.md` carried a
+fourth membership list for the window contract — six names, omitting
+`stopPlayback`, which is one of the four `smoke.js` actually enforces — and now
+points instead of restating. `CLAUDE.md` and `working-plan.md` both cited
+"invariant 6: say which copy", which became invariant 7 when a new 6 was
+inserted and neither pointer moved. `README.md` linked to a `#requirements`
+anchor deleted in 0.16.13, dangling for sixteen releases because the link check
+covers neither repo-root files nor fragments. `plan.md` cited three CHANGELOG
+versions from the predecessor's numbering that exist in no repo. `working-plan.md`
+called `film-reviewer` "a gate criterion at `plan.md:460`" in three places: it is
+cited at `:471` and `:509`, both inside DONE narrative, and the `examples/` gate
+is owner approval. The crushed-exposure carry-forward existed in three
+simultaneous states across two files and is now one (measured; disposition
+open). The `method.md` truncation test, recorded as never run, was run: 996
+lines against a 2000-line window, so the correctness argument for splitting it
+is closed.
+
+**`docs/restructure-2026-07.md`** records the plan this is the first phase of,
+and retires itself when its last gate is green. `docs/addressing.md` is new: what
+`t` is, and what the position-encoding literature does and does not transfer.
+
 ## 0.16.29
 
 ### verified

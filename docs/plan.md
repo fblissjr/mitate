@@ -1,4 +1,4 @@
-last updated: 2026-07-29
+last updated: 2026-07-30
 
 # mitate: founding plan
 
@@ -107,7 +107,17 @@ The timeline driver composed with the kernel IS today's `f(t)` — nothing about
 film-making gets harder. But because the kernel never touches a clock, an input
 driver later reuses every character, material, camera solver, and instrument
 unchanged. This is a structuring rule, not extra machinery; Phase 6 proves it
-with a spike and until then it costs only discipline.
+with a spike.
+
+**"Until then it costs only discipline" — retracted 2026-07-30.** Discipline did
+not hold. `setCamera(t)` takes `t`, not a state value, so the split is a
+convention rather than a seam and Phase 6's gate below is not reachable as
+written. The cheap repair, and the reason it is urgent, are in
+[`working-plan.md`](working-plan.md) under "The weld gets more expensive every
+phase": give `setCamera` a state object that today holds only `{t}`, and the
+gate is met by construction instead of by argument. Every later phase welds
+tighter, because face state and baked tracks will be authored as functions of
+`t` — that is what the signature invites.
 
 ## The render stack (verified 2026-07-23, session spike)
 
@@ -328,7 +338,8 @@ headless-shell + `WEBGPU=swiftshader` → shipped-frame FAIL), not assumed;
 determinism byte-check green on both backends. Four measured findings shipped
 in the tools — the shadow `frameId` guard, the presentation settle, the
 shipped-frame check with its spread bracket, the arm64 Chromium resolution
-fix — recorded in CHANGELOG 0.69.0 and `references/webgpu-stack.md`.
+fix — recorded in `references/webgpu-stack.md`. (The predecessor's CHANGELOG
+number that stood here resolved in no repo: this CHANGELOG runs 0.1.0 upward.)
 
 **Phase 1 — Regression, post, shading.** Reshaped after Phase 0 (2026-07-23):
 the gate work runs in this order, each step isolating one class of new
@@ -406,8 +417,12 @@ variable.
    recorded in materials.md (monotone, no cliff at 1.0 — appears
    pre-tone-map; emissives behind transmission barely feed it; palette-
    conditional as before). A full bracket waits for the first film that
-   leans on bloom; the crushed-exposure advisory on the template palette
-   remains open.
+   leans on bloom. The crushed-exposure advisory has since been **measured**
+   (2026-07-29, full template+example corpus) and what remains open is the
+   *disposition*, not the measurement — figures and the argument live in
+   [`working-plan.md`](working-plan.md), "measurement debts". This entry said
+   "remains open" while another file said "measured" and a third said "left
+   undone": one item, three states, until 0.16.30.
 6. Style bibles v2 on the new stack.
    **DONE 2026-07-23** (mitate 0.5.0, `references/bibles.md`): a
    bible IS the STYLE object — the solver and template already consume
@@ -422,7 +437,8 @@ the three material packs each demonstrated under byte-determinism.
 **GATE MET 2026-07-23 — PHASE 1 COMPLETE** (mitate 0.5.0): gearbox
 comparison closed in 0.2.x, packs in 0.4.0, control pair in 0.5.0. Open
 carry-forwards into later phases: full bloom bracket (first film that leans
-on bloom), template-palette crushed-exposure advisory, `WEBGPU=vulkan`
+on bloom), template-palette crushed-exposure advisory (measured; disposition
+open — see `working-plan.md`), `WEBGPU=vulkan`
 unverified, upstream repro for the sortObjects defect unfiled.
 
 *Post-gate quality pass (2026-07-23, mitate 0.6.0):* the deliberately
@@ -433,8 +449,9 @@ recorder and gate), `RIG`/`DRIVER` parity fences covering all three
 load-bearing determinism guards, contract exports over internals probing
 (`window.CAPFADE`; flashes resolved once), `energy` single-homed in STYLE,
 per-run vendor cache, and the `motion` second-browser launch removed.
-Verified look-neutral: pre/post example frames byte-identical. Full ledger:
-CHANGELOG 0.74.0. **Standing maintenance rule from this pass:** the fenced
+Verified look-neutral: pre/post example frames byte-identical. Full ledger: the
+predecessor's, consolidated in [`predecessor-record.md`](predecessor-record.md)
+— the bare version number here pointed at the ancestor's numbering, not ours. **Standing maintenance rule from this pass:** the fenced
 blocks span `templates/` AND `examples/`, but a smoke run only checks the
 files it is pointed at — after editing any fenced block, run
 `bun run smoke.js --parity-only templates/*.html examples/*.html` (cross-
@@ -500,7 +517,8 @@ sixth parity fence, `HTML` — the shared page scaffold (overlay CSS + caption
 DOM, carrying the will-change compositor hint) had silently reached five
 identical unfenced copies; now HTML-comment-fenced in all five 3D scenes and
 in smoke's parity loop (a second regex arm, since the block lives outside
-`<script>`). Plus four small cleanups; ledger in CHANGELOG 0.78.0. The
+`<script>`). Plus four small cleanups; ledger in
+[`predecessor-record.md`](predecessor-record.md), not this CHANGELOG. The
 standing cross-directory parity rule now covers six fences.
 
 *Phase 2 GATE MET 2026-07-23 (mitate 0.11.0):*
@@ -585,6 +603,11 @@ skill docs alone.
 **Phase 6 — Interactive spike.** Input driver over the unchanged kernel;
 `museum-walk`. *Gate:* the spike reuses kernel, characters, materials, and at
 least one instrument with zero modification — proving the layer split held.
+**This gate is currently unreachable, and knowing why is the point of keeping it
+worded this way.** `setCamera(t)` takes `t`, so a bounded view offset has to
+enter *inside* the kernel, and one line inside `SOLVER` is not zero. The seam
+fix above makes it reachable by construction; until that lands, treat this gate
+as a measurement of the weld rather than of the spike.
 This phase decides whether interactivity becomes a sibling skill or a
 mitate register; that decision is explicitly out of scope until the
 spike exists.

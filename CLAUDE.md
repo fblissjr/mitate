@@ -1,4 +1,4 @@
-last updated: 2026-07-29
+last updated: 2026-07-30
 
 # mitate
 
@@ -15,8 +15,14 @@ Two rules. Everything else derives from them, and neither is negotiable.
   frames, no `Math.random()` at runtime, no wall-clock dependence. Any frame
   renders independently and identically, which is what makes one scene file both
   the live HTML artifact and the source of a frame-exact MP4.
-- **Tooling talks only to the window contract**, never to scene internals:
-  `window.seekTo` / `DURATION` / `BEATS` / `FRAME` / `SHOTS` / `sceneReady`.
+- **Tooling talks only to the window contract**, never to scene internals.
+  **The membership list is not here.** `smoke.js` hard-asserts four names and
+  reads the rest behind fallbacks; that tiering is the fact, and its home is
+  `smoke.js`'s `CONTRACT` / `SOFT_CONTRACT` with the reader-facing version in
+  [`README.md`](README.md#the-window-contract). This line carried a fourth,
+  shorter list until 0.16.30 — six names, omitting `stopPlayback`, which is one
+  of the four the gate actually enforces. Four copies of one membership, and the
+  only wrong one was in the file that auto-loads.
 
 Anything that cannot be had under those rules gets reformulated (bake at build
 time, play back pure) or not had. The Phase 4 bake proposal is exactly that

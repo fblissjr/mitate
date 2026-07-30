@@ -66,7 +66,8 @@ happened, and each was therefore re-derived, rediscovered, or never used:
 - A **decision** — "the palette moves into `STYLE`, on this trigger" —
   dispositioned in a plan nobody hits at authoring time. Rediscovered as a fresh
   finding.
-- A **tool** — `film-reviewer`, which *gates two phases* and has the best measured
+- A **tool** — `film-reviewer`, which *both shipped gate films were reviewed by*
+  and which has the best measured
   catch record in the project — not shipped, not routed, and unknown to the
   people it was built for. See A0.
 
@@ -190,7 +191,8 @@ change, so expect that trigger to fire during Phase 4 rather than after it.
 
 Deliberately left undone, because none of it blocks a bake: the
 measurement-assertion sweep (ratcheted, so it cannot worsen), the
-crushed-exposure threshold, the `method.md` truncation test, the PNG-vs-JPEG and
+crushed-exposure threshold **decision** (the measurement is done — see the debts
+section below; only the disposition is undone), the PNG-vs-JPEG and
 caption-legibility figure duplications (both already tracked above).
 
 ---
@@ -243,7 +245,7 @@ information.
 | deferred: 2D pan/zoom (owner's-call 4) | *"No 2D shot solver.* The film built to want one concluded the `{x,y,zoom}` rail was expressively sufficient" | inherited decline, with a recorded alternative |
 | Track C viewer | none in the hardening plan; **`museum-walk` in the portfolio** | Phase 6, arriving early |
 | A2 `transitions` | **0.5.1** — smoke began sampling transition windows after review found no fixed-fraction sample ever landed in a blend window | **export shipped, the sweep did not** |
-| A0 ship `film-reviewer` | gate criterion at `plan.md:460`; catch record in 0.9.0 and 0.11.0 | **built, gate-required, never shipped or routed** |
+| A0 ship `film-reviewer` | both Phase 2 gate films reviewed by it (`plan.md:471`, `:509`); catch record in 0.9.0 and 0.11.0 | **built, used on every shipped film, never shipped or routed** |
 | D `STYLE.palette` | **0.9.1** — *"dispositioned, not fixed… the palette moves into STYLE"* when the first character bible pair arrives | **deferred decision, trigger fired** |
 
 Three of the deferred items turn out to be *inherited decisions with recorded
@@ -452,8 +454,14 @@ the package because none of them rests on a single film.
 ### A0. Ship `film-reviewer` with the plugin — the item that costs nothing to build
 
 **Ranked first under the reachability clause, and it reorders the rest of this
-track.** `plan.md:460` makes it a gate criterion — *"byte-deterministic both
-backends, film-reviewer-reviewed with all HIGH…"* — and the changelog credits it
+track.** **Correction, 2026-07-30:** three places in this file called it "a gate
+criterion at `plan.md:460`". It is not, and that line is not where it appears.
+`plan.md:471` and `:509` cite it inside Phase 2's **DONE narrative** — what was
+actually done to `menagerie` and `bear-and-bees` — and the `*Gate:*` clauses for
+Phases 2 and 3 do not mention it. The `examples/` gate is *"owner approval, not
+rendering"* (`plan.md:657-658`). The real argument needs no overclaim: **both
+shipped gate films were reviewed by it** — *"film-reviewer-reviewed with all HIGH
+findings fixed"* (`plan.md:471`) — and the changelog credits it
 with the defects author-eyes missed on both Phase 2 gate films: menagerie's look
 beat entirely off-frame, its only closeup 70% void, a tail-wag spiking 5x, a
 breath holding every character 3-5% squashed from frame 0; bear-and-bees' contact
@@ -701,7 +709,9 @@ target population does not have. That is the difference between measuring the
 agent and measuring the agent-plus-repo.
 
 *The policy is already written — shipping makes it compliable, not new.*
-`plan.md:460` already requires a reviewer pass for anything entering `examples/`.
+Every scene that has entered `examples/` got a reviewer pass (`plan.md:471`,
+`:509`), even though the written gate is owner approval rather than a reviewer
+run — so shipping it makes an established practice reachable, not new.
 So there are two tiers and they are consistent: **mandatory at the examples gate,
 opt-in at saturation for everyone else.** Say it that way in the changelog, or it
 reads as added ceremony rather than a closed gap.
@@ -1303,7 +1313,7 @@ rather than a matter of mood.
 | solver-aware staging | the proposed vocabulary fails on its own originating use case: props at fixed world positions a character walks to, which was every exhibit in the film that motivated it | a design that handles walked-to props |
 | `travel()` / `LEGS` / `shapes.md` | register-specific to the presenter explainer, which arrived as a commission rather than from the roadmap | a second presenter film asking |
 | type primitive (glyph data + renderers) | generalizes past the register — any film with a sign, an axis, a label — but it is a bigger build than it looks, and no shipped example needs it. **And it is governed by an existing rule neither review applied: a glyph alphabet is a *primitive*, so under the chart tier it lands as a chart — a grid of all 36 glyphs, byte-compared per backend — before any film uses it.** That is also the right shape on the evidence: all three glyph bugs were one letter built on a wrong assumption, which a grid makes obvious at a glance and a title card cannot | a second film needing built text, or the diagrammatic register (see B5) — entering at the chart tier, not in a film |
-| splitting `method.md` (969 lines, 50.9 KB, 42% of reference text) | it would create exactly the doc-versus-doc boundary B4 exists to patch, and `method.md`/`instruments.md` already contradict in that shape. Its own justification is honest but weak: "I read all of it, so splitting wouldn't have helped me read". **Two independent outside reviews (2026-07-29) both pushed for the split, which raises the priority but not the argument — both argued cognitive load, which is the same taste claim already recorded here.** One of them gestured at something stronger without pressing it: if a wholesale read exceeds the reading tool's byte cap, an agent gets a TRUNCATED read and cannot tell. That would be a correctness argument, not a style one, and it would revive this on a different basis than B4 | B4's tiebreaker landing first — OR the truncation question resolving yes. That test is one command and has not been run: read `method.md` wholesale with the agent's own file tool and check for a truncation notice. **PARTIALLY DISCHARGED in 0.16.19:** the three long references gained heading maps. The hypothesis is that "monolithic" was a navigation complaint wearing a structure costume — 27 headings under 6 well-ordered top-level sections were invisible without reading all 969 lines. If the next reader still asks for a split *after* seeing the map, that is the evidence this row has always lacked |
+| splitting `method.md` (969 lines, 50.9 KB, 42% of reference text) | it would create exactly the doc-versus-doc boundary B4 exists to patch, and `method.md`/`instruments.md` already contradict in that shape. Its own justification is honest but weak: "I read all of it, so splitting wouldn't have helped me read". **Two independent outside reviews (2026-07-29) both pushed for the split, which raises the priority but not the argument — both argued cognitive load, which is the same taste claim already recorded here.** One of them gestured at something stronger without pressing it: if a wholesale read exceeds the reading tool's byte cap, an agent gets a TRUNCATED read and cannot tell. That would be a correctness argument, not a style one, and it would revive this on a different basis than B4 | B4's tiebreaker landing first — OR the truncation question resolving yes. **That test was run on 2026-07-30 and the answer is no.** `method.md` is 996 lines / 52.7 KB against a 2000-line default read window, so a wholesale read returns the whole file and the truncation argument does not apply to it. **The correctness basis for reviving this row is therefore closed**, and the row falls back to the taste argument it already admits is weak. (Measured in the same pass: `docs/predecessor-record.md` at 2770 lines DOES exceed that window, and nobody has proposed splitting it — the truncation risk in this repo is real and it is not here.) **PARTIALLY DISCHARGED in 0.16.19:** the three long references gained heading maps. The hypothesis is that "monolithic" was a navigation complaint wearing a structure costume — 27 headings under 6 well-ordered top-level sections were invisible without reading all 969 lines. If the next reader still asks for a split *after* seeing the map, that is the evidence this row has always lacked |
 | moving films out of the shipped subtree (`docs/examples-placement.md`, option E) | **the doc exists, is undecided, and was referenced from nowhere in `docs/` or `CLAUDE.md` until 0.16.18** — which is spine rule 0 turned on this plan: an unreachable decision does not exist, and an outside reviewer independently re-derived its cost table because of that. Measured: examples are 5.47 MB, ~93% of the shipped subtree, of which ~95% is the same byte-identical three IIFE five times; three cached versions on one machine came to 18 MB. The blocker is now clearer than the doc states it: all **three** brackets hardcode `../examples/gearbox.html`, so E is really "one scene stays as a *fixture*, four films move" — a different and easier decision than example-versus-internal. **Do not** reach for the unvendoring variant a review proposed: it breaks invariant 1, fails `build.js bundle`'s own self-containment assertion, and hangs every bracket | owner deciding fixture-vs-example, which is the only open question left in it |
 | distance-space gait as the template default | the algebra is sound (`{start:0, rootX:s}` reduces identically where travel is monotone) but was argued, not measured | the PSNR comparison `method.md` prescribes |
 | extracting a shared bracket harness | the three `bracket-*.js` scripts now triplicate temp-dir setup, injection-point drift detection, and the tally/exit report — **this repo's own "extract or fence at the third consumer" trigger, fired**, this time for tooling rather than scene code. Declined at the moment it was found only because it would refactor three controls that were verified green minutes earlier, at the end of a session, and a broken control is worse than a duplicated one. The distinct parts are genuinely distinct (one drives smoke.js as a subprocess, two drive pages directly), so the extraction is the scaffolding only | the fourth bracket — `bracket-sortobjects.js` is already anticipated by rule 5's trigger, which would make it a fifth copy of the scaffolding |
@@ -1729,7 +1739,8 @@ housekeeping:
 
 1. It is A2's positive control for **window selection** (the two reverts above).
 2. **It is a candidate reproducer for the open 1-in-6 `WEBGPU=metal` determinism
-   FAIL**, which has resisted reproduction for two versions. `plan.md:275`
+   FAIL**, which has resisted reproduction for two versions. `plan.md`'s Phase 1
+   chart-control note (search "did NOT reproduce it in 15 metal runs")
    narrows the suspect space toward "shadowed fur shells, multi-shot solver
    traffic, the character rig" — the machinery `bear-and-bees` has and the noise
    chart lacks. `circus.html` has 14 shots and two rigs, i.e. *more* multi-shot

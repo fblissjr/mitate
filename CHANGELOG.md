@@ -91,19 +91,18 @@ malformed source, with a bracket arm proving the refusal, because a malformed
 fence makes a file *leave the parity set*, which is how this check has already
 gone quiet twice while printing `ok`.
 
-**The defect corpus — and `circus.html` is not it.** Owner, 2026-07-30: it must
-**never** be tracked. It is parody, close enough to its source that the owner
-does not want the attention of anyone misreading it, so it stays gitignored
-permanently and off the public site — a decision, not a deferral.
+**The defect corpus — and `circus.html` is not it.** It stays gitignored and
+untracked (owner, 2026-07-30), a standing decision that applies to the site too.
 
-The fixture is re-skinned instead, because its value is entirely mechanical and
-none of it lives in the theme: ~60 seconds and 31 beats, multi-shot solver
-traffic, shadowed fur shells, the character rig. That combination is why it is
-the only candidate reproducer for the open 1-in-6 `WEBGPU=metal` failure, and why
-`noise-chart.html` failed to reproduce it in 15 runs — the chart lacks exactly
-those. So the script structure, captions, beat count, durations and every
-mechanic carry over; the scenario, style bible, character, world references and
-title do not. Trackable, and it loses nothing the fixture was for.
+**New content is generated for it; the mechanics stay the same.** What the
+fixture is for is entirely mechanical and none of it lives in the subject matter:
+~60 seconds and 31 beats, multi-shot solver traffic, shadowed fur shells, the
+character rig. That combination is why it is the only candidate reproducer for
+the open 1-in-6 `WEBGPU=metal` failure — `noise-chart.html` failed to reproduce
+it in 15 runs precisely because it lacks them. So the script structure, caption
+cadence, beat count, durations, shot pattern and every mechanic carry over, and
+the scenario, style bible, character, world and title are generated new. Same
+instrument, new content, trackable.
 
 Two constraints recorded with it. It must **not** live under `plugin/`, because
 everything there ships and a deliberately defective scene must not reach users as

@@ -789,9 +789,7 @@ MISSED before the fix and CAUGHT after.
    code* — every scene embeds its own three.js — **not** because anything caps
    duration. The site says that, and says longer films have been built.
    **It does not name or link the 60-second one**: `internal/circus_prototype/`
-   is parody, close enough to its source that the owner does not want the
-   attention of anyone misreading it, so it stays off the public surface. Do not
-   promote it there.
+   stays off the public surface. Do not promote or link it there.
 
 4. **`delivery.md` splits — DONE 2026-07-30 (0.16.38).** It was titled
    *"Delivering inline on GitHub"* and concluded at line 197 that the repo
@@ -922,6 +920,33 @@ property, not the proxy.
 
 ## R4 — Harness
 
+> ### Start here
+>
+> Seven items. **Do them in this order** — the reasons are dependency and cost,
+> not preference, and a later item is not blocked by skipping an earlier one
+> except where stated.
+>
+> 1. **R4.2 + R4.3 — the harness tier.** Half a day. Zero dependencies, closes
+>    the loudest gap (`build.js` and `shoot.js` carry no brackets at all), and
+>    R4.3 collapses to a naming decision: call it
+>    `templates/bracket-commands.js` and `gate.yml`'s existing glob covers it.
+> 2. **R4.4 — `--parity-fix`.** Small, and it comes before R4.5 because R4.5
+>    adds a ninth fence carrier; propagation is what makes that cheap instead of
+>    a permanent tax.
+> 3. **R4.5 — the defect corpus.** The largest item: it needs a film generated.
+>    Do it before R4.1, because the current fixture is untracked and unbacked-up,
+>    so its value decays with time in a way nothing else here does.
+> 4. **R4.1 — extract `checkScene`.** Last of the sequential items. Its gate
+>    (byte-unchanged `smoke.js` verdicts) is the expensive one to satisfy, and
+>    the harness tier already delivers part of what the extraction was for.
+>
+> **R4.6 (retention) and R4.7 (portfolio grading) are continuous, not
+> sequential.** Do them alongside: record a design question the day it is raised,
+> grade a portfolio case the day its reach changes. Neither has a start date and
+> both are gate clauses.
+>
+> **If you only do one thing:** item 1. It is the cheapest test in the repo.
+
 1. **Extract `checkScene`.** ~595 lines (`smoke.js:269`-~862) holding ~11 checks
    over shared mutable `fails`/`warnings`/`noise`/`dropped`. Each check already
    has its own try/catch and its own name — it is a list wearing a function
@@ -994,20 +1019,20 @@ property, not the proxy.
    timestamps**. A new instrument then has a positive control the day it is
    written, and a *regression* control the day someone changes it.
 
-   **`circus.html` itself is NOT the answer, and must never be tracked** (owner,
-   2026-07-30). It is parody, close enough to its source that the owner does not
-   want the attention of anyone misreading it. It stays gitignored permanently —
-   this is a decision, not a deferral, and it applies to the public site too.
+   **`circus.html` stays gitignored and untracked** (owner, 2026-07-30) — a
+   standing decision, not a deferral, and it applies to the site too.
 
-   **Re-skin it instead.** The fixture's value is entirely mechanical and none of
-   it lives in the theme: ~60 seconds and 31 beats, multi-shot solver traffic,
-   shadowed fur shells, the character rig — the combination that makes it the
-   only candidate reproducer for the open 1-in-6 `WEBGPU=metal` failure, which
-   `noise-chart.html` explicitly failed to reproduce in 15 runs because it lacks
-   exactly those. So: **keep the script structure, the captions, the beat count
-   and durations, and every mechanic; change the scenario, the style bible, the
-   character and all world references, and do not reuse the title.** The result
-   is trackable and loses nothing the fixture was for.
+   **Generate new content, keep the same mechanics.** What the fixture is for is
+   entirely mechanical and none of it lives in the subject matter: ~60 seconds
+   and 31 beats, multi-shot solver traffic, shadowed fur shells, the character
+   rig. That combination is why it is the only candidate reproducer for the open
+   1-in-6 `WEBGPU=metal` failure — `noise-chart.html` failed to reproduce it in
+   15 runs precisely because it lacks them.
+
+   So **keep** the script structure, the caption cadence, the beat count and
+   durations, the shot pattern and every mechanic; **generate new** scenario,
+   style bible, character, world and title. Same instrument, new content, and
+   trackable.
 
    Two constraints on where it lands:
 

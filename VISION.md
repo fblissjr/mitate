@@ -7,16 +7,29 @@ and the phase gates. This file has the one thing neither of them says: **why
 determinism comes first**, and what it is first *for*.
 
 It is short on purpose. If it grows into a summary of the plan, delete the
-summary.
+summary. Where it gestures at something, the file that owns it is linked:
+[`docs/addressing.md`](docs/addressing.md) for `t`,
+[`docs/physics-bake-proposal.md`](docs/physics-bake-proposal.md) for what a bake
+may and may not do, [`docs/pattern-ledger.md`](docs/pattern-ledger.md) for how
+patterns get promoted.
 
 ## The goal
 
-An engine, its primitives, and the harness that proves them — enough that an
-agent can turn **any context** into a scene, reliably.
+An **engine**, its **primitives**, the **abstractions** that let you say what you
+mean instead of how to compute it, the **tooling** that builds and ships it, and
+the **harness** that proves all of it — enough that an agent can turn **any
+context** into a scene, reliably.
 
-Not "a tool that makes films." Films are how the engine gets proven. Every
-shipped example exists to demonstrate that a layer works and to fail loudly when
-it does not.
+Not "a tool that makes films." Films are how the engine gets proven: every
+shipped example demonstrates that a layer works and fails loudly when it does
+not.
+
+But proving is not the point either. **The point is that the films land** — that
+a gag reads without captions, that a contact looks like impact rather than
+clipping, that a mechanism becomes obvious in motion when it was opaque in prose.
+The three review axes exist because "it renders" and "it works" are different
+claims, and the second one is the one anyone cares about. Determinism is what
+makes the second claim checkable; it is not a substitute for it.
 
 > This supersedes the framing in `plan.md`'s Risks section, which read "mitate
 > ships films" and fenced engine-shaped work as scope creep. That fence was
@@ -70,6 +83,13 @@ freezes one. Once frozen it is an ordinary scene, and the whole instrument stack
 applies to it unmodified. That is the bridge, and `t` is the interface it hands
 back.
 
+**The table is a shape, not a roadmap.** Only the first row exists. The others
+are what the shape admits, and whether any of them gets built — or whether the
+useful direction turns out to be something not listed — is genuinely open. What
+the shape buys is that finding out later costs a signature change rather than a
+rewrite. `docs/addressing.md` works this through properly, including what the
+position-encoding literature in machine learning does and does not transfer.
+
 One honest limit: a recording gives you an oracle for *that run*, not for the
 generator. Nothing yet tells you a simulator is right — that needs a different
 kind of instrument, property- or distribution-shaped rather than byte-identical,
@@ -89,7 +109,9 @@ system works out the consequences:
 | gait | a proportion vector | leg keyframes |
 | **interaction** | — | **hand-coded, every time** |
 
-That last row is the gap, and it is what Phase 4 is really for. A physics bake is
+That last row is the gap, and it is what Phase 4 is really for — its constraints
+and its four red lines are in
+[`docs/physics-bake-proposal.md`](docs/physics-bake-proposal.md). A physics bake is
 not a feature; it is the declarative layer for interaction, the way lighting is
 one for illumination. Declare mass and solidity, let the system work out what
 happens when things meet, instead of hand-tuning three sine waves that approximate
@@ -104,6 +126,23 @@ layer that already exists is, in this project's own words, *"substantial, it
 works, and it is unnamed, unspecified, and unvalidated as a whole."* Adding
 another layer on top of tables nobody has enumerated, validated by nothing, buys
 a capability with no foundation. Enumerate first.
+
+## How it gets better
+
+An engine that only grows when someone remembers to generalise will not grow.
+Every reference here exists because a person noticed the same problem twice and
+wrote it down — `film-language.md` is shot grammar someone kept re-deciding,
+`materials.md` is surface behaviour someone kept re-deriving.
+
+**So capturing a pattern should be a side effect of making a film, not an act of
+discipline afterwards** — a flywheel where each film leaves the engine better
+equipped for the next one. The mechanism is unbuilt and the argument for it is in
+[`docs/pattern-ledger.md`](docs/pattern-ledger.md), which counts how often a
+shape gets rebuilt and has no way to extract one.
+
+The cost of not having it is on record: a cookbook of shape recipes was written
+once, cited from two shipped files as though it had been carried over, was not
+carried over, and survived only because an archive audit went looking.
 
 ## How to tell if this is working
 

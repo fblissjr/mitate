@@ -7,6 +7,35 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.22
+
+### changed
+
+**CI ran for the first time and refuted a shipped claim.** `references/materials.md`
+asserted `materials.html` "is byte-deterministic on both backends" — measured on
+macOS, stated without the platform. On ubuntu-latest / WebGL2 the scene fails
+smoke's in-session determinism arm at `seekTo(5.36)`, reproducibly across three
+independent runs. The claim now carries its platform and its refutation.
+
+Ruled out, so the next session does not re-derive it: `t=5.36` is in the **toon**
+beat (title 0-2.2, toon 2.2-5.6, skin 5.6-9.2, glass 9.2-13.4), the orbs move
+only on `pulse(t,'glass',…)`, and no `renderOrder` is set anywhere — so neither
+the transmission backdrop nor the documented depth-swapping-transparent-pair
+exemption explains it. Not reproducible on macOS on hardware GL or software GL
+(`ANGLE_BACKEND=swiftshader`), so CI is currently the only instrument that sees
+it and there is no local loop yet.
+
+Recorded with the constraint that matters: **this must not be resolved by
+exempting the scene or relaxing the check.** That is the bake proposal's red line
+#3 verbatim, and the check is behaving correctly — it found something on a
+platform the claim was never measured on. It is now the top item before Phase 4,
+because main is red and a permanently-red CI teaches people to ignore CI.
+
+Also confirmed by that run: the static job is green on Linux, `selfcheck.js`
+included, and the freshness check genuinely executes there — `fetch-depth: 0` was
+required, since a shallow clone reports the tip commit for every file and would
+make every marker look stale.
+
 ## 0.16.21
 
 ### fixed

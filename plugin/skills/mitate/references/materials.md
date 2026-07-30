@@ -84,7 +84,26 @@ glass.transmissionNode = THREE.float(.95);     // see the trap above
 transparent and transmissive objects composite in CREATION order. Create
 farther-first — in the showcase: emissive core, then glow disc, then far orb,
 then near orb. Verified: the overlap zone composites correctly and the scene
-is byte-deterministic on both backends. When creation order cannot express
+is byte-deterministic on both backends **on macOS** — and that qualifier is
+load-bearing, because CI refuted the unqualified version.
+
+> **REFUTED on Linux, 2026-07-30, cause unknown.** `materials.html` fails
+> smoke's in-session determinism arm on ubuntu-latest / WebGL2:
+> `seekTo(5.36) not deterministic`. Reproducible — same scene, same `t`, three
+> independent CI runs — so it is a state dependency, not a race. What is ruled
+> OUT: `t=5.36` falls in the **toon** beat (beats run title 0-2.2, toon 2.2-5.6,
+> skin 5.6-9.2, glass 9.2-13.4), the orbs only move on `pulse(t,'glass',…)`, and
+> no `renderOrder` is set anywhere — so the depth-swapping-transparent-pair
+> exemption below does NOT explain it, and neither does the transmission
+> backdrop. NOT reproducible on macOS: hardware GL and software GL
+> (`ANGLE_BACKEND=swiftshader`) both pass, so there is no local repro loop yet
+> and CI is currently the only instrument that sees it.
+>
+> **This must not be resolved by exempting the scene or relaxing the check.**
+> That is the physics-bake proposal's red line #3 verbatim ("smoke's determinism
+> checks are weakened, special-cased, or given a per-scene opt-out"), and the
+> check is behaving correctly: it found something on a platform the claim above
+> was never measured on. When creation order cannot express
 the ordering (objects that swap depth mid-film), set `renderOrder` explicitly
 — and accept that a genuinely depth-swapping transparent pair is currently
 outside the guarantee.

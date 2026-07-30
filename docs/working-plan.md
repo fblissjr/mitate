@@ -1,4 +1,4 @@
-last updated: 2026-07-29
+last updated: 2026-07-30
 
 # Working plan: instruments, routing, and the viewer
 
@@ -122,6 +122,28 @@ What Phase 4's eval criteria now rest on, verified rather than assumed:
 - **Criterion 3 (size bracket against the 1.09 MB vendor bundle)** — that figure
   now lives only in `references/webgpu-stack.md`. It was restated in `plan.md`
   until 0.16.21, which was a duplicate aimed squarely at this criterion.
+
+**UPDATE 2026-07-30: CI has now run, and it found a real defect on its first
+push.** The static job is green on Linux, including `selfcheck.js` with the
+git-based freshness check (`fetch-depth: 0` was required — a shallow clone makes
+every marker look stale). The gate job is 7 of 8 scenes green, and the eighth is
+the finding:
+
+> **`materials.html` fails smoke's in-session determinism arm on ubuntu-latest /
+> WebGL2 — `seekTo(5.36) not deterministic` — reproducibly across three runs,
+> and it does not reproduce on macOS on either hardware or software GL.**
+
+**This is now the top item before Phase 4**, ahead of everything else on this
+page. Not because a bake depends on it, but because the bake's eval criterion 2
+is "smoke green on both backends with the UNTOUCHED checks" and main is currently
+red — and a permanently-red CI teaches people to ignore CI, which is the
+warning-fatigue failure this plan already tracks for the crushed-exposure
+threshold. Diagnosis notes, ruled-out hypotheses, and the constraint against
+resolving it by exemption are in `references/materials.md` at the ordering
+discipline. There is no local repro, so CI is the loop: the honest next step is a
+diagnostic job that dumps both hashes and a frame strip around 5.36 as artifacts.
+
+The paragraph this replaces read as follows, and it was right:
 
 **One thing is NOT de-risked, and it is the biggest: CI has never run.**
 `.github/workflows/gate.yml` exists and its static half is verified locally, but

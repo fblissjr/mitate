@@ -71,6 +71,41 @@ code and produced a false accusation, which is the argument for brackets: the ar
 was written first, went MISSED, and the false positive surfaced the moment the
 check ran against the real tree rather than against an idea of it.
 
+**R4 gains two items, both about not paying the same cost twice** (owner-directed).
+
+**`--parity-fix`.** Six fenced blocks are held byte-identical across eight
+carriers by hand — **measured 4,611 lines**: KERNEL 151 × 8, CHARACTER 278 × 3,
+SOLVER 113 × 7, DRIVER 111 × 7, RIG 83 × 7, HTML 60 × 7. That is
+DRY-by-*verification* in a repo that spent R0-R3 moving to
+DRY-by-*construction*. The resolution is **not** to generate the scenes: the
+examples are teaching artifacts, an agent reads `gearbox.html` end to end to
+learn how a film is built, and a file carrying an injection placeholder teaches
+nothing — it would also stop the tracked file being the shipped file, which is
+what invariant 1 protects. Instead, make detection able to propagate.
+`--parity-only` already computes both the divergence and the canonical text and
+simply cannot write; `--parity-fix --from <canonical>` turns an eight-file edit
+into one edit plus a command with **zero change to any tracked or shipped
+artifact**. It must name its source explicitly rather than infer a majority — a
+fix that picks the wrong canonical file corrupts seven others — and must refuse a
+malformed source, with a bracket arm proving the refusal, because a malformed
+fence makes a file *leave the parity set*, which is how this check has already
+gone quiet twice while printing `ok`.
+
+**The defect corpus.** `working-plan.md` records that every instrument here was
+bracketed by hand-building a fixture and discarding it, and predicted its own
+failure: *"`circus.html` is currently the third such fixture about to
+evaporate."* **The prediction came true** — that prototype is gitignored, on one
+machine, unbacked-up, and is the only candidate reproducer for the open 1-in-6
+`WEBGPU=metal` determinism failure. Keeping a small corpus of scenes with
+characterized defects at known timestamps gives a new instrument a positive
+control the day it is written and a regression control the day someone changes
+it. Gitignored is correct: this is bracketing apparatus, not teaching material,
+and the repo already draws that line.
+
+R4.3 also got cheaper: naming the harness tier `templates/bracket-commands.js`
+means `gate.yml`'s existing glob covers it the day it is written, so the "gate
+job gains a step" the item used to prescribe is not needed at all.
+
 **R3's gate is MET — the cold-start run closed it, and found three defects doing
 so.** A fresh agent with no context, asked only what to work on next: **1 hop,
 ~940 lines across 11 files, answer inside the first 24 lines of the live queue**,

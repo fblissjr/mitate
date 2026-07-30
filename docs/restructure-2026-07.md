@@ -11,12 +11,15 @@ last updated: 2026-07-30
 > same reordering recorded below. The `CLAUDE.md` byte clause was retired by
 > owner call in favour of "no rule lost, no line unearned".
 >
-> **Next: R4 — the harness.** Its cheapest item is also its most alarming gap:
-> `build.js` and `shoot.js` have **zero** brackets between them. **Do R4.2 + R4.3
-> before R4.1** — the harness tier needs nothing from the `checkScene`
+> **Next: R4 — the harness, now five items.** Its cheapest is also its most
+> alarming gap: `build.js` and `shoot.js` have **zero** brackets between them.
+> **Do R4.2 + R4.3 first** — the harness tier needs nothing from the `checkScene`
 > extraction, and R4.1's gate (byte-unchanged `smoke.js` behaviour) is the
-> expensive one. R2 items 1-7 landed across 0.16.32-0.16.34, 8 retracted, 9
-> trigger-gated on a fifth bracket of one family.
+> expensive one. **R4.4 and R4.5 are new (owner-directed 2026-07-30)** and are the
+> same idea aimed at two costs: `--parity-fix` stops the same *work* being
+> repeated (4,611 lines held identical by hand), the defect corpus stops the same
+> *mistakes* being repeated. R2 items 1-7 landed across 0.16.32-0.16.34, 8
+> retracted, 9 trigger-gated on a fifth bracket of one family.
 >
 > **While this document is open it is the live queue**, and
 > [`working-plan.md`](working-plan.md) is the standing backlog it executes
@@ -939,10 +942,66 @@ property, not the proxy.
 
 3. **`gate.yml` runs the harness tier.** No new workflow — the existing gate job
    gains a step. `sample.yml` stays manual-only and correct as designed;
-   `static.yml` needs no change.
+   `static.yml` needs no change. **Name it `templates/bracket-commands.js` and
+   no CI edit is needed at all** — `gate.yml` already globs
+   `templates/bracket-*.js`, so it is covered the day it is written. That is
+   strictly better than "the gate job gains a step", which this item used to say.
+
+4. **`--parity-fix`: stop hand-editing six fenced blocks across eight files.**
+   Measured 2026-07-30: **4,611 lines held byte-identical by hand** — KERNEL 151
+   lines × 8 carriers, CHARACTER 278 × 3, SOLVER 113 × 7, DRIVER 111 × 7, RIG 83
+   × 7, HTML 60 × 7. This is DRY-by-*verification* in a repo that spent R0-R3
+   moving to DRY-by-*construction*: `gearbox-neon.html` was a stored 1.14 MB
+   duplicate and is now derived by one `sed`, on the argument that a claim should
+   be executed rather than asserted.
+
+   **Do NOT generate the scenes.** The examples are teaching artifacts — an agent
+   reads `gearbox.html` end to end to learn how a film is built, and a file
+   carrying `<!-- KERNEL injected here -->` teaches nothing. Generation would also
+   make the tracked file stop being the shipped file, which is exactly what
+   invariant 1 protects.
+
+   **Do make detection able to propagate.** `smoke.js --parity-only` already
+   computes both the divergence and the canonical text; it simply cannot write.
+   `--parity-fix --from <canonical>` turns an eight-file edit into a one-file edit
+   plus a command, with **zero change to any tracked or shipped artifact** —
+   every scene stays complete and readable, and detection is untouched.
+
+   Two conditions, both of which are the difference between this helping and this
+   being a catastrophe:
+   - **It must name its source explicitly and never infer a majority.** A fix that
+     picks the wrong canonical file silently corrupts seven others — worse than
+     the drift it repairs.
+   - **It must refuse when the source's own fence is malformed**, with a bracket
+     arm proving the refusal. A malformed fence makes a file *leave the parity
+     set*, which is the documented way this check has already gone quiet twice
+     while printing `ok` (see `bracket-parity.js`).
+
+5. **The defect corpus — build it before the next instrument improvises another
+   fixture.** `working-plan.md`'s *"Instrument brackets want a defect corpus, not
+   per-instrument improvisation"* records that every instrument here was
+   bracketed by hand-building a fixture and throwing it away, and it predicted
+   its own failure: *"`circus.html` is currently the third such fixture about to
+   evaporate."* **That prediction came true.** The prototype is in `internal/`,
+   gitignored, on one machine, unbacked-up — and it is the only candidate
+   reproducer for the open 1-in-6 `WEBGPU=metal` determinism failure, a use that
+   does not survive the directory's loss.
+
+   Keep a small corpus of scenes with **characterized defects at known
+   timestamps**. Gitignored is correct: this is bracketing apparatus, not teaching
+   material, and the repo already draws that line. A new instrument then has a
+   positive control the day it is written, and a *regression* control the day
+   someone changes it.
+
+   **Items 4 and 5 are the same idea pointed at two costs** — 4 stops the same
+   *work* being repeated, 5 stops the same *mistakes* being repeated. Neither
+   makes anything new possible; both make the existing thing cheaper to keep
+   correct, which is why they belong in the harness phase rather than in R5.
 
 **Gate R4:** every `build.js` verb exercised in CI; `smoke.js` behaviour
-byte-unchanged across the extraction (same verdicts on the same corpus).
+byte-unchanged across the extraction (same verdicts on the same corpus); a fence
+edited in one carrier and propagated by command lands byte-identical in every
+other carrier, with the malformed-source refusal bracketed.
 
 ---
 

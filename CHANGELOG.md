@@ -106,6 +106,46 @@ R4.3 also got cheaper: naming the harness tier `templates/bracket-commands.js`
 means `gate.yml`'s existing glob covers it the day it is written, so the "gate
 job gains a step" the item used to prescribe is not needed at all.
 
+**R4 gains two more (owner-directed), and the case for the first was found while
+writing it.**
+
+**R4.6 — retention.** A design discussion held on 2026-07-30 was recorded
+**nowhere**: the owner asked whether the declarative tables would be better
+stored as structured data than as JavaScript, and stated a position — *"JSON
+isn't the right shape; is something else with some semblance of structure a
+better shape?"* It is absent from `docs/`, `CLAUDE.md`, `VISION.md` and the
+session log; a grep returns nothing. It survived only in a conversation
+transcript, which nothing routes to and no future session reads. It is now
+recorded as an open question, which is the minimum rather than the fix.
+
+Three retention channels exist and two work. Postmortems are tracked and checked;
+the CHANGELOG is why history can be cut from `CLAUDE.md`. **Design questions and
+fixtures have no channel at all** — the structured-data question evaporated,
+`circus.html` is evaporating, and a cookbook of shape recipes was written once,
+cited from two shipped files as though carried over, was not, and survived only
+because an archive audit went looking. `VISION.md` already names the shape of the
+answer — capturing a pattern should be a *side effect* of making a film, not an
+act of discipline afterwards — and `pattern-ledger.md` counts how often a shape
+gets rebuilt while having no way to extract one. Also in scope: the disciplines
+this migration produced should become routine rather than remembered, including
+the one that cost three fixtures before it was written down — **a control must
+not contain the defect it injects.**
+
+**R4.7 — grade the portfolio.** `plan.md`'s nine-case portfolio is good and its
+premise is right, but nothing says which cases are *in reach*, which are *just
+about there*, and which are *deliberately beyond*, so nothing tells a session
+which to pick up. It also has no rungs between the nine: a case one primitive
+away from an existing film is worth more as a next step than one needing three,
+and those intermediate variants do not exist. **Two films and one chart are built
+against nine specs.** The grades are expected to move — a case stuck at "beyond
+reach" for three phases is either mis-scoped or is naming a missing primitive,
+and both are findings. The table stays in `plan.md`, which owns it.
+
+Gate R4 gains two clauses: every portfolio case carries a reach grade, and **a
+design question raised in a session is findable from `docs/` afterwards** —
+tested the only way it can be, by a cold-start agent asked about one and reaching
+it without being told where to look.
+
 **R3's gate is MET — the cold-start run closed it, and found three defects doing
 so.** A fresh agent with no context, asked only what to work on next: **1 hop,
 ~940 lines across 11 files, answer inside the first 24 lines of the live queue**,

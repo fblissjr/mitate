@@ -11,15 +11,18 @@ last updated: 2026-07-30
 > same reordering recorded below. The `CLAUDE.md` byte clause was retired by
 > owner call in favour of "no rule lost, no line unearned".
 >
-> **Next: R4 — the harness, now five items.** Its cheapest is also its most
+> **Next: R4 — the harness, now seven items.** Its cheapest is also its most
 > alarming gap: `build.js` and `shoot.js` have **zero** brackets between them.
 > **Do R4.2 + R4.3 first** — the harness tier needs nothing from the `checkScene`
 > extraction, and R4.1's gate (byte-unchanged `smoke.js` behaviour) is the
-> expensive one. **R4.4 and R4.5 are new (owner-directed 2026-07-30)** and are the
-> same idea aimed at two costs: `--parity-fix` stops the same *work* being
-> repeated (4,611 lines held identical by hand), the defect corpus stops the same
-> *mistakes* being repeated. R2 items 1-7 landed across 0.16.32-0.16.34, 8
-> retracted, 9 trigger-gated on a fifth bracket of one family.
+> expensive one. **R4.4-R4.7 are new (owner-directed 2026-07-30)**, all four about
+> not paying a cost twice: `--parity-fix` stops the same *work* being repeated
+> (4,611 lines held identical by hand); the defect corpus stops the same
+> *mistakes* being repeated; retention stops the same *thinking* being repeated —
+> a design question raised this session was recorded nowhere and had to be
+> recovered; and grading the portfolio stops the same *question* — what do I build
+> next — being re-derived from scratch. R2 items 1-7 landed across
+> 0.16.32-0.16.34, 8 retracted, 9 trigger-gated on a fifth bracket of one family.
 >
 > **While this document is open it is the live queue**, and
 > [`working-plan.md`](working-plan.md) is the standing backlog it executes
@@ -998,10 +1001,83 @@ property, not the proxy.
    makes anything new possible; both make the existing thing cheaper to keep
    correct, which is why they belong in the harness phase rather than in R5.
 
+6. **Retention: what a session learns has to outlive the session.** The case for
+   this is not theoretical, and the sharpest instance was found while writing
+   this item.
+
+   **A design discussion happened on 2026-07-30 and was recorded nowhere.** The
+   owner asked whether the declarative tables would be better stored as
+   structured data than as JavaScript, and stated a position — *"JSON isn't the
+   right shape; is something else with some semblance of structure a better
+   shape?"* It is absent from `docs/`, from `CLAUDE.md`, from `VISION.md`, and
+   from the session log. A grep for it returns nothing. It survived only in a
+   conversation transcript, which nothing routes to and no future session reads.
+   **Recorded now as an open question** (below), which is the minimum, not the
+   fix.
+
+   Three retention channels exist and two work:
+   - **Postmortems** — tracked as of this migration, in `docs/postmortems/`,
+     checked by `selfcheck.js`. This one works.
+   - **The CHANGELOG** — works, and is why history can be cut from `CLAUDE.md`.
+   - **Design questions and fixtures** — no channel. The structured-data question
+     evaporated; `circus.html` is evaporating (R4.5); and a cookbook of shape
+     recipes was written once, cited from two shipped files *as though carried
+     over*, was not carried over, and survived only because an archive audit went
+     looking.
+
+   `VISION.md` already names the shape of the answer: **capturing a pattern
+   should be a side effect of making a film, not an act of discipline
+   afterwards** — a flywheel where each film leaves the engine better equipped for
+   the next. The mechanism is unbuilt and the argument is in
+   [`pattern-ledger.md`](pattern-ledger.md), which counts how often a shape gets
+   rebuilt and has **no way to extract one**.
+
+   Also in scope: **the disciplines this migration produced should become
+   routine rather than remembered.** Red-before-green on every check edit; a
+   cold-start run at each gate boundary (it is cheap and it found nine defects at
+   R2, three at R3); `/audit-claims` pointed at `.claude/` as well as `docs/`;
+   and the rule that a control must not contain the defect it injects, which cost
+   three separate fixtures this session before it was written down.
+
+7. **Grade the test-case portfolio, and let it be refined rather than fixed.**
+   [`plan.md`](plan.md)'s nine-case portfolio is good and its opening line is
+   right — *"diversity is the point: each case exists to break a different
+   assumption."* Two things it lacks:
+
+   - **Reach grading.** Nothing says which cases are *in reach today*, which are
+     *just about there*, and which are *deliberately beyond* — so nothing tells a
+     session which one to pick up, and the only signal is a parenthetical calling
+     `the-briefing` "THE hard one". Grade every case, and expect the grades to
+     move: a case that stays "beyond reach" for three phases is either mis-scoped
+     or is naming a missing primitive, and both are findings.
+   - **Variations between the rungs.** Nine cases is a coarse ladder over a wide
+     space. A case that is one primitive away from an existing film is worth more
+     as a next step than one that needs three — and those intermediate variants
+     are exactly what does not exist today. **Two films and one chart are built
+     against nine specs**, which is the measurement that makes this an R4 item
+     rather than a nice idea.
+
+   Keep it in `plan.md`, which owns it; **do not copy the table here.** What
+   belongs here is the instruction to grade it and the note that the grades are
+   expected to change — a portfolio whose entries never move is a wish list.
+
+   **Open question, recorded so it stops evaporating: does any of the declarative
+   layer want to be data rather than code?** `BEATS`, `SHOTS`, `SUBJECTS`,
+   `STYLE`, the gait vectors and the lighting tables are all JavaScript object
+   literals today. Owner position, 2026-07-30: JSON is **not** the right shape;
+   the question is whether something with *some* semblance of structure is
+   better. Unresolved, and it interacts with R5.2's enumeration of the
+   declarative layer — enumerate first, since you cannot choose a shape for a set
+   nobody has listed. This paragraph exists because the discussion itself was
+   lost once already.
+
 **Gate R4:** every `build.js` verb exercised in CI; `smoke.js` behaviour
 byte-unchanged across the extraction (same verdicts on the same corpus); a fence
 edited in one carrier and propagated by command lands byte-identical in every
-other carrier, with the malformed-source refusal bracketed.
+other carrier, with the malformed-source refusal bracketed; every portfolio case
+carries a reach grade; and **a design question raised in a session is findable
+from `docs/` afterwards** — tested the only way it can be, by a cold-start agent
+asked about one and reaching it without being told where to look.
 
 ---
 

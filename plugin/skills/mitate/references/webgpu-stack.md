@@ -5,7 +5,8 @@
 > corrections recorded in the changelog). If this file and the code
 > disagree, audit before trusting either — then fix the stale one.
 >
-> **Not here.** export and delivery formats → `delivery.md`; material recipes → `materials.md`.
+> **Not here.** shipping the scene, and posters → `delivery.md`; export formats
+> and encoders → `recordings.md`; material recipes → `materials.md`.
 
 
 The renderer-specific half of mitate's 3D backend. The universal method —

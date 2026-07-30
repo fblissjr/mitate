@@ -16,18 +16,28 @@ other surface points at the home. Nothing restates.
 | routing and workflow order | SKILL.md | — |
 | what a check can and cannot see | `references/instruments.md` | smoke.js comments say how, not what-it-means |
 | **render-side** facts — backends, determinism, node stack, per-frame cost | `references/webgpu-stack.md` | — |
-| **delivery-side** facts — formats, encoders, file size, where a thing renders | `references/delivery.md` | — |
+| **delivery-side** facts — shipping the scene itself: bundle size over the wire, hosting and mount policy, posters | `references/delivery.md` | — |
+| **recording-side** facts — formats, encoders, decode cost, what GitHub renders inline | `references/recordings.md` | — |
 | repo invariants that bite on first edit | CLAUDE.md | — |
 | history — what happened and why | CHANGELOG.md and git | docs speak present tense only |
 | **a check's pass criterion** | the code that implements the check, beside the flag or constant it governs | CI config and session logs POINT; they never restate it |
 | **what a session did** | `internal/` session logs, one per day | a finding worth keeping is promoted to a postmortem; the log is narration and is not cited by tracked content |
 
 
-**Render and delivery are separate domains and must not share a home.** They
-measure different things and their figures collide: a "2.3x" exists in each — the
-renderer backend speedup and an AVIF encoder-effort ratio — and a consolidation
-pass nearly merged them as duplicates of one fact. When a figure could belong to
-either, say which side it is on.
+**Render, delivery and recording are separate domains and must not share a
+home.** They measure different things and their figures collide: a "2.3x" exists
+in two of them — the renderer backend speedup (`webgpu-stack.md`) and an AVIF
+encoder-effort ratio (`recordings.md`) — and a consolidation pass nearly merged
+them as duplicates of one fact. When a figure could belong to more than one, say
+which side it is on.
+
+The delivery/recording line was drawn in 0.16.38, and it is the line between
+**the artifact and a copy of it**: `delivery.md` owns shipping the scene, which
+is what happens on any surface that can run one; `recordings.md` owns producing a
+lossy copy, which exists solely because GitHub will not render an mp4 inline. One
+file previously held both under a single provenance header that said "UNKNOWN —
+never audited", which was true of the inherited encoder measurements and false of
+this repo's own measured brotli figures sitting beside them.
 
 **A number travels with its provenance, or it gets trusted past its warrant.**
 One rule, three facets — a bracket carries its **date** (above), its

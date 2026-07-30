@@ -22,8 +22,10 @@ Three companion references hold what this file deliberately does not:
   determinism rules, recorder mechanics, r185 API notes, measured brackets.
 - `materials.md` — the material packs and their procedural recipes.
 - `bibles.md` — the look as ONE object: palette, exposure, post, lens, cut pace.
-- `delivery.md` — the GitHub delivery forensics: format tradeoffs, encoder
-  settings, the content-type mechanism and its evidence chain.
+- `delivery.md` — the scene as the deliverable: bundle economics over the wire,
+  hosting and mount policy, posters, which artifact goes on which surface.
+- `recordings.md` — the lossy-copy path, for GitHub only: format tradeoffs,
+  encoder settings, the content-type mechanism and its evidence chain.
 
 **Map.** Six top-level sections. Deliberately unlinked — a heading map
 costs nothing and cannot dangle, where hand-written anchors ship into an install

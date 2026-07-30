@@ -193,7 +193,8 @@ bun run build.js all    <name>.html        # .mp4 — the only container that co
 
 WebP costs per pixel changed, so it constrains the camera — set `CONFIG.sway = 0`
 before shooting one. Whatever ships, the scene file stays the single source.
-`references/delivery.md` owns the tradeoffs.
+`references/recordings.md` owns the format tradeoffs; `references/delivery.md`
+owns the case where you ship no recording at all, which is most of them.
 
 ## Rules that silently break a film
 
@@ -252,7 +253,8 @@ Cited above at the step that needs them. In full:
 | `characters.md` | the film has figures |
 | `webgpu-stack.md` | anything about backends, determinism or the recorder |
 | `instruments.md` | deciding whether a green check means anything |
-| `delivery.md` | choosing a delivery format |
+| `delivery.md` | shipping the scene itself, and posters |
+| `recordings.md` | choosing and encoding a recording format |
 
 ## Examples
 

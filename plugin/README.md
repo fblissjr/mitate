@@ -51,7 +51,8 @@ Every fact has exactly one home. This README points; it does not restate.
 | method, discipline, the recurring failure modes | `skills/mitate/references/method.md` |
 | shot vocabulary — sizes, cuts, focus, camera energy | `skills/mitate/references/film-language.md` |
 | backends, determinism, the node stack | `skills/mitate/references/webgpu-stack.md` |
-| formats, encoders, file size, inline delivery | `skills/mitate/references/delivery.md` |
+| shipping the scene itself — bundle size, hosting, posters | `skills/mitate/references/delivery.md` |
+| formats, encoders, file size, inline on GitHub | `skills/mitate/references/recordings.md` |
 | what each check can and cannot see | `skills/mitate/references/instruments.md` |
 | materials, characters, style bibles | the correspondingly named `references/*.md` |
 | worked films you can open and read | `skills/mitate/examples/` |

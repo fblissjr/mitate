@@ -660,7 +660,7 @@ for the concern that would actually bite: the Agent Skills spec loads ONLY
 SKILL.md into context — `examples/` never auto-loads, so films are pure disk
 weight, zero ambient-context cost. Moving them out would break what they pay
 for: SKILL.md teaches by pointing at in-tree baselines, READMEs embed the
-AVIFs by relative path, and delivery.md's own doctrine forbids the LFS
+AVIFs by relative path, and recordings.md's own doctrine forbids the LFS
 workaround (raw serves pointer files, breaking embeds).
 
 Amended same day after owner pushback, and the amendment is better: the
@@ -698,7 +698,7 @@ AVIF's 720/12fps ceiling, then deleted it: **on a page we control the right
 preview is the scene itself.** Brotli takes a scene HTML to ~255 KB where its own
 mp4 was 559–1626 KB, so the artifact is cheaper than a lossy recording of it, and
 the thumbnail and the lightbox become the same cached URL. The whole
-compressed-loop argument in `references/delivery.md` was only ever scoped to
+compressed-loop argument (now `references/recordings.md`) was only ever scoped to
 GitHub's refusal to render mp4 or run `<script>`, and that constraint does not
 travel. The AVIF stays because the README genuinely needs it; the mp4 tier does
 not exist. Live scenes mount lazily and unmount on scroll-out (peak of two

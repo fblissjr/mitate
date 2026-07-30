@@ -7,6 +7,47 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.38
+
+### changed
+
+**`delivery.md` splits into `delivery.md` and `recordings.md`, because one
+provenance header could not be true of both halves.** The file was titled
+"Delivering inline on GitHub", carried 150 lines of encoder forensics, and then
+concluded that this repo *"ships no recordings at all"* — the path actually taken
+was at the bottom, behind the path that was abandoned. Underneath both sat a
+single header reading **"Verification date: UNKNOWN — never audited end to
+end"**, which was honest about the inherited encoder measurements and false about
+this repo's own measured brotli figures sitting beside them.
+
+- **`delivery.md`** now owns the scene as the deliverable: bundle economics over
+  the wire, hosting and mount policy, posters and stills, which artifact goes on
+  which surface. **Verification date 2026-07-24** — recovered from the commits
+  that introduced the brotli figures and the mount policy, not invented.
+- **`recordings.md`** owns the lossy-copy path, which exists for exactly one
+  reason and now says so in its first line: GitHub will not render an mp4
+  inline. Format tradeoffs, the decode cost, encoder settings, the content-type
+  evidence chain, the LFS and APNG traps. It keeps the honest UNKNOWN, because
+  those measurements were taken on the predecessor and have not been re-run here.
+
+"Stills come from the scene, never from the loop" stays in `delivery.md`. It
+reads like an encoder rule and is not one — it is a rule about the scene being
+the source, and filing it with the encoders is what would make it look optional.
+
+**Eight live pointers followed the split**: `plugin/README.md`, `SKILL.md`
+(twice), `method.md`, `webgpu-stack.md`'s "Not here" edge, `build.js` (twice),
+and `source-of-truth.md`. Historical mentions in `plan.md` and
+`predecessor-record.md` were left as written where they record what happened;
+two in `plan.md` making present-tense claims about where doctrine lives were
+repointed.
+
+**`source-of-truth.md` now separates three domains, not two.** Its
+2.3x-collision paragraph — the near-miss where a consolidation pass almost merged
+the renderer-backend speedup with an AVIF encoder-effort ratio because they share
+a number — named `delivery.md` as the home of a figure that has now moved to
+`recordings.md`. Splitting a file moves its figures, and a rule about where
+figures live is exactly the kind of thing that goes stale silently when it does.
+
 ## 0.16.37
 
 ### fixed

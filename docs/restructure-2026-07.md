@@ -731,18 +731,30 @@ MISSED before the fix and CAUGHT after.
    in the same commit, and note in `source-of-truth.md` that the site is a
    pointing surface for this fact.
 
-4. **`delivery.md` splits.** It is titled *"Delivering inline on GitHub"* and
-   concludes at line 197 that the repo *"ships no recordings at all"* — 150
-   lines of encoder forensics in front of the path actually taken, under one
-   provenance header stamped "UNKNOWN — never audited" that also covers this
-   repo's own measured brotli figures.
+4. **`delivery.md` splits — DONE 2026-07-30 (0.16.38).** It was titled
+   *"Delivering inline on GitHub"* and concluded at line 197 that the repo
+   *"ships no recordings at all"* — 150 lines of encoder forensics in front of
+   the path actually taken, under one provenance header stamped "UNKNOWN — never
+   audited" that also covered this repo's own measured brotli figures.
    → `delivery.md` keeps the scene as the deliverable (bundle, brotli
    economics, hosting and mount policy, posters, the surface table).
    → **`recordings.md`** takes the lossy-copy path (format tradeoff, AVIF
    decode, encoder settings, content-type forensics, LFS/APNG traps).
-   Each gets its own honest provenance date. "Stills come from the scene" stays
-   in `delivery.md` — it is a rule about the scene being the source.
-   **Version cascade.**
+
+   **The provenance split is the point, not the page count.** `recordings.md`
+   keeps the honest UNKNOWN — its measurements are inherited from the predecessor
+   and were never re-run here. `delivery.md` gets a real date, **2026-07-24**,
+   recovered from the commits that introduced the brotli figures and the mount
+   policy rather than invented. One header could not be true of both halves,
+   which is why the file had to split before either could be dated.
+
+   Eight live pointers followed it: `plugin/README.md`, `SKILL.md` (×2),
+   `method.md`, `webgpu-stack.md`'s "Not here" edge, `build.js` (×2) and
+   `source-of-truth.md`. `source-of-truth.md`'s 2.3x-collision paragraph named
+   `delivery.md` for a figure that moved to `recordings.md` — it now names three
+   domains, not two. Historical mentions in `plan.md` and `predecessor-record.md`
+   were left as written where they describe what happened; two in `plan.md` that
+   made present-tense claims about where doctrine lives were repointed.
 
 5. **`working-plan.md` pruning pass.** It carries superseded paragraphs kept
    verbatim (correct practice) that now read as three live positions to a

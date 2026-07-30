@@ -68,6 +68,29 @@ behaviour is *true* needs a reader. Whether a cited path *exists* does not, so
 and bare filenames in a provenance frame, both measured for precision before
 being trusted. The other half is what `doc-claim-auditor` is for.
 
+## Never hand-write what a command produces
+
+The rule that generalises every copy-defect found while executing the 2026-07
+migration, and the one that would have prevented four of them outright.
+
+> **If `selfcheck.js`, `--parity-only`, `git` or `ls` can answer it, prose points
+> at the answer and does not restate it.** A number that is not written cannot be
+> wrong.
+
+`CLAUDE.md` asserted "`references/` (9)" while `selfcheck` derived the same
+number on every run; the assertion was wrong one commit after it was written. It
+also carried a fence-carrier count, "all three brackets" when there were four,
+and a fourth membership list for the window contract. All four were deleted
+rather than corrected, because correcting a copy only resets its clock.
+
+**This outranks writing a check.** Guarding a copy is O(n) in copies and each
+guard is one more thing that can misfire — five did, every one of them failing to
+tell *carrying* a fact from *describing* one, which is a limit of text matching
+rather than a series of accidents. Deleting the copy is O(0) and cannot misfire.
+
+Prose still carries rules, rationale and design arguments. Those are not
+derivable, and they do not rot the way a count does.
+
 ## The rules
 
 - **A number appears once.** Re-measure it → update its home plus a CHANGELOG

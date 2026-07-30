@@ -58,13 +58,49 @@ So the ordering principle for everything below is:
 
 Restructuring first would move lies into tidier folders.
 
+## What executing R0-R2 changed about the plan
+
+Recorded because the plan was written before any of it was known, and a plan
+that does not absorb its own execution is the next stale document.
+
+**1. Guarding a copy is weaker than not writing it.** The model here was *find
+each copy, write a check that guards it*. That is O(n) in copies, and each check
+is one more artifact that can be wrong — five were, all in one way (below). The
+durable move is to **delete the copy**. `CLAUDE.md` asserted "9 references" while
+`selfcheck` derived the same number on every run; the assertion was wrong within
+one commit of being written. It is gone rather than corrected, along with three
+other counts. **New rule, home in `source-of-truth.md`: never hand-write what a
+command produces.** Prose carries rules and rationale — those are not derivable
+and do not rot the same way.
+
+**2. A check must be run and read before it becomes a gate.** Five specs shipped
+wrong first, every one failing to distinguish *carrying* a thing from
+*describing* it: the citation check fired on a comment quoting a bad citation,
+the `last_verified` check on the header explaining its removal, and three
+variants of the seek check condemned correct files including a deliberate
+control. Text matching cannot separate use from mention. Running a new check
+against the tree and reading every hit costs one command and would have caught
+all five.
+
+**3. The always-loaded surface is the expensive one, and this plan grew it.**
+`CLAUDE.md` 178 → 224 lines and `SKILL.md` 278 → 326 during R0-R2 — 94 lines
+added to the only two files paid for on every session and every activation. That
+is now R3's first item.
+
+**4. Cold-start testing is cheap and finds what review does not.** A fresh agent
+with no context, asked "what should I work on next", found nine orientation
+defects in one run — most of them created during R2 while nominally fixing
+orientation. **Run it at the end of R3 and again at R5.** It converts "is this
+working" from an argument into a number, and the number that matters is not the
+defect count but the *self-inflicted* share of it.
+
 ## Where each kind of thing lives (decided)
 
 | kind | home | rationale |
 |---|---|---|
 | why the project exists, and why determinism is first | **`VISION.md`** (repo root, new) | the frame above everything; public; first read after `CLAUDE.md` |
-| invariants that bite on first edit | `CLAUDE.md` | unchanged |
-| what it does, install, layout | `README.md` | unchanged, user-facing |
+| invariants that bite on first edit | `CLAUDE.md` | **always-loaded — every line is standing cost on every session.** Present tense only; no history, no count a command derives. R3.1 trims it |
+| what it does, install, layout | `README.md` | user-facing, read-on-demand. Needs a trim, but it costs nothing recurring — R3.3, after the always-loaded pair |
 | **which doc answers which question** | **`docs/README.md`** (new) | the router; a pointer table, never a summary |
 | architecture and phase gates | `docs/plan.md` | loses goal-framing to `VISION.md`, keeps everything else |
 | ranked tactical work | `docs/working-plan.md` | unchanged role, needs a pruning pass |
@@ -522,8 +558,10 @@ Things that exist and cannot be reached do not exist
    take the ones the R5 seam work actually calls, starting with viewer and
    playback. They are written as dense one-liners and need cleanup, so a
    promotion is a rewrite, not a move. Note the shape they share with
-   `bracket-*.js` — if three of them promote, that is the fourth-bracket trigger
-   `working-plan.md` already records for extracting a shared bracket harness.
+   `bracket-*.js`. Note the harness-extraction trigger they would feed was
+   **fired and declined** in R1's gate, on the grounds that the brackets are two
+   families and that controls sharing a harness share a failure mode. Three
+   promotions of one family would reopen it; a mixed three would not.
 
 **Gate R2 — MET 2026-07-30, shipped across 0.16.32-0.16.34.** `film-reviewer`
 and `probe` are in `plugin/` and routed from `SKILL.md` at their moments; both
@@ -541,7 +579,31 @@ reinstalled, because the marketplace clones from the remote and `main` is still
 
 ## R3 — Structure
 
-1. **`VISION.md`** at repo root. The ordering argument (determinism is the
+1. **Trim the always-loaded surface: `SKILL.md` then `CLAUDE.md`.** Owner
+   directive 2026-07-30, and the measurement backs the ordering. These are the
+   only two files charged on every invocation — `SKILL.md` in full, frontmatter
+   included, on every skill activation; `CLAUDE.md` on every session in this
+   repo. Together ~33 KB. R0-R2 added 94 lines to them while fixing orientation
+   elsewhere, which is the wrong direction paid forever.
+
+   `CLAUDE.md` has had one pass already (present tense, four derived counts
+   removed, 233 → 224). What remains for both: **every line must earn its place
+   on every future invocation.** Anything that is history goes to `CHANGELOG.md`;
+   anything a command derives goes to the command; anything read once goes to a
+   reference or `docs/`. `SKILL.md`'s 1,458-byte frontmatter description is the
+   single densest always-loaded block in the project and has never been audited
+   for whether every clause changes a decision.
+
+   **Gate this one on a number**, not on taste: both files smaller than they
+   started this migration, with no lost rule — checked by re-running the
+   cold-start test, not by reading.
+
+2. **`README.md` trim.** Real, and deliberately *after* the pair above: it is
+   read on demand, so its cost is a first impression rather than a recurring
+   charge. Its Layout table lists a subset of `docs/` and should point at
+   `docs/README.md` instead of enumerating.
+
+3. **`VISION.md`** at repo root. The ordering argument (determinism is the
    observation instrument, not a constraint accepted in exchange for one), the
    `t`-as-coordinate / state-as-driver-output formulation, films as the proving
    instrument rather than the product. **Supersedes `plan.md:821-823`**
@@ -558,7 +620,7 @@ reinstalled, because the marketplace clones from the remote and `main` is still
    in the same commit, and note in `source-of-truth.md` that the site is a
    pointing surface for this fact.
 
-2. **`delivery.md` splits.** It is titled *"Delivering inline on GitHub"* and
+4. **`delivery.md` splits.** It is titled *"Delivering inline on GitHub"* and
    concludes at line 197 that the repo *"ships no recordings at all"* — 150
    lines of encoder forensics in front of the path actually taken, under one
    provenance header stamped "UNKNOWN — never audited" that also covers this
@@ -571,14 +633,17 @@ reinstalled, because the marketplace clones from the remote and `main` is still
    in `delivery.md` — it is a rule about the scene being the source.
    **Version cascade.**
 
-3. **`working-plan.md` pruning pass.** It carries superseded paragraphs kept
+5. **`working-plan.md` pruning pass.** It carries superseded paragraphs kept
    verbatim (correct practice) that now read as three live positions to a
    scanner, plus edit residue at `:436-443` where a resolved question is
    restated in its superseded conditional form. Strike, don't just annotate,
    where the newer verdict is settled.
 
 **Gate R3:** `selfcheck.js` green including provenance headers and "Not here"
-edges on both split references; no doc states a goal that another doc contradicts.
+edges on both split references; no doc states a goal that another doc
+contradicts; **`CLAUDE.md` and `SKILL.md` both smaller than at the start of this
+migration**; and a cold-start run reaches the right next item without reading a
+superseded document.
 
 ---
 
@@ -680,7 +745,8 @@ beat byte-identical or above the 70 dB bar on the three canonical edits
 - **Splitting `method.md`.** The truncation test the plan says was never run:
   996 lines / 52.7 KB, reads whole. The correctness argument does not apply.
 - **`docs/decisions/`.** Two files is not a tier. Give them frontmatter.
-- **Deleting `internal/archive/`** until the last-copy question is resolved.
+- **Reorganising `internal/`** — retracted in R2.8. The last-copy question about
+  the two frozen predecessors is still open and is the only live piece of it.
 - **Splitting `site/` into its own repo.** Asked and settled 2026-07-30: no.
   The weight argument fails (tracked `site/` is 1.73 MB against `plugin/`'s
   6.18 MB, and 1.14 MB of it is one file), and CI already ignores `site/**`.

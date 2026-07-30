@@ -580,6 +580,32 @@ reinstalled, because the marketplace clones from the remote and `main` is still
 
 ---
 
+## Open review findings, not yet fixed (2026-07-30)
+
+From the three-agent review of this branch. Everything else it found is fixed and
+recorded in the CHANGELOG; these two are real and outstanding.
+
+1. **`selfcheck` check 6d compares BASENAME, not path.** `present` is a set of
+   bare filenames from a whole-tree walk, and `flag()` tests
+   `present.has(path.basename(tok))`. So a comment citing
+   `totally-wrong-dir/backend.js` **passes** — verified. The historical catch
+   (`probe.js`) only worked because that basename existed nowhere. The `PATHY`
+   regex specifically matches path-shaped tokens, so for those the full path
+   should be resolved; keep basename matching only for `PROV` bare filenames.
+   Secondary, same line: `present` is built from the live filesystem including
+   gitignored build output (`site/films/*.html` is swept in locally and absent in
+   CI), so the accept-set is environment-dependent — the opposite of what this
+   file is for.
+
+2. **`stage-films.sh` does not clear `films/` first.** If the derivation guard
+   fails because the bible line moved, the script exits 1 leaving a **stale**
+   `gearbox-neon.html` beside freshly copied examples, with nothing saying so.
+   Low severity (Netlify fails the build and does not deploy), and it matters for
+   local preview, which the script's own header says it is for.
+
+**Both need a bracket arm in `scripts/bracket-selfcheck.js` when fixed** — that
+file now exists and takes new arms cheaply, which is the point of having built it.
+
 ## R3 — Structure
 
 1. **Trim the always-loaded surface — `SKILL.md` DONE, `CLAUDE.md` partly.** Owner

@@ -5,14 +5,17 @@ last updated: 2026-07-30
 > ## Current position
 >
 > **R0 MET** (0.16.30) · **R1 MET** (0.16.31) · **R2 MET** (0.16.34) ·
-> **R3 — all five items done** (0.16.34 through 0.16.39); **the gate has not been
-> re-run.** Items 1-3 landed earlier; 4 (`delivery.md` split) in 0.16.38 and 5
-> (`working-plan.md` prune) in 0.16.39. R2 items 1-7 landed across
-> 0.16.32-0.16.34, 8 retracted, 9 trigger-gated on a fifth bracket of one family.
+> **R3 — all five items done, gate 4 of 5.** Items 1-3 landed earlier;
+> 4 (`delivery.md` split) in 0.16.38, 5 (`working-plan.md` prune) in 0.16.39.
+> The `CLAUDE.md` byte clause was **retired by owner call** in favour of "no rule
+> lost, no line unearned". **One item outstanding: the cold-start run**, which
+> needs a fresh agent and could not reuse an earlier result, because this pass
+> changed which documents are superseded.
 >
-> **Next: run R3's gate**, which is not a formality here — it requires a
-> cold-start run reaching the right next item without reading a superseded
-> document, and this pass just changed which documents those are. Then R4.
+> **Next: R4 — the harness.** Its cheapest item is also its most alarming gap:
+> `build.js` is 827 lines and 18 verbs with **zero** brackets, `shoot.js` 327
+> lines with zero. R2 items 1-7 landed across 0.16.32-0.16.34, 8 retracted, 9
+> trigger-gated on a fifth bracket of one family.
 >
 > **While this document is open it is the live queue**, and
 > [`working-plan.md`](working-plan.md) is the standing backlog it executes
@@ -795,32 +798,33 @@ superseded document.
 | `selfcheck.js` green, both split references carrying a provenance header and a "Not here" edge | **MET** — 10 references |
 | no doc states a goal another contradicts | **MET** for the one known case: `plan.md`'s "mitate ships films" now carries `VISION.md`'s supersession inline, and `working-plan.md` no longer restates the resolved fence question |
 | `SKILL.md` smaller than at migration start | **MET** — 278L/15645B → 267L/13782B |
-| `CLAUDE.md` smaller than at migration start | **NOT MET** — 178L/11190B → 209L/12795B |
-| cold-start run reaches the right next item | **NOT RUN** — needs a fresh agent, and this pass just changed which documents are superseded, so an earlier result would not transfer |
+| `CLAUDE.md` smaller than at migration start | **RETIRED by owner call** — replaced by "no rule lost, no line unearned", which a term diff verifies. 248L → 209L this pass |
+| cold-start run reaches the right next item | **NOT RUN** — needs a fresh agent, and this pass changed which documents are superseded, so an earlier result would not transfer. **The one item between R3 and closed.** |
 
-**The `CLAUDE.md` clause conflicts with R2, and the conflict is real rather than
-a shortfall of effort.** 0.16.39 cut it 248 → 209 lines by removing history to
-`CHANGELOG.md` and collapsing the Map's `docs/` half into a pointer at
-`docs/README.md`, which already routes those nine entries — a duplicate this file
-was carrying against its own one-home rule. A term diff confirms **no rule was
-lost**; every dropped token is either an anecdote, or a `docs/*` path now
-reachable in one hop.
+**RESOLVED by the owner, 2026-07-30: the line count is not the criterion.**
+*"Ignore CLAUDE.md being smaller than start — that's fine. What matters is that
+we captured what's important and removed what isn't."*
 
-What remains over the 178-line baseline is **the Map itself**, which did not
-exist in `main` and which R2 added to fix a *measured* orientation failure: the
-repo's front door and its shipped skill were unreachable from its own graph.
-Meeting the letter of this clause now means deleting a structure an earlier gate
-required. Two honest readings:
+So the clause is retired rather than met, and the replacement is the one the
+trim was actually verified against: **every line earns its place, and no rule was
+lost.** 0.16.39 cut `CLAUDE.md` 248 → 209 by moving history to `CHANGELOG.md` and
+collapsing the Map's `docs/` half into a pointer at `docs/README.md`, which
+already routed those nine entries — a duplicate this file was carrying against
+its own one-home rule. **A term diff against the pre-trim file confirms no rule
+was lost**; every dropped token is an anecdote, an illustrative example, or a
+`docs/*` path reachable in one hop.
 
-- **The pair is the real budget, and it is met.** `CLAUDE.md` + `SKILL.md`
-  together: 26,835B → 26,577B. These two are the always-loaded surface, the cost
-  is what they charge jointly, and the migration moved orientation *into* the
-  cheaper of them while cutting more than that from the other.
-- **Or the clause stands and the Map goes**, in which case `docs/README.md`
-  absorbs the last four entries and `CLAUDE.md` opens by pointing at it.
+What remains over the 178-line baseline is the Map, which did not exist in `main`
+and which R2 added to fix a *measured* orientation failure — the repo's front
+door and its shipped skill were unreachable from its own graph. Deleting it to
+satisfy a number would have undone an earlier gate's fix, which is why this was
+recorded instead of decided. For the record, the always-loaded pair is smaller
+either way: `CLAUDE.md` + `SKILL.md`, 26,835B → 26,577B.
 
-**Owner's call.** Recorded rather than decided, because redefining a gate to
-match what was achieved is the failure mode this whole branch exists to remove.
+**The lesson worth keeping is about gate design, not about this file.** A
+byte-count gate over a file that is *also* required to carry orientation encodes
+one of two competing goals and silently loses the other. A gate wants the
+property, not the proxy.
 
 ---
 
@@ -927,9 +931,8 @@ beat byte-identical or above the 70 dB bar on the three canonical edits
 - **Splitting `site/` into its own repo.** Asked and settled 2026-07-30: no.
   The weight argument fails (tracked `site/` is 1.73 MB against `plugin/`'s
   6.18 MB, and 1.14 MB of it is one file), and CI already ignores `site/**`.
-  Five couplings would break, every one of them a copy-or-pointer problem across
+  Four couplings would break, every one of them a copy-or-pointer problem across
   a new boundary, which is the class this plan exists to fix:
-  `films/gearbox-neon.html` is a fence carrier in the parity set;
   `site/posters/` is embedded by `examples/README.md` via absolute raw URL into
   every install cache; `scripts/stage-films.sh` would need a submodule or a
   duplicate, and duplication breaks films-tracked-once; **Netlify's build command
@@ -944,15 +947,14 @@ beat byte-identical or above the 70 dB bar on the three canonical edits
 - **`site/app.js` hardcoding `DUR`/`BEAT_STARTS`** that `window.DURATION`/`BEATS`
   already publish, with `site/index.html:99-109` restating the same boundaries a
   third time as CSS percentages. Real, logged, not fixed this pass.
-- **Untracking `films/gearbox-neon.html`** — but run the test, because it is
-  cheap and either outcome pays. It is **66% of tracked site bytes** and the
-  only negated exception in `site/.gitignore`. `bibles.md` claims the whole look
-  is one object switched by one line; if that is true the neon variant is
-  **derivable** from `gearbox.html` plus a bible swap, `stage-films.sh` can
-  generate it, and 1.14 MB and one copy both disappear. If it is **not**
-  derivable, that is a finding about the bible system that nothing currently
-  surfaces, and it is worth more than the megabyte. One `build.js` run and a
-  diff settles it.
+- ~~**Untracking `films/gearbox-neon.html`**~~ — **DONE in 0.16.35, so this
+  belongs in the record rather than the not-doing list.** The test was run and
+  paid: the neon variant differed from `gearbox.html` by exactly one line, so it
+  is DERIVED by `stage-films.sh` and 1.14 MB — 66% of tracked site bytes — plus
+  the only negated exception in `site/.gitignore` both disappeared.
+  `bibles.md`'s "one object, one line" claim is now executed rather than
+  asserted. 0.16.37 added `scripts/bracket-stage-films.js` over the derivation,
+  after finding that a failed guard left the *previous* variant in place.
 
 ## Retirement
 

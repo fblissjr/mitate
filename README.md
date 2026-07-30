@@ -9,11 +9,21 @@ a single file that opens in any browser. Not a video: no player, no build step,
 and the geometry is drawn live on every frame.
 
 It is a pipeline an agent drives rather than a one-shot generator: it reshoots
-parts, validates on three axes, and gets better over time. Every scene is
-deterministic — a pure function of time `t`, so the same `t` always renders the
-same frame. The whole surface tooling touches is a handful of `window.*`
-exports at the end of every scene — [the window contract](#the-window-contract),
-shown below.
+parts, validates on three axes, and gets better over time.
+
+**Every scene is a pure function of `t` — and `t` is a position, not a clock.**
+It is an address you evaluate, not a cursor you advance: nothing ever asks what
+time it is, only what the scene looks like at this address. Any `t`, in any
+order, as many times as you like, always the same pixels.
+
+That one property is what everything else is built on. The recorder shoots frames
+out of order and in parallel. A check seeks away and back and compares bytes, so
+a regression is detectable rather than arguable. A viewer scrubs backwards. And
+duration is free: a frame at `t=18000` costs what a frame at `t=1` costs, and the
+file is the same size either way, because the duration is a number in a table.
+
+The whole surface tooling touches is a handful of `window.*` exports at the end
+of every scene — [the window contract](#the-window-contract), below.
 
 The tooling tries to abstract all this cleanly, but clean abstraction is nearly
 impossible here — so treat it as a bootstrap to personalize. When the film you
@@ -62,7 +72,13 @@ is fun to tinker with and see what it can do, and that is why it is public.
 
 Everything the recorder, the smoke gate, and the showcase site can do, they do
 through a few `window.*` exports at the end of every scene — never by reaching
-into scene internals. This is the driver block from
+into scene internals.
+
+**It is tiered, which is the part usually missed.** `smoke.js` hard-asserts four
+names — `seekTo`, `DURATION`, `stopPlayback`, `sceneReady` — and reads the rest
+behind fallbacks, so a scene missing `BEATS` is degraded rather than broken.
+`smoke.js`'s `CONTRACT` and `SOFT_CONTRACT` are the authority; this section is
+the reader-facing view of them. This is the driver block from
 [`gearbox.html`](plugin/skills/mitate/examples/gearbox.html) (search for
 `window.seekTo`). The excerpt is abridged and may drift out of sync as scenes
 evolve — the scene file is the source of truth:

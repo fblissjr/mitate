@@ -293,6 +293,63 @@ over it. What did not ship, and is still worth having:
   a lineage earlier. `smoke.js` has since all-quantified three checks; the
   *discipline* — every check names its quantifier and its n — has not landed.
 
+## What actually wants structure, and what shape (2026-07-30)
+
+Owner's question, recorded because the existing deferred row answers it too
+narrowly. That row declines a JSON projection because `SUBJECTS.pos` is a
+function of `t` and "a projection that cannot represent the interesting half lies
+about completeness." True — **and it proves too much.** That is a reason not to
+project everything, not a reason to project nothing.
+
+**The boundary is not code-versus-data. It is *declaration about the film*
+versus *computation over `t`*.**
+
+| | fits structure | why |
+|---|---|---|
+| `BEATS` | fully | flat records: name, duration, caption |
+| `STYLE`, `CONFIG` | fully | bags of scalars and colours |
+| `SIZES`, `LENS`, `CUT_DUR` | fully | lookup tables |
+| `SHOTS` | nearly | enums, names, numbers, beat anchors — plus *references* that must resolve, which is precisely what a validator wants |
+| `SUBJECTS` | **straddles** | extents are data; `pos` is a trajectory. A declaration whose value is a function |
+| `buildWorlds()` | no | imperative construction |
+| `animate(t)` | no | this is the film's actual authorship |
+
+**Then ask what the structure is FOR, because that decides the shape.** Four
+wants, and three of them are read-only:
+
+1. **Validate before rendering** (`build.js check`) — read
+2. **Extract patterns across films** (the flywheel) — read
+3. **Diff two films' *decisions* rather than their text** — read
+4. **Mechanically restructure** — retime, reorder, insert a beat — read *and write*
+
+Only (4) argues for a different storage format, and it is the weakest of the
+four: a human or an agent editing JS is fine, and the cited pain — regex-editing
+source — is a tooling habit rather than a format problem.
+
+**So the pressure is on reading, and reading does not need a new format. It needs
+addressability.** Which this repo already has a mechanism for: extend the fence
+markers to data blocks (`/* ==== BEATS-START ==== */`), so a tool can find a
+table without a regex and without a parser guessing. That is the unresolved
+proposal from the 2026-07-25 intermediates memo, and it costs nearly nothing
+because the fence machinery exists — note it would be a fence used for
+*location*, not for parity, which is a new use of an old tool and should be said
+out loud when it lands.
+
+**Where structure genuinely pays and costs nothing: the OUTPUTS.** A `probe`
+result, a `check` result, a pattern extraction — those should emit JSON so tools
+can chain. Nobody hand-edits them, so none of the objections apply.
+
+**The failure mode to design against**, named in the same memo: expressions
+in strings. "That is where this class of project dies: you reimplement arithmetic
+badly." Any shape that ends up with `"pos": "lerp(a, b, t)"` has lost — it
+discards the type checker, the editor, and `probe`'s ability to evaluate the
+thing directly.
+
+**Not decided, deliberately.** This is an answer to *what wants structure* and
+*what shape*, not a commitment to build it. The trigger is `build.js check`,
+which needs to read the tables and is the first consumer that would pay for the
+fences.
+
 ## Salvaged from the ancestors, and what was deliberately left behind (2026-07-30)
 
 `internal/legacy/` is being archived off this machine. An audit checked every
@@ -1371,7 +1428,7 @@ rather than a matter of mood.
 
 | deferred | why | revived by |
 |---|---|---|
-| JSON `tables`/`patch` round-trip | the tables contain functions exactly where they matter (`SUBJECTS.pos` is a function of `t`); a projection that cannot represent the interesting half lies about completeness. The cited pain — regex-editing JS source — is a tooling habit, not a format problem | an agent needing to *restructure* tables mechanically, after the enumeration exists |
+| JSON `tables`/`patch` round-trip (**answered 2026-07-30** — see "What actually wants structure" above; the decline is right about JSON and too broad about structure) | the tables contain functions exactly where they matter (`SUBJECTS.pos` is a function of `t`); a projection that cannot represent the interesting half lies about completeness. The cited pain — regex-editing JS source — is a tooling habit, not a format problem | an agent needing to *restructure* tables mechanically, after the enumeration exists |
 | `ACTORS` presence table | one prior instance in the corpus, differently spelled; `hide()` covers the drift risk | a second film with multi-appearance presence that `hide()` cannot express |
 | occlusion linter | **not a one-film finding** — the predecessor's two-character scene closed with it explicitly open ("geometric contact is not legible contact… the contact point sits behind a body"). Still ranked third: 3 of 4 new instances were static staging the contact sheet already catches by eye; the 4th was a transit defect a beat-midpoint sample structurally cannot see, and `transitions` catches it. So the linter automates eye-work on a converging axis — real, but third | probe + transitions shipped and composition rounds still not converging |
 | solver-aware staging | the proposed vocabulary fails on its own originating use case: props at fixed world positions a character walks to, which was every exhibit in the film that motivated it | a design that handles walked-to props |

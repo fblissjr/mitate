@@ -47,10 +47,12 @@ its own graph.
 
 Two rules. Everything else derives from them, and neither is negotiable.
 
-- **The scene is a pure function of `t`.** No simulation state carried across
+- **The scene is a pure function of `t`, and `t` is a position, not a clock.**
+  An address you evaluate, not a cursor you advance. No state carried across
   frames, no `Math.random()` at runtime, no wall-clock dependence. Any frame
   renders independently and identically, which is what makes one scene file both
-  the live HTML artifact and the source of a frame-exact MP4.
+  the live HTML artifact and the source of a frame-exact MP4 — and what makes
+  duration free, since a frame at `t=18000` costs what a frame at `t=1` costs.
 - **Tooling talks only to the window contract**, never to scene internals.
   **The membership list is not here.** `smoke.js` hard-asserts four names and
   reads the rest behind fallbacks; that tiering is the fact, and its home is

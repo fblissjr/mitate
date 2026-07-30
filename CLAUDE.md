@@ -7,6 +7,38 @@ deterministic animated scene. Read [`docs/plan.md`](docs/plan.md) for the
 architecture and the phase gates; this file is only the things that bite on the
 first edit.
 
+## Map
+
+Deliberately unlinked, and deliberately complete — a heading map costs nothing
+and cannot dangle. Measured 2026-07-30: from this file a cold session reached the
+working plan in **3 hops and ~4,900 lines**, and never reached `README.md`,
+`SKILL.md`, `sample.yml` or two of the agents at all, because nothing pointed at
+them. The repo's front door and its primary shipped artifact were both outside
+its own graph.
+
+- **What it is, for a user** — `README.md` (repo root), `plugin/README.md`
+- **The skill that ships** — `plugin/skills/mitate/SKILL.md`, plus
+  `references/` (8), `templates/`, `examples/`, and `plugin/agents/film-reviewer.md`
+- **Why, and in what order** — `VISION.md` *(planned)*, `docs/addressing.md`
+  (what `t` is)
+- **Architecture and phase gates** — `docs/plan.md`
+- **The current ranked work** — `docs/working-plan.md` (the spine, tracks A-D,
+  the ancestry table, deferred items with their triggers)
+- **Where each kind of fact lives** — `docs/source-of-truth.md`
+- **How many times a shape has been rebuilt** — `docs/pattern-ledger.md`
+- **Phase 4 constraints and red lines** — `docs/physics-bake-proposal.md`
+- **Inherited measured findings** — `docs/predecessor-record.md` (2,770 lines;
+  exceeds a default read window, so read it in ranges)
+- **Open decisions** — `docs/examples-placement.md`, `docs/restructure-2026-07.md`
+- **What happened and why** — `CHANGELOG.md`, `docs/postmortems/`
+- **Repo tools** — `scripts/selfcheck.js`, `install-hooks.sh`,
+  `stage-films.sh`, `diagnose-determinism.js`, `sample-determinism.js`
+- **CI** — `.github/workflows/gate.yml` (browser, main + PRs),
+  `static.yml` (cheap checks, every push), `sample.yml` (manual only)
+- **Repo-development agents** — `.claude/agents/control-builder.md`,
+  `doc-claim-auditor.md`, `.claude/skills/audit-claims/`,
+  `.claude/rules/model-delegation.md`
+
 ## The prime directive
 
 Two rules. Everything else derives from them, and neither is negotiable.
@@ -151,9 +183,15 @@ now does.
 ## Conventions
 
 - Session logs and scratch renders go under `internal/` (gitignored).
-- **Postmortems live in `internal/postmortems/`, named `YYYY-MM-DD_<mode>_<slug>.md`
-  so the directory listing sorts chronologically and a slug grep finds a topic** —
-  gitignored, so local to one machine, like the session logs. Deliberately no
+- **Postmortems are TRACKED, in [`docs/postmortems/`](docs/postmortems/), named
+  `YYYY-MM-DD_<mode>_<slug>.md`** so the listing sorts chronologically and a slug
+  grep finds a topic. `.postmortem.json` pins that location so it is a decision
+  rather than an inference. They were gitignored under `internal/` until 0.16.33,
+  which made five tracked files — one of them shipped plugin content — cite
+  evidence that existed on one machine. **Session logs stay local**: the log is
+  narration, the postmortem is the distilled finding, and only the second is
+  citable. A tracked postmortem MAY cite a local-only artifact, but must label it
+  `(local)` and must not rest a claim on it. Deliberately no
   hand-written index: that is a copy whose only consumer is the check that it
   matches the directory. `/postmortem:postmortem-index` generates a browsable one
   from frontmatter when you want it. Start with the newest — a postmortem carries

@@ -435,6 +435,50 @@ const toolJs = new Map([
   notes.push(`${cited} cited paths in tool and scene comments, all resolving`);
 }
 
+/* ---- 6e. tracked postmortems are readable by the thing that indexes them ---
+ * NOT an existence check on `artifacts:`, which is what the plan specified and
+ * which would have been wrong. A postmortem is a DATED RECORD: its citations are
+ * historical by nature, and one here legitimately names a reference that was
+ * renamed since. Failing the build when a cited file is later moved would punish
+ * exactly the archival value that tracking these is for.
+ *
+ * What is decidable and does not rot is whether the file can be READ by the
+ * index that makes a corpus of postmortems navigable. The 2026-07-25 record had
+ * no frontmatter at all and was invisible to it, which is the real failure and
+ * the one worth a gate. */
+{
+  const PM = path.join(ROOT, 'docs', 'postmortems');
+  const REQUIRED = ['mode', 'scope', 'date', 'summary', 'artifacts'];
+  const NAME = /^(\d{4}-\d\d-\d\d)_(session|span|feature)_[a-z0-9-]+\.md$/;
+  let n = 0;
+  if (fs.existsSync(PM)) {
+    for (const f of fs.readdirSync(PM).filter(x => x.endsWith('.md'))) {
+      n++;
+      const m = f.match(NAME);
+      if (!m) {
+        fail(`docs/postmortems/${f} is not named YYYY-MM-DD_<session|span|feature>_<slug>.md `
+           + `— date first so the listing sorts chronologically`);
+        continue;
+      }
+      const head = R(path.join(PM, f)).slice(0, HEADER_WINDOW);
+      if (!/^---\n/.test(head)) {
+        fail(`docs/postmortems/${f} has no frontmatter — the index cannot see it, `
+           + `which is how one of these sat unlisted for five days`);
+        continue;
+      }
+      const fm = head.slice(4, head.indexOf('\n---', 4));
+      for (const k of REQUIRED) {
+        if (!new RegExp(`^${k}:`, 'm').test(fm)) fail(`docs/postmortems/${f} frontmatter has no \`${k}:\``);
+      }
+      const d = (fm.match(/^date:\s*(\d{4}-\d\d-\d\d)/m) || [])[1];
+      if (d && d !== m[1]) fail(`docs/postmortems/${f} says date: ${d} but its filename says ${m[1]}`);
+      const mode = (fm.match(/^mode:\s*(\w+)/m) || [])[1];
+      if (mode && mode !== m[2]) fail(`docs/postmortems/${f} says mode: ${mode} but its filename says ${m[2]}`);
+    }
+  }
+  notes.push(`${n} tracked postmortems, each indexable (frontmatter + name agree)`);
+}
+
 /* ---- 7. dated freshness markers are not older than the file ---------------
  * CLAUDE.md's Conventions section mandates a `last updated:` marker on docs and
  * plans, and CLAUDE.md itself carried a four-day-stale one — found by an audit,

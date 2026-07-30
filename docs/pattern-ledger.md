@@ -39,7 +39,8 @@ So:
 
 That log is the input the promotion triggers consume, and it is already being
 produced: every film handoff names what its author built twice. What was missing
-is that nobody aggregated them, and the reports live in gitignored `internal/`.
+is that nobody aggregated them. The reports lived in gitignored `internal/` until
+0.16.33; the distilled ones are now in [`postmortems/`](postmortems/).
 
 ## The ledger
 

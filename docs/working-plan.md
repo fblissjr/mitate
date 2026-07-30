@@ -141,7 +141,7 @@ the finding:
 > on the same `t`, which a uniform flake would not.
 
 Postmortem of the span that found it:
-`internal/postmortems/2026-07-29_span_instrument-hardening.md` (gitignored, local).
+[`docs/postmortems/2026-07-29_span_instrument-hardening.md`](postmortems/2026-07-29_span_instrument-hardening.md).
 
 **RESOLVED 2026-07-30 — and demoted, then replaced by something worse.** Measured:
 screenshots-only 40%/30%/20% on three cells, versus 0 of 200 with an in-page GPU

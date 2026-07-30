@@ -36,6 +36,20 @@ The register — explainer, cutscene, meme, character short — changes the
 geometry, the pacing, and the caption voice. It never changes the contract,
 the pipeline, or the review method.
 
+**Map.** Unlinked, because a heading map cannot dangle and this file's only
+index sat at 79% depth until 0.16.33.
+
+- **Workflow**, five numbered steps — spec, scaffold, review, smoke, deliver.
+  Read them in order the first time; they are also the routing surface, so each
+  step names the reference it needs at the moment it needs it.
+- **Backend policy** — which renderer, and the one flag that renders black.
+- **Environment** — what to install, and what checks itself.
+- **Files** — every template, script, reference and example, one line each.
+  A bibliography, not a starting point.
+
+Read `references/method.md` before building anything. It is the only reference
+that is a prerequisite rather than a lookup.
+
 ## Workflow
 
 The method is inherited from a project that shipped and hardened it; this file
@@ -257,6 +271,9 @@ Two constraints that dictate the setup — do not "simplify" them away:
 - `templates/backend.js` — shared by shoot.js and smoke.js: Chromium
   resolution, the WEBGPU/ANGLE flag policy, the settle idiom (one copy, so
   the gate and the recorder cannot drift apart)
+- `references/glossary.md` — the words this skill uses as if you knew them:
+  register, fence, the parity set, the install cache, the window contract's
+  tiering. Read it when a term is doing more work than it looks like.
 - `references/method.md` — the universal method: failure axes, beats and
   controls discipline, continuity/semantics review, determinism rules
 - `references/film-language.md` — shot vocabulary: sizes, cuts, match

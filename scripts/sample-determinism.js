@@ -1,8 +1,9 @@
 #!/usr/bin/env bun
 /* Measure the RATE of the in-session determinism failure, per scene and per t.
  *
- * Written for forward item 2 of internal/postmortems/2026-07-29_span_instrument-
- * hardening.md. On Linux/WebGL2 the gate has failed smoke's in-session arm four
+ * Written for forward item 2 of
+ * docs/postmortems/2026-07-29_span_instrument-hardening.md. On Linux/WebGL2 the
+ * gate has failed smoke's in-session arm four
  * times across TWO scenes and TWO timestamps (materials.html at 5.36,
  * menagerie.html at 8.52) against two clean runs, while macOS passes on both
  * hardware and software GL. Four runs spanning a changed configuration support no

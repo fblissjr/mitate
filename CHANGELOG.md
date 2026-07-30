@@ -7,6 +7,59 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.33
+
+### added
+
+**Postmortems are tracked, in `docs/postmortems/`.** Five tracked files cited
+them — one of them shipped plugin content — while they existed on one machine
+under gitignored `internal/`. `.postmortem.json` pins the location so it is a
+decision rather than an inference from a sibling directory. The 2026-07-25
+record gained the frontmatter it never had, without which the index that makes a
+corpus navigable could not see it at all. Citations repointed: `materials.md` by
+absolute repo URL (the pattern invariant 4 already uses for poster stills, so it
+resolves from a cache, a clone and GitHub alike), the rest repo-relative.
+**Session logs stay local** — the log is narration, the postmortem is the
+distilled finding, and only the second is citable. A tracked postmortem may cite
+a local-only artifact, but must label it `(local)` and must not rest a claim on it.
+
+**A `selfcheck` arm for postmortem frontmatter — and NOT the one the plan
+specified.** The plan called for checking that every `artifacts:` entry resolves.
+That would have been wrong: a postmortem is a dated record, its citations are
+historical by nature, and one here legitimately names a reference renamed since.
+Failing the build when a cited file is later moved punishes exactly the archival
+value tracking them is for. What is decidable and does not rot is whether the
+file can be READ by its index — required keys present, filename and frontmatter
+agreeing on date and mode. Demonstrated red by stripping the frontmatter back
+off, which is the real 2026-07-25 failure.
+
+**`references/glossary.md`.** Written from a term census: `register` appeared 98
+times across 16 files and was defined nowhere; `parity set` 4 times and nowhere;
+`install cache` 11 times *inside the shipped subtree* with its only definition
+outside it, where a reader holding the subtree cannot follow. It sits in
+`references/` because the subtree is a subset of the repo, so one file serves
+both a contributor and an installed user, and it loads on demand rather than
+standing in context.
+
+**Map blocks in `CLAUDE.md` and `SKILL.md`,** the unlinked-heading-map pattern
+already used by three references. Measured: from `CLAUDE.md` a cold session
+reached the working plan in 3 hops and ~4,900 lines, and never reached
+`README.md`, `SKILL.md`, `sample.yml` or two agents at all, because nothing
+pointed at them — the repo's front door and its primary shipped artifact were
+both outside its own graph. `SKILL.md`'s only index sat at 79% depth.
+
+### changed
+
+**The `internal/` reshuffle is RETRACTED, and the retraction is the finding.**
+It existed to fix "63-75% of grep hits for core symbols are non-authoritative".
+That was measured with shell `grep -r`, which ignores `.gitignore`. Ripgrep
+honours it, so `internal/` was never in the Grep tool's results: `solveShot`
+returns 18 files under shell grep and **13 under ripgrep, none from `internal/`**,
+with the staged `site/films/` copies excluded too. The exclusion the item
+proposed building already existed. An instrument that disagrees with the one the
+reader actually uses will manufacture a problem — measure with the tool whose
+behaviour you are reasoning about.
+
 ## 0.16.32
 
 ### added

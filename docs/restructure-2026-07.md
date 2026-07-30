@@ -26,7 +26,9 @@ than one place, where nothing checks the copies agree.**
 - A verification criterion in four places, and the copies now disagree
   (`sample.yml:11-12` versus `:35-38`).
 - A capture primitive in five consumers, two of which never got the fix.
-- `backend.js` in three copies; core symbols 63-75% grep noise.
+- `backend.js` in three copies. (A companion claim here — that core symbols were
+  63-75% grep noise — was **retracted**; see R2.5. It was measured with the wrong
+  tool.)
 - A contact constant whose only provenance is a tool that does not exist.
 - Postmortems cited from shipped content and reachable from one machine.
 - Two subjects and two evidence grades under one provenance header.
@@ -63,9 +65,9 @@ Restructuring first would move lies into tidier folders.
 | the count that fires promotion triggers | `docs/pattern-ledger.md` | unchanged |
 | Phase 4 constraints | `docs/physics-bake-proposal.md` | gains the kinematic-body option |
 | inherited history | `docs/predecessor-record.md` | unchanged |
-| session narration | `internal/work/log/` | local; the log is narration, the postmortem is the finding |
-| third-party correspondence | `internal/private/` | never citable from tracked content |
-| frozen predecessors | `internal/archive/` | the grep-noise source; excluded from search |
+| session narration | `internal/log/` | local; the log is narration, the postmortem is the finding |
+| third-party correspondence | `internal/outside_comms/` | never citable from tracked content; already private by gitignore |
+| frozen predecessors | `internal/legacy/` | already invisible to ripgrep via gitignore — the proposed reshuffle was retracted, see R2.5 |
 | repo-development agents | `.claude/agents/` | `control-builder`, `doc-claim-auditor` audit *this repo* |
 | **film-review capability** | **`plugin/agents/`** (new) | `film-reviewer` reviews *films* — a user capability, not a dev tool |
 
@@ -465,50 +467,28 @@ Things that exist and cannot be reached do not exist
    plugin content), and `CLAUDE.md:39-45` loses the paragraph describing the
    field.
 
-5. **`internal/` splits by citability**, not by topic:
-   `private/` (correspondence, never citable), `archive/` (legacy,
-   prior_artifacts), `work/` (log, postmortem drafts, loose proposals, circus).
-   Then **scope `archive/` out of the default search path**. Measured noise
-   today: `solveShot` 75%, `KERNEL-END` 73%, `buildCharacter` 63%; `seekSynced`
-   0% because it postdates every frozen copy — that is the control arm proving
-   the mechanism. Subfolders fix meaning; the exclusion fixes retrieval.
-   **Resolve first**: neither predecessor appears in the `fb-claude-skills`
-   marketplace manifest, so `internal/archive/` may be the only copy and
-   `predecessor-record.md`'s "still ships from the marketplace" looks stale.
+5. **`internal/` — RETRACTED 2026-07-30, and the retraction is the finding.**
 
-   **The promotion rule, stated so nothing drifts across by accident:**
+   This item existed to fix "63-75% of grep hits for core symbols are
+   non-authoritative". **That measurement was taken with shell `grep -r`, which
+   ignores `.gitignore`.** The Grep tool uses ripgrep, which honours it, so
+   `internal/` was never in its results. Re-measured: `solveShot` returns 18
+   files under shell grep and **13 under ripgrep, none of them from `internal/`**
+   — and the staged `site/films/` copies are excluded too, by `site/.gitignore`.
+   The exclusion this item proposed building already exists and always did.
 
-   > **Nothing becomes tracked because it exists. It becomes tracked because a
-   > tracked file needs to cite it.**
+   That removes the retrieval justification, which was the strong half. The
+   remaining argument — that `internal/` conflates private, archive and live work
+   — is real but is a *meaning* problem with no measured cost, and the concrete
+   instances are already resolved: postmortems are tracked (R2.3), `outside_comms`
+   is private by gitignore, and `legacy/` is invisible to search. So this is
+   **dropped**, not deferred, and the last-copy question about the predecessors is
+   the only thing worth keeping from it.
 
-   `internal/` is gitignored for two different reasons that this plan keeps
-   separate — genuinely private, and genuinely disposable — and neither is
-   "unfinished." Volume alone makes the default obvious: 52 markdown files, 20
-   JS, 17 HTML, plus images and `.DS_Store`, with `circus.html` at 1.2 MB on its
-   own. Bulk-tracking would trade a retrieval problem for a weight problem and
-   lose the citability rule that makes the split mean anything.
-
-   **Crosses, under the rule:** the two postmortems, because **five tracked files
-   cite them** — `references/materials.md:109` (shipped plugin content),
-   `scripts/sample-determinism.js:4`, `docs/working-plan.md:143`,
-   `docs/pattern-ledger.md:42`, `.github/workflows/gate.yml:40`. The
-   justification is the citations, not that they are good documents.
-
-   **Does not cross, and why:**
-   - `outside_comms/` — other people's text, not ours to publish.
-   - `legacy/` — frozen ancestors. Possibly the last copy, which argues for
-     *archiving carefully*, never for tracking. Archive is not the same as track.
-   - `prior_artifacts/` — **already consolidated into
-     `docs/predecessor-record.md`**, and itself a partial duplicate of
-     `legacy/docs/`. Tracking it would rebuild the copy that consolidation
-     deliberately collapsed. This is the clearest worked example of the rule.
-   - the loose proposals, briefs and field reports — already mined into
-     `working-plan.md` Tracks A-D, with the declines recorded in its deferred
-     table. The lost threads found this session (`breakdown.md`, `build.js check`)
-     get promoted as **items**, not as documents.
-   - `circus_prototype/circus.html` — a deliberately defective fixture, 1.2 MB.
-   - session logs — narration. The postmortem is the distilled form, which is the
-     whole reason the log/postmortem split exists.
+   **The lesson generalizes past this item, which is why it is written here
+   rather than deleted:** an instrument that disagrees with the one the reader
+   actually uses will manufacture a problem. Measure with the tool whose behaviour
+   you are reasoning about.
 
 6. **Triage `internal/circus_prototype/bench/`.** Nine measurement harnesses —
    `bench_viewer_{desktop,mobile,loop}`, `bench_playback`, `bench_capture`,

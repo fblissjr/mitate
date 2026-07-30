@@ -37,7 +37,8 @@
 # CAPTURE RACE in the gate, not scene state: measured 40%/30%/20% on three cells
 # with a bare seek, 0 of 200 once the seek and a GPU readback shared a task. Fixed
 # in backend.js's seekSynced, 0.16.28. Two shipped films were wrongly accused in
-# the meantime; the chain is in references/materials.md and the span postmortem.
+# the meantime; the chain is in references/materials.md and
+# docs/postmortems/2026-07-29_span_instrument-hardening.md.
 #
 # The first three runs also revealed that the `brackets` step was SKIPPED every
 # time, because a step after a failing step is skipped by default — hence the

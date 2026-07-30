@@ -106,7 +106,7 @@ load-bearing, because CI refuted the unqualified version.
 > was an earlier version of this note accusing the film of carrying state — and
 > before that, calling three identical failures "reproducible, therefore a state
 > dependency," which four runs later was false. Both retracted. Evidence and the
-> full chain: `internal/postmortems/2026-07-29_span_instrument-hardening.md`.
+> full chain: [the span postmortem](https://github.com/fblissjr/mitate/blob/main/docs/postmortems/2026-07-29_span_instrument-hardening.md).
 >
 > **FIXED and VERIFIED in 0.16.28** — `backend.js`'s `seekSynced` seeks and forces
 > render completion in one page task, at all six capture sites. Verified on Linux

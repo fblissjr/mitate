@@ -1859,6 +1859,28 @@ interpret. Plugin content, so it carries the cascade. Small, and it is the
 difference between a gate that looks 47% covered and one that says what it
 covers and why.
 
+## The defect corpus is in parity but nothing runs it (2026-07-31)
+
+Opened by R4.5 and recorded the same day rather than left as a known-unknown.
+`gate.yml`'s workspace step copies `templates/` and `examples/` and not
+`fixtures/`, so `fixtures/defect-corpus/after-hours.html` is fence-checked by
+`static.yml` and **executed by nothing**. A `KERNEL` change it cannot survive
+would be discovered by whoever next tried to use the corpus — which is exactly
+the shape the harness tier exists to close, reintroduced by a directory that did
+not exist when that step was written.
+
+**Do not fix this by adding it to the gate's scene list.** The file is
+deliberately defective. The day a defect lands that trips exposure or framing,
+a general pass/fail gate goes red for a correct reason, and a gate that fails
+correctly on purpose is one people learn to route around.
+
+Write `bracket-corpus.js` instead, in `templates/` so the existing glob picks it
+up: run smoke over the corpus and assert the **expected verdict**, the same shape
+`bracket-parity.js` and `bracket-commands.js` already use. It fails when the
+verdict changes in either direction — a scene that starts failing, and equally a
+defect that quietly stops being detected. Cheap, and it is the only thing that
+would notice either.
+
 ## `bracket-noise.js` reports a false red on macOS (2026-07-31)
 
 Found while verifying R4.4, and confirmed pre-existing by stashing the change and

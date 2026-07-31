@@ -59,6 +59,25 @@ second real use of that command and the reason joining is affordable at all.
 So: include this directory in every `--parity-only` invocation. It is wired into
 `gate.yml`, `static.yml` and the pre-commit hook.
 
+### Open: nothing checks this file still RUNS (2026-07-31)
+
+Parity covers it. **Smoke does not.** `gate.yml` copies `templates/` and
+`examples/` into its workspace and not `fixtures/`, so a change that stops this
+scene loading — a `KERNEL` edit it cannot survive, a contract rename — would be
+found by whoever next tried to use it, which is the "a command nobody runs rots
+quietly" shape the harness tier exists to close. It passed `smoke.js` cleanly on
+import (0 advisory warnings), so this is a gap in coverage, not a known failure.
+
+**The fix is NOT to add it to the gate's scene list.** This scene is
+deliberately defective; the day a defect is added that trips an exposure or
+framing check, a general pass/fail gate goes red for a *correct* reason and the
+gate becomes something people route around.
+
+It wants a check that asserts its **expected verdict** — a `bracket-corpus.js`
+in the same expected-verdict shape `bracket-parity.js` and
+`bracket-commands.js` already use, recording what smoke *should* say about this
+file and failing when that changes in either direction. Not yet written.
+
 ## The defects, and which have been re-measured
 
 The prototype carried twelve characterized defects. **They are mechanical and

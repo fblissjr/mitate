@@ -1807,13 +1807,41 @@ Cheapest-risk first. **Do not batch these**; each has a different control.
   image. It also needs no encoder, which dissolves the ffmpeg-versus-canvas
   question for the riskiest verb instead of settling it.
 
-  **Take the native-render path for the squint strip.** Shoot the squint frames
-  at 90px rather than downscaling 480→90. Open before it lands: the scene
-  responds to viewport (`aspect` exists to prove that), so a native 90px render
-  is a *different* image, not a cheaper one — `ffmpeg-vs-native` sits at 28 dB,
-  which is a composition difference and not a quality signal. Confirm the framing
-  a director expects still holds at that viewport, the same caveat `poster`
-  carries.
+  **Sobel was ALSO the wrong metric, and native rendering is REJECTED on
+  measurement.** Sobel cannot tell a crisp edge from a jagged one — both are high
+  gradient — so native's top score was ambiguous. The distinction has a direct
+  signature: an antialiased edge carries **intermediate tones**, an aliased one
+  jumps between two values. Fraction of edge pixels sitting strictly between
+  their neighbours' extremes:
+
+  | 90px image | intermediate on edges | edge energy |
+  |---|---|---|
+  | lanczos reference | 57.9% | 46.44 |
+  | ffmpeg default (ships today) | 57.4% | 46.36 |
+  | canvas `drawImage` | **59.9%** | 45.47 |
+  | native 90px render | **44.8%** | 47.04 |
+
+  **Native's edge-energy win was aliasing.** A 480→90 downscale is 5.3x
+  supersampling — excellent antialiasing by construction. A native 90px render
+  gets only the renderer's MSAA, which is not enough at that size. The
+  supersampling *is* the feature, so do not remove the downscale.
+
+  **And canvas is fine — better antialiased than ffmpeg, not worse.** Its 59.9%
+  is the highest of the three real candidates; the feathering an outside review
+  saw is extra antialiasing, not lost edge. Combined with a 1.9% edge-energy
+  difference, the tilers can move to canvas.
+
+  **Three metrics, and the sequence is the lesson.** PSNR measured fidelity to a
+  reference rather than the property in use. Sobel measured edge magnitude and
+  could not separate sharp from jagged. Only intermediate-tone fraction measures
+  the thing that distinguishes the two failure modes this instrument actually
+  has. **A metric that cannot separate your two failure modes will confidently
+  rank them.** Both wrong metrics produced clean, plausible tables.
+
+  Also confirmed while testing: at a 90px viewport the caption overlay reflows —
+  two independent reads noticed it, one as a doubled banner and one as clipping.
+  Scenes respond to viewport, which is the caveat `poster` carries too, and it is
+  a second reason the native path costs more than it looks.
 
 ### E2. The verb taxonomy, after E0
 

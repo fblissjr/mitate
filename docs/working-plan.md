@@ -1983,6 +1983,91 @@ interpret. Plugin content, so it carries the cascade. Small, and it is the
 difference between a gate that looks 47% covered and one that says what it
 covers and why.
 
+## BLOCKING MERGE: the 2026-07-31 review of `--parity-fix` and the fixture path
+
+A `/code-review high` over `main...HEAD` returned 15 findings, most reproduced
+against live fixtures rather than argued. **Do not merge this branch until the
+write-path group is fixed.** Several contradict claims written into comments on
+this same branch, which is the class invariant 6 exists for.
+
+**The write-path group — `--parity-fix` can corrupt a corpus today.** It is
+committed and pushed, so this is a live hazard, not a design note.
+
+1. **The final write loop is neither guarded nor atomic** (`smoke.js:983`).
+   Validation checks readability and fence well-formedness and **never
+   writability**, so a target that is read-only, full, or locked throws mid-loop
+   and leaves the corpus half-propagated — *the exact state the design comment
+   above it claims to prevent*. Reproduced with `chmod 444`. My bracket arm
+   tested validation ORDERING and never write FAILURE.
+2. **The malformed-target guard only inspects fences the SOURCE carries**
+   (`smoke.js:965`), so a target broken in a fence the source lacks is written
+   anyway, exit 0. **Live:** `scene2d.template.html` carries only CONTRACT and
+   KERNEL, so `--parity-fix --from` it validates 2 of 7 fences while writing to
+   all nine carriers. Directly contradicts the stated non-negotiable.
+3. **`--parity-fix` silently overrides `--parity-only`** (`smoke.js:929`) —
+   `parityOnly` is computed and never consulted, so a read-only invocation that
+   also carries `--parity-fix` writes and exits 0 without running the check.
+   `--parity-only` is what `static.yml` and the installed pre-commit hook run.
+4. **`--from` is consumed even without `--parity-fix`** (`smoke.js:893`), so it
+   swallows the next filename out of a read-only scan. Reproduced: two genuinely
+   drifted files scanned as one, reported green.
+
+**The silent-coverage-loss group, newly reachable because of my own change:**
+
+5. **Unreadable scene arguments are swallowed** (`smoke.js:1023`, `catch (e) {}`).
+   An unmatched glob passes through as a literal, scans nothing, prints
+   `parity/integrity: ok`. I added a **third** glob (`fixtures/defect-corpus/*.html`)
+   to `static.yml` and the hook today — rename or move that directory and CI and
+   every installed hook check one directory less and stay green forever.
+6. **`install-hooks.sh` will not overwrite a differing hook without `--force`**,
+   so every machine that installed the hook before today still runs the
+   8-carrier command and nothing detects the stale copy.
+
+**Claims I wrote that are false:**
+
+7. **`bracket-commands.js:34-39` asserts a CI ffmpeg install that does not
+   exist** and contradicts commit `444a649` on this branch, which declined it. A
+   load-bearing comment asserting a control that is not there.
+8. **`fixtures/defect-corpus/README.md:59` claims `gate.yml` coverage the corpus
+   does not have** — and contradicts itself five lines later at :65.
+9. **`CLAUDE.md`'s Map omits both directories this branch adds**
+   (`fixtures/defect-corpus/`, `.claude/skills/extract-patterns/`) despite
+   stating it covers everything outside `docs/`; and invariant 2's verify command
+   still omits the ninth carrier, so two tracked docs prescribe different
+   commands for the same check.
+
+**Bracket weaknesses — the controls do not control what they claim:**
+
+10. **Every `FIX_ARM` asserts an exit code only** (`bracket-parity.js:159`); the
+    refusal message is captured and discarded, so *any* non-zero exit satisfies
+    all four refusal arms. The read-half arms do check stdout. This is the same
+    failure mutation testing already caught once in this file.
+11. **No arm exercises multi-fence propagation or the HTML fence**
+    (`bracket-parity.js:108`). The `<!-- ==== HTML-START ==== -->` branch is the
+    only structurally different regex and is **never run by the bracket**, while
+    being in production use — the corpus's HTML fence was brought current by it.
+12. **`bracket-commands.js:114` runs `build.js` against the tracked
+    `scene.template.html` in place.** If the guard it tests regresses, the
+    bracket inflates a shipped source by ~1 MB — the documented damage that
+    "reached `git add` once", and the identical hazard `static.yml:73-75` records
+    being removed from another bracket. Copy it into the temp workspace.
+13. **The `all` row's artifact assertion is satisfied by the `video` row's
+    leftover mp4** (`bracket-commands.js:102`), so it cannot detect `all`
+    producing nothing.
+14. **`expect.stdout: ''` is never evaluated** (`bracket-commands.js:92`) — a
+    truthiness test where its sibling correctly uses `!== undefined`.
+
+**Design duplication:** 15. the `bash -e` loop fix is copy-pasted verbatim into
+both workflows with ~10 lines of duplicated prose, rather than extracted to one
+`scripts/run-brackets.sh <glob>` both call — fixed at two call sites instead of
+once underneath, which is how the `!cancelled()` defect reappeared one level down.
+
+**Order to fix:** 1-4 first (they are one interacting group in the write path,
+and the tool is already pushed), then 10-11 so the bracket can actually hold
+them, then 5-6, then the false claims 7-9, then the rest. **Do not fix these at
+the end of a long session** — the review found them precisely because that is
+when they were written.
+
 ## The defect corpus is in parity but nothing runs it (2026-07-31)
 
 Opened by R4.5 and recorded the same day rather than left as a known-unknown.

@@ -46,6 +46,43 @@ last updated: 2026-07-31
 > `working-plan.md` Track E**; the retention record is R4.6; the corrections are
 > on R4.3 and R4.4 below.
 >
+> ### Handoff, end of 2026-07-31 — start here
+>
+> **Shipped:** 0.16.42 (three harness defects) · 0.16.43 (**R4.4**,
+> `--parity-fix`) · 0.16.44 (`CONTRACT` becomes the seventh fence, carrying a
+> false-claim correction into all 8 scenes) · 0.16.45 (**R4.5**, defect corpus
+> tracked at `fixtures/defect-corpus/`) · 0.16.46 (tiered harness tally). Plus
+> `/extract-patterns`, the flywheel's extraction half, in `.claude/skills/`.
+>
+> **The gate ran green on all of it** (`workflow_dispatch`, since branch pushes
+> do not fire it — see R4.3's correction).
+>
+> **What is left for Gate R4, in the order to do it:**
+>
+> 1. **`poster` + the three tilers move off ffmpeg** — this is what closes gate
+>    clause 1, and the blocking measurement is **done**: canvas is cleared
+>    (better antialiased than ffmpeg, 59.9% vs 57.4% intermediate tones on
+>    edges), and rendering natively at 90px is **rejected** — it is aliased at
+>    44.8%, because the 480→90 downscale is 5.3x supersampling and that *is* the
+>    antialiasing. Keep the downscale, swap the scaler. `motion` is carved out by
+>    name; do not touch it here.
+> 2. **R4.7 — reach grades** on `plan.md`'s nine portfolio cases. Unstarted, no
+>    dependencies, pure judgment work.
+> 3. **R4.6's cold-start test** — the cheapest gate clause left. Today produced
+>    exactly the artifact it tests for; ask a zero-context agent about the
+>    export-framing finding or the origin-story question and see if `docs/` gets
+>    them there.
+> 4. **R4.1 — extract `checkScene`.** Deliberately not started; its gate is
+>    byte-unchanged smoke verdicts. **The baseline is already captured** — all 9
+>    scenes pass, with one `warn` on `menagerie.html` that must survive
+>    unchanged. That makes the gate an objective diff rather than a judgment.
+>
+> **Not gate-blocking, but open:** ten of the corpus's twelve defects are
+> unmeasured and labelled UNVERIFIED; `bracket-corpus.js` does not exist so
+> nothing runs the corpus; `bracket-noise.js` false-reds on macOS (passes on the
+> Linux gate); and `/extract-patterns` has no bracket and has never been run —
+> pointing it at `bear-and-bees.html` is the cheap first exercise.
+>
 > **While this document is open it is the live queue**, and
 > [`working-plan.md`](working-plan.md) is the standing backlog it executes
 > against. A fresh session found the live queue only by reading `git log` commit
@@ -1276,18 +1313,26 @@ property, not the proxy.
    second time.
 
    **The fifth instance is the complement of the fourth, and together they give
-   the usable rule.** The corrected image went to three independent readers with
-   one question: which panels have antialiased edges and which are stair-stepped.
-   They returned **three different answers** — all three clean; panel 3 aliased;
-   panel 1 aliased. A vote deadlocks 1-1-1. The measurement (fraction of edge
-   pixels sitting strictly between their neighbours' extremes: 57.4%, 59.9%,
-   **44.8%**) resolves it cleanly: the second reader was right and the other two
-   were confidently wrong **in opposite directions**.
+   the usable rule.** The corrected image went to **four** independent readers
+   with one question: which panels have antialiased edges and which are
+   stair-stepped. They returned: *all clean* · *panel 3 aliased* · *panel 1
+   aliased* · *all clean*.
 
-   **But all three agreed on something else, and that agreement was correct:**
-   the third panel's caption overlay reflows and clips the subject — reported as
-   "a doubled banner", "lower, clipped", and "taller, clipping the bottom tooth".
-   Three readers, one observation, no measurement needed.
+   The measurement — fraction of edge pixels sitting strictly between their
+   neighbours' extremes: 57.4%, 59.9%, **44.8%** — says panel 3 is the aliased
+   one. **One reader of four was right. A majority vote returns "all clean",
+   which is wrong**, and one reader was confidently wrong in the exact opposite
+   direction. Weighting by model size would have picked the right answer here,
+   but only the measurement tells you that afterwards, and a prior that needs a
+   measurement to validate it is not doing the work.
+
+   **All four caught something else, and every one of them was right:** the third
+   panel's caption overlay reflows and changes what is visible at the bottom —
+   reported as "a doubled banner", "lower, clipped", "taller, clipping the bottom
+   tooth", and most precisely as "reveals a complete bottom tooth and a vertical
+   post that the others clip". Four readers, one observation, no measurement
+   needed, and it is the finding that independently rejects the native path for a
+   second reason.
 
    **So weight independent agreement by the GRANULARITY of the claim.** These
    readers converged on a coarse, structural observation and diverged completely

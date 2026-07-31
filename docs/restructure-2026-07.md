@@ -137,9 +137,33 @@ last updated: 2026-07-31
 >    export-framing finding or the origin-story question and see if `docs/` gets
 >    them there.
 > 4. **R4.1 — extract `checkScene`.** Deliberately not started; its gate is
->    byte-unchanged smoke verdicts. **The baseline is already captured** — all 9
->    scenes pass, with one `warn` on `menagerie.html` that must survive
->    unchanged. That makes the gate an objective diff rather than a judgment.
+>    byte-unchanged smoke verdicts. `checkScene` measures **594 lines**
+>    (`smoke.js:278-871`).
+>
+>    **BASELINE, RE-RUN 2026-07-31, and it corrects this block.** This said "all
+>    9 scenes pass, with one `warn` on `menagerie.html`". All 9 do pass, but
+>    there are **four** advisory warnings, on four different files:
+>
+>    ```
+>    all scenes pass
+>    4 advisory warning(s)
+>      warn scene.character.template.html  exposure: crushed — 54.7% near black
+>      warn menagerie.html                 exposure: crushed — 50.6% near black
+>      warn scene2d.template.html          exposure: low dynamic range — 2.0 points p05..p95
+>      warn scene.template.html            exposure: crushed — 44.7% near black
+>    ```
+>
+>    A refactor checked against "one warn on menagerie" would have accepted the
+>    silent loss of three others — the gate would have passed while the
+>    instrument got quieter, which is this repo's recurring failure wearing a
+>    fresh coat.
+>
+>    **The baseline is backend- and machine-specific and must be re-taken, not
+>    cited.** Eight of the nine reported `[source, webgpu]` on the machine that
+>    ran it; CI's default is the WebGL2 fallback, and the exposure percentages
+>    above are pixel measurements that need not agree across backends. The gate
+>    is *same machine, same backend, before vs after* — capture it immediately
+>    before starting the extraction rather than reusing this block.
 >
 > **Not gate-blocking, but open:** ten of the corpus's twelve defects are
 > unmeasured and labelled UNVERIFIED; `bracket-corpus.js` does not exist so

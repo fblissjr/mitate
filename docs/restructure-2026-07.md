@@ -1195,6 +1195,23 @@ property, not the proxy.
    [`pattern-ledger.md`](pattern-ledger.md), which counts how often a shape gets
    rebuilt and has **no way to extract one**.
 
+   **A third instance, from outside this repo, worth keeping because its failure
+   mode is one nothing here has hit yet.** A separate session investigated scenes
+   built by a different multi-agent harness and found that harness's own audit
+   declaring `VICTORY CONFIRMED` / `BIT-EXACT MATCH`, including a claimed
+   reproduction of a `bracket-determinism.js` crash which does not reproduce when
+   re-run. **The general form: stacking review layers does not substitute for any
+   single layer re-deriving a number from the artifact.** Layer count reads as
+   rigour and is not — three agreeing reviews of an unverified claim agree about
+   nothing. This repo's defence is already written (invariant 6, red before
+   green, measure don't assert); what it lacked was an instance where *review
+   itself* was the thing that failed, and this is one. A related lesson from the
+   same investigation: a diff between two copies taken at one snapshot cannot
+   detect drift from an external baseline — it answers a different question than
+   it appears to, and the same session's "nothing in the harness was modified"
+   claim was true of the check it ran and false of the question it seemed to
+   answer.
+
    Also in scope: **the disciplines this migration produced should become
    routine rather than remembered.** Red-before-green on every check edit; a
    cold-start run at each gate boundary (it is cheap and it found nine defects at

@@ -1439,7 +1439,34 @@ Notes on two of these:
 
 ---
 
-## Track E — ffmpeg is an export utility, and the code does not say so (2026-07-31)
+## Track E — the review loop should need nothing but bun and a browser (2026-07-31)
+
+**Why this track exists, stated before the mechanism, because the mechanism is
+not the point.** [`VISION.md`](../VISION.md) names the goal as an engine and
+"the **harness** that proves all of it — enough that an agent can turn **any
+context** into a scene, reliably", and measures success partly by whether "a
+session arriving with no context can find what it needs and act correctly". The
+build-review-fix loop is how an agent learns to make a scene land. **Every
+external dependency on that loop is a tax on the thing this project is for.**
+
+Export is not on that loop. Owner, 2026-07-31: *"The export path is seriously
+secondary and not important in any core sense. The HTML scene itself is the real
+artifact… If ffmpeg is genuinely only used for export, it doesn't belong in
+GitHub Actions or as a core test in any way."*
+
+Two consequences, and the second reverses an earlier draft of this track:
+
+- **The review verbs are worth freeing** because an agent should be able to build
+  and verify a scene with bun and a browser and nothing else. That is the payoff,
+  not dependency hygiene for its own sake.
+- **The export verbs are deliberately NOT gated, and that is a decision rather
+  than a gap.** An earlier version of this track — and both independent analyses
+  — flagged "after decoupling, export verbs are exercised nowhere unattended" as
+  a problem wanting an encoder-equipped CI job. It is not a problem. A rotted
+  export verb costs one annoyed moment at export time; a rotted review instrument
+  silently corrupts the loop the project exists to teach. **Do not add an
+  encoder to CI.** ffmpeg is already absent from all three workflows and the gate
+  is green without it; the correct action is to stop proposing an addition.
 
 **The finding, measured, not argued.** `smoke.js` — the validation instrument —
 has no encoder dependency: the gate ran with no ffmpeg on PATH and reported `all
@@ -1588,10 +1615,12 @@ Cheapest-risk first. **Do not batch these**; each has a different control.
     transition and confirm the delta there matches the single-worker value.
     Otherwise the metric is wrong exactly at the seams, in a way that looks fine
     in any single worker's own output.
-  - **Any parallel-run transition window needs an encoder-equipped CI job first.**
-    "Run both and diff the verdicts" assumes CI can still exercise the ffmpeg
-    path; it cannot, because the gate installs no encoders. See the CI decision
-    below, which this shares. `full` mode can shoot chunks
+  - **A parallel-run transition window is proposed and DECLINED on the owner's
+    priority call.** Running both implementations against every scene in CI for
+    some releases would need an encoder-equipped job, and export tooling does not
+    earn one — see this track's opening. If a transition window is wanted, run it
+    locally against the example corpus, which is where the calibration lives
+    anyway. `full` mode can shoot chunks
   across parallel workers, so frame N-1 may sit on another page — each worker
   needs a lead-in frame or the deltas break at chunk boundaries. **Deliverable is
   a calibration control, not a rewrite**: both implementations over the corpus,
@@ -1703,7 +1732,7 @@ concentrates in `build.js` (7 of 9 code findings), `plugin/README.md`,
 | where | what |
 |---|---|
 | 8 scene files, CONTRACT block | *"what makes the HTML loop and the MP4 render provably identical"* — false twice; see R4.4's fence note |
-| `method.md:51-52, 849, 962` | determinism justified by "video/HTML parity", **twice as section headers**, in the file read before building |
+| `method.md:51-52, 849, 962` | determinism justified by "video/HTML parity", **twice as section headers**, in the file read before building. When correcting these, **plant the positive principle rather than only deleting the wrong one**: group by the question an author is asking, not by what happens to touch an encoder today. Stated there, it is the reason the taxonomy looks the way it does; left implicit, a future author reverse-engineers it from a verb list |
 | `CLAUDE.md:56-58` + `docs/orientation.md:13-14` | same inversion; orientation.md is the literal text pasted to every context-free subagent |
 | `physics-bake-proposal.md:20-23` | *"HTML/MP4 parity holds"* listed as a surviving property — **asserts a check that does not exist**, in the doc governing the next phase |
 | `docs/addressing.md:38-40` | quotes the scene-template claim as the foundational definition of `t` |

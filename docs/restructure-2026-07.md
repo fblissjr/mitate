@@ -1275,6 +1275,30 @@ property, not the proxy.
    image was verified varying (YMIN 16, YAVG 21, YMAX 131) before it went out the
    second time.
 
+   **The fifth instance is the complement of the fourth, and together they give
+   the usable rule.** The corrected image went to three independent readers with
+   one question: which panels have antialiased edges and which are stair-stepped.
+   They returned **three different answers** — all three clean; panel 3 aliased;
+   panel 1 aliased. A vote deadlocks 1-1-1. The measurement (fraction of edge
+   pixels sitting strictly between their neighbours' extremes: 57.4%, 59.9%,
+   **44.8%**) resolves it cleanly: the second reader was right and the other two
+   were confidently wrong **in opposite directions**.
+
+   **But all three agreed on something else, and that agreement was correct:**
+   the third panel's caption overlay reflows and clips the subject — reported as
+   "a doubled banner", "lower, clipped", and "taller, clipping the bottom tooth".
+   Three readers, one observation, no measurement needed.
+
+   **So weight independent agreement by the GRANULARITY of the claim.** These
+   readers converged on a coarse, structural observation and diverged completely
+   on a fine per-pixel judgment — of the same image, in the same pass. Agreement
+   is evidence about layout, framing, whether a thing is present or clipped. It
+   is not evidence about edge treatment, subtle tonal differences, or anything
+   whose ground truth is a few pixels wide. **Ask outside readers what they can
+   see, not what you can compute.** The aliasing question should never have been
+   put to a reader at all; the composition question could not have been put to a
+   metric, and answered itself in one pass.
+
    **A third instance, from outside this repo, worth keeping because its failure
    mode is one nothing here has hit yet.** A separate session investigated scenes
    built by a different multi-agent harness and found that harness's own audit

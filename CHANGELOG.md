@@ -40,6 +40,55 @@ a downscale measurement. The commit was already pushed, so it was left alone
 rather than rewritten — this entry is where the addition is actually findable,
 which is what `source-of-truth.md` assigns the CHANGELOG.*
 
+## 0.16.47
+
+### fixed
+
+**`--parity-fix`'s write path — the four defects that blocked the merge.** The
+command shipped in 0.16.43 and was already pushed, so these were a live hazard
+rather than a design note. A `/code-review high` reproduced all four against
+fixtures; each now has a bracket arm that was watched going red before the fix
+landed, and each fix was mutation-tested afterwards by neutralising it and
+confirming its own arm goes red again.
+
+- **Writability is now part of validation.** Readability and fence
+  well-formedness were checked and writability never was, so a read-only target
+  threw out of an unguarded write loop and left the corpus **half-propagated** —
+  precisely the state the design comment above that loop claimed to prevent. The
+  arm puts the read-only file *after* a good target, so a write-as-you-go
+  implementation is caught rewriting the good one.
+- **The malformed-target guard inspects all seven fences, not the ones the
+  source happens to carry.** A target broken in a fence the source lacks was
+  rewritten anyway, exit 0. Live instance: `scene2d.template.html` carries 2 of
+  7, so propagating from it validated two fences while writing nine carriers.
+- **`--parity-only` and `--parity-fix` are now mutually exclusive.** `parityOnly`
+  was computed and never consulted, so the read-only invocation that
+  `static.yml` and the installed pre-commit hook run became a writer whenever
+  `--parity-fix` sat beside it.
+- **`--from` is refused without `--parity-fix`.** It was consumed regardless,
+  swallowing the next filename out of a read-only scan — two genuinely drifted
+  files scanned as one and reported green.
+
+A residue remains and is labelled in the code as residue: `accessSync` answers a
+permission question only, so a full disk or a lock can still throw at write time.
+No arm reaches that path. It is now *loud* rather than silent — the run names the
+carriers that landed — but it is depth, not a control.
+
+### changed
+
+**Every `--parity-fix` bracket arm asserts the refusal MESSAGE, not just a
+non-zero exit.** The refusal text was captured and discarded, so *any* non-zero
+exit satisfied *every* refusal arm and a crash satisfied all of them — four arms
+that could not tell each other's failures apart. This is the same weakness
+mutation testing had already caught once in this file, rebuilt one level up.
+Refusal arms also now assert that **every** file in the fixture is byte-unchanged
+rather than only the one they name, which is what made the half-propagated write
+visible at all.
+
+**Two arms for propagation paths nothing exercised:** multi-fence propagation in
+one run, and the `HTML` fence — the only structurally different regex in the
+check, and one production had already used on the defect corpus.
+
 ## 0.16.46
 
 ### changed

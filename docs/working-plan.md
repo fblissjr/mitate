@@ -1990,8 +1990,26 @@ against live fixtures rather than argued. **Do not merge this branch until the
 write-path group is fixed.** Several contradict claims written into comments on
 this same branch, which is the class invariant 6 exists for.
 
+> **UPDATE 0.16.47 — findings 1, 2, 3, 4, 10 and 11 are FIXED.** The write-path
+> group no longer blocks; **5-9 and 12-15 remain open** and the merge is still
+> blocked on them. Each fix carries a `bracket-parity.js` arm that was watched
+> going **red first**, and each was then **mutation-tested** — the guard
+> neutralised, the arm confirmed red again, all four caught. That second step is
+> the one this branch keeps skipping: 10 exists precisely because arms were
+> written that passed while proving nothing.
+>
+> **One residue is labelled rather than closed.** `accessSync` answers a
+> permission question only, so a full disk or a lock can still throw at write
+> time; no arm reaches that path. It is now loud (the run names the carriers that
+> landed) but it is depth, not a control, and the comment says so.
+>
+> **Finding 11's HTML arm found nothing wrong** — propagation through the one
+> structurally different regex was already correct. The arm is worth keeping
+> anyway: it was in production use on the corpus with no control at all.
+
 **The write-path group — `--parity-fix` can corrupt a corpus today.** It is
 committed and pushed, so this is a live hazard, not a design note.
+**All four fixed in 0.16.47; kept below as the record of what was wrong.**
 
 1. **The final write loop is neither guarded nor atomic** (`smoke.js:983`).
    Validation checks readability and fence well-formedness and **never
@@ -2067,6 +2085,13 @@ and the tool is already pushed), then 10-11 so the bracket can actually hold
 them, then 5-6, then the false claims 7-9, then the rest. **Do not fix these at
 the end of a long session** — the review found them precisely because that is
 when they were written.
+
+**Done in 0.16.47: 1-4, and 10-11 with them rather than after.** Splitting them
+was not possible in the stated order — writing new arms for 1-4 under 10's
+weakness would have meant knowingly building four more arms that any non-zero
+exit satisfies. **Next up is 5-6, then 7-9, then 12-15.** 5 is worth doing soon
+for the reason the finding gives: the third glob added yesterday makes a silent
+coverage loss reachable from CI and from every installed hook.
 
 ## The defect corpus is in parity but nothing runs it (2026-07-31)
 

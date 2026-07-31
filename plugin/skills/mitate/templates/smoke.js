@@ -885,14 +885,40 @@ async function checkScene(browser, file) {
   // by filtering one string out of argv — `--from a.html` would leave `a.html`
   // in the list and the canonical would be treated as a scene to scan.
   const parityFix = argv.includes('--parity-fix');
-  let fixFrom = null;
+  let fixFrom = null, sawFrom = false;
   let scenes = [];
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--parity-only' || a === '--parity-fix') continue;
-    if (a === '--from') { fixFrom = argv[++i]; continue; }
+    if (a === '--from') { sawFrom = true; fixFrom = argv[++i] ?? null; continue; }
     scenes.push(a);
   }
+
+  // TWO FLAG-COMBINATION REFUSALS, both from the 2026-07-31 review and both
+  // reproduced against live fixtures. Refusals rather than best-effort handling
+  // because each failure mode is SILENT — it exits 0 and reports success.
+  //
+  //   * --parity-only + --parity-fix: `parityOnly` was computed and then never
+  //     consulted, so --parity-fix silently won. --parity-only is the read-only
+  //     contract that static.yml and the INSTALLED pre-commit hook run; a
+  //     read-only contract an adjacent flag can turn into a writer is not one.
+  //   * --from without --parity-fix: the value was consumed regardless, eating
+  //     the NEXT FILENAME out of a read-only scan. Reproduced: two genuinely
+  //     drifted files scanned as one and reported green. Silently scanning one
+  //     file fewer than asked is the same class as the mangled-marker episode —
+  //     the check goes quiet and the exit code says everything is fine.
+  const refuseArgs = msg => { console.error(`smoke: ${msg}`); process.exit(1); };
+  if (parityOnly && parityFix) {
+    refuseArgs('--parity-only and --parity-fix are mutually exclusive. --parity-only is the '
+             + 'read-only half that CI and the pre-commit hook run and it must never write; '
+             + 'run the fix as its own deliberate invocation.');
+  }
+  if (sawFrom && !parityFix) {
+    refuseArgs(`--from is only meaningful with --parity-fix. Consuming it here would swallow `
+             + `${JSON.stringify(fixFrom)} out of the scene list and scan one file fewer than `
+             + `you asked for, reporting green for the file it never read.`);
+  }
+
   if (!scenes.length) {
     scenes = fs.readdirSync(process.cwd())
       // `.smoke-*` are this script's own scratch copies. Excluded explicitly:
@@ -961,13 +987,35 @@ async function checkScene(browser, file) {
       let txt = null;
       try { txt = fs.readFileSync(f, 'utf8'); }
       catch (e) { refuse(`cannot read ${f} — ${e.code || e.message}`); }
-      let next = txt;
-      for (const [name, block] of blocks) {
+
+      // VALIDATE OVER ALL SEVEN FENCES, not over `blocks`. Iterating the fences
+      // the SOURCE happens to carry is how a target broken in a fence the source
+      // lacks got written anyway, exit 0 — and it is not hypothetical: propagating
+      // from scene2d.template.html, which carries 2 of 7, validated two fences
+      // while writing to all nine carriers. The guard's subject is the TARGET's
+      // integrity, so the target's own markers decide what gets inspected.
+      for (const name of FENCES) {
         const RE = reFor(name);
         if (txt.includes(`${name}-START`) && !RE.test(txt)) {
           refuse(`${f} has ${name}-START but no well-formed ${name} block — refusing the WHOLE run `
                + `rather than rewriting some carriers and not others. Nothing has been written.`);
         }
+      }
+
+      // WRITABILITY IS PART OF VALIDATION. It was not, and that was the gap
+      // between the comment above and the code: readability and well-formedness
+      // were checked, then the write loop threw on the first read-only target
+      // and left every carrier before it rewritten. Reproduced with chmod 444.
+      try { fs.accessSync(f, fs.constants.W_OK); }
+      catch (e) {
+        refuse(`cannot write ${f} — ${e.code || e.message}. Every target is checked for `
+             + `writability BEFORE the first byte is written, because a write that dies `
+             + `part-way leaves the corpus half-propagated and nothing reports that state.`);
+      }
+
+      let next = txt;
+      for (const [name, block] of blocks) {
+        const RE = reFor(name);
         // A file that does not carry this fence is LEFT ALONE, never given one:
         // removing your markers is how a scene legitimately leaves the parity
         // set, and re-adding them would drag it back in without being asked.
@@ -980,7 +1028,23 @@ async function checkScene(browser, file) {
     }
 
     // Nothing above this line has written anything.
-    for (const [f, next] of writes) fs.writeFileSync(f, next);
+    //
+    // accessSync answers a permission question and nothing else, so a full disk
+    // or a lock can still throw here. That residue is NOT bracketed: bracket-parity.js
+    // has an arm for the permission case above and NO arm reaches this catch, so
+    // read it as depth, not as a control. What it buys is that a partial write is LOUD:
+    // the run names the carriers that landed instead of dying on a stack trace
+    // and leaving the reader to guess how far it got.
+    const landed = [];
+    try {
+      for (const [f, next] of writes) { fs.writeFileSync(f, next); landed.push(f); }
+    } catch (e) {
+      console.error(`parity-fix: PARTIAL WRITE — ${e.code || e.message}. `
+        + `${landed.length} of ${writes.length} carrier(s) were already rewritten:`);
+      for (const f of landed) console.error('       ' + f);
+      console.error('The corpus is half-propagated. Run --parity-only and repair before committing.');
+      process.exit(1);
+    }
     if (writes.length) {
       console.log(`parity-fix: propagated ${blocks.size} fence(s) from ${fixFrom} into ${writes.length} file(s):`);
       for (const [f] of writes) console.log('       ' + f);

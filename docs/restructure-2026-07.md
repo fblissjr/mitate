@@ -48,15 +48,20 @@ last updated: 2026-07-31
 >
 > ### Handoff, end of 2026-07-31 — start here
 >
-> **MERGE IS BLOCKED.** A `/code-review high` over `main...HEAD` returned 15
-> findings, most reproduced against live fixtures. Four are in `--parity-fix`'s
-> write path and the command is already pushed, so it can corrupt a corpus
-> today: the write loop is not atomic and never checks writability, the
-> malformed-target guard only inspects fences the SOURCE carries, `--parity-fix`
-> silently overrides `--parity-only`, and `--from` is consumed without it. Full
-> list and fix order in `working-plan.md`, first section. **Fix that group
-> before anything else here, and not at the end of a long session — the review
-> found them precisely because that is when they were written.**
+> **MERGE IS STILL BLOCKED, but no longer on the write path.** A
+> `/code-review high` over `main...HEAD` returned 15 findings, most reproduced
+> against live fixtures. **0.16.47 closed the write-path group (1-4) and the two
+> bracket weaknesses (10-11); 5-9 and 12-15 remain open.**
+>
+> `--parity-fix` is safe to run again. It now checks writability as part of
+> validation, inspects all seven fences in every target rather than the ones the
+> source happens to carry, refuses `--parity-only` alongside it, and refuses
+> `--from` without it. Every fix was watched **red first** and then
+> **mutation-tested** — guard neutralised, arm confirmed red again.
+>
+> **Next: findings 5-6, then 7-9, then 12-15.** Full list and dispositions in
+> `working-plan.md`, first section. **Not at the end of a long session — the
+> review found them precisely because that is when they were written.**
 >
 > **Shipped:** 0.16.42 (three harness defects) · 0.16.43 (**R4.4**,
 > `--parity-fix`) · 0.16.44 (`CONTRACT` becomes the seventh fence, carrying a

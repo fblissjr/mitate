@@ -4,7 +4,10 @@ last updated: 2026-07-30
 
 > ## Current position
 >
-> **R0 MET** (0.16.30) · **R1 MET** (0.16.31) · **R2 MET** (0.16.34) ·
+> **R0 MET** (0.16.30) · **R1 MET** (0.16.31) · **R2 FULLY MET** — its deferred
+> half (a shipped `plugin/agents/` reaching a real install cache) was verified
+> after PR #2 merged: the cache holds `agents/film-reviewer.md`, holds no `docs/`
+> or `scripts/`, and is byte-identical to `main`'s plugin subtree ·
 > **R3 MET (0.16.40)** — all five items done, and the cold-start run closed the
 > last gate clause. A fresh zero-context agent reached R4 in **one hop and ~24
 > lines**, read no superseded document unwarned, and independently proposed the
@@ -594,11 +597,26 @@ postmortems carry frontmatter an index can read, checked; `solveShot` under
 ripgrep returns 13 files, none from `internal/` — which is the measurement that
 retracted item 8.
 
-**One part of this gate is deferred and named rather than skipped:** "present in
-a real install cache" cannot be checked until the branch is pushed and
-reinstalled, because the marketplace clones from the remote and `main` is still
-0.16.29. That is the first thing to verify after a merge, and
-`plugin/agents/` being a new shipped directory makes it worth doing deliberately.
+~~**One part of this gate is deferred**~~ — **VERIFIED 2026-07-30 after the merge
+of PR #2, and it is now fully met.** "Present in a real install cache" could not
+be checked until `main` carried the plugin, because the marketplace clones from
+the remote. Measured against the actual cache at
+`<claude-config>/plugins/cache/mitate/mitate/0.16.40/`:
+
+- **`agents/film-reviewer.md` is in the cache**, and the reload registered
+  `mitate:film-reviewer` as a live agent type. A new shipped directory reached an
+  installed user, which was the specific thing nobody had confirmed.
+- **The cache holds `agents/`, `skills/` and `README.md` — nothing else.** No
+  `docs/`, no `scripts/`, no `CLAUDE.md`. **Invariant 3 is now observed rather
+  than asserted**, which matters because every "SKILL.md must not cite a path
+  outside its subtree" rule derives from it.
+- **Byte-identical to `main`'s `plugin/` subtree**, the only difference being an
+  `.in_use` marker the harness writes.
+
+The check that made this worth doing deliberately: a shipped directory is the
+kind of thing that works on a laptop and is absent for every installed user, and
+`selfcheck.js` resolving subtree links against the plugin root only proves the
+links resolve *in the tree*. This proves the tree is what ships.
 
 ---
 

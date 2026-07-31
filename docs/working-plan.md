@@ -378,6 +378,18 @@ Phase-4 prerequisite behind a verb rename would be backwards. Renaming `all`
 changes nothing about how a film is written; enumerating `SUBJECTS` changes what
 the engine can validate and what a bake is allowed to rest on.
 
+**Do not start the enumeration from a blank slate.** `SUBJECTS` "straddling" the
+boundary — extents are data, `pos` is a trajectory — is not a hypothetical shape:
+it is the tracked defect class in
+[`pattern-ledger.md`](pattern-ledger.md), **"declared extents rot; measured ones
+do not"**, standing at 6 instances with `subjectFromObject` already promoted as
+its fix. That row bears directly on the question the enumeration has to answer —
+whether `SUBJECTS`'s extents need to become functions of `t` rather than declared
+constants — and it is empirical evidence that already exists. Further instances
+were observed in externally-built scenes `(local)`; read them as corroboration
+and **do not add them to the ledger's count**, which gates promotion triggers and
+is defined over this repo's own corpus.
+
 **The risk of running them separately is that two naming passes disagree**, and
 the mitigation is that neither pass invents its own rule. The principle is one
 line — *group by the question an author is asking, not by what the implementation
@@ -1630,9 +1642,14 @@ Cheapest-risk first. **Do not batch these**; each has a different control.
     setting any threshold — two observations is thin by this repo's own standard.
     Run the full example corpus. A real external before/after pair exists (an
     LFP-battery explainer, 8 beats, scores independently re-derived rather than
-    taken from a self-report) and is offered as additional data — **`(local)`**,
-    held outside this repo, so use it as corroboration and do not rest a
-    threshold on it.
+    taken from a self-report) and is offered as additional data. It sits in
+    `internal/sonnet_and_gemini_scenes/` **`(local)`** — inside this tree and
+    directly runnable (`bun run build.js motion lfp-explainer.html`), but
+    `internal/` is gitignored, so it is present on one machine and absent from
+    any clone. **The reason not to rest a threshold on it is sample size, not
+    reachability** — it is one external scene, the same thinness argument that
+    applies to the two documented fixtures. An earlier draft of this line said it
+    was held outside the repo, which was wrong and was caught by checking.
   - **A `motion` score is sensitive to changes well outside the beat it scores.**
     Measured on that scene: a revision targeting three beats moved *every* beat
     up, because it touched shared geometry. That matters for anyone attributing a
@@ -1755,6 +1772,22 @@ encoder today. Group by intent; that is the same lesson this whole track is
 about, applied to the act of designing the taxonomy.
 
 ### E3. Framing remediation, split by whether the code has earned it
+
+**`VISION.md` is deliberately NOT edited, and the decision has a dependency worth
+stating.** It never mentions MP4, AVIF, WebP or GitHub, and that silence is the
+strongest available statement that export is not core — adding a paragraph saying
+so would make export a topic the file discusses, which elevates it. The file also
+carries its own instruction: *"It is short on purpose. If it grows into a summary
+of the plan, delete the summary."*
+
+**But silence-as-signal is fragile alone.** A reader who lands on the tooling
+question directly could read that silence as "does not cover export, so infer it
+from `build.js`'s comments" — which is precisely the path that produced this
+whole track. The decision holds **only because the explicit statement lands
+elsewhere**: `method.md`'s corrected headers and the verb taxonomy are what a
+reader arriving at the tooling question actually finds. If those slip, the
+silence stops being sufficient and this decision should be revisited rather than
+inherited.
 
 Three parallel sweeps, 2026-07-31, over shipped prose, code comments, and the
 repo-dev surface. **Clean, zero findings:** `bibles.md`, `characters.md`,

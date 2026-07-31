@@ -35,7 +35,8 @@ last updated: 2026-07-31
 > failure opened a larger question — **ffmpeg is an export utility, not a core or
 > validation dependency, and this repo's prose says so while its code does not.**
 > Measured: CI runs with no ffmpeg on PATH and `smoke.js` reports `all scenes
-> pass`; 7 of 10 encoder call sites do no video work. **New work lives in
+> pass`; of 10 encoder call sites only 4 serve export, 5 are review stills and 1
+> is a measurement that writes no file. **New work lives in
 > `working-plan.md` Track E**; the retention record is R4.6; the corrections are
 > on R4.3 and R4.4 below.
 >

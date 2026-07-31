@@ -1445,10 +1445,22 @@ Notes on two of these:
 has no encoder dependency: the gate ran with no ffmpeg on PATH and reported `all
 scenes pass`. ffmpeg never receives HTML, never runs JS, never drives the
 browser; all 10 encoder call sites read raster files already written to disk by
-Playwright. **Only 3 of those 10 do video or animation work** (`video`→mp4,
-`avif`, `loop`). Six are still-image compositing — scaling one PNG to a JPEG,
-tiling stills into grids — and one (`motion`) differences frames and prints
-numbers, writing no file.
+Playwright. They split **4 / 5 / 1**:
+
+- **4 serve export** — `video`→mp4 (282), `avifenc` (427), `img2webp` (452), and
+  the frame scaler at 354. **The scaler is not a migration target**, and a first
+  pass of this analysis wrongly grouped it with the review tilers because it
+  writes stills: it is reached only through `inlineExport`, whose only callers
+  are `avif` and `loop`. It feeds encoders that stay encoder-gated regardless, so
+  moving it buys nothing. Corrected 2026-07-31 against a second analysis.
+- **5 are review stills** — `poster` (476), `aspect` (530), `sheet` (569), the
+  squint strip (575), `strip` (642). Scaling one PNG to a JPEG, tiling stills
+  into grids.
+- **1 is measurement** — `motion` (675), which differences frames and prints
+  numbers, writing no file at all.
+
+**So the migration target is 6, and only 4 call sites are load-bearing for
+export.**
 
 **So the boundary the docs already describe is not implemented.** SKILL.md
 separates step 6 ("the HTML file IS the deliverable") from step 7 ("Export, only

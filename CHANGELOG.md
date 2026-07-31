@@ -7,6 +7,39 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## unreleased
+
+### added
+
+**`/extract-patterns` — the flywheel's extraction half.** `VISION.md` has argued
+that capturing a pattern should be a side effect of making a film rather than an
+act of discipline afterwards; `docs/pattern-ledger.md` counts the rebuilds and
+says plainly it *"has no way to extract one"*. This is that half.
+
+Reads a scene, a session log, a postmortem or a directory of them, and proposes
+which techniques belong in the references — each with evidence, a destination
+from `source-of-truth.md`'s homes table, and a `pattern-ledger` row. **It writes
+nothing**, because an extractor that writes becomes the fifth place a fact can
+live, which the one-home rule forbids.
+
+**Built to run on work the runner did not do**, which is the property that makes
+it worth having: the author felt the necessity behind every choice and is
+therefore the worst-placed reader of which ones were general. Its primary filter
+is `VISION.md`'s own — does this leave the ENGINE better equipped for the next
+film, or did it only make THIS film better — made decidable by six tests, and it
+is deliberately not a code filter, since staging, pacing and legibility are what
+the references were mostly built from.
+
+Known gaps, recorded rather than hidden: **it has no bracket**, so nothing yet
+proves its criteria can reject a plausible local pattern or accept a subtle
+general one; its destination-check step is the expensive one and the easiest to
+fake; and **it has never been run**.
+
+*Record correction: this landed in commit `7f0732e`, whose message describes only
+a downscale measurement. The commit was already pushed, so it was left alone
+rather than rewritten — this entry is where the addition is actually findable,
+which is what `source-of-truth.md` assigns the CHANGELOG.*
+
 ## 0.16.46
 
 ### changed

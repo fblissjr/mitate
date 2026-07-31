@@ -83,6 +83,10 @@ last updated: 2026-07-31
 > **The gate ran green on all of it** (`workflow_dispatch`, since branch pushes
 > do not fire it — see R4.3's correction).
 >
+> **Gate R4 clause 1 is MET** — observed in CI run 30672205795, not inferred
+> from a local run. **R4.7 is DONE** (portfolio graded in `plan.md`). What
+> remains is R4.6's cold-start test and R4.1's `checkScene` extraction.
+>
 > **What is left for Gate R4, in the order to do it:**
 >
 > 1. ~~**`poster` + the three tilers move off ffmpeg**~~ **DONE (0.16.51), with
@@ -100,19 +104,32 @@ last updated: 2026-07-31
 >    `motion` was carved out by name and stayed carved out — it needs its scale
 >    re-established, not ported, which is a different job.
 >
->    **THE GATE CLAUSE IS NOT YET MET, and the difference is the one this
->    document already warns about.** The clause says the review verbs are
->    "exercised **in CI**". They have been exercised on a local PATH stripped of
->    encoders, which is evidence about the code and not about CI. `gate.yml`
->    fires on `main`, `pull_request` and `workflow_dispatch` only, so every run
->    on this branch has been `static` — and `static` globs `scripts/`, while
->    `bracket-commands.js` lives in `templates/`. **The review verbs have never
->    executed in CI, before or after this migration.**
+>    **GATE CLAUSE 1 IS MET, observed in CI rather than inferred.** Run
+>    **30672205795** (`workflow_dispatch`, 2026-07-31), the WebGL2-fallback gate
+>    job, on a runner with no encoder installed:
 >
->    So: the work is done and the clause is satisfiable; closing it needs one
->    `workflow_dispatch` of `gate.yml` and a green review tier in that log.
->    Do not mark the gate met from the local measurement — "it would run" is the
->    exact inference item 1's own correction above says to stop making.
+>    ```
+>    poster   ok  exit 0, tiny.jpg written
+>    sheet    ok  exit 0, tiny.sheet.jpg written
+>    aspect   ok  exit 0, tiny.aspect.jpg written
+>    strip    ok  exit 0, tiny.strip.jpg written
+>    motion   SKIP  ffmpeg not on PATH
+>    core     4 exercised,  0 skipped
+>    review   4 exercised,  1 skipped
+>    export   0 exercised,  4 skipped
+>    ```
+>
+>    Every core and review verb exercised except `motion`, carved out by name,
+>    with export reported as deliberately skipped. That is the clause, verbatim.
+>
+>    **This paragraph first said the clause was met from a LOCAL run, and it was
+>    not.** `gate.yml` fires on `main`, `pull_request` and `workflow_dispatch`
+>    only, so every prior run on this branch was `static` — which globs
+>    `scripts/`, while `bracket-commands.js` lives in `templates/`. The review
+>    verbs had never executed in CI at all, before or after the migration, and
+>    "it would run" is precisely the inference item 1's own correction above says
+>    to stop making. It was made again anyway, one screen below where it is
+>    written down. The dispatch cost five minutes.
 > 2. **R4.7 — reach grades** on `plan.md`'s nine portfolio cases. Unstarted, no
 >    dependencies, pure judgment work.
 > 3. **R4.6's cold-start test** — the cheapest gate clause left. Today produced
@@ -1415,7 +1432,22 @@ property, not the proxy.
    and the rule that a control must not contain the defect it injects, which cost
    three separate fixtures this session before it was written down.
 
-7. **Grade the test-case portfolio, and let it be refined rather than fixed.**
+7. ~~**Grade the test-case portfolio, and let it be refined rather than fixed.**~~
+   **DONE 2026-07-31, in `plan.md` where it belongs.** Both halves: a `Reach`
+   column on all nine cases (BUILT / in reach / near / beyond), a one-line
+   blocker per unbuilt case naming what was checked, and four intermediate
+   variants below the table. Graded against the tree, not against memory.
+   **Three findings came out of grading rather than out of the grades:**
+   `the-briefing` already ships two of its four requirements (SSS and rack
+   focus), so it is narrower than "THE hard one" implies; `crowd-cross`'s
+   instancing is proven only for **fur shell layers**, not for posed rigs, which
+   is a design question rather than a port; and **`scene2d.template.html` ships
+   to every installed user with no example exercising it** — all five examples
+   carry the `RIG` fence. That last one is a hole the portfolio did not have a
+   rung for, and now does.
+
+   The original text follows, since the instruction is what the grades answer to.
+
    [`plan.md`](plan.md)'s nine-case portfolio is good and its opening line is
    right — *"diversity is the point: each case exists to break a different
    assumption."* Two things it lacks:

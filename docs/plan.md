@@ -1,4 +1,4 @@
-last updated: 2026-07-30
+last updated: 2026-07-31
 
 # mitate: founding plan
 
@@ -255,17 +255,81 @@ Diversity is the point: each case exists to break a different assumption, and
 each phase gate names the cases it must pass. These are specs, not committed
 films; build them as they gate.
 
-| Case | Register | What it stress-tests |
-|---|---|---|
-| `gearbox` | technical explainer | Regression baseline against frozen explainer-video: same beats, node stack, must not be worse on any instrument |
-| `market-crash` | data/abstract explainer | No characters at all — proves character work taxed nothing; charts and glyphs as sets |
-| `bear-and-bees` | character short / comedy | Quadruped scaffold, fur shells, comedic timing (pause-then-fast) |
-| `boss-intro` | game cutscene | A creature invented from a text description on the generic scaffold; dramatic node lighting; title card; cut language |
-| `the-briefing` | human two-shot | THE hard one: face rig, expressions readable in the nocap pass, SSS skin in closeup, rack focus between speakers |
-| `crowd-cross` | scale | ~100 figures from one scaffold via instancing, individual gait phase offsets, LOD shading |
-| `rube-goldberg` | physics | Build-time Rapier bake to sampled trajectories; byte-determinism preserved through the bake |
-| `meme-remix` | meme | Speed of authoring is the metric: joke format, fast cuts, text overlays, made start-to-shipped in one session |
-| `museum-walk` | interactive spike | Same kernel, input driver instead of timeline driver; walk the camera through a built set |
+| Case | Register | Reach | What it stress-tests |
+|---|---|---|---|
+| `gearbox` | technical explainer | **BUILT** | Regression baseline against frozen explainer-video: same beats, node stack, must not be worse on any instrument |
+| `market-crash` | data/abstract explainer | **in reach** | No characters at all — proves character work taxed nothing; charts and glyphs as sets |
+| `bear-and-bees` | character short / comedy | **BUILT** | Quadruped scaffold, fur shells, comedic timing (pause-then-fast) |
+| `boss-intro` | game cutscene | **in reach** | A creature invented from a text description on the generic scaffold; dramatic node lighting; title card; cut language |
+| `the-briefing` | human two-shot | **beyond** | THE hard one: face rig, expressions readable in the nocap pass, SSS skin in closeup, rack focus between speakers |
+| `crowd-cross` | scale | **near** | ~100 figures from one scaffold via instancing, individual gait phase offsets, LOD shading |
+| `rube-goldberg` | physics | **beyond** | Build-time Rapier bake to sampled trajectories; byte-determinism preserved through the bake |
+| `meme-remix` | meme | **in reach** | Speed of authoring is the metric: joke format, fast cuts, text overlays, made start-to-shipped in one session |
+| `museum-walk` | interactive spike | **beyond** | Same kernel, input driver instead of timeline driver; walk the camera through a built set |
+
+**Reach grades, first pass 2026-07-31, graded against the tree rather than
+against memory.** *in reach* = every named element already exists and ships;
+*near* = one identified primitive away; *beyond* = gated by a phase that has not
+started. **Expect these to move, and treat a stuck grade as a finding:** a case
+that stays *beyond* for three phases is either mis-scoped or is naming a missing
+primitive, and both are worth knowing.
+
+What blocks each unbuilt case, one line, with what was checked:
+
+- **`market-crash`** — nothing. `gearbox` proves the explainer register and the
+  SHOTS solver, `noise-chart` proves a grid of cells, `setOverlay` proves text.
+  **The most in-reach case in the table, and the cheapest evidence available.**
+- **`boss-intro`** — nothing. Every element it names is shipped: the
+  text-invented creature is `menagerie`'s strider, cuts are `hard`/`blend`/`whip`
+  with match-cut validation, and the title card is the HTML fence's overlay.
+  Its register (Phase 5) is where cutscene *dialogue* lands; this spec asks for
+  none.
+- **`meme-remix`** — nothing in the engine. Its metric is authoring speed, so it
+  tests the harness and the skill, not a primitive. That makes it the one case
+  whose grade cannot be read off the code.
+- **`crowd-cross`** — two steps, and the first is a design question rather than a
+  port. `InstancedMesh` is shipped, but for **fur shell layers** (one geometry ×
+  L offsets), which is not the same problem as 100 independently *posed* rigs;
+  per-instance bone matrices need a decision. Per-figure phase is already
+  expressible — `gaitPose`'s `opts.start` shifts the plant grid, and the gait is
+  distance-driven. **LOD has no implementation and no reference.**
+- **`the-briefing`** — the face, and only the face. **Two of its four named
+  requirements already ship:** SSS (`materials.html`) and rack focus (`STYLE.dof`
+  + `SHOTS[].focus` + `cut:'blend'`, which the solver lerps across the cut). The
+  scaffold's head is a sphere plus an optional muzzle box; there is no blink,
+  brow, jaw or mouth anywhere. So it is narrower than "THE hard one" suggests —
+  it is Phase 3's morph basis, landing into shot language that already works.
+- **`rube-goldberg`** — Phase 4, which is next by owner priority, and its
+  constraints are already written in [`physics-bake-proposal.md`](physics-bake-proposal.md).
+- **`museum-walk`** — Phase 6, whose gate this document already calls unreachable.
+  There is no input handling anywhere in the repo (the only `addEventListener` in
+  any scene is `resize`). It is also the one case that argues with the prime
+  directive rather than extending it, which is why it stays last.
+
+### Variations between the rungs
+
+Nine cases is a coarse ladder and the intermediate variants are what does not
+exist. Each of these isolates ONE new variable, which is Phase 1's lesson
+applied to the portfolio itself.
+
+- **A 2D film — and this is a hole, not a nicety.** `scene2d.template.html`
+  ships to every installed user and **no example exercises it**: all five
+  examples carry the `RIG` fence, and the 2D template carries only `CONTRACT` and
+  `KERNEL`. Its `drawOn`/`alongPath` phase-locked draw-on and in-canvas text have
+  no worked demonstration anywhere. A 2D data explainer would close that and is a
+  natural rung below `market-crash`.
+- **`small-crowd` (6–12 figures, no instancing, no LOD)** — sits below
+  `crowd-cross` and answers the question that actually matters first: does
+  per-figure gait phase read as a crowd? `menagerie` already draws three
+  characters; this needs no new primitive. Only then instancing, then LOD, as
+  three rungs instead of one leap.
+- **A single-speaker closeup** — sits below `the-briefing` and uses what already
+  ships: SSS skin, rack focus, existing head. It proves the closeup framing and
+  focus language *before* the morph basis exists, so Phase 3's face lands into a
+  shot that is already known to work rather than into two unknowns at once.
+- **A title card and dramatic lighting on an EXISTING creature** — sits below
+  `boss-intro` and separates the register work from the creature-invention work,
+  which `menagerie` has already proven independently.
 
 Formats (vertical 9:16, square) are exercised inside these via `FRAME`, not as
 separate cases — that contract carries over and already works.

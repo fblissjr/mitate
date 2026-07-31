@@ -11,6 +11,34 @@ make the record say things that never happened. The rename and repo split are
 
 ### added
 
+**Track E0 — the encoder boundary is pinned and may only shrink.**
+`selfcheck.js` check 10 records which functions may shell out to
+`ffmpeg`/`avifenc`/`img2webp`, per function, seeded at the honest baseline of
+**ten call sites across nine functions** rather than at a target.
+
+This comes *before* the migration it serves, which is the plan's own ordering and
+worth restating: Track E's claim is that an agent should be able to build and
+review a scene with bun and a browser and nothing else, so "what is export?" has
+to stop being a judgment call. Once the list has ratcheted down, export is
+whatever is still inside it, and each migration is a deleted line here rather
+than an assertion in prose.
+
+It fails in **three** directions, one arm each in `bracket-selfcheck.js`: an
+encoder in a function that is not pinned (drift in), an extra call inside one
+that is (drift within), and — the direction a ratchet exists for — a pinned site
+that no longer exists, meaning a migration landed and the budget was not
+tightened behind it. The escape hatch is deliberately the same one
+`ASSERT_BUDGET` uses rather than a second mechanism: a legitimate new export verb
+edits the literal, in a diff, with a reason.
+
+**The check's first run failed on its own bracket.** A comment there named the
+call pattern in full, and the scanner read it as a call site — the
+"a control must not contain the defect it injects" rule, violated by the comment
+explaining that rule. Check 10 now skips comment-only lines, which is scoping
+rather than relaxation since the subject is what executes; the fixtures stay
+assembled at runtime regardless, because leaning on a scanner's blind spot to
+keep a control honest is the wrong direction.
+
 **`/extract-patterns` — the flywheel's extraction half.** `VISION.md` has argued
 that capturing a pattern should be a side effect of making a film rather than an
 act of discipline afterwards; `docs/pattern-ledger.md` counts the rebuilds and

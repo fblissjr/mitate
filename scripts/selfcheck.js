@@ -842,6 +842,85 @@ const toolJs = new Map([
   }
 }
 
+/* ---- 10. the encoder boundary only shrinks (Track E0) ---------------------
+ * Which functions may shell out to ffmpeg/avifenc/img2webp, pinned per function
+ * and allowed to fall but never rise. Same idiom as the measurement-assertion
+ * ratchet above and the probe single-call-site rule: a number the repo drives
+ * toward zero, with the current value stated rather than a target asserted.
+ *
+ * WHY IT COMES BEFORE THE MIGRATION IT SERVES. Track E's whole claim is that an
+ * agent should be able to build and review a scene with bun and a browser and
+ * nothing else — so "what is export?" has to stop being a judgment call. Once
+ * this list has ratcheted down, export is whatever is still inside it, and each
+ * migration is a line deleted here rather than an assertion in prose.
+ *
+ * Seeded at the honest baseline (ten sites, eight functions), NOT at a target.
+ * `motion` is in the list and stays for now: it is a measurement rather than an
+ * export, but migrating it needs a recalibration that this check does not.
+ *
+ * THE ESCAPE HATCH IS THE SAME ONE ASSERT_BUDGET USES, deliberately, rather
+ * than a second mechanism: a legitimate new export verb edits this literal, in a
+ * diff, with a reason. The budget above moved up exactly once in its life and
+ * only because the measurement changed definition. That is the bar.
+ *
+ * LIMIT, stated because a check whose blind spot is undocumented gets trusted
+ * past it: this matches a LITERAL binary name in a call expression. An encoder
+ * reached through a variable would not be seen. That is not a hole worth
+ * closing with a parser — indirection to dodge a boundary check is visible in
+ * review in a way a forgotten call site is not. */
+{
+  const ENCODER_BUDGET = {
+    video: 1, shootAndScale: 1, avif: 1, loop: 1,          // export — the four that stay
+    poster: 1, aspectSheet: 1, sheet: 2, strip: 1,         // review stills — E1's targets
+    motion: 1,                                             // measurement — needs recalibration
+  };
+  const ENCODERS = /\b(?:run|execFileSync|spawnSync|spawn)\(\s*['"](?:ffmpeg|avifenc|img2webp)['"]/;
+  const DECL = /^(?:async\s+)?function\s+([A-Za-z0-9_]+)|^const\s+([A-Za-z0-9_]+)\s*=\s*(?:async\s*)?\(/;
+  const found = {};
+  for (const [rel, text] of toolJs) {
+    const lines = text.split('\n');
+    lines.forEach((line, i) => {
+      // Comment-only lines are not call sites, and this is scoping rather than
+      // relaxation: the subject is what EXECUTES. It is also not theoretical —
+      // the first run of this check was tripped by a comment in its own bracket
+      // describing the pattern it scans for. A trailing comment after real code
+      // still matches, because that line does execute. Residual limit: a line
+      // inside a block comment that starts with neither marker is not skipped.
+      const t = line.trim();
+      if (t.startsWith('//') || t.startsWith('*') || t.startsWith('/*')) return;
+      if (!ENCODERS.test(line)) return;
+      let fn = `${rel}:top-level`;
+      for (let j = i; j >= 0; j--) {
+        const m = lines[j].match(DECL);
+        if (m) { fn = m[1] || m[2]; break; }
+      }
+      found[fn] = (found[fn] || 0) + 1;
+    });
+  }
+  const outside = Object.keys(found).filter(f => !(f in ENCODER_BUDGET)).sort();
+  const over = Object.keys(found).filter(f => f in ENCODER_BUDGET && found[f] > ENCODER_BUDGET[f]);
+  const under = Object.keys(ENCODER_BUDGET).filter(f => (found[f] || 0) < ENCODER_BUDGET[f]);
+  if (outside.length) {
+    fail(`encoder call outside the pinned boundary, in: ${outside.join(', ')}. Track E exists to `
+       + `SHRINK this set — an encoder in a new function is the review loop growing a dependency `
+       + `it is supposed to be losing. If this is a deliberate new export verb, add it to `
+       + `ENCODER_BUDGET with a reason, the way ASSERT_BUDGET is moved`);
+  }
+  if (over.length) {
+    fail(`more encoder calls than pinned in: ${over.map(f => `${f} (${found[f]} > ${ENCODER_BUDGET[f]})`).join(', ')}`);
+  }
+  if (under.length) {
+    fail(`encoder budget is now too generous for: ${under.map(f => `${f} (${found[f] || 0} < ${ENCODER_BUDGET[f]})`).join(', ')}. `
+       + `A migration landed and the ratchet was not tightened — lower it in selfcheck.js so the `
+       + `ground that was won cannot be given back silently`);
+  }
+  if (!outside.length && !over.length && !under.length) {
+    const total = Object.values(ENCODER_BUDGET).reduce((a, b) => a + b, 0);
+    notes.push(`${total} encoder call site(s) across ${Object.keys(ENCODER_BUDGET).length} pinned `
+             + `function(s) — the boundary may shrink, never grow`);
+  }
+}
+
 for (const n of notes) console.log('  ok   ' + n);
 if (fails.length) {
   console.log('');

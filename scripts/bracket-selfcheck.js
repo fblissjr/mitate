@@ -163,6 +163,48 @@ const ARMS = [
     };
   }, 'never names'],
 
+  // Track E0's ratchet, three directions. It has to fail on a NEW encoder call
+  // outside the boundary (drift in), on an extra call inside an allowed
+  // function (drift within), and on a migration that removed one without
+  // tightening the pin (ground given back silently). The third is the one a
+  // ratchet exists for and the easiest to leave out.
+  //
+  // ASSEMBLED, like the citation arms above: an encoder invocation written
+  // plainly in this file's source is exactly what the check scans for, and
+  // scripts/*.js is in scope — so the control would fail on itself.
+  //
+  // It DID, on the first run, from the comment that used to sit here naming the
+  // pattern in full. Check 10 now skips comment-only lines (a commented-out
+  // call is not a call site), but the fixtures stay assembled: relying on the
+  // scanner's blind spot to keep the control honest is the wrong direction.
+  ['an encoder call outside the pinned boundary', () => {
+    const f = path.join(__dirname, '_bracket_fixture_encoder.js');
+    const call = 'run' + `('${'ff' + 'mpeg'}', ['-y'])`;
+    fs.writeFileSync(f, `function _fixtureVerb() {\n  ${call};\n}\n`);
+    return () => fs.rmSync(f, { force: true });
+  }, 'outside the pinned boundary'],
+
+  ['a second encoder call inside an allowed function', () => {
+    const f = path.join(__dirname, '_bracket_fixture_encoder2.js');
+    // `poster` is pinned at 1. Two calls in a function of that name must trip
+    // the over-budget arm even though the NAME is on the allowlist.
+    const call = 'run' + `('${'ff' + 'mpeg'}', ['-y'])`;
+    fs.writeFileSync(f, `function poster() {\n  ${call};\n  ${call};\n}\n`);
+    return () => fs.rmSync(f, { force: true });
+  }, 'more encoder calls than pinned'],
+
+  // The ratchet's own direction: a migration that deletes a call site but
+  // leaves the budget high. Nothing else in the repo would notice, and the next
+  // person could reintroduce the call and stay green.
+  ['a pinned encoder site that no longer exists', () => {
+    const sc = path.join(__dirname, 'selfcheck.js');
+    const had = fs.readFileSync(sc, 'utf8');
+    // Pin a function name that invokes no encoder — the same state a completed
+    // migration leaves behind when the budget line is not deleted with it.
+    fs.writeFileSync(sc, had.replace('motion: 1,', 'motion: 1, _fixtureGone: 1,'));
+    return () => fs.writeFileSync(sc, had);
+  }, 'budget is now too generous'],
+
   ['postmortem an index cannot read', () => {
     const dir = path.join(ROOT, 'docs', 'postmortems');
     const f = path.join(dir, '2026-01-01_session_bracket-fixture.md');

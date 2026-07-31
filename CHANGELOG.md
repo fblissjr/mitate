@@ -7,6 +7,42 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.42
+
+### fixed
+
+**The harness tier's encoder table named ffmpeg for two rows when nine need it.**
+`bracket-commands.js` recorded `needs: 'ffmpeg'` on `video` and `all` only, while
+`poster`, `sheet`, `aspect`, `strip` and `motion` shell out to it as well
+(`build.js` 476, 530, 569, 642, 675). On a runner without ffmpeg those five did
+not skip — they reported FAIL. That is how the first unattended run of this
+bracket failed on five rows that were never broken. Reproduced exactly by running
+the file with the encoders stripped from `PATH`; the fix is the table, not the
+verbs. A skip of a *named* binary can now be made a failure with
+`REQUIRE_ENCODERS=ffmpeg,avifenc`, so a CI install that silently stops working
+goes red instead of quietly covering less.
+
+**Both workflow bracket loops hid every bracket after the first red.** The loops
+ran `bun run "$b"` bare under `bash -e`, so the first failing bracket aborted the
+step and its siblings never ran: the 0.16.41 gate ran `bracket-commands`, failed,
+and never reached determinism, liveplay, noise or parity. This is the same defect
+as the `!cancelled()` one that `gate.yml`'s own comment already documents — a
+failing step skipping the next — reproduced one level down, four lines below its
+own postmortem. The history had been recorded; the rule was never generalised
+past the instance it came from. Fixed in `gate.yml` and `static.yml` with a
+runtime-assembled fixture proving the old form hides a sibling and the new form
+does not, both still exiting non-zero.
+
+**The bracket's failure tail printed the interpreter banner, not the error.** It
+took the last two lines of output, which on any Bun crash are a blank line and
+`Bun v… (Linux x64)`. The CI log said exactly that, five times, and the cause had
+to be re-derived locally. It now prefers the line that names the failure.
+
+### changed
+
+**`gate.yml` and `static.yml` report which brackets failed** rather than stopping
+at the first, and say so with `::error::`.
+
 ## 0.16.41
 
 ### added

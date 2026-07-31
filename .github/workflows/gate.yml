@@ -137,11 +137,30 @@ jobs:
         if: '!cancelled()'
         # Globbed, not listed: a hardcoded set means a NEW bracket silently
         # never runs here, which is how a control goes decorative.
+        #
+        # EVERY BRACKET RUNS EVEN WHEN ONE FAILS, and the glob above is why that
+        # sentence had to be written twice. The shell is `bash -e`, so a bare
+        # `bun run "$b"` in the loop body aborted the whole step at the first
+        # red bracket: 0.16.41's gate ran bracket-commands, failed, and never
+        # reached determinism, liveplay, noise or parity. That is the SAME
+        # defect as the `!cancelled()` one directly above, one level down —
+        # there a failing step skipped this one, here a failing bracket skips
+        # its four siblings — and it hid four controls behind the first red.
+        # `if !` puts the run in a condition context, where -e does not fire.
         run: |
-          cd ws && for b in ../plugin/skills/mitate/templates/bracket-*.js; do
+          cd ws
+          failed=""
+          for b in ../plugin/skills/mitate/templates/bracket-*.js; do
             echo "--- $(basename "$b") ---"
-            NODE_PATH="$PWD/node_modules" bun run "$b"
+            if ! NODE_PATH="$PWD/node_modules" bun run "$b"; then
+              failed="$failed $(basename "$b")"
+            fi
           done
+          if [ -n "$failed" ]; then
+            echo "::error::brackets failed:$failed"
+            exit 1
+          fi
+          echo "every bracket ran, all green"
 
       # Only on failure, so the green path pays nothing. Turns "seekTo(5.36) not
       # deterministic" into which grid cells moved and whether it is localized to

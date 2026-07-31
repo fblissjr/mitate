@@ -71,9 +71,21 @@ jobs:
       # stage-films.sh at a throwaway fixture via MITATE_EXAMPLES/MITATE_FILMS.
       # It used to rewrite the real 1.14 MB gearbox.html and restore it, which
       # risked a shipped artifact to control a script that only serves the site.
+      # Same `bash -e` trap as gate.yml's bracket loop, fixed the same way and
+      # for the same reason: a bare `bun run "$b"` aborts the step at the first
+      # red bracket, so every later control is hidden behind it. Two brackets
+      # here today, which is exactly when this is cheapest to get right.
       - name: brackets
         run: |
+          failed=""
           for b in scripts/bracket-*.js; do
             echo "--- $b"
-            bun run "$b"
+            if ! bun run "$b"; then
+              failed="$failed $b"
+            fi
           done
+          if [ -n "$failed" ]; then
+            echo "::error::brackets failed:$failed"
+            exit 1
+          fi
+          echo "every bracket ran, all green"

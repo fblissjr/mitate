@@ -1,4 +1,4 @@
-last updated: 2026-07-30
+last updated: 2026-07-31
 
 # Restructure plan, 2026-07
 
@@ -26,6 +26,18 @@ last updated: 2026-07-30
 > recovered; and grading the portfolio stops the same *question* — what do I build
 > next — being re-derived from scratch. R2 items 1-7 landed across
 > 0.16.32-0.16.34, 8 retracted, 9 trigger-gated on a fifth bracket of one family.
+>
+> **2026-07-31 — the harness tier's first unattended run, and what it cost to
+> read it.** Three defects, all fixed in 0.16.42: the bracket's encoder table
+> named ffmpeg for 2 rows when 9 need it (so five working verbs reported FAIL);
+> both workflow bracket loops hid every bracket after the first red; and the
+> failure tail printed the interpreter banner instead of the error. Reading that
+> failure opened a larger question — **ffmpeg is an export utility, not a core or
+> validation dependency, and this repo's prose says so while its code does not.**
+> Measured: CI runs with no ffmpeg on PATH and `smoke.js` reports `all scenes
+> pass`; 7 of 10 encoder call sites do no video work. **New work lives in
+> `working-plan.md` Track E**; the retention record is R4.6; the corrections are
+> on R4.3 and R4.4 below.
 >
 > **While this document is open it is the live queue**, and
 > [`working-plan.md`](working-plan.md) is the standing backlog it executes
@@ -943,11 +955,19 @@ property, not the proxy.
 > not preference, and a later item is not blocked by skipping an earlier one
 > except where stated.
 >
-> 1. ~~**R4.2 + R4.3 — the harness tier.**~~ **DONE 0.16.41.**
->    `templates/bracket-commands.js`: 13 verbs, 4 red arms, 38s, and no CI edit
->    because the existing glob covered it. Its first run found that `vendor`
+> 1. ~~**R4.2 + R4.3 — the harness tier.**~~ **DONE 0.16.41**, with a correction
+>    below. `templates/bracket-commands.js`: 13 verbs, 4 red arms, 38s, and no CI
+>    edit because the existing glob covered it. Its first run found that `vendor`
 >    cannot run against a scene outside the workspace — `bun build` resolves
->    three from the entry file's directory. **Next: item 2.**
+>    three from the entry file's directory.
+>
+>    **CORRECTED 2026-07-31: "the existing glob covered it" is true; "so it ran"
+>    was not.** `gate.yml` fires on push-to-`main`, `pull_request` and
+>    `workflow_dispatch` only. This bracket landed on a branch with no PR open,
+>    so it had never executed in CI at all until it was dispatched by hand —
+>    `gh run list --branch r4-harness` showed only `static` had ever run. Its
+>    first unattended run then failed on five rows and found three real defects.
+>    See item 3 for the inference to stop making. **Next: item 2.**
 > 2. **R4.4 — `--parity-fix`.** Small, and it comes before R4.5 because R4.5
 >    adds a ninth fence carrier; propagation is what makes that cheap instead of
 >    a permanent tax.
@@ -986,7 +1006,26 @@ property, not the proxy.
    closes the command-never-run shape permanently. State what it is not: it
    checks the path executes, not that output is correct.
 
-3. **`gate.yml` runs the harness tier — DONE 0.16.41, with no CI edit at all.** Naming it `bracket-commands.js` put it inside the existing `templates/bracket-*.js` glob, so it ran the day it was written and a future harness will too. The prescription below (add a step) was the more expensive answer. No new workflow — the existing gate job
+3. **`gate.yml` runs the harness tier — DONE 0.16.41, with no CI edit at all.** Naming it `bracket-commands.js` put it inside the existing `templates/bracket-*.js` glob, so it ran the day it was written and a future harness will too.
+
+   > **AMENDED 2026-07-31. Globbed is not the same as runs, and this item made
+   > that inference twice.** `gate.yml` triggers on push-to-`main`,
+   > `pull_request` and `workflow_dispatch`. Branch work fires none of them — by
+   > design, recorded in `gate.yml` itself as "branch work is now free until a PR
+   > opens". So a bracket added on a branch is *covered by the glob and executed
+   > by nothing* until a PR opens or it lands on `main`. Measured: this bracket
+   > sat unrun from 0.16.41 until dispatched by hand the next day.
+   >
+   > **A second, worse instance sat in the same step.** The bracket loop ran
+   > `bun run "$b"` bare under `bash -e`, so the first red bracket aborted the
+   > step and its four siblings never ran — the same defect as the `!cancelled()`
+   > one the step's own comment already documents, one level down, four lines
+   > below its own postmortem. The history was recorded; the rule was never
+   > generalised past the instance it came from.
+   >
+   > Both fixed in 0.16.42, with a runtime-assembled fixture proving the old loop
+   > form hides a sibling and the new one does not. **The rule to carry: a
+   > control is covered when a trigger fires it, not when a glob names it.** The prescription below (add a step) was the more expensive answer. No new workflow — the existing gate job
    gains a step. `sample.yml` stays manual-only and correct as designed;
    `static.yml` needs no change. **Name it `templates/bracket-commands.js` and
    no CI edit is needed at all** — `gate.yml` already globs
@@ -996,7 +1035,21 @@ property, not the proxy.
 4. **`--parity-fix`: stop hand-editing six fenced blocks across eight files.**
    Measured 2026-07-30: **4,611 lines held byte-identical by hand** — KERNEL 151
    lines × 8 carriers, CHARACTER 278 × 3, SOLVER 113 × 7, DRIVER 111 × 7, RIG 83
-   × 7, HTML 60 × 7. This is DRY-by-*verification* in a repo that spent R0-R3
+   × 7, HTML 60 × 7.
+
+   > **A seventh fence candidate, found 2026-07-31: the CONTRACT block.** It is
+   > byte-identical across all **8** carriers (verified by hashing the block in
+   > each), it names the window contract, and it sits **outside every fence** —
+   > between `HTML-END` and `KERNEL-START`. So `--parity-fix` as scoped would not
+   > propagate it and `--parity-only` does not check it. It was found the
+   > expensive way: it carries a false sentence — *"That is what makes the HTML
+   > loop and the MP4 render provably identical"* — which is wrong twice (nothing
+   > proves it; invariant 5 says cross-backend frames are not byte-identical) and
+   > which therefore has to be corrected in eight places by hand, with nothing
+   > checking the eight agree afterwards. **Fence it as part of this item.** The
+   > count in the paragraph above is short by one block for the same reason the
+   > block is wrong: unfenced identical text is invisible to the tool that exists
+   > to find identical text. This is DRY-by-*verification* in a repo that spent R0-R3
    moving to DRY-by-*construction*: `gearbox-neon.html` was a stored 1.14 MB
    duplicate and is now derived by one `sed`, on the argument that a claim should
    be executed rather than asserted.
@@ -1086,6 +1139,43 @@ property, not the proxy.
    conversation transcript, which nothing routes to and no future session reads.
    **Recorded now as an open question** (below), which is the minimum, not the
    fix.
+
+   **Second instance, 2026-07-31, and it cost three sessions to find once.** The
+   owner asked why an exported MP4 would be expected to match an HTML render
+   across machines of different speeds. Establishing the answer took a session of
+   measurement; **two other sessions were independently asked the same question
+   and re-derived it in parallel.** Three derivations of one finding is the cost
+   this item exists to stop, and it is the sharpest measurement of that cost the
+   repo has. The finding itself is recorded in its proper homes rather than here
+   (`source-of-truth.md` routes it: the invariant to `CLAUDE.md`, the encoder
+   scope to `references/recordings.md`, determinism's purpose already correct in
+   `VISION.md`); the remediation is a working-plan track. What belongs *here* is
+   why it was recoverable at all:
+
+   - **The framing was inherited, not invented.** `docs/predecessor-record.md`
+     carries the predecessor's own marquee claim four times — *"one scene file
+     drives the live HTML loop and the frame-exact render alike"*, called "the
+     property every instrument was built to check". That file is explicitly
+     bounded as history. The sentence is not: near-identical phrasing is live and
+     unqualified in `CLAUDE.md:56-58`, `docs/orientation.md:13-14`, and the
+     CONTRACT block of **eight** shipped scene files. A frozen project's headline
+     claim survived the rename while this project's purpose moved on.
+   - **`VISION.md` was right the whole time** and says determinism is the
+     measuring instrument. `method.md` says, in two section headers, that it
+     exists to preserve video/HTML parity. `method.md` is the one read while
+     building. Being correct in the document nobody opens at work time is not
+     being correct.
+
+   **Open question, recorded per the rule above rather than acted on: does this
+   repo define its files by origin story where it should define them by
+   function?** Raised by the owner 2026-07-31 from the `recordings.md` opening,
+   and generalised from one concrete instance — `gate.yml`'s bracket-loop defect
+   recurred four lines below the comment narrating its own earlier form, because
+   the incident was preserved and the rule was never abstracted. **This is
+   unmeasured.** The export sweeps were scoped to export framing and do not test
+   it. The proposed instrument is a `selfcheck.js` ratchet counting
+   version-citing comments that do not cite a postmortem — a proxy, and it should
+   be counted before the thesis is trusted, including by whoever proposed it.
 
    Three retention channels exist and two work:
    - **Postmortems** — tracked as of this migration, in `docs/postmortems/`,

@@ -18,10 +18,25 @@
  * at 1fps — ~17 frames for a 17s film instead of ~500 — and the raster verbs run
  * at small widths. The point is coverage of the dispatch, not fidelity.
  *
- * SKIPS ARE REPORTED, NEVER SILENT. avifenc and img2webp are not on a stock CI
- * runner; those two rows print SKIP with the missing binary named and are
- * excluded from the pass tally rather than counted as green. A harness that
- * quietly covers less than it says is the thing this file exists to prevent.
+ * SKIPS ARE REPORTED, NEVER SILENT. A row whose encoder is absent prints SKIP
+ * with the missing binary named, and is excluded from the pass tally rather
+ * than counted as green. A harness that quietly covers less than it says is the
+ * thing this file exists to prevent.
+ *
+ * NINE ROWS NEED AN ENCODER, NOT TWO, and this file asserted the wrong number
+ * until its first unattended run. It recorded `needs: ffmpeg` on video and all
+ * only, while poster, sheet, aspect, strip and motion shell out to ffmpeg too
+ * (build.js 476, 530, 569, 642, 675). On a runner without it those five did not
+ * skip — they reported FAIL, which is how the 0.16.41 gate run failed on five
+ * rows that were never broken. Reproduced exactly by running this file with the
+ * encoders stripped from PATH; the fix is the table below, not the verbs.
+ *
+ * REQUIRE_ENCODERS=ffmpeg,avifenc turns a skip of a NAMED binary into a
+ * failure. A skip is honest on a laptop and a hole in CI: the workflow installs
+ * ffmpeg precisely so those nine rows run, so a skip there means the install
+ * silently stopped working and the harness is covering eight verbs while
+ * printing green. That includes `aspect`, whose undetected ReferenceError is
+ * the reason this file exists — the one verb least affordable to skip.
  */
 const { execFileSync } = require('child_process');
 const fs = require('fs');
@@ -38,6 +53,11 @@ const SOURCE = path.join(EXAMPLES, 'noise-chart.html');
 
 const has = bin => { try { execFileSync('command', ['-v', bin], { shell: true, stdio: 'ignore' }); return true; }
                      catch (e) { return false; } };
+
+// Binaries whose absence must be a failure rather than a reported skip. Empty
+// by default, so a laptop without avifenc still gets a useful run; set in CI,
+// where a skip means the install broke and coverage silently shrank.
+const REQUIRED = (process.env.REQUIRE_ENCODERS || '').split(',').map(s => s.trim()).filter(Boolean);
 
 // INSIDE the workspace, not os.tmpdir() — and this bracket found the reason on
 // its first run. `vendor` shells out to `bun build`, which resolves `three` from
@@ -71,11 +91,11 @@ const run = (args, cwd) => {
 const ROWS = [
   ['vendor',  ['vendor', scene],                  { stdout: '' }],
   ['bundle',  ['bundle', scene],                  { stdout: 'self-contained' }],
-  ['poster',  ['poster', scene, '0', '320'],      { artifact: base + '.jpg' }],
-  ['sheet',   ['sheet', scene, '240', '0.6'],     { artifact: base + '.sheet.jpg' }],
-  ['aspect',  ['aspect', scene, '0', '240'],      { artifact: base + '.aspect.jpg' }],
-  ['strip',   ['strip', scene, '0', '0.5', '4'],  { artifact: base + '.strip.jpg' }],
-  ['motion',  ['motion', scene, '1'],             { stdout: 'motion:' }],
+  ['poster',  ['poster', scene, '0', '320'],      { artifact: base + '.jpg', needs: 'ffmpeg' }],
+  ['sheet',   ['sheet', scene, '240', '0.6'],     { artifact: base + '.sheet.jpg', needs: 'ffmpeg' }],
+  ['aspect',  ['aspect', scene, '0', '240'],      { artifact: base + '.aspect.jpg', needs: 'ffmpeg' }],
+  ['strip',   ['strip', scene, '0', '0.5', '4'],  { artifact: base + '.strip.jpg', needs: 'ffmpeg' }],
+  ['motion',  ['motion', scene, '1'],             { stdout: 'motion:', needs: 'ffmpeg' }],
   ['probe',   ['probe', scene, '0', 'DURATION'],  { stdout: 'DURATION' }],
   ['frames',  ['frames', scene, '1'],             { artifact: path.join(work, 'frames', 'f00001.png') }],
   ['video',   ['video', scene, '1'],              { artifact: base + '.mp4', needs: 'ffmpeg' }],
@@ -100,7 +120,10 @@ try {
 
   for (const [label, argv, expect] of ROWS) {
     if (expect.needs && !has(expect.needs)) {
-      results.push([label, 'SKIP', `${expect.needs} not on PATH`, null]);
+      const required = REQUIRED.includes(expect.needs);
+      results.push([label, required ? 'FAIL' : 'SKIP',
+        `${expect.needs} not on PATH` + (required ? ' — REQUIRE_ENCODERS says that is a failure here' : ''),
+        required ? false : null]);
       continue;
     }
     const r = run(argv);
@@ -118,7 +141,16 @@ try {
       ok = r.out.includes(expect.stdout);
       why += ok ? '' : `, stdout lacks "${expect.stdout}"`;
     }
-    if (!ok && r.code !== 0) why += `\n      ${r.out.trim().split('\n').slice(-2).join(' / ')}`;
+    // The line that NAMES the failure, not the last two lines. Those are a
+    // blank and the interpreter banner on any Bun crash, so the 0.16.41 gate
+    // log said `/ Bun v1.3.14 (Linux x64)` five times and nothing else, and the
+    // cause had to be re-derived locally. A diagnostic that survives only where
+    // you can already reproduce is not one.
+    if (!ok && r.code !== 0) {
+      const lines = r.out.trim().split('\n').filter(l => l.trim());
+      const named = lines.find(l => /^\s*(error|[A-Za-z]*Error)\b/.test(l));
+      why += `\n      ${named || lines.slice(-2).join(' / ')}`;
+    }
     results.push([label, ok ? 'ok' : 'FAIL', why, ok]);
   }
 } finally {

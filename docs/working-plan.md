@@ -1,4 +1,4 @@
-last updated: 2026-07-30
+last updated: 2026-07-31
 
 # Working plan: instruments, routing, and the viewer
 
@@ -544,6 +544,11 @@ re-checked this pass and should be treated as unknown, not as pending.
 | 7 | the batched kit release | D | **yes** | — | — |
 | 8 | viewer overlay + capture | C | no | 7 | — |
 | 9 | camera bake + the fork | C | no | 8 | — |
+
+**Track E is not in this table.** It was added 2026-07-31, after the status
+column was verified, and adding rows dated differently would silently corrupt a
+column whose whole value is that one date covers every row. Track E carries its
+own ordering, and its E0 gates its own E1 and E2.
 
 **What is actually left of Track A, after the status column:** items 2 and 3.
 They are independent of each other and of everything else, so they can run in
@@ -1431,6 +1436,163 @@ Notes on two of these:
   three times. Measure the mechanical part, leave the judgement to `pad` and to
   naming sub-subjects — `film-language.md` is right that `h` is "the extent that
   must stay in frame," which is a judgement layered on a measurement.
+
+---
+
+## Track E — ffmpeg is an export utility, and the code does not say so (2026-07-31)
+
+**The finding, measured, not argued.** `smoke.js` — the validation instrument —
+has no encoder dependency: the gate ran with no ffmpeg on PATH and reported `all
+scenes pass`. ffmpeg never receives HTML, never runs JS, never drives the
+browser; all 10 encoder call sites read raster files already written to disk by
+Playwright. **Only 3 of those 10 do video or animation work** (`video`→mp4,
+`avif`, `loop`). Six are still-image compositing — scaling one PNG to a JPEG,
+tiling stills into grids — and one (`motion`) differences frames and prints
+numbers, writing no file.
+
+**So the boundary the docs already describe is not implemented.** SKILL.md
+separates step 6 ("the HTML file IS the deliverable") from step 7 ("Export, only
+if the destination cannot run a page"); `delivery.md` and `recordings.md` are
+separate references with explicit "Not here" edges; `VISION.md` does not mention
+export at all. `build.js` presents 13 flat peer verbs where `bundle`, `strip` and
+`avif` look like the same kind of thing. **The CLI surface teaches the wrong
+model, and that is where the confusion actually comes from** — nothing ever
+claimed ffmpeg was core; it is simply everywhere, and ubiquity reads as
+infrastructure.
+
+Ordering note that is easy to get backwards: **E0 makes E1 and E2 safe**, because
+once the allowlist has ratcheted down, "what is export?" stops being a judgment
+call and becomes whatever is left inside it.
+
+### E0. An encoder-boundary ratchet in `selfcheck.js`
+
+Pin the exact set of functions permitted to invoke `ffmpeg`/`avifenc`/`img2webp`,
+and **let that set only shrink** — the idiom this repo already runs twice (the
+measurement-assertion budget, and "1 probe instrument, read-only and
+single-call-site"). Seed it at today's ten sites: that is the honest baseline,
+not a target. Ships with its red arm in `scripts/bracket-selfcheck.js` proving it
+goes red when an encoder call appears outside the allowlist — invariant 6, and
+`static.yml` already runs `selfcheck.js`, so no CI edit is needed.
+
+Each later migration then deletes one function from the allowlist and one
+`needs: 'ffmpeg'` from `bracket-commands.js`, and both checks prove it. **Today
+9 of 17 bracket rows skip without an encoder; the target is 4.** That is a
+measurable finish line, and it exists only because the encoder table was made
+honest first (0.16.42).
+
+### E1. Migrate the non-export verbs off encoders
+
+Cheapest-risk first. **Do not batch these**; each has a different control.
+
+- **`motion` — best candidate, and the one deferred by the first analysis.** It
+  writes no artifact, so there is no visual-quality risk; the output is a number.
+  The refactor is one this function has *already performed once*: the beats
+  manifest rides along as a side product of the shoot via `MANIFEST_OUT`, and the
+  per-frame delta should ride along the same way, leaving `motion` as bookkeeping
+  over a series. Two things must be got right: the metric is the luma-weighted
+  mean of per-channel `|diff|`, **not** `|diff of luma|` (they diverge when
+  channels move oppositely), and ffmpeg's RGB→YUV range and coefficients set the
+  absolute scale that `DEAD_FLOOR = 0.05` lives in. `full` mode can shoot chunks
+  across parallel workers, so frame N-1 may sit on another page — each worker
+  needs a lead-in frame or the deltas break at chunk boundaries. **Deliverable is
+  a calibration control, not a rewrite**: both implementations over the corpus,
+  against the documented fixtures (median 0.16 held-camera, 3.90 moving-camera)
+  and the dead-air verdicts. A `control-builder` job.
+  **Do not propose a self-normalising threshold** — `DEAD_FLOOR` is absolute
+  deliberately, and the reasoning is recorded beside it.
+- **`poster` — small, not free.** Playwright screenshots JPEG natively. The
+  interesting option is rendering at the target width rather than downscaling a
+  larger render, since the geometry is resolution-independent — but scenes *do*
+  respond to viewport (`aspect` exists to show exactly that), so a native render
+  at a different size is a different image, not just a cheaper one. One
+  comparison settles it. Note `poster` is a **delivery** command, not a review
+  one (`instruments.md`: "a delivery command that happens to be frame-exact").
+- **`sheet` / `squint` / `strip` / `aspect` — measure before writing anything.**
+  The squint strip is a 480→90 downscale, where filter choice is load-bearing for
+  the instrument's whole job, and ffmpeg's scaler is better characterised than
+  canvas resampling. Generate both across the corpus and look first. If canvas
+  reads worse for silhouette, keep ffmpeg here or build a box-filter chain.
+
+### E2. The verb taxonomy, after E0
+
+`build.js:2` declares the pipeline's terminus to be an mp4, and the verb set
+fossilised around it: **`all` = `bundle` + `frames` + `video`** (it means "the
+full path to an mp4", not "all artifacts"); **`video` takes `<name>`, not a
+scene**, so a pipeline stage leaks into the CLI as a peer verb; **`frames` exists
+largely because `video` needs a predecessor**; and `video`/`avif`/`loop`/`all`
+are four naming schemes for what SKILL.md calls "four peer formats… chosen at
+spec time, not encode time" — i.e. the docs treat format as a parameter of one
+decision while the code makes it three verbs.
+
+**The review verbs are not fossils and should not be collapsed.**
+`instruments.md` documents distinct measured blind spots for each — sheet's fixed
+fraction, strip bracketed both ways, motion's four limits. Each answers a
+question the others cannot.
+
+Likely surface: core (`vendor`, `bundle`) · authoring measurement (`probe`) ·
+review (`sheet`, `strip`, `aspect`, `motion`) · delivery (`poster`, the scene) ·
+**one** encoder-gated export operation taking a format, with `frames` internal.
+**This is a breaking CLI change** — `build.js all` appears in SKILL.md and ships
+to every install cache — so it needs a version bump, a changelog entry and
+probably a deprecation window, not a silent rename.
+
+### E3. Framing remediation, split by whether the code has earned it
+
+Three parallel sweeps, 2026-07-31, over shipped prose, code comments, and the
+repo-dev surface. **Clean, zero findings:** `bibles.md`, `characters.md`,
+`materials.md`, `glossary.md`, `instruments.md`, `plugin/agents/film-reviewer.md`,
+`backend.js`, `smoke.js`, every bracket but `commands`, all of `scripts/`, all
+three workflows, `.claude/agents/*`, `.claude/rules/*`, `audit-claims`.
+`examples/README.md`, `install-hooks.sh` and `stage-films.sh` state the framing
+*correctly* and are the language to reuse. **Not a repo-wide infection** — it
+concentrates in `build.js` (7 of 9 code findings), `plugin/README.md`,
+`method.md`, and SKILL.md's opener.
+
+**Fix now — wrong regardless of what the code does:**
+
+| where | what |
+|---|---|
+| 8 scene files, CONTRACT block | *"what makes the HTML loop and the MP4 render provably identical"* — false twice; see R4.4's fence note |
+| `method.md:51-52, 849, 962` | determinism justified by "video/HTML parity", **twice as section headers**, in the file read before building |
+| `CLAUDE.md:56-58` + `docs/orientation.md:13-14` | same inversion; orientation.md is the literal text pasted to every context-free subagent |
+| `physics-bake-proposal.md:20-23` | *"HTML/MP4 parity holds"* listed as a surviving property — **asserts a check that does not exist**, in the doc governing the next phase |
+| `docs/addressing.md:38-40` | quotes the scene-template claim as the foundational definition of `t` |
+| `plugin/README.md:5-8, 15-17` | *"then renders that same file to video"* — the front door |
+| `SKILL.md:26-28` | opener contradicts its own steps 6 and 7 |
+| `build.js:2, 41-42, 288-291, 318, 479-482`; `shoot.js:190` | mp4 terminus; "deliverables (frames/all)"; "the pipeline's own output"; "Sizing is the whole game"; poster's README-only guidance |
+| `recordings.md:3-6` | scope named too narrowly — GitHub is one instance of "a README, a chat, a slide" |
+| `delivery.md:29-31` | "co-equal delivery option" now reads as a ceiling against its own opening |
+| `docs/plan.md:210-212` | "delivery forensics" bucketed with the determinism kit as equal-weight inheritance |
+| `build.js` USAGE + header | group the verbs core/review/export — true *today*, independent of E1 |
+
+**Wait for the code — TRUE today, and editing them first would make the docs lie
+and delete the only signal the structure is wrong:** `CLAUDE.md:167`,
+`build.js:19`, `plugin/README.md:40-42`, `SKILL.md:226`. All four state ffmpeg as
+a baseline dependency, which is accurate while `sheet`/`strip`/`aspect`/`motion`/
+`poster` still call it. They change when E1 lands. Note `CLAUDE.md:167` already
+scopes `avifenc` "for AVIF loops" and `img2webp` "for WebP" in the same sentence —
+the pattern exists, it just was not applied to the one with seven call sites.
+
+**Unread, and the gap is deliberate rather than silent:**
+`docs/predecessor-record.md` was read at ~2100 of 2770 lines. It is explicitly
+bounded as history ("Read this as history, not as current spec"), so its findings
+are origin evidence rather than live drift — but that origin is the point: it
+carries the predecessor's marquee claim four times, and near-identical phrasing
+is live and unqualified in this repo today.
+
+### E4. `audit-claims` does not cover either README
+
+Its scope is reference docs, `CLAUDE.md`, load-bearing comments in
+`templates/*.js`, `site/index.html`, and — verified — `.claude/agents/*` and
+`.claude/rules/*`. **`plugin/README.md` and the root `README.md` are in none of
+it**, and `plugin/README.md` is where the worst drift found on 2026-07-31 lives.
+The asymmetry is the argument: `site/index.html` was *deliberately added* at
+0.16.30 because "the site is a claim surface". `plugin/README.md` is a claim
+surface too **and it ships into every install cache** — wider distribution,
+no coverage. One line in the skill's scope. Probably the cheapest item on this
+track. Open question worth settling in the same edit: `plugin/agents/` is not
+`.claude/agents/`, and whether the routing covers it should be explicit rather
+than inferred, for a file that ships.
 
 ---
 

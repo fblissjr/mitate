@@ -7,6 +7,24 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.46
+
+### changed
+
+**The harness tier reports by tier — Track E's E5.** `8 verb path(s) exercised,
+9 skipped` read as nine missing tests. It was telling two opposite stories with
+one number: the four export rows are **deliberately** not gated, and the five
+review rows are encoder-blocked **accidentally**, which is a real hole. One
+figure cannot say both.
+
+It now prints `core 4/0`, `review 0 exercised / 5 skipped`, `export 0/4` and
+`red 4/0`, each with what its state means — and the review line says `HOLE`
+outright when it is skipped, naming Track E1 as what closes it.
+
+**This makes a coverage gap visible that the flat count hid: CI exercises none
+of the review instruments.** Those are the tools the build-review loop actually
+runs on, and the number that concealed it was green.
+
 ## 0.16.45
 
 ### added

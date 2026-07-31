@@ -157,14 +157,45 @@ try {
   fs.rmSync(work, { recursive: true, force: true });
 }
 
+// TIERS. A flat "N exercised, M skipped" reads as M missing tests, and that is
+// the wrong story in two different directions at once: the export rows are
+// DELIBERATELY not gated (owner call — a rotted export verb costs one annoyed
+// moment; a rotted review instrument silently corrupts the loop this project
+// teaches), while the review rows are encoder-blocked ACCIDENTALLY and that is a
+// real hole. One number cannot say both. Grouping is what makes the difference
+// legible, and it is why this reports per tier.
+const TIER = {
+  core:   ['vendor', 'bundle', 'probe', 'frames'],
+  review: ['poster', 'sheet', 'aspect', 'strip', 'motion'],
+  export: ['video', 'all', 'avif', 'loop'],
+};
+const tierOf = label => label.startsWith('(red)') ? 'red'
+  : Object.keys(TIER).find(k => TIER[k].includes(label)) || 'other';
+
 let wrong = 0, skipped = 0;
+const tally = {};
 for (const [label, verdict, why, ok] of results) {
-  if (verdict === 'SKIP') skipped++;
-  else if (!ok) wrong++;
+  const t = tierOf(label);
+  (tally[t] ||= { ran: 0, skipped: 0 });
+  if (verdict === 'SKIP') { skipped++; tally[t].skipped++; }
+  else { tally[t].ran++; if (!ok) wrong++; }
   console.log(`${label.padEnd(24)} ${verdict.padEnd(7)} ${why}`);
 }
 const ran = results.length - skipped;
+const line = (name, note) => {
+  const t = tally[name] || { ran: 0, skipped: 0 };
+  console.log(`  ${name.padEnd(7)} ${String(t.ran).padStart(2)} exercised, `
+            + `${String(t.skipped).padStart(2)} skipped   ${note}`);
+};
 console.log(`\n${ran} verb path(s) exercised, ${skipped} skipped for a missing encoder`);
+line('core',   'no encoder needed — this tier must always be fully exercised');
+line('review', tally.review?.skipped
+  ? 'HOLE: encoder-blocked, not by design. These are the instruments the build-review'
+    + '\n                                   loop runs on, and CI exercises none of them. '
+    + 'Track E1 closes it.'
+  : 'the build-review loop, fully exercised');
+line('export', 'DELIBERATELY not gated — no encoder belongs in CI (working-plan Track E)');
+line('red',    'the dispatch must refuse these');
 
 if (wrong) {
   console.log(`\n${wrong} row(s) did not behave as specified — a build.js verb is broken, or the`

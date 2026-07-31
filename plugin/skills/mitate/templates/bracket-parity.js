@@ -80,10 +80,107 @@ try {
   fs.rmSync(dir, { recursive: true, force: true });
 }
 
+// ---------------------------------------------------------------------------
+// --parity-fix: the same subject, but the command WRITES, so the arms assert
+// what happened to the files rather than only an exit code.
+//
+// THE DANGEROUS FAILURE IS A PARTIAL WRITE, not a wrong verdict. A refusal that
+// has already rewritten three of eight carriers leaves the corpus in a state no
+// check describes and no author expects — worse than either propagating or
+// declining cleanly. So every refusal arm below asserts the target is
+// BYTE-UNCHANGED, not merely that the exit code was non-zero.
+//
+// Two guarantees come from the plan and are not negotiable, one arm each:
+// the source is NAMED and never inferred from a majority (an unnamed run must
+// refuse rather than guess), and a malformed source is refused.
+const DRIFTED = FENCE.replace('const kit = 1;', 'const kit = 2;');
+const MANGLED = FENCE.replace('KERNEL-END ==== */', 'KERNEL-ENDX ==== */');
+const SOLVER = `/* ==== SOLVER-START ====
+   the cinematography solver
+   ======================================================================= */
+const solve = 1;
+/* ==== SOLVER-END ==== */`;
+const SOLVER_MANGLED = SOLVER.replace('SOLVER-END ==== */', 'SOLVER-ENDX ==== */');
+
+// [label, files, args, expect]
+//   expect.code  — 'zero' or 'nonzero'
+//   expect.b     — 'unchanged' (byte-identical to what was written) or 'canonical'
+const FIX_ARMS = [
+  ['fix: propagates from named source',
+    { 'a.html': FENCE, 'b.html': DRIFTED }, ['--from', 'a.html'], { code: 'zero', b: 'canonical' }],
+  ['fix: refuses without --from',
+    { 'a.html': FENCE, 'b.html': DRIFTED }, [], { code: 'nonzero', b: 'unchanged' }],
+  ['fix: refuses malformed source',
+    { 'a.html': MANGLED, 'b.html': FENCE }, ['--from', 'a.html'], { code: 'nonzero', b: 'unchanged' }],
+  ['fix: refuses malformed target',
+    { 'a.html': FENCE, 'b.html': MANGLED }, ['--from', 'a.html'], { code: 'nonzero', b: 'unchanged' }],
+  ['fix: refuses a source that is not a file',
+    { 'a.html': FENCE, 'b.html': DRIFTED }, ['--from', 'nope.html'], { code: 'nonzero', b: 'unchanged' }],
+  ['fix: idempotent on an already-clean corpus',
+    { 'a.html': FENCE, 'b.html': FENCE }, ['--from', 'a.html'], { code: 'zero', b: 'unchanged' }],
+  // THE PARTIAL-WRITE ARM, and the reason it needs three files. Every arm above
+  // has exactly one target, where "refused" and "wrote as it went, then hit the
+  // bad file" are indistinguishable — b is the only target, so a refusal on b
+  // leaves b unchanged either way. Here b is a GOOD target that a write-as-you-go
+  // implementation would rewrite before reaching the malformed c. If b comes
+  // back modified, validation is not completing before the first write, and a
+  // real run would leave the corpus half-propagated with nothing reporting it.
+  ['fix: malformed target leaves the GOOD target untouched too',
+    { 'a.html': FENCE, 'b.html': DRIFTED, 'c.html': MANGLED }, ['--from', 'a.html'],
+    { code: 'nonzero', b: 'unchanged' }],
+  // THE ARM THAT ACTUALLY PINS THE MALFORMED-SOURCE GUARD, added after a
+  // mutation test showed the arm above it did not. Neutralise the guard and
+  // 'refuses malformed source' STILL passes, because a wholly-mangled source
+  // extracts zero blocks and gets refused by the no-blocks fallback instead —
+  // the arm asserts the outcome but proves nothing about the guard.
+  //
+  // This source has a GOOD KERNEL and a MANGLED SOLVER, so `blocks` is
+  // non-empty and the fallback never fires. Without the guard the run
+  // propagates KERNEL, silently skips the broken fence, and exits 0 having
+  // hidden a corrupt marker in the file it was told to treat as canonical.
+  ['fix: refuses a source whose OTHER fence is malformed',
+    { 'a.html': FENCE + '\n' + SOLVER_MANGLED, 'b.html': FENCE + '\n' + SOLVER },
+    ['--from', 'a.html'], { code: 'nonzero', b: 'unchanged' }],
+];
+
+const fixDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mitate-parityfix-'));
+try {
+  for (const [label, files, args, expect] of FIX_ARMS) {
+    for (const [name, body] of Object.entries(files)) {
+      fs.writeFileSync(path.join(fixDir, name), scene(body));
+    }
+    const bPath = path.join(fixDir, 'b.html');
+    const before = fs.readFileSync(bPath, 'utf8');
+    let code = 0;
+    try {
+      // Scene list derived from the arm's own fixture, so an arm can add a third
+      // file without the invocation silently continuing to scan only two.
+      execFileSync('bun', ['run', SMOKE, '--parity-fix', ...args, ...Object.keys(files)],
+        { cwd: fixDir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+    } catch (e) { code = e.status ?? 1; }
+    const after = fs.readFileSync(bPath, 'utf8');
+
+    const codeOk = expect.code === 'zero' ? code === 0 : code !== 0;
+    // 'canonical' means b's fenced block now matches a's byte for byte. Compare
+    // the BLOCK, not the file: the rest of b is legitimately its own.
+    const blockOf = t => (t.match(/\/\* ==== KERNEL-START ====[\s\S]*?\/\* ==== KERNEL-END ==== \*\//) || [null])[0];
+    const bOk = expect.b === 'unchanged'
+      ? after === before
+      : blockOf(after) !== null && blockOf(after) === blockOf(fs.readFileSync(path.join(fixDir, 'a.html'), 'utf8'));
+    const ok = codeOk && bOk;
+    if (!ok) wrong++;
+    console.log(`${label.padEnd(42)} exit ${code}  b:${expect.b === 'unchanged' ? (after === before ? 'unchanged' : 'MODIFIED') : (bOk ? 'canonical' : 'NOT-canonical')}`
+      + `${ok ? '' : `  BRACKET FAILED (expected exit ${expect.code}, b ${expect.b})`}`);
+  }
+} finally {
+  fs.rmSync(fixDir, { recursive: true, force: true });
+}
+
 if (wrong) {
   console.log(`\n${wrong} arm(s) did not behave as specified — the parity check is not doing`
-    + ` what this bracket claims. A drifted fence would ship. Do not trust a green`
-    + ` --parity-only until this is 0.`);
+    + ` what this bracket claims. A drifted fence would ship, or a refusal would leave`
+    + ` carriers half-rewritten. Do not trust a green --parity-only or --parity-fix`
+    + ` until this is 0.`);
   process.exit(1);
 }
 console.log('\nall arms as specified');

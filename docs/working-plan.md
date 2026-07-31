@@ -1859,6 +1859,24 @@ interpret. Plugin content, so it carries the cascade. Small, and it is the
 difference between a gate that looks 47% covered and one that says what it
 covers and why.
 
+## `bracket-noise.js` reports a false red on macOS (2026-07-31)
+
+Found while verifying R4.4, and confirmed pre-existing by stashing the change and
+re-running against a clean `HEAD`: the **`claims webgpu while falling back`** arm
+fails on this machine and passes in CI. It is not a smoke defect. The arm needs a
+scene that *claims* WebGPU and then *falls back*, and on a Mac with a real WebGPU
+adapter no fallback happens — so smoke correctly passes the fixture and the arm,
+which expects a failure, calls that wrong. On the Linux gate there is no adapter
+(`No available adapters` → WebGL2), the fallback is real, and the arm passes.
+
+So the fixture's premise is environment-dependent and the bracket does not say
+so. **The cost is the one this repo cares about most: a control that cries wolf
+on the developer's own machine is a control people learn to skip**, and this one
+sits in the same directory as four that are honest. Fix by forcing the fallback
+rather than assuming it (or by skipping the arm, loudly, where an adapter
+exists) — a silent skip would be the worse of the two and is the failure
+`bracket-commands` already had.
+
 ---
 
 ## Deferred, with the trigger that revives each

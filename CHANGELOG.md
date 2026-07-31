@@ -7,6 +7,51 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.43
+
+### added
+
+**`smoke.js --parity-fix --from <canonical.html>` — R4.4.** `--parity-only`
+reports that the fenced copies disagree; this makes them agree, from a source you
+name. 4,611 lines are held byte-identical by hand across the carriers, and
+hand-propagation is the tax that measurement made visible.
+
+Two guarantees from the plan, both bracketed:
+
+- **The source is named, never inferred.** No majority vote, no "most common
+  block wins" — a majority is precisely how a block that drifted into three
+  carriers rewrites the two that were still right, and reports success doing it.
+  No `--from`, no write.
+- **A malformed source is refused**, and so is a malformed target. `-START`
+  without a well-formed block is the mangled-marker shape that made this check go
+  quiet once already.
+
+**And one property that outranks both: every file and every fence validates
+before the first byte is written.** A refusal that has already rewritten three of
+eight carriers leaves the corpus in a state no check describes — worse than
+either finishing or declining cleanly.
+
+A file that does not carry a fence is left alone, never given one: removing your
+markers is how a scene legitimately leaves the parity set.
+
+### fixed
+
+**Two holes in `bracket-parity.js`'s own new arms, both found by mutation testing
+rather than by review.** The bracket now runs twelve arms.
+
+The partial-write property had no arm that could see it: every fix arm had a
+single target, where "refused" and "wrote as it went, then hit the bad file" are
+indistinguishable. The arm added for it uses three files, and mutating the
+implementation to write-as-you-go turns it red — the only arm that catches that.
+
+And `refuses malformed source` passed with the guard neutralised, because a
+wholly-mangled source extracts zero blocks and gets refused by the no-blocks
+fallback instead. It asserted the outcome and proved nothing about the guard.
+The hole behind it is real: a source with a good `KERNEL` and a mangled `SOLVER`
+has a non-empty block set, so the fallback never fires, and without the guard the
+run propagates one fence while silently skipping the broken one. That case now
+has its own arm, and it is the only arm that fails when the guard is removed.
+
 ## 0.16.42
 
 ### fixed

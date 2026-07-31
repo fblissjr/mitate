@@ -8,6 +8,15 @@
 //
 //   bun run smoke.js                 -> checks every *.html in cwd (skips .bundled)
 //   bun run smoke.js <scene.html>... -> checks the named scenes
+//   bun run smoke.js --parity-fix --from <canonical.html> [scene.html...]
+//                                    -> WRITES: propagates every fenced block
+//                                       from the NAMED source into the other
+//                                       carriers. The source is never inferred,
+//                                       a malformed source or target refuses the
+//                                       whole run, and nothing is written until
+//                                       every file has validated. Read the diff
+//                                       before committing: this is propagation,
+//                                       not review.
 //   bun run smoke.js --parity-only [scene.html...]
 //                                    -> marker parity + template integrity ONLY.
 //                                       No browser, ~0.2s. For a pre-commit, CI's
@@ -872,7 +881,18 @@ async function checkScene(browser, file) {
   // bash re-implementation of it had already diverged from this one on its
   // first day (it dropped a file with a mangled START marker silently).
   const parityOnly = argv.includes('--parity-only');
-  let scenes = argv.filter(a => a !== '--parity-only');
+  // --parity-fix takes a VALUE flag, so the scene list can no longer be built
+  // by filtering one string out of argv — `--from a.html` would leave `a.html`
+  // in the list and the canonical would be treated as a scene to scan.
+  const parityFix = argv.includes('--parity-fix');
+  let fixFrom = null;
+  let scenes = [];
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === '--parity-only' || a === '--parity-fix') continue;
+    if (a === '--from') { fixFrom = argv[++i]; continue; }
+    scenes.push(a);
+  }
   if (!scenes.length) {
     scenes = fs.readdirSync(process.cwd())
       // `.smoke-*` are this script's own scratch copies. Excluded explicitly:
@@ -882,6 +902,95 @@ async function checkScene(browser, file) {
                    && !path.basename(f).startsWith('.smoke-'));
   }
   if (!scenes.length) { console.error('no scenes to check'); process.exit(1); }
+
+  // --parity-fix --from <canonical>: the WRITE half of parity. --parity-only
+  // reports that the copies disagree; this makes them agree, from a source you
+  // NAME. 4,611 lines are held byte-identical by hand across the carriers, and
+  // hand-propagation is the tax that measurement made visible.
+  //
+  // TWO NON-NEGOTIABLES, both bracketed in bracket-parity.js:
+  //
+  //   * THE SOURCE IS NAMED, NEVER INFERRED. There is no majority vote and no
+  //     "most common block wins". A majority is precisely how a block that
+  //     drifted into three files rewrites the two that were still right — the
+  //     tool would launder a regression into every carrier and report success.
+  //     No --from, no write.
+  //   * A MALFORMED SOURCE IS REFUSED, and so is a malformed target. `-START`
+  //     without a well-formed block is the mangled-marker shape that already
+  //     made this check go quiet once (see the parity section below); reading a
+  //     block out of one, or writing a good block into one, would corrupt a
+  //     file that is already broken in a way nothing else reports.
+  //
+  // AND ONE PROPERTY THAT OUTRANKS BOTH: every file and every fence is
+  // validated BEFORE the first byte is written. A refusal that has already
+  // rewritten three of eight carriers leaves the corpus in a state no check
+  // describes and no author expects — worse than either finishing or declining
+  // cleanly. That is why this collects `writes` and applies them at the end.
+  if (parityFix) {
+    const FENCES = ['KERNEL', 'SOLVER', 'RIG', 'DRIVER', 'CHARACTER', 'HTML'];
+    const reFor = name => name === 'HTML'
+      ? new RegExp(`<!-- ==== ${name}-START ==== -->[\\s\\S]*?<!-- ==== ${name}-END ==== -->`)
+      : new RegExp(`\\/\\* ==== ${name}-START ====[\\s\\S]*?\\/\\* ==== ${name}-END ==== \\*\\/`);
+    const refuse = msg => { console.error(`parity-fix: ${msg}`); process.exit(1); };
+
+    if (!fixFrom) {
+      refuse('need --from <canonical.html>. The source is named, never inferred — there is no '
+           + 'majority vote here, because a block that drifted into three carriers would '
+           + 'otherwise rewrite the two that were correct, and report success doing it.');
+    }
+    let srcText = null;
+    try { srcText = fs.readFileSync(fixFrom, 'utf8'); }
+    catch (e) { refuse(`cannot read source ${fixFrom} — ${e.code || e.message}`); }
+
+    const blocks = new Map();
+    for (const name of FENCES) {
+      const RE = reFor(name);
+      if (srcText.includes(`${name}-START`) && !RE.test(srcText)) {
+        refuse(`source ${fixFrom} has ${name}-START but no well-formed ${name} block — refusing to `
+             + `propagate from a malformed source. Repair BOTH markers there first; a mangled END `
+             + `reads identically to a missing one here.`);
+      }
+      const m = srcText.match(RE);
+      if (m) blocks.set(name, m[0]);
+    }
+    if (!blocks.size) refuse(`source ${fixFrom} carries no fenced block — nothing to propagate`);
+
+    const targets = scenes.filter(f => path.resolve(f) !== path.resolve(fixFrom));
+    const writes = [];
+    for (const f of targets) {
+      let txt = null;
+      try { txt = fs.readFileSync(f, 'utf8'); }
+      catch (e) { refuse(`cannot read ${f} — ${e.code || e.message}`); }
+      let next = txt;
+      for (const [name, block] of blocks) {
+        const RE = reFor(name);
+        if (txt.includes(`${name}-START`) && !RE.test(txt)) {
+          refuse(`${f} has ${name}-START but no well-formed ${name} block — refusing the WHOLE run `
+               + `rather than rewriting some carriers and not others. Nothing has been written.`);
+        }
+        // A file that does not carry this fence is LEFT ALONE, never given one:
+        // removing your markers is how a scene legitimately leaves the parity
+        // set, and re-adding them would drag it back in without being asked.
+        // Function replacement, not a string: `$&` and `$1` inside a fenced
+        // block would otherwise be read as replacement patterns and silently
+        // mangle the very bytes this exists to keep identical.
+        if (RE.test(next)) next = next.replace(RE, () => block);
+      }
+      if (next !== txt) writes.push([f, next]);
+    }
+
+    // Nothing above this line has written anything.
+    for (const [f, next] of writes) fs.writeFileSync(f, next);
+    if (writes.length) {
+      console.log(`parity-fix: propagated ${blocks.size} fence(s) from ${fixFrom} into ${writes.length} file(s):`);
+      for (const [f] of writes) console.log('       ' + f);
+      console.log('re-run --parity-only to confirm, and read the diff before committing — this '
+                + 'command is propagation, not review.');
+    } else {
+      console.log(`parity-fix: nothing to do — every carrier scanned already matches ${fixFrom}`);
+    }
+    process.exit(0);
+  }
 
   // VENDOR_CACHE: the three bundle is built at most ONCE per run. The embed
   // happens per-scene inside ensureVendor during the bundle step below, and

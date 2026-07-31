@@ -1,9 +1,9 @@
-last updated: 2026-07-29
+last updated: 2026-07-30
 
 # Predecessor record: explainer-video
 
 mitate's measured inheritance, consolidated. These four documents were written
-for **explainer-video**, the frozen predecessor that still ships from the
+for **explainer-video**, the frozen predecessor that no longer ships from the
 `fb-claude-skills` marketplace. They are reproduced here **verbatim** — original
 wording, original dates — because mitate's founding plan commits to importing
 their conclusions rather than re-learning them, and a record that lives only in

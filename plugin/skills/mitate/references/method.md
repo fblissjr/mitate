@@ -22,8 +22,10 @@ Three companion references hold what this file deliberately does not:
   determinism rules, recorder mechanics, r185 API notes, measured brackets.
 - `materials.md` — the material packs and their procedural recipes.
 - `bibles.md` — the look as ONE object: palette, exposure, post, lens, cut pace.
-- `delivery.md` — the GitHub delivery forensics: format tradeoffs, encoder
-  settings, the content-type mechanism and its evidence chain.
+- `delivery.md` — the scene as the deliverable: bundle economics over the wire,
+  hosting and mount policy, posters, which artifact goes on which surface.
+- `recordings.md` — the lossy-copy path, for GitHub only: format tradeoffs,
+  encoder settings, the content-type mechanism and its evidence chain.
 
 **Map.** Six top-level sections. Deliberately unlinked — a heading map
 costs nothing and cannot dangle, where hand-written anchors ship into an install
@@ -725,11 +727,33 @@ tells you its beak tip sits **+4.37** from its origin. Authors reach for the
 number they have, because it is the only one written down.
 
 So measure it. `seekTo` purity plus classic-script scope means a probe can read
-the scene's own objects with zero instrumentation:
+the scene's own objects with zero instrumentation — verified 2026-07-30: a
+scene's top-level `let` resolves by name inside `page.evaluate` and is *not* on
+`window`. There is a command for it, and using it is the point:
+
+```bash
+bun run build.js probe <scene.html> "beatAt('boop',.55)" 'sep(bear.head, hivePiv)'
+#   -> {"x":-0.3202,"y":-0.7606,"z":-1.0578,"touching":true}
+```
+
+`<when>` is an expression in the scene's own scope, so a probe is addressed by
+beat like everything else; a raw second is accepted and is what rots when a beat
+is retimed. `sep(a,b)` reports the per-axis gap — **negative means overlap** —
+and `bb`, `proj` and `reach` cover the rest of this section. `bb` takes a rig or
+an `Object3D`: `buildCharacter` returns `{root, body, head, ...}`, so
+`setFromObject(bear)` throws, which cost a session once.
+
+**This existed as a technique and not as a tool for the whole life of the
+project, and it was re-derived or skipped every time.** One shipped film carried
+a constant whose comment cited a `probe.js` that never existed — the number was
+right and nobody could check it. That is the failure mode the command retires.
+
+Underneath, it is still just this, if you need something the prelude does not
+cover:
 
 ```js
 // in page.evaluate, at the frame the contact is supposed to happen
-const bb = o => { const b = new THREE.Box3().setFromObject(o); return b; };
+const bb = o => new THREE.Box3().setFromObject(o.root || o);
 const beakTip   = bb(beak).max.x   - bird.position.x;   // +4.37
 const botFront  = bb(botTorso).min.x - bot.position.x;  // -1.46
 // contact requires separation === beakTip + |botFront|

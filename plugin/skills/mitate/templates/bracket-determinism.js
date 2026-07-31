@@ -28,9 +28,15 @@
  *   random seeded at load   in-session: same   across reload: DIFFERS  caught ONLY by reload
  *
  * The third row is the whole point: before 0.16.9 it read `all scenes pass`.
+ *
+ * Re-measured 2026-07-30 on macOS/WebGL2 after switching the capture to
+ * seekSynced: same three verdicts, all rows as specified. The verdicts are a
+ * property of the injections, so the pattern change was expected to leave them
+ * alone -- it was run before AND after precisely because "expected to" is not a
+ * measurement.
  */
 const { chromium } = require('playwright-core');
-const { chromiumPath, angleArgs, settle } = require(require('path').join(__dirname, 'backend.js'));
+const { chromiumPath, angleArgs, settle, seekSynced } = require(require('path').join(__dirname, 'backend.js'));
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
@@ -75,8 +81,16 @@ let wrong = 0;
       }
       fs.writeFileSync(file, body);
       const url = 'file://' + file + '?record=1';
+      // seekSynced + settle, because that is what the arm under test does
+      // (smoke.js's determinism loop, 0.16.28). A bracket that captures
+      // differently from the check it brackets is measuring a configuration
+      // nothing ships: this file used a bare seek on BOTH sides until 0.16.30,
+      // which passed here while the shipped path had already moved on, so the
+      // control silently stopped covering the code it names. Symmetry is not
+      // enough -- smoke.js's own reload comment records that mixing the two
+      // manufactures a spurious across-reload failure.
       const shot = async page => {
-        await page.evaluate(`window.seekTo(${T})`);
+        await seekSynced(page, T);
         await settle(page);
         return sha(await page.screenshot());
       };
@@ -85,7 +99,7 @@ let wrong = 0;
       await page.waitForFunction('window.sceneReady === true', { timeout: 20000 });
       await page.evaluate('window.stopPlayback()');
       const a = await shot(page);
-      await page.evaluate('window.seekTo(window.DURATION)');
+      await seekSynced(page, 'window.DURATION');        // the seek away is a capture site too
       const b = await shot(page);                       // in-session: away and back
       await page.goto(url);                             // and across a reload
       await page.waitForFunction('window.sceneReady === true', { timeout: 20000 });

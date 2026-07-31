@@ -1,4 +1,4 @@
-last updated: 2026-07-25
+last updated: 2026-07-30
 
 # mitate
 
@@ -9,11 +9,21 @@ a single file that opens in any browser. Not a video: no player, no build step,
 and the geometry is drawn live on every frame.
 
 It is a pipeline an agent drives rather than a one-shot generator: it reshoots
-parts, validates on three axes, and gets better over time. Every scene is
-deterministic — a pure function of time `t`, so the same `t` always renders the
-same frame. The whole surface tooling touches is a handful of `window.*`
-exports at the end of every scene — [the window contract](#the-window-contract),
-shown below.
+parts, validates on three axes, and gets better over time.
+
+**Every scene is a pure function of `t` — and `t` is a position, not a clock.**
+It is an address you evaluate, not a cursor you advance: nothing ever asks what
+time it is, only what the scene looks like at this address. Any `t`, in any
+order, as many times as you like, always the same pixels.
+
+That one property is what everything else is built on. The recorder shoots frames
+out of order and in parallel. A check seeks away and back and compares bytes, so
+a regression is detectable rather than arguable. A viewer scrubs backwards. And
+duration is free: a frame at `t=18000` costs what a frame at `t=1` costs, and the
+file is the same size either way, because the duration is a number in a table.
+
+The whole surface tooling touches is a handful of `window.*` exports at the end
+of every scene — [the window contract](#the-window-contract), below.
 
 The tooling tries to abstract all this cleanly, but clean abstraction is nearly
 impossible here — so treat it as a bootstrap to personalize. When the film you
@@ -32,6 +42,10 @@ not the ceiling.
 
 *mitate* (見立て): to see one thing as another — the Japanese aesthetic of
 representing one thing through another. Here, seeing any input as a scene.
+
+**Why it is built this way, and why determinism comes first**, is
+[`VISION.md`](VISION.md) — one page, and the thing to read before deciding this
+project is just a video generator.
 
 ## Why do it this way, and what it costs
 
@@ -52,7 +66,9 @@ roughly 700px of frame width.
 **Where it is.** There's a balance in building in AI between "unfinished" and
 "over-engineered", and this sits on the unfinished side (I think). Everything
 here runs 12 to 21 seconds — kept short so the examples open as live HTML on
-ordinary devices; nothing caps duration, but longer has not been shipped.
+ordinary devices. **Nothing caps duration**: a 60-second film has been built, and
+a frame at t=18000 costs what a frame at t=1 costs, because the scene graph is
+built once and every frame restates it rather than accumulating.
 Characters are one skeleton family. I don't know yet whether this is useful — it
 is fun to tinker with and see what it can do, and that is why it is public.
 
@@ -60,7 +76,13 @@ is fun to tinker with and see what it can do, and that is why it is public.
 
 Everything the recorder, the smoke gate, and the showcase site can do, they do
 through a few `window.*` exports at the end of every scene — never by reaching
-into scene internals. This is the driver block from
+into scene internals.
+
+**It is tiered, which is the part usually missed.** `smoke.js` hard-asserts four
+names — `seekTo`, `DURATION`, `stopPlayback`, `sceneReady` — and reads the rest
+behind fallbacks, so a scene missing `BEATS` is degraded rather than broken.
+`smoke.js`'s `CONTRACT` and `SOFT_CONTRACT` are the authority; this section is
+the reader-facing view of them. This is the driver block from
 [`gearbox.html`](plugin/skills/mitate/examples/gearbox.html) (search for
 `window.seekTo`). The excerpt is abridged and may drift out of sync as scenes
 evolve — the scene file is the source of truth:
@@ -100,9 +122,11 @@ approval process flows"*, *"make a boss-intro cutscene for this creature"*,
 *"turn docs/data-flywheel.md into an explainer"*, *"make this joke an animated
 meme"*.
 
-The shipped examples run 12 to 21 seconds. A film lasts exactly as long as the
-beats written for it, so there is no built-in ceiling — but nothing longer has
-been built or gated yet, so treat longer as untested rather than promised.
+The shipped examples run 12 to 21 seconds; a 60-second one has been built. A film
+lasts exactly as long as the beats written for it, and the HTML file is the same
+size either way, because the duration is a number in a table. What grows with
+length is recording time and the number of beats to author and review — not the
+artifact, the memory, or the cost of a frame.
 
 **WebGPU is not required** — scenes use three.js `WebGPURenderer`, which falls
 back to WebGL2 transparently, so any WebGL2 browser plays one.
@@ -113,7 +137,7 @@ scene needs `bun` to embed three into the file — skipping that is recoverable,
 since every `build.js` command embeds automatically (a direct `shoot.js` run is
 the one path that does not). Rendering to MP4 or
 AVIF, and running the review instruments, needs `bun`, ffmpeg and a Chromium.
-See [`plugin/README.md`](plugin/README.md#requirements).
+See [`plugin/README.md`](plugin/README.md#installation).
 
 That local dependency is worth knowing if you use Claude somewhere other than
 Claude Code: Cowork and cloud sessions load the skills enabled on your claude.ai
@@ -138,8 +162,10 @@ staged into `site/films/` at deploy. Edit them where they live.
 Phases 0–2 are complete and gated: the node-stack templates, recorder, and
 instruments on both backends; the material packs and style bibles; the character
 scaffold, demonstrated by `menagerie` and delivered by `bear-and-bees`. A chart
-tier sits below the films for isolating shader primitives. Next by priority is
-Phase 4, the physics bake. Architecture and phase gates in
+tier sits below the films for isolating shader primitives. Phase 4, the physics
+bake, is next by phase priority — though the repo is currently mid-migration and
+[`docs/restructure-2026-07.md`](docs/restructure-2026-07.md) is the live queue.
+Architecture and phase gates in
 [`docs/plan.md`](docs/plan.md); the current ranked work — instruments, doc
 routing, and what is deliberately deferred with the trigger that revives it — in
 [`docs/working-plan.md`](docs/working-plan.md); version history in

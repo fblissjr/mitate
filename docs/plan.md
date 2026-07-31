@@ -1,4 +1,4 @@
-last updated: 2026-07-29
+last updated: 2026-07-30
 
 # mitate: founding plan
 
@@ -56,8 +56,13 @@ conditions have changed; the fourth was that plan's own stated revisit trigger.
    mitate imports the conclusions and re-verifies only what the renderer
    change invalidates (per-backend calibrations), appending to its own ledger.
 
-**explainer-video's disposition: frozen, published, bugfix-only.** It works,
-it has examples, it stays installed. mitate supersedes it when its
+**explainer-video's disposition: frozen, and NO LONGER PUBLISHED.** Verified
+2026-07-30 against the `fb-claude-skills` marketplace manifest: neither
+`explainer-video` nor `screenwright` is among its entries. This said "it stays
+installed" for the whole life of this repo and was wrong, which matters more than
+a stale line usually would — it is why `internal/legacy/` may hold the only
+surviving copy of both ancestors, and it was the premise under which archiving
+them looked safe. mitate supersedes it when its
 explainer register is verifiably better on the same test cases; then the
 marketplace `renames` map retires it, the same mechanism that retired
 env-forge.
@@ -107,7 +112,17 @@ The timeline driver composed with the kernel IS today's `f(t)` — nothing about
 film-making gets harder. But because the kernel never touches a clock, an input
 driver later reuses every character, material, camera solver, and instrument
 unchanged. This is a structuring rule, not extra machinery; Phase 6 proves it
-with a spike and until then it costs only discipline.
+with a spike.
+
+**"Until then it costs only discipline" — retracted 2026-07-30.** Discipline did
+not hold. `setCamera(t)` takes `t`, not a state value, so the split is a
+convention rather than a seam and Phase 6's gate below is not reachable as
+written. The cheap repair, and the reason it is urgent, are in
+[`working-plan.md`](working-plan.md) under "The weld gets more expensive every
+phase": give `setCamera` a state object that today holds only `{t}`, and the
+gate is met by construction instead of by argument. Every later phase welds
+tighter, because face state and baked tracks will be authored as functions of
+`t` — that is what the signature invites.
 
 ## The render stack (verified 2026-07-23, session spike)
 
@@ -328,7 +343,8 @@ headless-shell + `WEBGPU=swiftshader` → shipped-frame FAIL), not assumed;
 determinism byte-check green on both backends. Four measured findings shipped
 in the tools — the shadow `frameId` guard, the presentation settle, the
 shipped-frame check with its spread bracket, the arm64 Chromium resolution
-fix — recorded in CHANGELOG 0.69.0 and `references/webgpu-stack.md`.
+fix — recorded in `references/webgpu-stack.md`. (The predecessor's CHANGELOG
+number that stood here resolved in no repo: this CHANGELOG runs 0.1.0 upward.)
 
 **Phase 1 — Regression, post, shading.** Reshaped after Phase 0 (2026-07-23):
 the gate work runs in this order, each step isolating one class of new
@@ -406,8 +422,12 @@ variable.
    recorded in materials.md (monotone, no cliff at 1.0 — appears
    pre-tone-map; emissives behind transmission barely feed it; palette-
    conditional as before). A full bracket waits for the first film that
-   leans on bloom; the crushed-exposure advisory on the template palette
-   remains open.
+   leans on bloom. The crushed-exposure advisory has since been **measured**
+   (2026-07-29, full template+example corpus) and what remains open is the
+   *disposition*, not the measurement — figures and the argument live in
+   [`working-plan.md`](working-plan.md), "measurement debts". This entry said
+   "remains open" while another file said "measured" and a third said "left
+   undone": one item, three states, until 0.16.30.
 6. Style bibles v2 on the new stack.
    **DONE 2026-07-23** (mitate 0.5.0, `references/bibles.md`): a
    bible IS the STYLE object — the solver and template already consume
@@ -422,7 +442,8 @@ the three material packs each demonstrated under byte-determinism.
 **GATE MET 2026-07-23 — PHASE 1 COMPLETE** (mitate 0.5.0): gearbox
 comparison closed in 0.2.x, packs in 0.4.0, control pair in 0.5.0. Open
 carry-forwards into later phases: full bloom bracket (first film that leans
-on bloom), template-palette crushed-exposure advisory, `WEBGPU=vulkan`
+on bloom), template-palette crushed-exposure advisory (measured; disposition
+open — see `working-plan.md`), `WEBGPU=vulkan`
 unverified, upstream repro for the sortObjects defect unfiled.
 
 *Post-gate quality pass (2026-07-23, mitate 0.6.0):* the deliberately
@@ -433,8 +454,9 @@ recorder and gate), `RIG`/`DRIVER` parity fences covering all three
 load-bearing determinism guards, contract exports over internals probing
 (`window.CAPFADE`; flashes resolved once), `energy` single-homed in STYLE,
 per-run vendor cache, and the `motion` second-browser launch removed.
-Verified look-neutral: pre/post example frames byte-identical. Full ledger:
-CHANGELOG 0.74.0. **Standing maintenance rule from this pass:** the fenced
+Verified look-neutral: pre/post example frames byte-identical. Full ledger: the
+predecessor's, consolidated in [`predecessor-record.md`](predecessor-record.md)
+— the bare version number here pointed at the ancestor's numbering, not ours. **Standing maintenance rule from this pass:** the fenced
 blocks span `templates/` AND `examples/`, but a smoke run only checks the
 files it is pointed at — after editing any fenced block, run
 `bun run smoke.js --parity-only templates/*.html examples/*.html` (cross-
@@ -500,7 +522,8 @@ sixth parity fence, `HTML` — the shared page scaffold (overlay CSS + caption
 DOM, carrying the will-change compositor hint) had silently reached five
 identical unfenced copies; now HTML-comment-fenced in all five 3D scenes and
 in smoke's parity loop (a second regex arm, since the block lives outside
-`<script>`). Plus four small cleanups; ledger in CHANGELOG 0.78.0. The
+`<script>`). Plus four small cleanups; ledger in
+[`predecessor-record.md`](predecessor-record.md), not this CHANGELOG. The
 standing cross-directory parity rule now covers six fences.
 
 *Phase 2 GATE MET 2026-07-23 (mitate 0.11.0):*
@@ -585,6 +608,11 @@ skill docs alone.
 **Phase 6 — Interactive spike.** Input driver over the unchanged kernel;
 `museum-walk`. *Gate:* the spike reuses kernel, characters, materials, and at
 least one instrument with zero modification — proving the layer split held.
+**This gate is currently unreachable, and knowing why is the point of keeping it
+worded this way.** `setCamera(t)` takes `t`, so a bounded view offset has to
+enter *inside* the kernel, and one line inside `SOLVER` is not zero. The seam
+fix above makes it reachable by construction; until that lands, treat this gate
+as a measurement of the weld rather than of the spike.
 This phase decides whether interactivity becomes a sibling skill or a
 mitate register; that decision is explicitly out of scope until the
 spike exists.
@@ -632,7 +660,7 @@ for the concern that would actually bite: the Agent Skills spec loads ONLY
 SKILL.md into context — `examples/` never auto-loads, so films are pure disk
 weight, zero ambient-context cost. Moving them out would break what they pay
 for: SKILL.md teaches by pointing at in-tree baselines, READMEs embed the
-AVIFs by relative path, and delivery.md's own doctrine forbids the LFS
+AVIFs by relative path, and recordings.md's own doctrine forbids the LFS
 workaround (raw serves pointer files, breaking embeds).
 
 Amended same day after owner pushback, and the amendment is better: the
@@ -670,7 +698,7 @@ AVIF's 720/12fps ceiling, then deleted it: **on a page we control the right
 preview is the scene itself.** Brotli takes a scene HTML to ~255 KB where its own
 mp4 was 559–1626 KB, so the artifact is cheaper than a lossy recording of it, and
 the thumbnail and the lightbox become the same cached URL. The whole
-compressed-loop argument in `references/delivery.md` was only ever scoped to
+compressed-loop argument (now `references/recordings.md`) was only ever scoped to
 GitHub's refusal to render mp4 or run `<script>`, and that constraint does not
 travel. The AVIF stays because the README genuinely needs it; the mp4 tier does
 not exist. Live scenes mount lazily and unmount on scroll-out (peak of two
@@ -797,7 +825,19 @@ twice, which is exactly the input this section consumes.
 
 The recurring user fear to design against: tools so constrained they become
 WordPress themes. The rule, stated once here and enforced in review: **the
-skill ships contracts, kits, and vocabularies — never finished scenes.** A
+skill ships contracts, kits, and vocabularies — never finished scenes.**
+
+**The line is between a PRESET and a TECHNIQUE, and it reads as being about
+specificity when it is not.** "A factory-floor scene preset" is declined. "How a
+cutaway reads — anything inside the slab is invisible, so cavities must sit proud
+of the front face" is craft, and belongs in a reference exactly the way shot
+sizes and cut grammar do in `film-language.md`. Cinematography vocabulary is
+specific too, and nobody calls `SIZES` a preset. A recipe organised **by shape
+problem rather than by subject** is on the technique side by construction, since
+the same geometry then serves unrelated domains. (Owner's call, 2026-07-30, on
+promoting the predecessor's procedural cookbook into `materials.md`.)
+
+A
 style bible constrains *how* things look, not *what* is in the scene; the
 character scaffold parameterizes *any* figure rather than shipping five
 mascots; the film-language reference teaches shot grammar, not shot lists.
@@ -818,7 +858,11 @@ creature exists to keep that test honest.
 - **Scaffold authoring cost.** The character data must be generated by
   committed build tooling, authored once — if it turns into per-character
   hand-authoring, the policy has silently become an asset pipeline.
-- **Scope creep toward a game engine.** The driver split is the fence:
+- **Scope creep toward a game engine.** *(Framing superseded by
+[`VISION.md`](../VISION.md), 2026-07-30: the destination is the engine and its
+primitives, with films as how they get proven. This entry is still right about
+the failure it names — building game-shaped features nobody asked for — and the
+driver split is still the fence. It was wrong to describe the goal.)* The driver split is the fence:
   mitate ships films; interactivity is one spike behind a gate, and
   engine-shaped features (game state, audio mixing) are non-goals until Phase 6
   reopens the question. **Amended 2026-07-25 (owner-approved):** the fence is

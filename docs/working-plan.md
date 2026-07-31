@@ -2,6 +2,18 @@ last updated: 2026-07-30
 
 # Working plan: instruments, routing, and the viewer
 
+> **Read [`restructure-2026-07.md`](restructure-2026-07.md) first while it
+> exists.** That migration is the live queue and parts of this file are
+> superseded by it. Where the two disagree, the restructure plan is newer and
+> wins. A fresh session following this file's sequencing table read 460
+> superseded lines before finding that out.
+>
+> **The sequencing table now carries a verified status column** (checked
+> 2026-07-30 against the tree, not against this document's memory of itself).
+> An earlier version of this warning said "items 1 and 2 have shipped" — item 1
+> shipped and **item 2 never did**, which is the failure this file keeps
+> producing: an annotation asserting a state instead of a column recording one.
+
 [`plan.md`](plan.md) is the founding architecture and its phase gates. This is
 the consolidated *tactical* plan that came out of the 2026-07-25 sessions — the
 first film built at ~3x the length of any shipped example, a viewer prototype,
@@ -66,7 +78,8 @@ happened, and each was therefore re-derived, rediscovered, or never used:
 - A **decision** — "the palette moves into `STYLE`, on this trigger" —
   dispositioned in a plan nobody hits at authoring time. Rediscovered as a fresh
   finding.
-- A **tool** — `film-reviewer`, which *gates two phases* and has the best measured
+- A **tool** — `film-reviewer`, which *both shipped gate films were reviewed by*
+  and which has the best measured
   catch record in the project — not shipped, not routed, and unknown to the
   people it was built for. See A0.
 
@@ -140,7 +153,7 @@ the finding:
 > on the same `t`, which a uniform flake would not.
 
 Postmortem of the span that found it:
-`internal/postmortems/2026-07-29_span_instrument-hardening.md` (gitignored, local).
+[`docs/postmortems/2026-07-29_span_instrument-hardening.md`](postmortems/2026-07-29_span_instrument-hardening.md).
 
 **RESOLVED 2026-07-30 — and demoted, then replaced by something worse.** Measured:
 screenshots-only 40%/30%/20% on three cells, versus 0 of 200 with an in-page GPU
@@ -190,7 +203,8 @@ change, so expect that trigger to fire during Phase 4 rather than after it.
 
 Deliberately left undone, because none of it blocks a bake: the
 measurement-assertion sweep (ratcheted, so it cannot worsen), the
-crushed-exposure threshold, the `method.md` truncation test, the PNG-vs-JPEG and
+crushed-exposure threshold **decision** (the measurement is done — see the debts
+section below; only the disposition is undone), the PNG-vs-JPEG and
 caption-legibility figure duplications (both already tracked above).
 
 ---
@@ -232,18 +246,18 @@ information.
 
 | item | ancestor (hardening plan, 2026-07-22) | status |
 |---|---|---|
-| A1 `probe` | `build.js kinematics`, the state-space probe — **bracketed**: boundary/interior 1.0001 vs 0.0531, spread 1.003x vs 72.7x, on scenes `motion` called indistinguishable | **declined on earn-in, then dropped in migration** — see A1 |
+| A1 `probe` | `build.js kinematics`, the state-space probe — **bracketed**: boundary/interior 1.0001 vs 0.0531, spread 1.003x vs 72.7x, on scenes `motion` called indistinguishable | declined on earn-in, dropped in migration, then **REBUILT AND SHIPPED** as `build.js probe` (0.16.37 amended the prime directive to admit it). The third independent arrival of the same shape — see A1 |
 | A3 self-reporting | *"Every check states its plan and prints the samples it used. A green result becomes auditable instead of authoritative"* | **partial** — see A3 |
 | D `subjectFromObject` | *"Structural: declarations are never checked against the thing they describe"* | **specified, never built, and a comment claims it shipped** |
 | B5 `txt()` / `strip=text` | *"Structural: make the text helper good enough that turning text off is possible"* | **half-built** — 2D got both parts, 3D got the instrument only |
 | B4 limit-wins | *"Root cause 2 — vocabulary that promises more than it measures"* | inherited diagnosis, new tiebreaker |
 | the spine | *"the pull toward tuning a coefficient is strongest exactly when a thing is nearly right"* | **written down, then violated four times in the successor** |
 | deferred: occlusion linter | *"No register-aware lint engine. Two candidate instances exist; no film has been blocked. Revisit when one is."* | inherited decline, same earn-in shape as A1 |
-| deferred: `shapes.md` | *"No content templates, scene presets, or genre scaffolds. This is the line that protects 'any scene you want'."* | inherited decline — **and a doctrinal one**, cited by the Anti-template principle |
+| deferred: `shapes.md` (**narrowed 2026-07-30** — the decline covers scene PRESETS, not shape-problem technique; the predecessor's procedural cookbook was promoted into `materials.md` under that reading, see `plan.md`'s Anti-template principle) | *"No content templates, scene presets, or genre scaffolds. This is the line that protects 'any scene you want'."* | inherited decline — **and a doctrinal one**, cited by the Anti-template principle |
 | deferred: 2D pan/zoom (owner's-call 4) | *"No 2D shot solver.* The film built to want one concluded the `{x,y,zoom}` rail was expressively sufficient" | inherited decline, with a recorded alternative |
 | Track C viewer | none in the hardening plan; **`museum-walk` in the portfolio** | Phase 6, arriving early |
 | A2 `transitions` | **0.5.1** — smoke began sampling transition windows after review found no fixed-fraction sample ever landed in a blend window | **export shipped, the sweep did not** |
-| A0 ship `film-reviewer` | gate criterion at `plan.md:460`; catch record in 0.9.0 and 0.11.0 | **built, gate-required, never shipped or routed** |
+| A0 ship `film-reviewer` | both Phase 2 gate films reviewed by it (`plan.md:471`, `:509`); catch record in 0.9.0 and 0.11.0 | **SHIPPED 0.16.32** — `plugin/agents/`, routed from SKILL.md step 3 |
 | D `STYLE.palette` | **0.9.1** — *"dispositioned, not fixed… the palette moves into STYLE"* when the first character bible pair arrives | **deferred decision, trigger fired** |
 
 Three of the deferred items turn out to be *inherited decisions with recorded
@@ -282,6 +296,119 @@ over it. What did not ship, and is still worth having:
   That is a precise description of all four errors this session committed, written
   a lineage earlier. `smoke.js` has since all-quantified three checks; the
   *discipline* — every check names its quantifier and its n — has not landed.
+
+## What actually wants structure, and what shape (2026-07-30)
+
+Owner's question, recorded because the existing deferred row answers it too
+narrowly. That row declines a JSON projection because `SUBJECTS.pos` is a
+function of `t` and "a projection that cannot represent the interesting half lies
+about completeness." True — **and it proves too much.** That is a reason not to
+project everything, not a reason to project nothing.
+
+**The boundary is not code-versus-data. It is *declaration about the film*
+versus *computation over `t`*.**
+
+| | fits structure | why |
+|---|---|---|
+| `BEATS` | fully | flat records: name, duration, caption |
+| `STYLE`, `CONFIG` | fully | bags of scalars and colours |
+| `SIZES`, `LENS`, `CUT_DUR` | fully | lookup tables |
+| `SHOTS` | nearly | enums, names, numbers, beat anchors — plus *references* that must resolve, which is precisely what a validator wants |
+| `SUBJECTS` | **straddles** | extents are data; `pos` is a trajectory. A declaration whose value is a function |
+| `buildWorlds()` | no | imperative construction |
+| `animate(t)` | no | this is the film's actual authorship |
+
+**Then ask what the structure is FOR, because that decides the shape.** Four
+wants, and three of them are read-only:
+
+1. **Validate before rendering** (`build.js check`) — read
+2. **Extract patterns across films** (the flywheel) — read
+3. **Diff two films' *decisions* rather than their text** — read
+4. **Mechanically restructure** — retime, reorder, insert a beat — read *and write*
+
+Only (4) argues for a different storage format, and it is the weakest of the
+four: a human or an agent editing JS is fine, and the cited pain — regex-editing
+source — is a tooling habit rather than a format problem.
+
+**So the pressure is on reading, and reading does not need a new format. It needs
+addressability.** Which this repo already has a mechanism for: extend the fence
+markers to data blocks (`/* ==== BEATS-START ==== */`), so a tool can find a
+table without a regex and without a parser guessing. That is the unresolved
+proposal from the 2026-07-25 intermediates memo, and it costs nearly nothing
+because the fence machinery exists — note it would be a fence used for
+*location*, not for parity, which is a new use of an old tool and should be said
+out loud when it lands.
+
+**Where structure genuinely pays and costs nothing: the OUTPUTS.** A `probe`
+result, a `check` result, a pattern extraction — those should emit JSON so tools
+can chain. Nobody hand-edits them, so none of the objections apply.
+
+**The failure mode to design against**, named in the same memo: expressions
+in strings. "That is where this class of project dies: you reimplement arithmetic
+badly." Any shape that ends up with `"pos": "lerp(a, b, t)"` has lost — it
+discards the type checker, the editor, and `probe`'s ability to evaluate the
+thing directly.
+
+**Not decided, deliberately.** This is an answer to *what wants structure* and
+*what shape*, not a commitment to build it. The trigger is `build.js check`,
+which needs to read the tables and is the first consumer that would pay for the
+fences.
+
+## Salvaged from the ancestors, and what was deliberately left behind (2026-07-30)
+
+`internal/legacy/` is being archived off this machine. An audit checked every
+prose file in it against `predecessor-record.md`, `plan.md` and this file before
+calling anything uncaptured. **The consolidation held** — the four explainer-video
+planning docs, `screenwright_plan.md` and all twelve carried-over references are
+verbatim or corrected in the tracked corpus, and `internal/prior_artifacts/` is
+byte-identical to `internal/legacy/docs/`, so it is fully redundant.
+
+**Promoted (0.16.35):** the procedural-asset cookbook into `materials.md`, which
+two shipped files already claimed contained it.
+
+**Corrected (0.16.35):** the depth-swap limitation restored to `materials.md`;
+the marketplace claim in `plan.md` and `predecessor-record.md`, which is what made
+archiving look free.
+
+**Left behind deliberately. Each has a trigger; none is silently dropped.**
+
+| what | where it was | why not promoted | trigger to go get it |
+|---|---|---|---|
+| `references/audio.md` (47 lines) — the ffmpeg assembly recipe (`anullsrc` base, `adelay` per clip, `amix`, `sidechaincompress` ducking) and the HTML sync sketch (`audioEl.currentTime = t` on seek) | explainer-video | Audio is a stated non-goal until after Phase 5, and `plan.md` already records the designed-but-unwired status. The *spec* survives in `predecessor-record.md`; only the assembly mechanics are going | **Phase 5 closing, or any decision to wire audio.** Three citations in `predecessor-record.md` point at this file — they are now pointers into the archive, not the repo, and should be read that way |
+| three 2D style packs (140 lines) — paper-cutout, blueprint, neon-dark: palettes, register rules, per-pack hazards labelled observed vs predicted | explainer-video | The 2D backend has shipped no film since the rename, so register documentation for it would be doctrine ahead of demand | **The first 2D film anyone actually builds.** Note the real gap this exposes: `bibles.md` is v2 and 3D-only (`lens`, `energy`, `cutDur`, `bloom`, `dof`), so `scene2d.template.html` ships with **no art-direction reference of any kind** |
+| `one-scene-every-format.html` (32 KB) — the only worked 2D film in existence | explainer-video | Superseded in stack terms only by 18 diff lines; `plan.md` explicitly exempts the 2D backend from the node-stack rebuild, so it is not superseded by construction the way the five 3D films are | **The first 2D film**, again — it is the only worked reference for one, and `examples/` ships five 3D and zero 2D |
+| the committed-artifact-versus-re-render argument | explainer-video's `bibles.md` | *"a committed artifact can go stale against the scene, a re-render cannot."* This repo took the opposite decision and, as of 0.16.35, has effectively come back around to it — `gearbox-neon.html` is now derived rather than stored | none; recorded here so the reversal is not rediscovered as a fresh idea |
+
+## Confirmed defect: the erupt recoil slides all four paws (2026-07-30)
+
+`examples/bear-and-bees.html` — **measured, not inferred.** During `erupt`
+(t=14.2-15.3, 1.1s) `bearXAt` adds `-.38*pulse(t,'erupt',.12,1)`, while `vAmp` is
+0 because the amble ramp has completed and the flee has not begun. `gaitPose`'s
+blend collapses fully to the body-relative rest stance, so the IK targets become
+constant in root-local space:
+
+| t | root x | hind-left paw | fore-right paw | paw − root |
+|---|---|---|---|---|
+| 14.20 | −1.200 | −1.217 | 0.347 | **−0.017** |
+| 14.75 | −1.571 | −1.588 | −0.024 | **−0.017** |
+| 15.30 | −1.200 | −1.217 | 0.347 | **−0.017** |
+
+`paw − root` constant to three decimals: the paws translate rigidly with the
+body instead of holding ground, across a 0.371-unit recoil, in an FSA shot that
+frames the whole animal. Found by reading in this session and confirmed with
+`build.js probe` in three page loads — **the first use of that instrument on
+something nobody had already measured by hand.**
+
+**Not fixed, and the fix is a judgement call rather than a mechanic.** Either
+plant the feet through the recoil (drive `gaitPose` with a non-zero `vAmp`
+derived from the recoil's own displacement, so the grid holds), or accept it as
+a whole-body flinch and make it read as one. The second is legitimate — a real
+animal recoiling on its haunches does drag its feet — but right now it is an
+accident of `vAmp` hitting zero, not a decision.
+
+**Trigger to act:** the next edit to `bear-and-bees.html`'s erupt beat, or the
+next character film whose body translates while `vAmp` is 0, which is the general
+shape.
 
 ## What the predecessor already knew
 
@@ -399,23 +526,30 @@ measuring instruments.
 
 ## Sequencing at a glance
 
-| # | item | track | fenced | blocked by |
-|---|---|---|---|---|
-| **0** | **ship `film-reviewer` with the plugin** | **A** | no | — |
-| 1 | `build.js probe` | A | no | — |
-| 2 | `build.js transitions` | A | no | — |
-| 3 | self-reported elapsed + backend hint + resolved binary | A | no | — |
-| 4 | `SKILL.md` step 3 rewrite **+ route to the reviewer + the limit-wins tiebreaker** | B | no | **0, 2** |
-| 5 | demote backend policy in `SKILL.md` | B | no | 3 |
-| 6 | provenance repairs (PNG home, 700px pointers, site row) | B | no | — |
-| 6b | **fix the false extent-check claim** in `solveShot`'s comment | B | no | — |
-| 6c | sweep code comments that assert a check exists (second instance of the class) | B | no | — |
-| 7 | the batched kit release | D | **yes** | — |
-| 8 | viewer overlay + capture | C | no | 7 |
-| 9 | camera bake + the fork | C | no | 8 |
+**Status column verified 2026-07-30 against the tree**, by checking the artifact
+each row claims rather than by reading this document. Rows marked `—` were not
+re-checked this pass and should be treated as unknown, not as pending.
 
-Items 1-3 and 6 are independent and can run in parallel today. **Item 7 is the
-only fenced work on this plan and it is batched deliberately** — see Track D.
+| # | item | track | fenced | blocked by | status (2026-07-30) |
+|---|---|---|---|---|---|
+| **0** | **ship `film-reviewer` with the plugin** | **A** | no | — | **DONE** — `plugin/agents/film-reviewer.md` ships |
+| 1 | `build.js probe` | A | no | — | **DONE** — in `build.js`'s `USAGE`, 0.16.37 amended the prime directive to admit it |
+| 2 | `build.js transitions` | A | no | — | **NOT DONE** — absent from `build.js`'s verb list |
+| 3 | self-reported elapsed + backend hint + resolved binary | A | no | — | **NOT DONE** — no elapsed or backend-hint reporting in `build.js` |
+| 4 | `SKILL.md` step 3 rewrite **+ route to the reviewer + the limit-wins tiebreaker** | B | no | **0, 2** | **PARTIAL** — SKILL.md was rewritten whole in 0.16.34 and routes to `film-reviewer`; the limit-wins tiebreaker is absent, and item 2 never landed |
+| 5 | demote backend policy in `SKILL.md` | B | no | 3 | **DONE** — carried by the 0.16.34 rewrite, which put backend policy after the workflow |
+| 6 | provenance repairs (PNG home, 700px pointers, site row) | B | no | — | **PARTIAL** — the 700px pointers resolve; the `source-of-truth.md` site row landed 2026-07-30 |
+| 6b | **fix the false extent-check claim** in `solveShot`'s comment | B | no | — | **DONE** — both 3D templates now say the guard is a lie about extent and to measure instead |
+| 6c | sweep code comments that assert a check exists (second instance of the class) | B | no | — | **SUPERSEDED** — `selfcheck.js` check 6d makes the class mechanically detectable instead of swept by hand |
+| 7 | the batched kit release | D | **yes** | — | — |
+| 8 | viewer overlay + capture | C | no | 7 | — |
+| 9 | camera bake + the fork | C | no | 8 | — |
+
+**What is actually left of Track A, after the status column:** items 2 and 3.
+They are independent of each other and of everything else, so they can run in
+parallel today; item 1 shipped and item 6b is closed. **Item 7 is the only fenced
+work on this plan and it is batched deliberately** — see Track D. Item 4's
+remaining half (the limit-wins tiebreaker) still waits on item 2.
 
 Two notes on the dependencies, because both were initially overstated:
 
@@ -433,14 +567,16 @@ Two notes on the dependencies, because both were initially overstated:
   in Track D: that escape is an 8-file change, not one line. Still right, but
   choose it knowingly.*
 
-**Owner's-call 0 is now resolved in Track C's favour**, so the argument below is
-live rather than conditional: the camera bake's role as the cheapest Phase 4
-spike is a standing reason to move items 8-9 ahead of 4-6. *(Previously written
-as provisional.)* If Track C is admitted through
-an amendment to `plan.md`'s Phase 6 fence, the camera bake's role as the cheapest
-Phase 4 spike (C0) is a live argument for moving 8-9 ahead of 4-6 — de-risking
-the owner's stated priority outranks a routing edit. The order above assumes the
-fence holds.
+**Owner's-call 0 is resolved in Track C's favour** (2026-07-25), so this is a
+standing argument rather than a conditional one: the camera bake is the cheapest
+Phase 4 spike, and de-risking the owner's stated priority outranks a routing
+edit, which is a live reason to move items 8-9 ahead of 4-6.
+
+*Struck 2026-07-30: this paragraph previously announced the resolution and then
+restated the same claim in its superseded `if Track C is admitted…` form, ending
+"the order above assumes the fence holds" — a fence that had already been
+amended. Annotating a superseded sentence leaves two readings; striking it leaves
+one.*
 
 ---
 
@@ -452,8 +588,14 @@ the package because none of them rests on a single film.
 ### A0. Ship `film-reviewer` with the plugin — the item that costs nothing to build
 
 **Ranked first under the reachability clause, and it reorders the rest of this
-track.** `plan.md:460` makes it a gate criterion — *"byte-deterministic both
-backends, film-reviewer-reviewed with all HIGH…"* — and the changelog credits it
+track.** **Correction, 2026-07-30:** three places in this file called it "a gate
+criterion at `plan.md:460`". It is not, and that line is not where it appears.
+`plan.md:471` and `:509` cite it inside Phase 2's **DONE narrative** — what was
+actually done to `menagerie` and `bear-and-bees` — and the `*Gate:*` clauses for
+Phases 2 and 3 do not mention it. The `examples/` gate is *"owner approval, not
+rendering"* (`plan.md:657-658`). The real argument needs no overclaim: **both
+shipped gate films were reviewed by it** — *"film-reviewer-reviewed with all HIGH
+findings fixed"* (`plan.md:471`) — and the changelog credits it
 with the defects author-eyes missed on both Phase 2 gate films: menagerie's look
 beat entirely off-frame, its only closeup 70% void, a tail-wag spiking 5x, a
 breath holding every character 3-5% squashed from frame 0; bear-and-bees' contact
@@ -462,7 +604,7 @@ class — plus the flee clipping the hive and the comedy's face never facing the
 lens.
 
 **It lives at `.claude/agents/film-reviewer.md`, outside `plugin/`.** Verified in
-the **working tree** (per invariant 6, and separately confirmed against a real
+the **working tree** (per invariant 7, and separately confirmed against a real
 install cache, which contains only `.claude-plugin/`, `README.md` and `skills/`):
 the plugin subtree ships `examples`, `references`, `SKILL.md`, `templates` and no
 agents; `SKILL.md` contains zero occurrences of "agent" or "reviewer". So the
@@ -701,7 +843,9 @@ target population does not have. That is the difference between measuring the
 agent and measuring the agent-plus-repo.
 
 *The policy is already written — shipping makes it compliable, not new.*
-`plan.md:460` already requires a reviewer pass for anything entering `examples/`.
+Every scene that has entered `examples/` got a reviewer pass (`plan.md:471`,
+`:509`), even though the written gate is owner approval rather than a reviewer
+run — so shipping it makes an established practice reachable, not new.
 So there are two tiers and they are consistent: **mandatory at the examples gate,
 opt-in at saturation for everyone else.** Say it that way in the changelog, or it
 reads as added ceremony rather than a closed gap.
@@ -1297,13 +1441,13 @@ rather than a matter of mood.
 
 | deferred | why | revived by |
 |---|---|---|
-| JSON `tables`/`patch` round-trip | the tables contain functions exactly where they matter (`SUBJECTS.pos` is a function of `t`); a projection that cannot represent the interesting half lies about completeness. The cited pain — regex-editing JS source — is a tooling habit, not a format problem | an agent needing to *restructure* tables mechanically, after the enumeration exists |
+| JSON `tables`/`patch` round-trip (**answered 2026-07-30** — see "What actually wants structure" above; the decline is right about JSON and too broad about structure) | the tables contain functions exactly where they matter (`SUBJECTS.pos` is a function of `t`); a projection that cannot represent the interesting half lies about completeness. The cited pain — regex-editing JS source — is a tooling habit, not a format problem | an agent needing to *restructure* tables mechanically, after the enumeration exists |
 | `ACTORS` presence table | one prior instance in the corpus, differently spelled; `hide()` covers the drift risk | a second film with multi-appearance presence that `hide()` cannot express |
 | occlusion linter | **not a one-film finding** — the predecessor's two-character scene closed with it explicitly open ("geometric contact is not legible contact… the contact point sits behind a body"). Still ranked third: 3 of 4 new instances were static staging the contact sheet already catches by eye; the 4th was a transit defect a beat-midpoint sample structurally cannot see, and `transitions` catches it. So the linter automates eye-work on a converging axis — real, but third | probe + transitions shipped and composition rounds still not converging |
 | solver-aware staging | the proposed vocabulary fails on its own originating use case: props at fixed world positions a character walks to, which was every exhibit in the film that motivated it | a design that handles walked-to props |
 | `travel()` / `LEGS` / `shapes.md` | register-specific to the presenter explainer, which arrived as a commission rather than from the roadmap | a second presenter film asking |
 | type primitive (glyph data + renderers) | generalizes past the register — any film with a sign, an axis, a label — but it is a bigger build than it looks, and no shipped example needs it. **And it is governed by an existing rule neither review applied: a glyph alphabet is a *primitive*, so under the chart tier it lands as a chart — a grid of all 36 glyphs, byte-compared per backend — before any film uses it.** That is also the right shape on the evidence: all three glyph bugs were one letter built on a wrong assumption, which a grid makes obvious at a glance and a title card cannot | a second film needing built text, or the diagrammatic register (see B5) — entering at the chart tier, not in a film |
-| splitting `method.md` (969 lines, 50.9 KB, 42% of reference text) | it would create exactly the doc-versus-doc boundary B4 exists to patch, and `method.md`/`instruments.md` already contradict in that shape. Its own justification is honest but weak: "I read all of it, so splitting wouldn't have helped me read". **Two independent outside reviews (2026-07-29) both pushed for the split, which raises the priority but not the argument — both argued cognitive load, which is the same taste claim already recorded here.** One of them gestured at something stronger without pressing it: if a wholesale read exceeds the reading tool's byte cap, an agent gets a TRUNCATED read and cannot tell. That would be a correctness argument, not a style one, and it would revive this on a different basis than B4 | B4's tiebreaker landing first — OR the truncation question resolving yes. That test is one command and has not been run: read `method.md` wholesale with the agent's own file tool and check for a truncation notice. **PARTIALLY DISCHARGED in 0.16.19:** the three long references gained heading maps. The hypothesis is that "monolithic" was a navigation complaint wearing a structure costume — 27 headings under 6 well-ordered top-level sections were invisible without reading all 969 lines. If the next reader still asks for a split *after* seeing the map, that is the evidence this row has always lacked |
+| splitting `method.md` (969 lines, 50.9 KB, 42% of reference text) | it would create exactly the doc-versus-doc boundary B4 exists to patch, and `method.md`/`instruments.md` already contradict in that shape. Its own justification is honest but weak: "I read all of it, so splitting wouldn't have helped me read". **Two independent outside reviews (2026-07-29) both pushed for the split, which raises the priority but not the argument — both argued cognitive load, which is the same taste claim already recorded here.** One of them gestured at something stronger without pressing it: if a wholesale read exceeds the reading tool's byte cap, an agent gets a TRUNCATED read and cannot tell. That would be a correctness argument, not a style one, and it would revive this on a different basis than B4 | B4's tiebreaker landing first — OR the truncation question resolving yes. **That test was run on 2026-07-30 and the answer is no.** `method.md` is 996 lines / 52.7 KB against a 2000-line default read window, so a wholesale read returns the whole file and the truncation argument does not apply to it. **The correctness basis for reviving this row is therefore closed**, and the row falls back to the taste argument it already admits is weak. (Measured in the same pass: `docs/predecessor-record.md` at 2770 lines DOES exceed that window, and nobody has proposed splitting it — the truncation risk in this repo is real and it is not here.) **PARTIALLY DISCHARGED in 0.16.19:** the three long references gained heading maps. The hypothesis is that "monolithic" was a navigation complaint wearing a structure costume — 27 headings under 6 well-ordered top-level sections were invisible without reading all 969 lines. If the next reader still asks for a split *after* seeing the map, that is the evidence this row has always lacked |
 | moving films out of the shipped subtree (`docs/examples-placement.md`, option E) | **the doc exists, is undecided, and was referenced from nowhere in `docs/` or `CLAUDE.md` until 0.16.18** — which is spine rule 0 turned on this plan: an unreachable decision does not exist, and an outside reviewer independently re-derived its cost table because of that. Measured: examples are 5.47 MB, ~93% of the shipped subtree, of which ~95% is the same byte-identical three IIFE five times; three cached versions on one machine came to 18 MB. The blocker is now clearer than the doc states it: all **three** brackets hardcode `../examples/gearbox.html`, so E is really "one scene stays as a *fixture*, four films move" — a different and easier decision than example-versus-internal. **Do not** reach for the unvendoring variant a review proposed: it breaks invariant 1, fails `build.js bundle`'s own self-containment assertion, and hangs every bracket | owner deciding fixture-vs-example, which is the only open question left in it |
 | distance-space gait as the template default | the algebra is sound (`{start:0, rootX:s}` reduces identically where travel is monotone) but was argued, not measured | the PSNR comparison `method.md` prescribes |
 | extracting a shared bracket harness | the three `bracket-*.js` scripts now triplicate temp-dir setup, injection-point drift detection, and the tally/exit report — **this repo's own "extract or fence at the third consumer" trigger, fired**, this time for tooling rather than scene code. Declined at the moment it was found only because it would refactor three controls that were verified green minutes earlier, at the end of a session, and a broken control is worse than a duplicated one. The distinct parts are genuinely distinct (one drives smoke.js as a subprocess, two drive pages directly), so the extraction is the scaffolding only | the fourth bracket — `bracket-sortobjects.js` is already anticipated by rule 5's trigger, which would make it a fifth copy of the scaffolding |
@@ -1475,20 +1619,29 @@ scope-fence amendment; `plan.md`'s Phase 6 entry and its Risks bullet now set
 the fence at *who owns the state stream*, and "input handling" was removed from
 the non-goals list. Viewer chrome that bounds a viewing parameter while the
 timeline driver still owns `t` is a delivery feature; an input driver that
-*replaces* the state stream stays behind the Phase 6 gate. **The paragraph below
-is the superseded question, kept because the reasoning is what earned the
-amendment — but do not act on its conclusion.** ~~This is the
-largest call here and the two documents currently disagree.~~ `plan.md`'s risk
-section names the scope fence in as many words: *"mitate ships films;
-interactivity is one spike behind a gate, and engine-shaped features (input
-handling, game state, audio mixing) are non-goals until Phase 6 reopens the
-question."* The viewer is input handling. This document treats it as delivery
-chrome, distinct from an input driver — a defensible distinction that was
-asserted rather than reconciled, and someone reading `plan.md` today would
-correctly block Track C as the exact scope creep it fences against. Either
-`plan.md` gets an amendment, or Track C waits. Note that C0.5 argues the viewer
-*is* Phase 6 arriving early, which makes "amend" the more honest option than
-"it's a different thing."
+*replaces* the state stream stays behind the Phase 6 gate.
+
+**Why it was a real question** — kept as one paragraph of reasoning, not as a
+live position. `plan.md` used to fence the scope in as many words: *"mitate ships
+films; interactivity is one spike behind a gate, and engine-shaped features
+(input handling, game state, audio mixing) are non-goals until Phase 6 reopens
+the question."* The viewer is input handling, and treating it as delivery chrome
+was a defensible distinction that had been asserted rather than reconciled — so a
+reader of `plan.md` would correctly have blocked Track C as the exact scope creep
+it fenced against. C0.5's argument that the viewer *is* Phase 6 arriving early is
+what made "amend the fence" more honest than "it's a different thing", and that
+is the route taken.
+
+**`VISION.md` has since superseded the framing that fence rested on.** "mitate
+ships films" described the product; films are the *proving instrument* for an
+engine, and `plan.md`'s Risks section is no longer the authority on the
+destination. The fence's live half — that a driver replacing the state stream
+waits for Phase 6 — survives the change.
+
+*Struck 2026-07-30: the paragraph above was previously carried verbatim with a
+single sentence crossed out, so it still read as an open dispute ending "either
+`plan.md` gets an amendment, or Track C waits" — an amendment that had already
+landed. The reasoning is worth keeping; the conclusion is not.*
 
 1. **Is the presenter explainer a register mitate commits to?** It arrived as a
    commission. If yes, `travel()` and `shapes.md` become roadmap; if no, the film
@@ -1729,7 +1882,8 @@ housekeeping:
 
 1. It is A2's positive control for **window selection** (the two reverts above).
 2. **It is a candidate reproducer for the open 1-in-6 `WEBGPU=metal` determinism
-   FAIL**, which has resisted reproduction for two versions. `plan.md:275`
+   FAIL**, which has resisted reproduction for two versions. `plan.md`'s Phase 1
+   chart-control note (search "did NOT reproduce it in 15 metal runs")
    narrows the suspect space toward "shadowed fur shells, multi-shot solver
    traffic, the character rig" — the machinery `bear-and-bees` has and the noise
    chart lacks. `circus.html` has 14 shots and two rigs, i.e. *more* multi-shot

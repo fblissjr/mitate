@@ -1,8 +1,9 @@
 #!/usr/bin/env bun
 /* Measure the RATE of the in-session determinism failure, per scene and per t.
  *
- * Written for forward item 2 of internal/postmortems/2026-07-29_span_instrument-
- * hardening.md. On Linux/WebGL2 the gate has failed smoke's in-session arm four
+ * Written for forward item 2 of
+ * docs/postmortems/2026-07-29_span_instrument-hardening.md. On Linux/WebGL2 the
+ * gate has failed smoke's in-session arm four
  * times across TWO scenes and TWO timestamps (materials.html at 5.36,
  * menagerie.html at 8.52) against two clean runs, while macOS passes on both
  * hardware and software GL. Four runs spanning a changed configuration support no
@@ -131,10 +132,20 @@ const plan = dur => [1, 2, 3, 4].map(i => +(dur * i / 5).toFixed(4));
             // (shipped). canvasHashAt is still available for a mechanism label, but
             // it is deliberately NOT the thing under test -- testing a bespoke
             // readback told us about the bespoke readback.
+            // selfcheck: bare-seek-is-the-control — this arm MUST stay bare. It
+            // reproduces the pre-0.16.28 pattern so the pair is an experiment;
+            // "fixing" it to seekSynced would make both arms the shipped path
+            // and the instrument would measure nothing.
             if (NO_CANVAS) await page.evaluate(`window.seekTo(${t})`);
             else await seekSynced(page, t);
             await settle(page);
             const a = sha(await page.screenshot());
+            // selfcheck: bare-seek-is-the-control — the away-and-back pair, same
+            // reason as the seek above. Both arms of this experiment must stay
+            // bare or the pair stops being an experiment. Declared here as well
+            // as above because the marker is per-SITE: a reader meeting this
+            // block should not have to scroll to learn it is deliberate.
+            // selfcheck: bare-seek-is-the-control
             if (NO_CANVAS) {
               await page.evaluate(`window.seekTo(${dur})`);
               await page.evaluate(`window.seekTo(${t})`);

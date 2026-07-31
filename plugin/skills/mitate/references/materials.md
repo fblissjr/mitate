@@ -87,6 +87,12 @@ then near orb. Verified: the overlap zone composites correctly and the scene
 is byte-deterministic on both backends **on macOS** — and that qualifier is
 load-bearing, because CI refuted the unqualified version.
 
+**Where creation order cannot express it** — objects that swap depth mid-film —
+set `renderOrder` explicitly, and **accept that a genuinely depth-swapping
+transparent pair is outside the guarantee.** That last clause was carried in the
+predecessor and dropped in an edit, leaving this reference stating a remedy for a
+case it no longer admitted was unsolved. Restored 2026-07-30.
+
 > **RESOLVED 2026-07-30: this was never a defect in this film.** `materials.html`
 > failed smoke's in-session determinism arm on Linux/WebGL2 at `seekTo(5.36)`, as
 > did `menagerie.html` at 8.52 and 5.68. Measured rate with screenshots only:
@@ -106,7 +112,7 @@ load-bearing, because CI refuted the unqualified version.
 > was an earlier version of this note accusing the film of carrying state — and
 > before that, calling three identical failures "reproducible, therefore a state
 > dependency," which four runs later was false. Both retracted. Evidence and the
-> full chain: `internal/postmortems/2026-07-29_span_instrument-hardening.md`.
+> full chain: [the span postmortem](https://github.com/fblissjr/mitate/blob/main/docs/postmortems/2026-07-29_span_instrument-hardening.md).
 >
 > **FIXED and VERIFIED in 0.16.28** — `backend.js`'s `seekSynced` seeks and forces
 > render completion in one page task, at all six capture sites. Verified on Linux
@@ -133,3 +139,102 @@ Live with the character scaffold, not here: fur is shell-layer kit code in
 discard, so it never joins the transparency-ordering bill above), fabric is
 a sheen recipe on `MeshPhysicalNodeMaterial`. Both node-slot-driven and both
 verified rendering; see `characters.md`.
+
+## Procedural assets: recipes by shape problem
+
+*Carried from the predecessor's `style-3d.md`, unchanged in substance. This
+repo's CHANGELOG and `method.md` have said these live here since the reference
+split; they did not, and the pointer was true of the intention rather than the
+file. Promoted 2026-07-30 before the ancestor tree was archived off-machine.*
+
+Everything is composed from primitives — spheres, boxes, cylinders, planes, tori.
+No model files, no textures, no downloads. That constraint is what keeps a scene a
+single self-contained HTML file, and it is far less limiting than it sounds.
+
+### The general move
+
+Recipes below are organized by **shape problem**, not by subject, because the same
+geometry serves wildly different domains. Before reaching for one, derive your own:
+
+1. **Decompose to primitives.** Almost anything reads as spheres, boxes and
+   cylinders in a Group hierarchy. Detail is not what makes it legible.
+2. **Silhouette first.** Check it on the squint strip, not at full resolution
+   (the rule and the instrument are in `method.md`, "Silhouette").
+3. **Signature feature, oversized ~30%.** Whatever identifies the subject — a
+   beak, a hat, a chimney, a rotor, a spike in a chart — push it past comfortable.
+   The first render is always too timid.
+4. **Costume beats anatomy.** A hard hat makes a figure a builder; a torus brim
+   and a cap make one a surgeon. Role reads instantly from accessories and never
+   from accurate proportions.
+5. **Signal over realism.** Emissive brightness, scale pulses and colour shifts
+   carry meaning. A photoreal object that does not change is worse than a crude
+   one that does.
+
+### Recipes that have actually been built
+
+- **Figure** (creature, mascot, person, robot — anything that presents or
+  reacts): body = sphere scaled ~(0.9, 1.1, 1.15); head sphere on a short neck
+  sphere; limbs = spheres or cylinders in pivot Groups at the shoulder/hip so
+  they rotate for gestures; feet = flattened boxes. A protruding feature (beak,
+  snout, visor) = cone scaled flat in one axis and rotated forward. Keep the neck
+  and shoulder visible — costume that swallows both kills the silhouette.
+- **Expressive face**: head sphere; eyes = white spheres scaled z≈0.5 sitting
+  PROUD of the face (bug-eyed reads at distance), pinpoint pupils, glint dots;
+  brows floated slightly off the head; blush = flat circles rotated to the
+  cheeks; open mouth = dark sphere in a Group (doubles as a portal for dive-ins;
+  scale to 0 and swap in a half-torus smile for a finale).
+- **Cutaway / cross-section** (geology strata, building floors, soil horizons,
+  battery internals, an engine block, a seabed): a flat slab box + bands for
+  layers, viewed frontally. CRITICAL: anything "inside" the slab is invisible —
+  cavities, thin layers and particles must sit PROUD of the front face by 0.1-0.3
+  units, like a museum diorama. A thin dark torus rim where a cavity meets the
+  surface sells the carved look.
+- **Network or flow** (data pipelines, supply chains, transit maps, circuits,
+  approval workflows, nutrient cycles): stations = labeled boxes on a ground
+  plane; the payload = a bright emissive sphere whose position is a piecewise
+  function of t along the edge path; arrival = `pulse()` scale bump on the
+  station.
+- **Atmosphere for a large ground plane**: `scene.fog = new THREE.Fog(bg, near,
+  far)` matched to the background colour. The floor edge stops reading as a hard
+  disc against the backdrop, and distant stations recede instead of competing
+  with the subject. Cheap, and it does what a vignette cannot.
+
+- **Field of instances** (forests, crowds, populations, fleets): one
+  `InstancedMesh` per geometry, transforms composed ONCE at load from the
+  seeded `R[]` pool — deterministic arrangement, one draw call however many
+  items. The cel trick: the outlines are a *second* `InstancedMesh` sharing
+  the same matrices scaled ~1.06 with the BackSide ink material — linework
+  for the whole field at one more draw call. Built: the 46-tree forest in
+  `examples/toybot-walk.html`. For a beat that animates the field, write
+  per-instance values as functions of `(t, R[i])` and recompose matrices in
+  `animate()` — still pure.
+- **Curves without asset files**: `LatheGeometry` from a `Vector2` profile
+  (the urn in toybot-walk), `ExtrudeGeometry` from a `Shape`, `TubeGeometry`
+  along a Catmull-Rom curve. A profile array is data; no download.
+
+### Not yet built, but the shape is obvious
+
+Sketches, not battle-tested — treat them as starting points and add what you
+learn back here.
+
+- **Mechanism** (gears, levers, pumps, linkages): cylinders and boxes in nested
+  Groups where each rotation is a closed form of `t`. Meshing is faked — two
+  gears at a fixed ratio never actually collide, so drive both from one ramp.
+
+Shared-material purity — the `setHex` before `lerp` rule — moved to
+`method.md`'s determinism section: the worked example is three.js, but the
+principle is backend-agnostic and `smoke.js` enforces it for every backend.
+
+# The cinematic kit: post chain, cel shading, analytic IK
+
+Everything in this section shipped in `examples/toybot-walk.html` and was
+verified the project's way — `smoke.js` byte-determinism with the full chain
+enabled, contact sheet, squint strip, motion profile.
+
+## The post chain (per-frame pure, or not at all)
+
+`build.js vendor` bundles the composer classes onto the THREE namespace:
+`EffectComposer`, `RenderPass`, `UnrealBloomPass`, `BokehPass`, `OutputPass`.
+The recipe: RenderPass → Bokeh → Bloom → OutputPass (which applies the
+renderer's tone mapping + sRGB), `composer.setSize` in the resize handler,
+`composer.render()` in `seekTo`.

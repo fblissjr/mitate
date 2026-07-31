@@ -37,7 +37,8 @@
 # CAPTURE RACE in the gate, not scene state: measured 40%/30%/20% on three cells
 # with a bare seek, 0 of 200 once the seek and a GPU readback shared a task. Fixed
 # in backend.js's seekSynced, 0.16.28. Two shipped films were wrongly accused in
-# the meantime; the chain is in references/materials.md and the span postmortem.
+# the meantime; the chain is in references/materials.md and
+# docs/postmortems/2026-07-29_span_instrument-hardening.md.
 #
 # The first three runs also revealed that the `brackets` step was SKIPPED every
 # time, because a step after a failing step is skipped by default — hence the
@@ -47,6 +48,11 @@ name: gate
 
 on:
   push:
+    # `branches: [main]` because push and pull_request BOTH fired on an
+    # unfiltered push trigger, so every push to a branch with an open PR paid for
+    # two full gate runs of the same commit. Branch work is now free until a PR
+    # opens, which is also when a second opinion is worth three minutes.
+    branches: [main]
     # Skipped when a commit touches ONLY prose. A .md edit cannot break a scene,
     # and paying 3 minutes of browser time for a changelog entry is how a gate
     # becomes something people route around. Fence parity and every doc check
@@ -108,11 +114,19 @@ jobs:
       - name: smoke
         run: cd ws && bun run smoke.js
 
-      # All three brackets. The controls are the reason a green gate means
-      # anything, and an unrunnable control is the defect this repo has already
-      # eaten once (rule 5's repro was cited as preserved and is not in the
-      # tree). Running them here is how they stay runnable. bracket-noise pins
-      # the fallback path itself, so it is meaningful wherever it runs.
+      # Every bracket under templates/ — the count is not written here, because a
+      # count in a comment goes stale the next time one lands, and this one had:
+      # it read "all three" while four were globbed. The controls are the reason a
+      # green gate means anything, and an unrunnable control is the defect this
+      # repo has already eaten once (rule 5's repro was cited as preserved and is
+      # not in the tree). Running them here is how they stay runnable.
+      # bracket-noise pins the fallback path itself, so it is meaningful wherever
+      # it runs.
+      #
+      # SCOPED TO templates/ ON PURPOSE, and this is the half that bit: the
+      # brackets over the repo's own tools live in scripts/, need the repo rather
+      # than a scene workspace, and need no browser. They run in static.yml. Until
+      # 0.16.37 they ran nowhere, because "globbed" was read as "all of them".
       - name: brackets
         # `!cancelled()` because a step after a FAILED step is skipped by
         # default, and that is exactly what happened: the brackets were added

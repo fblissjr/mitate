@@ -5,7 +5,7 @@
 > corrections recorded in the changelog). If this file and the code
 > disagree, audit before trusting either — then fix the stale one.
 >
-> **Not here.** material recipes → `materials.md`; shot vocabulary → `film-language.md`.
+> **Not here.** material recipes → `materials.md`; shot vocabulary → `film-language.md`. The flat-vector vocabulary has no home yet — see the backend table below.
 
 
 A bible is a single object that constrains everything about a film's look —
@@ -13,6 +13,36 @@ palette, exposure, post, lens, cut pace, camera energy — selected by ONE
 line. Changing the film's register is changing that line; changing a field
 mid-film is a bible violation (the look stops being coherent the moment two
 registers mix).
+
+## What a bible is, on any backend
+
+**The contract, and it is backend-agnostic:** a bible is the whole look as ONE
+object, switched by one line. It constrains *how* things look, never *what* is in
+the scene — that is the Anti-template line, and it is what keeps a bible from
+becoming a preset.
+
+**The vocabulary is per-backend, and that is the part that grows.** A 3D bible
+speaks lens, camera energy, cut pace, bloom, depth of field; a flat-vector bible
+cannot mean any of those and needs its own words — stroke weight, ink, accent,
+contrast polarity. Both satisfy the same contract. Neither field list is the
+definition.
+
+| backend | vocabulary lives in | state |
+|---|---|---|
+| 3D node stack | below, in this file | shipped |
+| Canvas2D flat vector | `bibles-2d.md` | **NOT WRITTEN.** `scene2d.template.html` ships with no art-direction reference of any kind. Its surface is `STYLE`, a palette const, `ACCENT_INK`, `stroke` weight and `contrastOn()`; the predecessor had three worked packs (paper-cutout, blueprint, neon-dark) which were left in the archive rather than promoted, because no 2D film has shipped since the rename |
+| anything later | its own `bibles-<backend>.md` | — |
+
+**Whoever writes the next one:** satisfy the contract above, name only what your
+backend can actually mean, and state the hazards you *observed* separately from
+the ones you *predict*. A bible whose fields the template cannot consume is a
+mood board.
+
+**Why flat files and not a `bibles/` subfolder.** `scripts/selfcheck.js`'s
+provenance check reads `references/*.md` non-recursively, so a subfoldered
+reference would ship with no provenance enforcement at all. Flat costs nothing
+until one backend needs more than one file — **that is the trigger to subfolder**,
+and it comes with a one-line change to make that check recurse.
 
 ## The v2 shape (node stack)
 

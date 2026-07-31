@@ -1,4 +1,4 @@
-last updated: 2026-07-29
+last updated: 2026-07-30
 
 # Where truth lives
 
@@ -16,16 +16,51 @@ other surface points at the home. Nothing restates.
 | routing and workflow order | SKILL.md | — |
 | what a check can and cannot see | `references/instruments.md` | smoke.js comments say how, not what-it-means |
 | **render-side** facts — backends, determinism, node stack, per-frame cost | `references/webgpu-stack.md` | — |
-| **delivery-side** facts — formats, encoders, file size, where a thing renders | `references/delivery.md` | — |
+| **delivery-side** facts — shipping the scene itself: bundle size over the wire, hosting and mount policy, posters | `references/delivery.md` | — |
+| **recording-side** facts — formats, encoders, decode cost, what GitHub renders inline | `references/recordings.md` | — |
 | repo invariants that bite on first edit | CLAUDE.md | — |
+| **why determinism comes first**, and what it is first for | `VISION.md` | `site/` is DOWNSTREAM of this, one-directionally — see below |
 | history — what happened and why | CHANGELOG.md and git | docs speak present tense only |
+| **a check's pass criterion** | the code that implements the check, beside the flag or constant it governs | CI config and session logs POINT; they never restate it |
+| **what a session did** | `internal/` session logs, one per day | a finding worth keeping is promoted to a postmortem; the log is narration and is not cited by tracked content |
 
 
-**Render and delivery are separate domains and must not share a home.** They
-measure different things and their figures collide: a "2.3x" exists in each — the
-renderer backend speedup and an AVIF encoder-effort ratio — and a consolidation
-pass nearly merged them as duplicates of one fact. When a figure could belong to
-either, say which side it is on.
+**Render, delivery and recording are separate domains and must not share a
+home.** They measure different things and their figures collide: a "2.3x" exists
+in two of them — the renderer backend speedup (`webgpu-stack.md`) and an AVIF
+encoder-effort ratio (`recordings.md`) — and a consolidation pass nearly merged
+them as duplicates of one fact. When a figure could belong to more than one, say
+which side it is on.
+
+**`site/` is downstream of everything, and nothing is downstream of it.** Owner,
+2026-07-30: *"the vision defines and informs site language, and plan informs site
+copy of plan. Fundamentally the vision and the code tracked out of site is the
+source of truth. The site is just how you and I choose to communicate it out."*
+
+So the flow is one-directional — `VISION.md`, `docs/plan.md`, `README.md` and the
+code **→** `site/` — and it never runs the other way. Two consequences that are
+easy to miss in opposite directions:
+
+- **The site is not a source, so it settles nothing.** If it disagrees with
+  `VISION.md`, the site is what is wrong. It is not a "vision carrier" and it
+  owns no fact; an earlier version of this repo's plan promoted it to one.
+- **But it is not exempt either.** A language change in `VISION.md`, `plan.md` or
+  `README.md` creates real work on the site, because the site is how that
+  language reaches anyone. Changing the wording upstream and leaving the site on
+  the old wording is drift, not independence. **Measured 2026-07-30:** this
+  branch rewrote `README.md`'s `t` framing and deleted a false duration ceiling,
+  and `site/index.html` still carried the superseded sentence verbatim.
+
+How the copy *reads* is the owner's call and may change over time; what it
+asserts is not.
+
+The delivery/recording line was drawn in 0.16.38, and it is the line between
+**the artifact and a copy of it**: `delivery.md` owns shipping the scene, which
+is what happens on any surface that can run one; `recordings.md` owns producing a
+lossy copy, which exists solely because GitHub will not render an mp4 inline. One
+file previously held both under a single provenance header that said "UNKNOWN —
+never audited", which was true of the inherited encoder measurements and false of
+this repo's own measured brotli figures sitting beside them.
 
 **A number travels with its provenance, or it gets trusted past its warrant.**
 One rule, three facets — a bracket carries its **date** (above), its
@@ -41,6 +76,53 @@ control you already ran. Make the harness self-contained when the measurement
 is taken — a minute there, unrecoverable later.
 
 Worked instance: CHANGELOG 0.16.2.
+
+## A code comment may not assert what another file does
+
+The boundary every claim-defect in this repo has crossed. Stated as a rule
+because five instances shared it and none was careless:
+
+> **A code comment may assert what its own line does. It may not assert what
+> another file does.** A claim about another file's behaviour belongs in the
+> reference that owns the subject; the comment points and does not restate.
+> Anything else is a claim that cannot be checked from where it lives.
+
+The instances: a solver comment asserting *"the extent check in smoke.js is what
+catches it"* when there is no extent check; a shipped example citing a probe tool
+that has never existed in any generation; `build.js` naming a docs path belonging
+to a different repository; a workflow header carrying a verification criterion
+owned by a script, until the two contradicted each other; and a KERNEL comment
+asserting that different noise tracks are independent when a quarter of the pairs
+alias exactly.
+
+**Two halves, and only one of them is decidable.** Whether a claim about
+behaviour is *true* needs a reader. Whether a cited path *exists* does not, so
+`scripts/selfcheck.js` checks that half on every commit — path-shaped citations
+and bare filenames in a provenance frame, both measured for precision before
+being trusted. The other half is what `doc-claim-auditor` is for.
+
+## Never hand-write what a command produces
+
+The rule that generalises every copy-defect found while executing the 2026-07
+migration, and the one that would have prevented four of them outright.
+
+> **If `selfcheck.js`, `--parity-only`, `git` or `ls` can answer it, prose points
+> at the answer and does not restate it.** A number that is not written cannot be
+> wrong.
+
+`CLAUDE.md` asserted "`references/` (9)" while `selfcheck` derived the same
+number on every run; the assertion was wrong one commit after it was written. It
+also carried a fence-carrier count, "all three brackets" when there were four,
+and a fourth membership list for the window contract. All four were deleted
+rather than corrected, because correcting a copy only resets its clock.
+
+**This outranks writing a check.** Guarding a copy is O(n) in copies and each
+guard is one more thing that can misfire — five did, every one of them failing to
+tell *carrying* a fact from *describing* one, which is a limit of text matching
+rather than a series of accidents. Deleting the copy is O(0) and cannot misfire.
+
+Prose still carries rules, rationale and design arguments. Those are not
+derivable, and they do not rot the way a count does.
 
 ## The rules
 

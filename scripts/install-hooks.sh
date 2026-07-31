@@ -53,8 +53,7 @@ bun run scripts/selfcheck.js
 
 bun run plugin/skills/mitate/templates/smoke.js --parity-only \
   plugin/skills/mitate/templates/*.html \
-  plugin/skills/mitate/examples/*.html \
-  site/films/gearbox-neon.html
+  plugin/skills/mitate/examples/*.html
 HOOK_BODY
 
 if [ -e "$HOOK" ] && [ "$FORCE" != "--force" ]; then

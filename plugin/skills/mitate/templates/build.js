@@ -21,9 +21,11 @@
 // (macOS: brew install webp).
 // execFileSync, not execSync: no shell means no quoting rules to get wrong, and
 // a path containing a space cannot break the command. Same class of bug as the
-// exec-form rule for hooks in docs/internals/plugin-patterns.md -- that rule
-// covers hooks.json and says nothing about plugin scripts, but the surface is
-// identical.
+// exec-form rule for plugin hooks -- that rule covers hooks.json and says
+// nothing about plugin scripts, but the surface is identical. (This cited a doc
+// path in a DIFFERENT repo until 0.16.30: it resolved for nobody holding this
+// file, in a clone or an install cache. A comment may name a rule; it may not
+// cite a path it cannot reach.)
 const { execFileSync } = require('child_process');
 const run = (cmd, args, opts = {}) => execFileSync(cmd, args, { stdio: 'inherit', ...opts });
 const fs = require('fs');
@@ -317,7 +319,7 @@ function video(name, fps = 30) {
 // scene at 960px/24fps: mp4 0.52MB, gif 12.08MB, webp 15.56MB. WebP loses to GIF
 // there because the template's camera sway moves every pixel every frame, which
 // defeats inter-frame compression. Hold the camera (CONFIG.sway = 0) and keep it
-// short; see references/delivery.md.
+// short; see references/recordings.md.
 //
 // ...unless you ship AVIF, which dissolves the size side of that constraint but
 // adds a playback cost. Same 12s moving-camera scene re-measured today: webp
@@ -370,7 +372,7 @@ function shootAndScale(scene, fps, width, srcDir, tmpDir) {
 //
 // -s 6 is the measured knee on encoder speed: s8 produced files 2.3x larger for
 // (encoder effort — unrelated to the renderer-backend speedup that shares this
-//  number; see delivery.md vs webgpu-stack.md)
+//  number; see recordings.md vs webgpu-stack.md)
 // one second less, s4 gave no further size gain for double the time. Encoding
 // 288 frames costs ~11s, negligible against the ~65s it takes to shoot them.
 // -q 60 matches what `loop` passes img2webp; decoded frames were inspected and
@@ -800,7 +802,138 @@ function motion(scene, fps = 12) {
   }
 }
 
-const USAGE = 'usage: bun run build.js vendor|bundle|frames|video|all|avif|loop|poster|sheet|aspect|strip|motion <scene.html> [fps|t|t0] [width|t1] [frac|fps]';
+/* probe — measure the scene's own geometry at one t, instead of inferring it.
+ *
+ * The defect class this exists for is the most-repeated in the project's
+ * history: two things that must touch, and do not. `h` and `w` are the FRAMING
+ * extent; the contact point is a different number, so authors reach for the one
+ * that is written down. references/method.md owns the technique and the worked
+ * instances; this is that technique as a command, because the technique existed
+ * for the whole life of the project and got re-derived or skipped every time.
+ *
+ *   bun run build.js probe <scene.html> <when> '<expr>' ['<expr>' ...]
+ *
+ * <when> is a NUMBER or a JS EXPRESSION evaluated in the scene's own scope, so
+ * a probe addresses time the way the kit does: `beatAt('boop',.55)`, not 8.31.
+ * A raw second is accepted and is the thing that rots when a beat is retimed.
+ *
+ * Why it can read scene objects at all: scenes are classic scripts, so their
+ * top-level `let`/`const` live in the global lexical scope -- reachable by name
+ * from page.evaluate, and NOT on window (`bear` resolves; `window.bear` does
+ * not). Nothing needs instrumenting.
+ *
+ * This names scene internals, which the prime directive forbids of tooling that
+ * DRIVES a scene. The exception is written into that rule rather than argued
+ * here, and it is conditional: read-only, authoring-time, and in no pipeline
+ * that produces an artifact. If probe ever gets called by another verb, a
+ * workflow, or a hook, the exception lapses and this needs rethinking.
+ *
+ * Prelude, deliberately small:
+ *   bb(o)      world AABB. ACCEPTS A RIG OR AN Object3D -- buildCharacter
+ *              returns {root, body, head, ...}, so setFromObject(bear) throws
+ *              `updateWorldMatrix is not a function`, measured, and that trap
+ *              is why this unwraps .root rather than documenting the wrapping.
+ *   sep(a,b)   per-axis gap. NEGATIVE means overlap. All three axes, because
+ *              one recorded miss had an x-overlap of -1.66 and a y-overlap of
+ *              0.01: it arced cleanly over the body it was meant to hit.
+ *   proj(v)    NDC + whether it is on screen, for "the hit the camera cannot
+ *              see did not land".
+ *   reach(l)   L1+L2 of a limb, for "no rotation reaches a target past the arm".
+ *   shape(x)   what a thing IS -- keys, array length, Object3D type. Scene
+ *              names live in the global lexical scope and cannot be listed, so
+ *              this is the half that is possible: stop guessing at STRUCTURE
+ *              once you have a name.
+ */
+async function probe(scene, when, exprs) {
+  // Lazy, exactly like smoke.js's loadBrowserDeps: every other verb here is
+  // dependency-free string-and-ffmpeg work, and requiring playwright at module
+  // scope would make `build.js vendor` need a browser it never opens.
+  const { chromium } = require('playwright-core');
+  const { chromiumPath, angleArgs, seekSynced } = require(path.join(__dirname, 'backend.js'));
+  const PRELUDE = `
+    const __rt = o => (o && o.root && o.root.isObject3D) ? o.root : o;
+    const bb = o => new THREE.Box3().setFromObject(__rt(o));
+    const sep = (a, b) => { const A = bb(a), B = bb(b), r = {};
+      for (const k of ['x','y','z'])
+        r[k] = +(Math.max(A.min[k], B.min[k]) - Math.min(A.max[k], B.max[k])).toFixed(4);
+      r.touching = r.x <= 0 && r.y <= 0 && r.z <= 0; return r; };
+    const proj = v => { const p = (v && v.isVector3 ? v.clone()
+        : __rt(v).getWorldPosition(new THREE.Vector3())).project(camera);
+      return { x: +p.x.toFixed(3), y: +p.y.toFixed(3),
+               onScreen: Math.abs(p.x) <= 1 && Math.abs(p.y) <= 1 }; };
+    const reach = l => +(l.L1 + l.L2).toFixed(4);
+    // shape(x) -- what IS this thing? A scene's top-level let/const live in the
+    // global lexical environment, which is not enumerable, so probe can never
+    // list what exists; you must know a name. What it can do is stop you
+    // guessing at a name's STRUCTURE. Built after two wasted page loads spent
+    // discovering that a rig's limbs are keyed HL/HR/FL/FR rather than indexed.
+    const shape = x => {
+      if (x === null || x === undefined) return String(x);
+      if (Array.isArray(x)) return 'Array(' + x.length + ') of ' + shape(x[0]);
+      if (x.isObject3D) return (x.type || 'Object3D') + (x.name ? ' "' + x.name + '"' : '')
+        + ' children:' + x.children.length;
+      if (x.isVector3) return 'Vector3';
+      if (typeof x === 'object') return '{ ' + Object.keys(x).join(', ') + ' }';
+      return typeof x + ' ' + String(x);
+    };
+  `;
+  const browser = await chromium.launch({ executablePath: chromiumPath(), args: angleArgs() });
+  try {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1 });
+    page.on('pageerror', e => console.error('scene error: ' + e.message));
+    await page.goto('file://' + path.resolve(scene) + '?record=1');
+    await page.waitForFunction('window.sceneReady === true', { timeout: 20000 })
+      .catch(() => { throw new Error('scene never set window.sceneReady — check the errors above'); });
+    await page.evaluate('window.stopPlayback()');
+    const t = await page.evaluate(`(() => { const v = (${when}); if (!Number.isFinite(v))
+      throw new Error('<when> did not evaluate to a number: ' + JSON.stringify(v)); return v; })()`);
+    // seekSynced, not a bare seek: a probe that reads geometry does not strictly
+    // need the readback, but every capture site in this repo goes through one
+    // primitive and a second pattern here is how the first one drifted.
+    await seekSynced(page, t);
+    console.log(`${path.basename(scene)}  t=${t.toFixed(4)}  (${when})`);
+    for (const e of exprs) {
+      let out;
+      try {
+        out = await page.evaluate(`(() => { ${PRELUDE}; return (${e}); })()`);
+      } catch (err) {
+        const msg = String(err.message).split('\n')[0];
+        out = 'ERROR — ' + msg;
+        // A "cannot read properties of undefined" here almost always means the
+        // shape was guessed, not that the object is missing. Say what to run
+        // next instead of leaving the reader to invent a second probe call.
+        // Suggest the SCENE object, not the prelude helper that wrapped it. The
+        // first version matched the leading identifier and proposed `shape(bb)`,
+        // which is this file's own function -- useless, and a small instance of
+        // the thing probe exists to stop: answering with what is easy to compute
+        // rather than what was asked.
+        if (/undefined|not a function/.test(msg)) {
+          const HELPERS = new Set(['bb', 'sep', 'proj', 'reach', 'shape', 'JSON', 'Math', 'Object', 'Array']);
+          const chains = (e.match(/[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)+/g) || [])
+            .filter(c => !HELPERS.has(c.split('.')[0]));
+          const best = chains.sort((a, b) => b.length - a.length)[0];
+          if (best) {
+            // Indexing something that is not an array is the common case, and
+            // there the chain ITSELF is what you want described -- `bear.limbs[0]`
+            // failing means `shape(bear.limbs)`, not `shape(bear)`. Otherwise the
+            // last component is the property that came back undefined, so drop it.
+            const indexed = e.includes(best + '[');
+            const parts = best.split('.');
+            const target = indexed ? best : parts.slice(0, Math.max(1, parts.length - 1)).join('.');
+            out += `\n    try: 'shape(${target})'`;
+          }
+        }
+      }
+      console.log(`  ${e}`);
+      console.log(`    ${typeof out === 'object' ? JSON.stringify(out) : out}`);
+    }
+  } finally {
+    await browser.close();
+  }
+}
+
+const USAGE = 'usage: bun run build.js vendor|bundle|frames|video|all|avif|loop|poster|sheet|aspect|strip|motion|probe <scene.html> [fps|t|t0] [width|t1] [frac|fps]\n'
+  + "       probe: bun run build.js probe <scene.html> <when> '<expr>' ['<expr>' ...]";
 // arg1/arg2/arg3 are deliberately neutral: their meaning is per-command (fps
 // for frames, t for poster, width for sheet, ...) and the old names (fpsArg,
 // widthArg) lied for most commands — each dispatch line below names what it
@@ -824,4 +957,15 @@ else if (step === 'aspect') aspectSheet(target, Number(arg1 || 0), Number(arg2 |
 else if (step === 'sheet') sheet(target, Number(arg1 || 480), arg2 === undefined ? 0.6 : Number(arg2), arg3 === 'nocap');
 else if (step === 'strip') strip(target, Number(arg1), Number(arg2), Number(arg3 || 30));
 else if (step === 'motion') motion(target, Number(arg1 || 12));
+// probe takes ALL remaining argv rather than the neutral arg1..arg3 slots: the
+// point is measuring several offsets at one t in one page load, and capping it
+// at three would send an author back to hand-written page.evaluate for the
+// fourth — which is the thing this command exists to retire.
+else if (step === 'probe') {
+  const exprs = process.argv.slice(5);
+  if (!arg1 || !exprs.length) {
+    console.error("probe: need <when> and at least one expression\n" + USAGE); process.exit(1);
+  }
+  probe(target, arg1, exprs).catch(e => { console.error(String(e.message)); process.exit(1); });
+}
 else { console.error(USAGE); process.exit(1); }

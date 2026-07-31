@@ -24,14 +24,28 @@
  */
 const fs = require('fs');
 const path = require('path');
+const { execFileSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
+const PLUGIN_ROOT = path.join(ROOT, 'plugin');
 const SUBTREE = path.join(ROOT, 'plugin', 'skills', 'mitate');
 const REFS = path.join(SUBTREE, 'references');
 const TEMPLATES = path.join(SUBTREE, 'templates');
 const EXAMPLES = path.join(SUBTREE, 'examples');
 
 const R = f => fs.readFileSync(f, 'utf8');
+// ONE directory walk. There were two, written a session apart for checks 3 and
+// 6d, differing only in what they collected and what they skipped -- which is
+// the same duplicate-with-a-small-difference shape this file exists to catch,
+// in this file.
+const SKIP = /^(\.git|node_modules|internal)$/;
+const walkFiles = (dir, onFile) => {
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (SKIP.test(e.name)) continue;
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) walkFiles(p, onFile); else onFile(p, e.name);
+  }
+};
 // THE pin, scraped once. build.js has no require.main guard, so requiring it as
 // a library would run its CLI -- the regex is the only safe read, and doing it
 // in one place keeps this file from becoming a second copy of the fact.
@@ -132,22 +146,21 @@ const fail = m => fails.push(m);
   notes.push(`${pinned.length} pinned dependencies, agreeing across build.js, gate.yml and SKILL.md`);
 }
 
-/* ---- 3. no pointer inside the subtree escapes it (invariant 3) ------------
- * An install cache holds .claude-plugin/, README.md and skills/ — nothing else.
- * A relative link to docs/ or site/ therefore dangles for exactly the reader
- * holding it. Done by RESOLVING markdown links, not by grepping for "site/":
+/* ---- 3. no pointer inside SHIPPED content escapes it (invariant 3) --------
+ * An install cache holds what is under plugin/ and nothing else -- as of
+ * 0.16.32 that is .claude-plugin/, README.md, skills/ AND agents/. A relative
+ * link to docs/ or site/ therefore dangles for exactly the reader holding it. Done by RESOLVING markdown links, not by grepping for "site/":
  * an outside audit did the grep version and reported backticked prose as broken
  * links, which is a category error. Prose may name a repo path; a LINK may not
  * leave the subtree. */
 {
   const files = [];
-  const walk = d => fs.readdirSync(d, { withFileTypes: true }).forEach(e => {
-    const p = path.join(d, e.name);
-    if (e.isDirectory()) walk(p);
-    else if (/\.md$/.test(e.name)) files.push(p);   // .md only: see note below
-  });
-  walk(SUBTREE);
-  files.push(path.join(ROOT, 'plugin', 'README.md'));   // ships in the cache too
+  // EVERYTHING under plugin/ ships, not just skills/. This walked the skill
+  // subtree plus one hardcoded README until 0.16.32, when plugin/agents/ was
+  // added and would have been a shipped directory whose links nothing resolved.
+  // Walking the plugin root instead means the next shipped directory is covered
+  // the day it exists rather than the day someone remembers this check.
+  walkFiles(PLUGIN_ROOT, (p, n) => { if (/\.md$/.test(n)) files.push(p); });   // .md only: see note below
   let checked = 0;
   for (const f of files) {
     // Markdown links only, in markdown files only. Two exclusions, both
@@ -161,7 +174,7 @@ const fail = m => fails.push(m);
       if (/^(https?:|mailto:)/.test(t)) continue;
       checked++;
       const resolved = path.resolve(path.dirname(f), t);
-      const inSubtree = resolved.startsWith(SUBTREE) || resolved === path.join(ROOT, 'plugin', 'README.md');
+      const inSubtree = resolved.startsWith(PLUGIN_ROOT);
       if (!inSubtree) {
         fail(`${path.relative(ROOT, f)} links out of the install cache: ${t} — use an absolute repo URL`);
       } else if (!fs.existsSync(resolved)) {
@@ -182,6 +195,29 @@ const fail = m => fails.push(m);
   // here would be a stale claim with a timer on it — the class this whole file
   // exists to catch. Every reference is checked; the population is reported.
   const refs = fs.readdirSync(REFS).filter(f => f.endsWith('.md'));
+  // SKILL.md carries one too, as of 0.16.34. It used to carry
+  // `metadata.last_verified` instead: frontmatter, so standing context cost on
+  // every activation, asserting a HUMAN review, going stale on every edit, and
+  // checked by nothing -- it was four days and two releases stale when removed.
+  // The provenance form is per-file, records what was verified against what, and
+  // is checked here. It is exempt from the "Not here" edge below: that edge maps
+  // ownership BETWEEN references, and SKILL.md is the router, not a peer.
+  const SKILL_MD = path.join(SUBTREE, 'SKILL.md');
+  {
+    const head = R(SKILL_MD).slice(0, HEADER_WINDOW);
+    if (!/>\s*\*\*Provenance\.\*\*/.test(head)) fail('SKILL.md has no provenance header');
+    else if (!/\b20\d\d-\d\d-\d\d\b/.test(head)) fail('SKILL.md provenance names no date');
+    // Scoped to the FRONTMATTER, not the whole head. The first version grepped
+    // the head for the string and fired on the provenance header immediately
+    // below, which explains why the field was removed -- a check that cannot
+    // tell carrying a field from describing one, which is the same
+    // false-accusation shape as the two seek-check specs before it.
+    const fm = (R(SKILL_MD).match(/^---\n([\s\S]*?)\n---/) || [])[1] || '';
+    if (/^\s*last_verified:/m.test(fm)) {
+      fail('SKILL.md still carries metadata.last_verified — removed in 0.16.34 as an '
+         + 'unenforced claim in always-loaded frontmatter; use the provenance header');
+    }
+  }
   for (const f of refs) {
     const head = R(path.join(REFS, f)).slice(0, HEADER_WINDOW);
     if (!/>\s*\*\*Provenance\.\*\*/.test(head)) { fail(`${f} has no provenance header`); continue; }
@@ -239,7 +275,7 @@ const templateJs = new Map(
 // recorded high-water mark: derive this from the code and the check passes
 // always and measures nothing. Every other count here is computed. Lower it
 // when you retire a claim; never raise it.
-const ASSERT_BUDGET = 46;
+const ASSERT_BUDGET = 51;
 {
   // Per LINE, and only lines that do NOT name their control: a comment saying
   // "measured — see bracket-noise.js" is exactly what this wants more of, so
@@ -247,7 +283,19 @@ const ASSERT_BUDGET = 46;
   // reported 46 against a budget of 41 because the 41 came from a coarser
   // shell grep that counted controlled and uncontrolled alike — the number is
   // defined by this check, not by that grep.
-  const re = /\/\/.{0,80}?\b(measured|bracketed|confirmed|verified)\b/i;
+  // BLOCK COMMENTS COUNT AS OF 0.16.37. The scan was `//`-only, and this file's
+  // biggest neighbours (build.js, smoke.js) carry their heaviest prose in `/* */`
+  // headers -- so the ratchet was blind to exactly where a "measured" claim is
+  // most likely to be written. Found by reading, then walked into: two new block
+  // claims landed in build.js's probe docstring in the very session that found
+  // the hole. Review caught them.
+  //
+  // The budget MOVED UP, once, and only because the measurement changed
+  // DEFINITION -- 46 `//` lines became 52 across both comment forms. That is a
+  // re-baseline, not a rise, and it is the only kind permitted: widening what is
+  // counted is not the same as tolerating more debt. From here it may fall and
+  // never rise.
+  const re = /(?:\/\/|^\s*\*).{0,80}?\b(measured|bracketed|confirmed|verified)\b/i;
   let n = 0;
   for (const [, text] of templateJs) {
     for (const line of text.split('\n')) {
@@ -274,15 +322,362 @@ const ASSERT_BUDGET = 46;
  * putting one in CI buys a green that means nothing. This is a PROXY — it reads
  * for a non-zero exit path, not for correctness — and a proxy can reject, it
  * cannot approve. Running the brackets is what approves them; CI does that. */
+/* ---- 6b. tool JS, read once. ORDERED BEFORE check 6 because the bracket
+ * census below is over both directories, and reading scripts/ twice to keep the
+ * old numbering would be the duplicate this file exists to catch. */
+const toolJs = new Map([
+  ...templateJs,
+  ...fs.readdirSync(__dirname).filter(f => f.endsWith('.js'))
+    .map(f => ['scripts/' + f, R(path.join(__dirname, f))]),
+]);
+
 {
-  const brackets = [...templateJs.keys()].filter(f => /^bracket-.*\.js$/.test(f));
+  // BOTH DIRECTORIES. The census read templates/ only, which was true when every
+  // bracket lived there and silently false afterwards: bracket-selfcheck.js sat
+  // in scripts/ uncounted here and unrun by any workflow, so the one control over
+  // the repo's own claim-checker was invisible to the check that exists to notice
+  // exactly that. Matched on basename, since a scripts/ key carries its directory.
+  const brackets = [...toolJs.keys()].filter(f => /^bracket-.*\.js$/.test(path.posix.basename(f)));
   if (!brackets.length) fail('no bracket-*.js found — the controls have gone missing');
   for (const b of brackets) {
-    if (!/process\.exit\(1\)/.test(templateJs.get(b))) {
+    if (!/process\.exit\(1\)/.test(toolJs.get(b))) {
       fail(`${b} has no failing exit path — it cannot go red, so its green means nothing`);
     }
   }
   notes.push(`${brackets.length} brackets, each with a failing exit path (proxy: not a correctness check)`);
+}
+
+/* ---- 6c. no bare seek before a capture ------------------------------------
+ * 0.16.28 measured a bare `evaluate('window.seekTo(t)')` followed by a capture
+ * at 40/30/20 percent byte-differences on ubuntu-22.04/WebGL2, against 0 of 200
+ * once the seek and a GPU readback shared one page task. backend.js's seekSynced
+ * is that fix. It did not reach every consumer: bracket-determinism.js still
+ * bare-seeked through 0.16.29, passing while exercising a pattern nothing ships.
+ *
+ * SPEC'D ON THE PATTERN, NOT THE IMPORT, and the difference is the whole check.
+ * The obvious version -- "requires backend.js and screenshots but never calls
+ * seekSynced" -- condemns scripts/diagnose-determinism.js, which is CORRECT: its
+ * gridAt seeks and reads back in one evaluate, and it cannot delegate to
+ * seekSynced because there the completion barrier and the diagnostic payload are
+ * the same readback. A check whose first act is to condemn a correct file is
+ * worse than no check. So: does this evaluate seek AND read pixels back? */
+{
+  // THE SPEC TOOK THREE TRIES AND THE FIRST TWO WERE WRONG, which is recorded
+  // because the wrong ones look reasonable:
+  //   1. "requires backend.js, screenshots, never calls seekSynced" — condemns
+  //      diagnose-determinism.js, which is correct.
+  //   2. "any evaluate that seeks without reading back" — condemns
+  //      bracket-liveplay.js (it wraps seekTo to COUNT calls, never captures)
+  //      and sample-determinism.js's control arm. Forbidding the control that
+  //      proves the fix works is worse than not checking at all.
+  // What is actually wrong is narrower: a bare seek WHOSE RESULT IS CAPTURED.
+  // Hence the window: an evaluate that seeks, a .screenshot() within six lines,
+  // and no readback between them. Measured against the pre-fix
+  // bracket-determinism.js, which it catches, and against the tree, which is
+  // clean but for one declared control.
+  // SAME TASK, not "a readback appears nearby". backend.js's seekSynced comment
+  // is explicit about the mechanism: the drawing buffer is cleared after
+  // compositing, so a readback in a LATER task reads zeros and synchronises
+  // nothing. Review caught that the first version tested `/getImageData/` against
+  // raw window text, which would exempt a seek whose readback sat in a SEPARATE
+  // evaluate -- a pattern that does not fix the race at all. So the body is now
+  // extracted per call with a balanced-paren scan, and the readback must be in it.
+  const evaluateSites = text => {
+    const out = [];
+    const re = /\.evaluate\(/g;
+    let m;
+    while ((m = re.exec(text))) {
+      let i = m.index + m[0].length, depth = 1;
+      while (i < text.length && depth > 0) {
+        if (text[i] === '(') depth++; else if (text[i] === ')') depth--;
+        i++;
+      }
+      if (depth !== 0) continue;
+      out.push({
+        body: text.slice(m.index + m[0].length, i - 1),
+        line: text.slice(0, m.index).split('\n').length,
+        endLine: text.slice(0, i).split('\n').length,
+      });
+    }
+    return out;
+  };
+  // WINDOW is a heuristic and cannot be made exact -- that is stated rather than
+  // hidden, because the note below would otherwise read as a guarantee it does
+  // not give. 8 lines, chosen to cover the widest real gap in the tree
+  // (sample-determinism's control arm: seek at 145, capture at 151) rather than
+  // by taste. A capture further from its seek than this is not caught.
+  //
+  // KNOWN FALSE-POSITIVE SHAPE, do not "fix" by widening further: smoke.js's
+  // sampleAt seeks and then interpolates `reader.toString()` into the SAME
+  // evaluate, so its readback exists at runtime and is invisible to any static
+  // scan. Widening until that trips is how this check starts condemning correct
+  // code, which it did twice during development.
+  const WINDOW = 8;
+  const OPT_OUT = /selfcheck: bare-seek-is-the-control/;
+  const LOOKBACK = 6;   // a declaration sits ABOVE the line it excuses
+  let bare = 0, flagged = 0;
+  for (const [name, text] of toolJs) {
+    const lines = text.split('\n');
+    for (const site of evaluateSites(text)) {
+      if (!/window\.seekTo/.test(site.body)) continue;
+      if (/getImageData/.test(site.body)) continue;          // synced, same task
+      bare++;
+      const after = lines.slice(site.endLine, site.endLine + WINDOW).join('\n');
+      if (!/\.screenshot\(/.test(after)) continue;            // seek is not captured
+      flagged++;
+      // site.line is 1-indexed; `lines` is 0-indexed. Converting explicitly
+      // rather than folding the -1 into the constant: the first version used
+      // `site.line - 6` and started the slice one line PAST the marker, which
+      // read as a missing declaration rather than an off-by-one.
+      const from = Math.max(0, (site.line - 1) - LOOKBACK);
+      if (OPT_OUT.test(lines.slice(from, site.endLine + WINDOW).join('\n'))) continue;
+      fail(`${name}:${site.line} seeks in a page.evaluate with no readback in that same `
+         + `call, and captures within ${WINDOW} lines — the race measured at 40/30/20 on a `
+         + `slow GL stack, 0 of 200 once seek and readback shared a task. Use seekSynced. `
+         + `If the bare seek IS the control, say so on the line.`);
+    }
+  }
+  notes.push(`${bare} bare seeks scanned, ${flagged} of them captured within ${WINDOW} lines `
+    + `— all synced or declared (a capture further than ${WINDOW} lines from its seek is not seen)`);
+}
+
+/* ---- 6d. a comment may not cite a file that does not exist ----------------
+ * The boundary every claim-defect in this repo has crossed: a comment may assert
+ * what its own line does; it may not assert what another file does. The
+ * unfalsifiable half of that is decidable, so it gets a check.
+ *
+ * Caught, had it existed: a shipped example pointing at a probe tool that has
+ * never existed in ANY generation of this project (both frozen predecessors
+ * grepped), cited as the provenance for the one constant that makes its gag
+ * land; and build.js naming a docs path belonging to a different repo. Both read
+ * as evidence and were not. */
+{
+  // TWO NARROW PATTERNS, chosen by measurement rather than by taste. The broad
+  // version -- any `\w+\.(js|md|html)` token in a comment -- was written first
+  // and reported 46 failures, of which 45 were `scene.html`, `template.html` and
+  // `three.js`: usage-string placeholders and a library's name. Precision is
+  // what separates a gate from noise, so it was narrowed until the hits were
+  // explicable, and the two that survive are exactly the shapes that went wrong.
+  //
+  //   PATHY -- a token containing a slash. Placeholders never do.
+  //   PROV  -- a bare filename in a citation frame (see X, recorded in X).
+  //            A "see <tool>" frame is a provenance claim; a usage line like
+  //            "bun run smoke.js scene.html" is not.
+  //
+  // The lookbehind excludes word characters but deliberately NOT `/`. Excluding
+  // `/` was tried and dropped four real citations: the bracket usage lines read
+  // `"${CLAUDE_SKILL_DIR}"/templates/bracket-noise.js`, whose checkable part
+  // begins right after a slash. A tightening that silently narrows what a check
+  // sees is the failure this file exists to prevent, so it was measured both
+  // ways. The optional leading dot is what lets `.claude-plugin/marketplace.json`
+  // be resolved as the path it is rather than as a dotless near-miss.
+  const PATHY = /(?<![\w.-])\.?[\w][\w.-]*(?:\/[\w.-]+)+\.(?:js|md|html|json|yml|sh)\b/g;
+  const PROV = /\b(?:see|per|recorded in|preserved in|cited in|documented in)\s+`?([\w][\w.-]*\.(?:js|md|html|json|yml|sh))`?/gi;
+  // Upstream paths inside a dependency, which a comment may legitimately name
+  // and this repo will never contain. One entry, and it earned it: three dropped
+  // its UMD build after 0.160, which is why build.js explains the vendoring.
+  const EXTERNAL_OK = new Set(['build/three.min.js']);
+  // THE ACCEPT-SET IS WHAT GIT TRACKS, not what the disk holds. Two defects, one
+  // cause -- the first version walked the live filesystem and compared BASENAMES:
+  //
+  //   * A citation naming a real file under an invented directory passed, because
+  //     the basename existed somewhere. Only the directory was a lie, and a
+  //     basename comparison cannot see one. (The fixture is assembled in
+  //     bracket-selfcheck.js rather than written here, because a literal example
+  //     of a bad citation IS one, and this check flagged this very comment.)
+  //   * The staged film copies under the site directory are derived output and
+  //     gitignored, so they are on a laptop that has built and absent in CI. The
+  //     check answered the same question two ways depending on where it ran.
+  //
+  // `--others --exclude-standard` keeps a file you have just written and not yet
+  // staged in the set, so writing a comment and its target in one change does not
+  // fail on the way past; build output stays out because it is ignored.
+  const tracked = new Set(execFileSync('git',
+    ['ls-files', '--cached', '--others', '--exclude-standard'],
+    { cwd: ROOT, encoding: 'utf8' }).split('\n').filter(Boolean));
+  const names = new Set([...tracked].map(p => path.posix.basename(p)));
+  // Two bases, because both are real shapes in the corpus and both are how a
+  // reader would follow the pointer: repo-root-relative from a repo tool
+  // (`docs/source-of-truth.md`), and subtree-relative from inside the shipped
+  // subtree (`references/method.md`), where a reader holds only that subtree.
+  const SUBTREE_REL = path.relative(ROOT, SUBTREE).split(path.sep).join('/');
+  const commentRe = /(?:\/\/|\*|#).*/g;
+  let cited = 0;
+  const flag = (name, tok) => {
+    cited++;
+    if (EXTERNAL_OK.has(tok)) return;
+    if (!tok.includes('/')) {                       // PROV: a bare filename
+      if (names.has(tok)) return;
+      fail(`${name} cites \`${tok}\` in a comment and no such file exists in the repo. `
+         + `A comment may name a rule; it may not cite a path its reader cannot reach.`);
+      return;
+    }
+    const tries = [tok, `${SUBTREE_REL}/${tok}`];
+    if (tries.some(p => tracked.has(p))) return;
+    const onDisk = tries.find(p => fs.existsSync(path.join(ROOT, p)));
+    fail(onDisk
+      ? `${name} cites \`${tok}\`, which exists at \`${onDisk}\` but is not tracked. `
+        + `Derived output is present on one machine and absent on another; a comment may not rest on it.`
+      : `${name} cites \`${tok}\` in a comment and nothing tracked resolves there `
+        + `(tried the repo root and the shipped subtree). A comment may name a rule; `
+        + `it may not cite a path its reader cannot reach.`);
+  };
+  // SCENE HTML IS IN SCOPE AS OF 0.16.32, and the order was deliberate: it
+  // carried the live instance -- bear-and-bees cited a probe.js that has never
+  // existed, as the provenance for the constant its gag depends on. Widening
+  // the check before shipping `probe` would have meant a standing exemption for
+  // a known-bad line, which is how a ratchet rots. `probe` shipped, the constant
+  // was re-derived and now measures -0.32/-0.76/-1.06, and the scope follows.
+  //
+  // LONG LINES SKIPPED: an example embeds ~1 MB of minified three, whose license
+  // banners and single-line bodies are not authored comments. 500 chars keeps
+  // every hand-written line (the widest authored line in the corpus is far under
+  // it) and drops the bundle. The counts are REPORTED below rather than written
+  // here: this file's own rule is that a number a command produces does not get
+  // hand-written, and a frozen figure would go stale the next time an example
+  // lands with nothing to catch it. Review flagged that it was written here.
+  const MINIFIED_LINE = 500;
+  const sceneHtml = [];
+  for (const d of [TEMPLATES, EXAMPLES]) {
+    for (const f of fs.readdirSync(d).filter(x => x.endsWith('.html'))) {
+      sceneHtml.push([path.relative(ROOT, path.join(d, f)), R(path.join(d, f))]);
+    }
+  }
+  let skipped = 0, scanned = 0;
+  const sources = [
+    ...[...toolJs].map(([n, t]) => [n, t.split('\n')]),
+    ...sceneHtml.map(([n, t]) => {
+      const all = t.split('\n');
+      const keep = all.filter(l => l.length <= MINIFIED_LINE);
+      skipped += all.length - keep.length; scanned += keep.length;
+      return [n, keep];
+    }),
+  ];
+  for (const [name, lines] of sources) {
+    for (const raw of lines) {
+      for (const line of raw.match(commentRe) || []) {
+        for (const tok of line.match(PATHY) || []) flag(name, tok);
+        let m; PROV.lastIndex = 0;
+        while ((m = PROV.exec(line))) flag(name, m[1]);
+      }
+    }
+  }
+  notes.push(`${cited} cited paths in tool and scene comments, all resolving `
+    + `(scene HTML: ${scanned} lines scanned, ${skipped} minified lines skipped)`);
+}
+
+/* ---- 6f. the ONE exception to the prime directive has not quietly lapsed ----
+ * CLAUDE.md admits `build.js probe` past "tooling talks only to the window
+ * contract", because measuring a contact requires naming the two things being
+ * measured. It admits it on three conditions and calls them "all currently true
+ * and all checkable" -- and then nothing checked them, which is how a bent rule
+ * becomes a gone rule. Two of the three are mechanical and are checked here;
+ * "runs at authoring time" is not decidable from source and is carried by the
+ * third (nothing in an artifact pipeline can invoke it).
+ *
+ * Written over every tool file rather than over build.js by name, so a probe
+ * copied into a second tool inherits the same rule, and so the bracket can
+ * exercise it with a fixture instead of mutating a shipped artifact. */
+{
+  // Deliberately broad: anything that spawns, writes, or removes. A probe that
+  // shells out is not read-only however careful the command looks.
+  const WRITES = /\b(writeFileSync|appendFileSync|mkdirSync|rmSync|unlinkSync|createWriteStream|execFileSync|spawnSync|execSync)\s*\(/;
+  // COMMENTS STRIPPED FIRST, and this is not a nicety: build.js has a comment
+  // reading "a step-halving probe(" as ordinary prose, which the first version
+  // counted as a second call site and reported the exception lapsed. A checker
+  // that reads prose as code produces exactly the false accusation this file
+  // exists to prevent -- the third time that shape has appeared here.
+  const stripComments = s => s
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/(^|[^:])\/\/.*$/gm, '$1');
+  let probes = 0;
+  for (const [name, raw] of toolJs) {
+    const text = stripComments(raw);
+    const def = /(?:async\s+)?function\s+probe\s*\(/.exec(text);
+    if (!def) continue;
+    probes++;
+    // Balanced-brace extraction from the definition's opening brace, the same
+    // shape check 6c uses for evaluate() -- a regex to the next `}` would stop
+    // at the first nested block and read almost nothing.
+    let i = text.indexOf('{', def.index + def[0].length - 1), depth = 0, end = -1;
+    for (let j = i; j < text.length && i >= 0; j++) {
+      if (text[j] === '{') depth++;
+      else if (text[j] === '}' && --depth === 0) { end = j; break; }
+    }
+    const body = end > 0 ? text.slice(i, end) : '';
+    const w = body.match(WRITES);
+    if (w) {
+      fail(`${name}: \`probe\` calls ${w[1]} — the prime directive admits this instrument `
+         + `ONLY because it must only READ (CLAUDE.md). Writing from it lapses the exception.`);
+    }
+    // Call sites excluding the definition. Exactly one is expected: the CLI
+    // dispatch. A second means some other verb reaches through it, which is the
+    // "in no pipeline that produces an artifact" condition failing.
+    const calls = [...text.matchAll(/\bprobe\s*\(/g)]
+      .filter(m => m.index !== def.index && !/function\s+$/.test(text.slice(0, m.index)));
+    if (calls.length > 1) {
+      fail(`${name}: \`probe\` has ${calls.length} call sites; the exception holds only while it `
+         + `is in no pipeline that produces an artifact, i.e. the CLI dispatch and nothing else.`);
+    }
+  }
+  // The same condition from the other side: nothing automated may invoke it.
+  const WF = path.join(ROOT, '.github', 'workflows');
+  const auto = [
+    ...fs.readdirSync(WF).map(f => [`.github/workflows/${f}`, R(path.join(WF, f))]),
+    ['scripts/install-hooks.sh', R(path.join(__dirname, 'install-hooks.sh'))],
+  ];
+  for (const [name, text] of auto) {
+    if (/build\.js\s+probe\b/.test(text)) {
+      fail(`${name} invokes \`build.js probe\` — an authoring instrument in an automated `
+         + `pipeline. That is the condition CLAUDE.md says lapses the exception.`);
+    }
+  }
+  if (!probes) fail('no `probe` instrument found — check 6f is guarding nothing');
+  notes.push(`${probes} probe instrument, read-only and single-call-site (the prime directive's one exception)`);
+}
+
+/* ---- 6e. tracked postmortems are readable by the thing that indexes them ---
+ * NOT an existence check on `artifacts:`, which is what the plan specified and
+ * which would have been wrong. A postmortem is a DATED RECORD: its citations are
+ * historical by nature, and one here legitimately names a reference that was
+ * renamed since. Failing the build when a cited file is later moved would punish
+ * exactly the archival value that tracking these is for.
+ *
+ * What is decidable and does not rot is whether the file can be READ by the
+ * index that makes a corpus of postmortems navigable. The 2026-07-25 record had
+ * no frontmatter at all and was invisible to it, which is the real failure and
+ * the one worth a gate. */
+{
+  const PM = path.join(ROOT, 'docs', 'postmortems');
+  const REQUIRED = ['mode', 'scope', 'date', 'summary', 'artifacts'];
+  const NAME = /^(\d{4}-\d\d-\d\d)_(session|span|feature)_[a-z0-9-]+\.md$/;
+  let n = 0;
+  if (fs.existsSync(PM)) {
+    for (const f of fs.readdirSync(PM).filter(x => x.endsWith('.md'))) {
+      n++;
+      const m = f.match(NAME);
+      if (!m) {
+        fail(`docs/postmortems/${f} is not named YYYY-MM-DD_<session|span|feature>_<slug>.md `
+           + `— date first so the listing sorts chronologically`);
+        continue;
+      }
+      const head = R(path.join(PM, f)).slice(0, HEADER_WINDOW);
+      if (!/^---\n/.test(head)) {
+        fail(`docs/postmortems/${f} has no frontmatter — the index cannot see it, `
+           + `which is how one of these sat unlisted for five days`);
+        continue;
+      }
+      const fm = head.slice(4, head.indexOf('\n---', 4));
+      for (const k of REQUIRED) {
+        if (!new RegExp(`^${k}:`, 'm').test(fm)) fail(`docs/postmortems/${f} frontmatter has no \`${k}:\``);
+      }
+      const d = (fm.match(/^date:\s*(\d{4}-\d\d-\d\d)/m) || [])[1];
+      if (d && d !== m[1]) fail(`docs/postmortems/${f} says date: ${d} but its filename says ${m[1]}`);
+      const mode = (fm.match(/^mode:\s*(\w+)/m) || [])[1];
+      if (mode && mode !== m[2]) fail(`docs/postmortems/${f} says mode: ${mode} but its filename says ${m[2]}`);
+    }
+  }
+  notes.push(`${n} tracked postmortems, each indexable (frontmatter + name agree)`);
 }
 
 /* ---- 7. dated freshness markers are not older than the file ---------------
@@ -301,7 +696,6 @@ const ASSERT_BUDGET = 46;
  * for it to fire and not a gap to close: a marker bumped before the commit that
  * justifies it would be the same lie in the other direction. */
 {
-  const { execFileSync } = require('child_process');
   const git = (...a) => execFileSync('git', a, { cwd: ROOT, encoding: 'utf8' }).trim();
   let shallow = 'true';
   try { shallow = git('rev-parse', '--is-shallow-repository'); } catch (e) {}

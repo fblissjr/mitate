@@ -7,6 +7,937 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.40
+
+### fixed
+
+**The first CI run of the brackets caught a defect in the brackets — an
+environment-dependent arm inside the arm written to catch environment
+dependence.** `bracket-selfcheck.js`'s "comment citing gitignored build output"
+arm wrote a fixture into `site/films/` without creating the directory.
+`films/*.html` is gitignored, so git tracks nothing there and does not create the
+path: a fresh checkout has no `site/films/`, and the arm died with `ENOENT` the
+moment it ran anywhere that had not already executed `stage-films.sh`. It passed
+locally for exactly that reason.
+
+**Fixed at the root as well as at the consumers.** `site/films/.gitkeep` is now
+tracked, so the directory survives a clone instead of three separate callers each
+compensating for its absence — and `site/.gitignore` widens from `films/*.html`
+to `films/*` with `.gitkeep` negated, because the narrower rule would have let a
+staged `.json`, sprite sheet or map file get tracked by accident, which is the
+second-copy problem arriving through a side door.
+
+The `mkdir -p` calls stay as belt to that braces: `.gitkeep` covers the clone,
+the `mkdir` covers the directory being removed — which is precisely how these
+arms get tested. `bracket-stage-films.js` had the same latent fault — arm 2 wrote into `site/films/` and worked only because arm 1 had
+run `stage-films.sh` first, which is ordering, not a guarantee.
+
+Reproduced locally by deleting `site/films/` before the fix and after, which is
+the only honest way to test a claim about a fresh checkout. **This is what wiring
+the brackets into `static.yml` was for:** they had never run anywhere but a
+laptop, and the first unattended execution found a defect of precisely the class
+the branch exists to remove.
+
+### fixed
+
+**`site/` is strictly downstream, and the direction was stated wrong in both
+directions before this landed.** Owner, 2026-07-30: *"the vision defines and
+informs site language, and plan informs site copy of plan... fundamentally the
+vision and the code tracked out of site is the source of truth. The site is just
+how you and I choose to communicate it out."*
+
+0.16.39 corrected an inflation — the plan had promoted the site to a "vision
+carrier" — but over-corrected by striking the reconciliation obligation with it.
+Both errors are the same mistake about direction. The site owns nothing and
+settles nothing, **and** a language change in `VISION.md`, `plan.md` or
+`README.md` is real work on the site, because the site is how that language
+reaches anyone. `source-of-truth.md` now states the one-directional flow;
+`CLAUDE.md`'s map entry says the site is never the tiebreaker but is never exempt.
+
+**The obligation had already been missed, and it was measurable.**
+`site/index.html` is byte-identical to `main` while this branch rewrote the
+language it exists to carry. Four gaps found; one was not a wording question and
+is fixed here:
+
+- **The false duration ceiling.** `site:156` carried *"nothing caps duration, but
+  longer has not been shipped"* — the superseded `README.md` sentence **verbatim**,
+  the same claim the owner struck from `SKILL.md` and `README.md` earlier in this
+  session — and `site:167` led with *"These run 12 to 21 seconds."* Both now say
+  the examples are short **by choice**, and that a frame at `t=18000` costs what a
+  frame at `t=1` costs because the duration is a number in a table. A public page
+  asserting something the owner has explicitly called false is not a style
+  preference.
+
+Three remain, recorded in the plan and left for the owner because they are voice:
+`t` is framed as *"a pure function of **time** t"* three times including the
+`<meta>` and `og:description` that drive every social preview, where `VISION.md`
+and `README.md` now lead with **`t` as a position, not a clock**; the window
+contract is shown flat at `site:345` with a membership list that omits a
+hard-asserted name (`stopPlayback`) while including two soft ones, exactly the
+disagreement `glossary.md` warns about; and the `#why` section predates
+`VISION.md` and does not point at it.
+
+### added
+
+**The prime directive's one exception is now bracketed, three releases after it
+was granted.** `CLAUDE.md` admits `build.js probe` past "tooling talks only to
+the window contract" on three conditions, and calls them *"all currently true and
+all checkable"* — then nothing checked them, so the exception could have lapsed
+in silence, which is exactly how a bent rule becomes a gone rule. `selfcheck.js`
+check 6f enforces the two that are mechanical: the instrument must not write or
+spawn, and it must have exactly one call site (its CLI dispatch), with a second
+check that no workflow or hook invokes `build.js probe`. Written over every tool
+file rather than over `build.js` by name, so a probe copied elsewhere inherits
+the rule — and so its two bracket arms use a fixture instead of mutating a
+shipped artifact, the trade removed from `bracket-stage-films.js` in this same
+release.
+
+**Its first version reported the exception had already lapsed, and was wrong.**
+`build.js` carries a comment reading *"a step-halving probe("* as ordinary prose,
+which the call-site counter read as a second caller. Comments are stripped before
+counting now. That is the third time in this repo a checker has read prose as
+code and produced a false accusation, which is the argument for brackets: the arm
+was written first, went MISSED, and the false positive surfaced the moment the
+check ran against the real tree rather than against an idea of it.
+
+**R4 gains two items, both about not paying the same cost twice** (owner-directed).
+
+**`--parity-fix`.** Six fenced blocks are held byte-identical across eight
+carriers by hand — **measured 4,611 lines**: KERNEL 151 × 8, CHARACTER 278 × 3,
+SOLVER 113 × 7, DRIVER 111 × 7, RIG 83 × 7, HTML 60 × 7. That is
+DRY-by-*verification* in a repo that spent R0-R3 moving to
+DRY-by-*construction*. The resolution is **not** to generate the scenes: the
+examples are teaching artifacts, an agent reads `gearbox.html` end to end to
+learn how a film is built, and a file carrying an injection placeholder teaches
+nothing — it would also stop the tracked file being the shipped file, which is
+what invariant 1 protects. Instead, make detection able to propagate.
+`--parity-only` already computes both the divergence and the canonical text and
+simply cannot write; `--parity-fix --from <canonical>` turns an eight-file edit
+into one edit plus a command with **zero change to any tracked or shipped
+artifact**. It must name its source explicitly rather than infer a majority — a
+fix that picks the wrong canonical file corrupts seven others — and must refuse a
+malformed source, with a bracket arm proving the refusal, because a malformed
+fence makes a file *leave the parity set*, which is how this check has already
+gone quiet twice while printing `ok`.
+
+**The defect corpus.** It is built from the `circus` scene with a new theme,
+character, name, opening title font and style, set somewhere else with a
+different character; the script stays, and content and captions can stay the
+same. What the
+fixture is for is entirely mechanical and none of it lives in the subject matter:
+~60 seconds and 31 beats, multi-shot solver traffic, shadowed fur shells, the
+character rig. That combination is why it is the only candidate reproducer for
+the open 1-in-6 `WEBGPU=metal` failure — `noise-chart.html` failed to reproduce
+it in 15 runs precisely because it lacks them. So the script structure, caption
+cadence, beat count, durations, shot pattern and every mechanic carry over, and
+the scenario, style bible, character, world and title are generated new. Same
+instrument, new content, trackable.
+
+Two constraints recorded with it. It must **not** live under `plugin/`, because
+everything there ships and a deliberately defective scene must not reach users as
+an example. And its parity status must be stated explicitly — a full scene
+carries the fenced blocks, so it either joins the set as a ninth carrier (which
+is what R4.4 makes acceptable) or is deliberately excluded and said to be, since
+a file silently leaving the parity set is the exact failure `bracket-parity.js`
+exists to catch. The twelve characterized defects get **re-measured** against the
+new build rather than assumed to carry over.
+
+`working-plan.md` records that every instrument here was
+bracketed by hand-building a fixture and discarding it, and predicted its own
+failure: *"`circus.html` is currently the third such fixture about to
+evaporate."* **The prediction came true** — that prototype is gitignored, on one
+machine, unbacked-up, and is the only candidate reproducer for the open 1-in-6
+`WEBGPU=metal` determinism failure. Keeping a small corpus of scenes with
+characterized defects at known timestamps gives a new instrument a positive
+control the day it is written and a regression control the day someone changes
+it. Gitignored is correct: this is bracketing apparatus, not teaching material,
+and the repo already draws that line.
+
+R4.3 also got cheaper: naming the harness tier `templates/bracket-commands.js`
+means `gate.yml`'s existing glob covers it the day it is written, so the "gate
+job gains a step" the item used to prescribe is not needed at all.
+
+**R4 gains two more (owner-directed), and the case for the first was found while
+writing it.**
+
+**R4.6 — retention.** A design discussion held on 2026-07-30 was recorded
+**nowhere**: the owner asked whether the declarative tables would be better
+stored as structured data than as JavaScript, and stated a position — *"JSON
+isn't the right shape; is something else with some semblance of structure a
+better shape?"* It is absent from `docs/`, `CLAUDE.md`, `VISION.md` and the
+session log; a grep returns nothing. It survived only in a conversation
+transcript, which nothing routes to and no future session reads. It is now
+recorded as an open question, which is the minimum rather than the fix.
+
+Three retention channels exist and two work. Postmortems are tracked and checked;
+the CHANGELOG is why history can be cut from `CLAUDE.md`. **Design questions and
+fixtures have no channel at all** — the structured-data question evaporated,
+`circus.html` is evaporating, and a cookbook of shape recipes was written once,
+cited from two shipped files as though carried over, was not, and survived only
+because an archive audit went looking. `VISION.md` already names the shape of the
+answer — capturing a pattern should be a *side effect* of making a film, not an
+act of discipline afterwards — and `pattern-ledger.md` counts how often a shape
+gets rebuilt while having no way to extract one. Also in scope: the disciplines
+this migration produced should become routine rather than remembered, including
+the one that cost three fixtures before it was written down — **a control must
+not contain the defect it injects.**
+
+**R4.7 — grade the portfolio.** `plan.md`'s nine-case portfolio is good and its
+premise is right, but nothing says which cases are *in reach*, which are *just
+about there*, and which are *deliberately beyond*, so nothing tells a session
+which to pick up. It also has no rungs between the nine: a case one primitive
+away from an existing film is worth more as a next step than one needing three,
+and those intermediate variants do not exist. **Two films and one chart are built
+against nine specs.** The grades are expected to move — a case stuck at "beyond
+reach" for three phases is either mis-scoped or is naming a missing primitive,
+and both are findings. The table stays in `plan.md`, which owns it.
+
+Gate R4 gains two clauses: every portfolio case carries a reach grade, and **a
+design question raised in a session is findable from `docs/` afterwards** —
+tested the only way it can be, by a cold-start agent asked about one and reaching
+it without being told where to look.
+
+**R3's gate is MET — the cold-start run closed it, and found three defects doing
+so.** A fresh agent with no context, asked only what to work on next: **1 hop,
+~940 lines across 11 files, answer inside the first 24 lines of the live queue**,
+no superseded document read unwarned. It also arrived independently at the
+R4.2-before-R4.1 ordering. R2's equivalent run found *nine* orientation defects,
+most self-inflicted; this one found three, and all three are in the
+**verification** layer rather than the navigation layer the gate was testing:
+
+- **Three stale doc-to-doc line anchors**, all pointing into `working-plan.md`
+  and all shifted ~140 lines by 0.16.39's own prune — which updated the pruned
+  file and nothing that cited it. Now cited **by heading**. This class is
+  uncontrolled: check 6d resolves cited *paths* in code comments, not line
+  anchors between documents.
+- **Two hand-written counts, stale, inside the document that states the
+  never-hand-write rule.** `build.js` was called "827 lines and 18 verbs"; it is
+  **971 lines and 13 verbs**. The drift made the argument stronger, which is
+  exactly why nobody noticed. Replaced with a pointer to `wc -l`.
+- **`docs/orientation.md` was unreachable from either router** — a file written
+  for precisely the reader that test simulates, missing from `CLAUDE.md`'s map
+  and from `docs/README.md`. The same failure the map exists to fix,
+  reintroduced for a newer file. Both now point at it.
+
+`orientation.md` also gains the one thing that cost that run real time and was
+not a repo defect: **check `git status` before trusting a red**, because this
+tree is often worked by more than one session and a failing check may be
+in-flight work rather than a defect.
+
+### changed
+
+**The site now carries the language it exists to carry.** All four gaps recorded
+above are closed. `t` leads with **position, not a clock** in the `<meta>`
+description, the `og:description` that drives every link preview, and the `#why`
+heading — which now also links `VISION.md`. The contract layer shows the tier
+split (`seekTo · DURATION · stopPlayback · sceneReady` hard, the rest behind
+fallbacks) instead of a flat list that omitted a hard-asserted name. The roadmap
+lede states what is actually being built — an engine, and a **declarative layer**
+per phase: declare beats and never write timestamps, declare a shot and never
+write camera coordinates — with films as how each layer gets proven rather than
+the product. Phase 4 is named as **the declarative layer for interaction**, the
+way lighting is one for illumination, opt-in and per-object.
+
+**The length claim is reframed, not just corrected.** The examples are short
+because a project site should not ship a giant cache of code — every scene embeds
+its own three.js — **not** because anything caps duration. A frame at `t=18000`
+costs what a frame at `t=1` costs, and the file is the same size either way,
+because duration is a number in a table rather than anything accumulated. Longer
+films have been built; the site says so and deliberately neither names nor links
+one.
+
+## 0.16.39
+
+### changed
+
+**`working-plan.md`'s sequencing table carries a verified status column.** It
+listed twelve items with no record of which had shipped, so a session arriving
+at it had to re-derive the state of every row or trust the prose warning at the
+top — which asserted "items 1 and 2 have shipped" when **item 2 never did**.
+Checked against the tree rather than against the document's memory of itself:
+items 0, 1, 5 and 6b are done; 2 and 3 are not; 4 and 6 are partial; 6c is
+superseded by `selfcheck.js` check 6d, which makes its whole class mechanically
+detectable rather than something you sweep for by hand. Rows not re-checked this
+pass say so, because "unknown" and "pending" are different states and collapsing
+them is how the table became untrustworthy.
+
+The annotation was the bug, not the table. A warning that *states* a status goes
+stale silently; a column that *records* one can be re-derived and shown wrong.
+
+**Two superseded positions struck rather than annotated.** Both had been kept
+verbatim with a single sentence crossed out — correct practice for preserving
+reasoning, but it left each reading as a live dispute:
+
+- Owner's-call 0 announced that Track C was admitted (2026-07-25) and then
+  restated the same question in its `if Track C is admitted…` form, closing with
+  "either `plan.md` gets an amendment, or Track C waits" — an amendment that had
+  already landed. The reasoning is kept as reasoning; the conclusion is gone. It
+  also now records that `VISION.md` superseded the framing the fence rested on:
+  "mitate ships films" described the product, and films are the proving
+  instrument. The fence's live half — a driver that *replaces* the state stream
+  waits for Phase 6 — survives that.
+- The note under the sequencing table announced the same resolution and then
+  repeated the superseded conditional immediately after it, ending "the order
+  above assumes the fence holds."
+
+**The ancestry table said `probe` was "dropped in migration".** It shipped as
+`build.js probe`, and 0.16.37 amended the prime directive to admit it — this
+being the *third* independent arrival of that shape, which is the count the
+ancestry table exists to keep. A pattern ledger that misses a rebuild is
+measuring the wrong thing.
+
+**`source-of-truth.md` gained the `VISION.md` row that R3 assumed it had.** The
+restructure plan marked that item done while the row had never landed — found by
+grepping for it instead of trusting the DONE. `VISION.md` owns why determinism
+comes first; `site/` says a public-facing version of some of it and owns nothing,
+so if the two disagree the site is wrong.
+
+**`CLAUDE.md` is 39 lines lighter, and the cut was history, not rules.** It had
+grown 178 → 248 lines across this migration — the wrong direction for the one
+file charged on every session in this repo. Nearly every clause carried the
+defect that motivated it, and those anecdotes are already in this changelog,
+which is where the repo's own rule sends them. **A term diff against the
+pre-trim file confirms no rule was lost**; every dropped token is an anecdote, an
+illustrative example, or a path still reachable.
+
+The largest single cut was structural: the Map's `docs/` half was a second copy
+of [`docs/README.md`](docs/README.md), which already routes those nine entries by
+question. `CLAUDE.md` now maps everything *outside* `docs/` and points at that
+router for the rest — the one-home rule applied to the file that states it.
+
+**Gate R3 is three of four, and the fourth is recorded as a conflict rather than
+quietly redefined.** `SKILL.md` is smaller than at migration start (278 → 267
+lines); `CLAUDE.md` is not (178 → 209), because the Map did not exist before and
+was added to fix a measured orientation failure — the repo's front door and its
+shipped skill were unreachable from its own graph. The always-loaded *pair* is
+smaller (26,835 → 26,577 bytes). Which of those is the real budget is the
+owner's call, and the alternatives are written down in the plan. Redefining a
+gate to match what was achieved is the failure this branch exists to remove.
+
+### fixed
+
+**A framing was corrected before it reached anything load-bearing, and the sweep
+for what it had touched found one real bad trade.** The plan had promoted `site/`
+to a **"capability-claim surface"** and a **"vision carrier"** — two roles it does
+not have. Owner, 2026-07-30: *"site is like a side thing. It should work, but it
+exists to show people what this project is in a visual way. THAT'S IT."* The
+whole `site/` folder is the website: a glorified `README.md` with example scenes.
+
+The audit for consequences: **`site/app.js` and `site/index.html` are
+byte-identical to `main`**, `VISION.md` never mentions the site, and no file
+under `plugin/` — the actual product — changed for a site-shaped reason. The
+framing had reached exactly one load-bearing place, a row added to
+`source-of-truth.md` naming `site/` a "pointing surface" that `VISION.md` had to
+be reconciled against. That file defines where facts live, so the row was one
+step from inverting the direction of truth. It now says the site owns nothing and
+is the thing that is wrong when they disagree.
+
+**The bad trade, and it was in code.** `bracket-stage-films.js` tested the
+derivation guard by rewriting the tracked 1.14 MB `gearbox.html` and restoring it
+in a `finally` — risking a **shipped** artifact to control a script that only
+serves the website. `stage-films.sh` now takes `MITATE_EXAMPLES`/`MITATE_FILMS`
+overrides (Netlify's invocation is unchanged, since both default), and the arm
+drives a throwaway fixture: two runs, one seeding a variant and one moving the
+bible line, which is a stronger assertion than before because the guard must now
+*remove* a variant it can see. Proven red against a no-clear script first, and
+`git status` confirms nothing tracked is written.
+
+**Two stale claims fell out of the same sweep, both from 0.16.35's removal of the
+tracked neon copy.** `static.yml` and `install-hooks.sh` each kept a dangling `\`
+where `site/films/gearbox-neon.html` used to be an argument, and `static.yml`'s
+comment still claimed to cover it. Dropping it loses no coverage, and that is now
+**measured rather than assumed**: the line the derivation seds sits at index 701,
+outside all five fences (HTML 5-66, KERNEL 725-877, RIG 879-963, SOLVER
+1076-1190, DRIVER 1232-1344), and re-running parity with the neon included still
+reports ok.
+
+**`.claude/` was drifting with nothing watching it, and the drift was in the
+briefings that tell agents what is true.** A review pointed at that tree found
+six stale claims. They are worse than ordinary doc drift because they are *priors*:
+an agent reads them before it looks at any code, so a stale one turns every
+downstream verdict wrong.
+
+- **`doc-claim-auditor` taught four working capabilities as broken.** Its "five
+  real instances" of drift were written in the present tense and four had since
+  been fixed: `focus` (both 3D templates wire `STYLE.dof` through `THREE.dof`
+  with a `uFocus` uniform driven from `shotFocus`), `aspect` (`shoot.js` reads
+  `window.FRAME.aspect` and feeds `aspectShapes`), `whip` (`film-language.md`
+  now states it is a fast cut, not a whip pan), and `h` (documented as framed
+  extent). The fifth cites a reference that does not exist in this repo. An
+  auditor dispatched at `film-language.md` would have returned `focus` as dead.
+  The list is now past-tense with each resolution, and says plainly that none of
+  it is a current defect. *The pattern ate its own briefing.*
+- **`/audit-claims` asserted that `build.js probe` "is not built"** — it shipped
+  in 0.16.37, which is what backs the site's *"Every contact is probe-measured"*
+  claim. Every run was a standing false positive against a working path. It now
+  asks the harder and correct question: is the claim true of the current corpus.
+- **`model-delegation.md` named `fast-executor` and `task-coder`** as agents "in
+  `.claude/agents/`". Neither has ever existed here; the directory holds
+  `control-builder` and `doc-claim-auditor`. The rule now says to list the
+  directory rather than trust a name written in prose.
+
+**The structural half: nothing mechanical covers `.claude/`.** Those files carry
+no freshness marker by design, and `selfcheck.js` derives its set from files that
+do — correct, and it means the tree is uncovered. `/audit-claims` now routes at
+`.claude/agents/*`, `.claude/rules/*` and itself explicitly, and `CLAUDE.md` says
+that routing line is their only control instead of the softer "not exempt from
+being wrong".
+
+**Two errors of this session's own, both caught by the same review.** The Map
+claimed to cover "everything outside `docs/`" while omitting `site/`, so by its
+own stated criterion a tracked top-level directory was unreachable from the front
+door — and it is the one `/audit-claims` is required to route at. It has an entry
+now, named as the **capability-claim surface** it is: not a second half of the
+product, which is the skill, but the page that tells the public what the skill
+does, and therefore something a changed capability changes. And the repo-tools
+line called
+`scripts/bracket-*.js` "the controls over the first three" when two exist,
+covering the first and third; it now says two of five and names the three that
+are uncontrolled, which is the state invariant 6 wants visible.
+
+`plugin/README.md` carried a stale `last updated:` marker after 0.16.38 edited
+it. The freshness check fires one commit late by construction, which is the
+correct place for it: a marker bumped before the commit that justifies it would
+be the same lie pointed the other way.
+
+## 0.16.38
+
+### changed
+
+**`delivery.md` splits into `delivery.md` and `recordings.md`, because one
+provenance header could not be true of both halves.** The file was titled
+"Delivering inline on GitHub", carried 150 lines of encoder forensics, and then
+concluded that this repo *"ships no recordings at all"* — the path actually taken
+was at the bottom, behind the path that was abandoned. Underneath both sat a
+single header reading **"Verification date: UNKNOWN — never audited end to
+end"**, which was honest about the inherited encoder measurements and false about
+this repo's own measured brotli figures sitting beside them.
+
+- **`delivery.md`** now owns the scene as the deliverable: bundle economics over
+  the wire, hosting and mount policy, posters and stills, which artifact goes on
+  which surface. **Verification date 2026-07-24** — recovered from the commits
+  that introduced the brotli figures and the mount policy, not invented.
+- **`recordings.md`** owns the lossy-copy path, which exists for exactly one
+  reason and now says so in its first line: GitHub will not render an mp4
+  inline. Format tradeoffs, the decode cost, encoder settings, the content-type
+  evidence chain, the LFS and APNG traps. It keeps the honest UNKNOWN, because
+  those measurements were taken on the predecessor and have not been re-run here.
+
+"Stills come from the scene, never from the loop" stays in `delivery.md`. It
+reads like an encoder rule and is not one — it is a rule about the scene being
+the source, and filing it with the encoders is what would make it look optional.
+
+**Eight live pointers followed the split**: `plugin/README.md`, `SKILL.md`
+(twice), `method.md`, `webgpu-stack.md`'s "Not here" edge, `build.js` (twice),
+and `source-of-truth.md`. Historical mentions in `plan.md` and
+`predecessor-record.md` were left as written where they record what happened;
+two in `plan.md` making present-tense claims about where doctrine lives were
+repointed.
+
+**`source-of-truth.md` now separates three domains, not two.** Its
+2.3x-collision paragraph — the near-miss where a consolidation pass almost merged
+the renderer-backend speedup with an AVIF encoder-effort ratio because they share
+a number — named `delivery.md` as the home of a figure that has now moved to
+`recordings.md`. Splitting a file moves its figures, and a rule about where
+figures live is exactly the kind of thing that goes stale silently when it does.
+
+## 0.16.37
+
+### fixed
+
+**Two review findings closed, and the fixes found two more — all four the same
+shape: a claim with no control over it.**
+
+**The citation check accepted a real filename under an invented directory.** It
+compared basenames against a walk of the live filesystem, so a comment could
+point anywhere as long as *some* file somewhere carried that name; the one
+historical catch worked only because its basename existed nowhere in the tree.
+Path-shaped tokens now resolve against two bases — the repo root, and the shipped
+subtree, both of which are real shapes in the corpus and both of which are how a
+reader would follow the pointer. Bare filenames in a provenance frame keep
+basename matching, which is all they can support.
+
+**Its accept-set was environment-dependent, which is the opposite of what the
+file is for.** The walk swept in gitignored build output, so the staged film
+copies were in the accept-set on a laptop that had run a build and absent in CI —
+the same question answered two ways depending on where it ran. The set is now
+`git ls-files --cached --others --exclude-standard`: derived output is out,
+and a file you have just written and not yet staged is still in, so writing a
+comment and its target in one change does not fail on the way past.
+
+The token regex grew an optional leading dot so `.claude-plugin/marketplace.json`
+resolves as the path it is. Measured both ways before shipping: **occurrence-
+neutral, 29 → 29**, apart from that one token. An earlier form of the tightening
+excluded `/` from its lookbehind and silently dropped four real citations — the
+bracket usage lines, whose checkable part begins right after a slash. A narrowing
+that goes quiet is the failure this check exists to prevent, so it was measured
+rather than reasoned about.
+
+**`stage-films.sh` left a stale derived film behind when its guard fired.** The
+guard exists to refuse the neon derivation if the bible line it edits ever moves,
+and it worked — but the script exited 1 with the *previous* `gearbox-neon.html`
+still sitting beside freshly copied examples, with nothing saying it was stale. A
+local preview then served a film derived from a gearbox that no longer existed.
+`films/*.html` is now cleared before staging: absent is visible, stale is not.
+
+**`scripts/bracket-selfcheck.js` had never run anywhere.** `gate.yml` globs
+`templates/` only, `static.yml` did not run brackets at all, and the pre-commit
+hook runs the self-check and fence parity. So the single control over the repo's
+own claim-checker existed, passed by hand once, and was executed by no automated
+path. Worse, check 6 — the census that exists to notice exactly this — also read
+`templates/` only, and reported 4 while 5 existed. The census now covers both
+directories and reports 6; `static.yml` gained a globbed `brackets` step (both
+repo brackets are browser-free, which is why they belong in the cheap job);
+`gate.yml`'s comment now states that its glob is directory-scoped *on purpose*
+and says where the others run, instead of saying "globbed, not listed" in a way
+that reads as complete. That comment also claimed "all three brackets" while
+globbing four.
+
+**`static.yml`'s fence-parity step claimed coverage it had lost.** Its comment
+said it included "the one negated exception in `site/films/`". 0.16.35 made that
+copy derived and removed the argument, leaving the claim behind and a dangling
+`\` at end of file. The step was doing less than it said, in the one place
+nothing audits: CI config.
+
+### added
+
+**`scripts/bracket-stage-films.js`** — three arms: a clean run derives the
+variant and it differs from its source by exactly one line; output from a
+previous build does not survive a re-run; and when the bible line moves, the
+guard fires *and* leaves nothing stale. The last two were proven red against the
+pre-fix script before the fix was written. `bracket-selfcheck.js` gained two arms
+on the same discipline — MISSED before, CAUGHT after.
+
+One of those arms could not be written literally. A comment citing a real name
+under a wrong directory *is* the defect the check catches, so a literal fixture
+in the bracket's own source trips it — as it did, on the first run, and again in
+the explanatory comment inside `selfcheck.js` itself. Both are assembled or
+described instead.
+
+## 0.16.36
+
+### changed
+
+**The skill description was measured, not edited to taste.** 232 → 191 words,
+1354 → 1093 characters, with an empirically identical trigger rate. Run against a
+20-query eval set (10 should-trigger, 10 near-miss negatives), 5 runs per query,
+on the same model this session used, from a neutral project root so this repo's
+own `CLAUDE.md` could not bias the decisions.
+
+| description | words | passes | false triggers |
+|---|---|---|---|
+| baseline | 232 | 18/20 | 0/50 |
+| **shipped (architecture cut, NOT INTERACTIVE added)** | **191** | **18/20** | **0/50** |
+| red arm — constraint disclosure removed | 149 | 17/20 | **4/50** |
+
+Two results, and the second is the one that matters:
+
+**The 53-word renderer-architecture clause gates nothing.** TSL, MaterialX,
+`WebGPURenderer`, the Canvas2D backend, "pure function of time t" — 24% of the
+description's characters, and removing it verbatim changed no measured outcome.
+Nobody asks for an animation differently because of TSL.
+
+**The constraint disclosure is load-bearing, and that is now measured rather than
+assumed.** Strip it and a "10-minute animated course module with chapters and
+quiz cards" — a near-miss negative — flips from 0/5 to 4/5 false triggers. That
+is the only false trigger observed in 1,000+ negative runs across six
+descriptions, so the negative half of the eval set can detect a mis-trigger, and
+the disclosure is what prevents it.
+
+**The false duration ceiling is gone from the description too.** `films are SHORT
+(beats run 3-4s, shipped examples 12-21s)` was replaced by `NOT INTERACTIVE (a
+film plays; it does not respond to clicks…)`, and the course-module negative
+still holds at 0/5 — confirmed at 0/10 on a re-run at double the sample. So the
+false claim was never doing the discriminating work, and the description no
+longer contradicts the body. `README.md`'s two carriers of the same figure are
+corrected in the same pass.
+
+**A defect in the measuring tool had to be fixed before any number meant
+anything.** `skill-creator`'s `run_eval.py` writes every parallel worker's command
+file into one shared `.claude/commands/`, so with N workers Claude sees N
+identically-described skills, names whichever it picked, and the membership test
+reads False for the other N−1 *even though the skill triggered*. Measured rate
+collapses to roughly (true rate)/N. Proven with a control on a patched scratch
+copy: same positives, same 12 workers, `0/5, 0/5, 1/5, 2/5` before → `3/3, 3/3,
+3/3, 0/3` after. **Anyone running that tool with `--num-workers > 1` is reading
+noise.** Reported upstream-worthy; the patch was not applied to this repo, which
+does not vendor it.
+
+### added
+
+**`build.js probe` learns `shape(x)`.** Probing the erupt foot-slide cost two
+page loads to discover that a rig's limbs are keyed `HL/HR/FL/FR` rather than
+indexed — guessing at structure, in the instrument built so that measuring beats
+inferring. `shape()` reports keys for an object, length and element shape for an
+array, type and child count for an `Object3D`; a failed expression now names the
+`shape()` call to run next, collapsing that two-call sequence into one.
+
+Checked before building: probe **cannot** list what a scene exposes. A classic
+script's top-level `let`/`const` live in the global lexical environment, which is
+not enumerable — which is exactly why they are reachable by name and absent from
+`window`. So auto-discovery is impossible and only the structural half was built.
+
+**`bibles.md` separates the contract from the per-backend vocabulary.** Its own
+heading was already "The v2 shape (node stack)" while `scene2d.template.html`
+ships with no art-direction reference at all. The contract — the whole look as
+one object switched by one line, constraining *how* and never *what* — holds on
+any backend; the field list does not, since a flat-vector bible cannot mean lens
+or depth of field. A backend table now carries that, with 2D's real surface named
+and the brief for whoever writes it. Flat files rather than a `bibles/` subfolder,
+for a checkable reason: `selfcheck`'s provenance check reads `references/*.md`
+non-recursively, so a subfoldered reference would ship with no provenance
+enforcement. The trigger to subfolder is one backend needing more than one file.
+
+## 0.16.35
+
+### added
+
+**The predecessor's procedural-asset cookbook, promoted before the ancestor tree
+is archived off-machine.** 94 lines, eight worked shape recipes organised by
+shape *problem* rather than by subject. `CHANGELOG.md:1094` and
+`references/method.md:274` have both asserted these live in `materials.md` since
+the reference split; the citations were repointed and the content never moved, so
+a reader following a shipped pointer found nothing. Now they do.
+
+**The preset-versus-technique line, drawn in `plan.md`'s Anti-template
+principle.** The doctrine declines scene presets and genre scaffolds; it does not
+decline craft. "How a cutaway reads" belongs in a reference exactly the way shot
+sizes do in `film-language.md` — cinematography vocabulary is specific too, and
+nobody calls `SIZES` a preset. `working-plan.md`'s `shapes.md` decline is
+narrowed rather than left reading as blanket.
+
+**The pattern flywheel, homed in `pattern-ledger.md`.** That file counts how
+often a shape gets rebuilt; nothing extracts. The direction: the skill should
+capture reusable generalised patterns as a **side effect of use** rather than as
+an act of discipline afterwards — a prompt in the review step, or a command that
+reads a finished film and proposes which reference each pattern belongs in.
+Deliberately unscoped. The cookbook is its argument: written once, cited as
+though shipped, not shipped, one directory deletion from gone.
+
+### changed
+
+**`site/films/gearbox-neon.html` is derived, not stored.** It was a tracked
+1.14 MB file — **66% of the site's tracked bytes** — and measured against
+`gearbox.html` it differed by **one line**: `BIBLES.workshop` → `BIBLES.neon`.
+`bibles.md` claims a whole look is one object switched by one line;
+`stage-films.sh` now executes that claim instead of asserting it, and **fails
+loudly** if the line it edits ever stops existing. The generated file is strictly
+better than the copy it replaces: it carries the `build.js vendor` stamp the
+stored one was missing. `CLAUDE.md` invariant 4 has no exceptions now, and the
+file is out of the parity path lists because a derived file cannot drift from its
+source.
+
+### fixed
+
+**The erupt recoil slides all four paws in `bear-and-bees.html`** — measured, not
+inferred, and recorded in `working-plan.md` with the numbers. During `erupt`
+(1.1s) the body translates 0.371 units while `vAmp` is 0, so `gaitPose` collapses
+to the body-relative rest stance and `paw − root` stays constant to three
+decimals across the whole beat, in a shot framing the whole animal. Found by
+reading, confirmed with `build.js probe` in three page loads — **the first use of
+that instrument on something nobody had already measured by hand.** Not fixed:
+whether the feet should plant through the recoil or the flinch should read as a
+whole-body drag is a judgement call, and right now it is an accident of `vAmp`
+hitting zero rather than a decision. Trigger recorded.
+
+## 0.16.34
+
+### changed
+
+**A cold-start test found nine orientation defects, most of them created in the
+previous two releases.** A fresh agent with no context was asked to get up to
+speed and say what to work on next; it reached the answer in ~13 files and ~2,000
+lines, of which roughly 460 were superseded. What it found:
+
+- **`docs/README.md` routed "what should I work on next" at
+  `working-plan.md`**, which is partly superseded. One table row cost 460 lines.
+  It now points at the live migration, with the working plan demoted to the
+  standing backlog it executes against.
+- **Three documents gave three different answers** to what is next
+  (`README.md` said Phase 4, the working plan's sequencing table said items that
+  had already shipped, the migration said R2). All three now agree.
+- **`working-plan.md` did not know the migration exists** — one grep hit, and it
+  was the ordinary English word. It now says so in its first paragraph, including
+  that its own sequencing table is superseded.
+- **The migration had no "you are here"**; the live queue was findable only from
+  `git log` commit prefixes. It now opens with a current-position block, and R2's
+  items carry `DONE <version>` markers the way R0's already did — reconstructing
+  that from the changelog plus tree greps was the single largest block of wasted
+  effort.
+- **R2's item numbering collided** (two 5s, two 6s), and 0.16.33's entry cites
+  "R2.5" by number. Renumbered, with the old number recorded.
+- **`CLAUDE.md`'s new Map said `references/` (8)** one commit after it was
+  written. There are 9; the glossary shipped in the same release as the Map and
+  the Map missed it. It also filed the migration under "Open decisions", which is
+  why the tester did not open it first.
+- **The glossary was named only after the router's table**, so it was found late
+  and by accident. It is a row now.
+
+**`metadata.last_verified` is removed from `SKILL.md`.** It asserted a *human*
+review, sat in always-loaded frontmatter, went stale on every edit, and nothing
+checked it — it was four days and two releases stale when removed, and
+`CLAUDE.md` was simultaneously instructing readers to write it while the
+migration was scheduled to delete it. `SKILL.md` now carries a provenance header
+in the body, the same form the nine references use, and `selfcheck.js` check 4
+verifies it and fails if the field returns. Demonstrated red by putting it back.
+
+**`materials.md` and `bibles.md` are cited at their moment.** Both were
+bibliography-only, despite their own entries naming when to read them ("before
+authoring any surface beyond flat color", "at art-direction time"). Neither cue
+could fire from a bibliography.
+
+## 0.16.33
+
+### added
+
+**Postmortems are tracked, in `docs/postmortems/`.** Five tracked files cited
+them — one of them shipped plugin content — while they existed on one machine
+under gitignored `internal/`. `.postmortem.json` pins the location so it is a
+decision rather than an inference from a sibling directory. The 2026-07-25
+record gained the frontmatter it never had, without which the index that makes a
+corpus navigable could not see it at all. Citations repointed: `materials.md` by
+absolute repo URL (the pattern invariant 4 already uses for poster stills, so it
+resolves from a cache, a clone and GitHub alike), the rest repo-relative.
+**Session logs stay local** — the log is narration, the postmortem is the
+distilled finding, and only the second is citable. A tracked postmortem may cite
+a local-only artifact, but must label it `(local)` and must not rest a claim on it.
+
+**A `selfcheck` arm for postmortem frontmatter — and NOT the one the plan
+specified.** The plan called for checking that every `artifacts:` entry resolves.
+That would have been wrong: a postmortem is a dated record, its citations are
+historical by nature, and one here legitimately names a reference renamed since.
+Failing the build when a cited file is later moved punishes exactly the archival
+value tracking them is for. What is decidable and does not rot is whether the
+file can be READ by its index — required keys present, filename and frontmatter
+agreeing on date and mode. Demonstrated red by stripping the frontmatter back
+off, which is the real 2026-07-25 failure.
+
+**`references/glossary.md`.** Written from a term census: `register` appeared 98
+times across 16 files and was defined nowhere; `parity set` 4 times and nowhere;
+`install cache` 11 times *inside the shipped subtree* with its only definition
+outside it, where a reader holding the subtree cannot follow. It sits in
+`references/` because the subtree is a subset of the repo, so one file serves
+both a contributor and an installed user, and it loads on demand rather than
+standing in context.
+
+**Map blocks in `CLAUDE.md` and `SKILL.md`,** the unlinked-heading-map pattern
+already used by three references. Measured: from `CLAUDE.md` a cold session
+reached the working plan in 3 hops and ~4,900 lines, and never reached
+`README.md`, `SKILL.md`, `sample.yml` or two agents at all, because nothing
+pointed at them — the repo's front door and its primary shipped artifact were
+both outside its own graph. `SKILL.md`'s only index sat at 79% depth.
+
+### changed
+
+**The `internal/` reshuffle is RETRACTED, and the retraction is the finding.**
+It existed to fix "63-75% of grep hits for core symbols are non-authoritative".
+That was measured with shell `grep -r`, which ignores `.gitignore`. Ripgrep
+honours it, so `internal/` was never in the Grep tool's results: `solveShot`
+returns 18 files under shell grep and **13 under ripgrep, none from `internal/`**,
+with the staged `site/films/` copies excluded too. The exclusion the item
+proposed building already existed. An instrument that disagrees with the one the
+reader actually uses will manufacture a problem — measure with the tool whose
+behaviour you are reasoning about.
+
+## 0.16.32
+
+### added
+
+**`build.js probe` — the contact class finally has an instrument.** Two things
+that must touch, and do not, is the most-repeated authoring defect in this
+project's history: six recorded instances, a fix specified each time, never
+built. The trigger could not fire, because earn-in asks whether a film was
+*blocked* and this shape is not blocked, it is reliably wrong.
+
+    bun run build.js probe <scene.html> <when> '<expr>' ['<expr>' ...]
+
+`<when>` is a number or an expression in the scene's own scope, so a probe is
+addressed by beat like everything else in the kit; a raw second is accepted and
+is exactly what rots when a beat is retimed. The prelude is four helpers:
+`bb(o)` (world AABB, **accepting a rig or an Object3D** — `buildCharacter`
+returns `{root, body, head, ...}`, so `setFromObject(bear)` throws
+`updateWorldMatrix is not a function`, measured, and unwrapping `.root` retires
+that trap rather than documenting it); `sep(a,b)` (per-axis gap, **negative
+means overlap**, all three axes because one recorded miss had an x-overlap of
+-1.66 and a y-overlap of 0.01 and arced cleanly over its target); `proj(v)`
+(NDC and on-screen, for "a hit the camera cannot see did not land"); and
+`reach(l)`.
+
+Playwright loads lazily, the way `smoke.js` defers its browser deps, so every
+other `build.js` verb stays dependency-free. Nothing is instrumented and the
+window contract is untouched: scenes are classic scripts, so their top-level
+`let` bindings live in the global lexical scope and resolve by name inside
+`page.evaluate`. Verified 2026-07-30 — `bear` resolves, `window.bear` is
+undefined.
+
+**`film-reviewer` ships.** It has the best measured catch record in the project
+and lived outside `plugin/`, so no installed user could reach it, and `SKILL.md`
+contained zero occurrences of "agent" or "reviewer". It is now
+`plugin/agents/film-reviewer.md`, routed from step 3 at the moment a review
+happens. Moved rather than copied; the `.claude/` original is gone, because two
+copies of one agent is the drift this repo keeps finding.
+
+### fixed
+
+**`bear-and-bees.html`'s `STOP_X` is re-derivable, and the number was right.**
+Its comment cited a `probe.js` that has never existed in any generation — both
+frozen predecessors grepped — as the provenance for the constant its gag depends
+on. The measurement was almost certainly taken with the hand-written
+`page.evaluate` that `method.md` teaches, and the harness was not kept, so the
+figure was correct and unverifiable. Re-derived with the new command at
+`beatAt('boop',.55)`: x -0.3202, y -0.7606, z -1.0578 — **overlap on all three
+axes**, so the contact is geometric and not a camera angle, and the third number
+is the one a contact sheet cannot show. The claims on `SKILL.md`,
+`examples/README.md` and the showcase site are now true *and* checkable.
+
+**`selfcheck.js` check 3 resolves links against the whole plugin root**, not the
+skill subtree plus one hardcoded README. Adding `plugin/agents/` would otherwise
+have created a shipped directory whose links nothing checked — and its first
+file did cite a repo-local rules path that no installed reader can reach, which
+is the defect the check exists for. Reasoning from "everything under `plugin/`
+ships" means the next shipped directory is covered the day it exists.
+
+**The citation check now covers scene HTML.** Held back in 0.16.31 on purpose,
+because scene HTML carried the live instance and widening early would have meant
+a standing exemption for a known-bad line. `probe` shipped, the line was fixed,
+and the scope followed. Long lines are skipped so an example's embedded ~1 MB of
+minified three is not mistaken for authored comments: 216 skipped, 10800 scanned.
+
+## 0.16.31
+
+### added
+
+**`bracket-parity.js` — the fence check finally has a control.** Parity is this
+repo's entire answer to duplication: self-containment forbids a shared import, so
+six fenced blocks are written into nine files and a check reports divergence.
+That makes it load-bearing in a way most checks are not — if it goes quiet, the
+DRY guarantee goes with it and nothing announces the loss. It has gone quiet
+twice, both recorded in `smoke.js`: a mangled `KERNEL-ENDX` satisfied an
+`includes()` test, so the block stopped extracting, the file dropped out of the
+parity set, and the run stayed green; and a scan where one file carried a fence
+printed `parity/integrity: ok` for a comparison that never happened. Both are
+guarded now, and until this release nothing proved the guards work.
+
+Five arms: identical carriers pass, drifted KERNEL fails, mangled END fails,
+mangled START fails, single carrier reports inert rather than passing silently.
+Verified red against the real regression, not a synthetic one — with the
+half-fenced guard reverted in a scratch copy of `smoke.js`, the two mangled-marker
+arms flip to `inert` and the bracket exits 1. No browser and no `node_modules`:
+`--parity-only` is pure string work, so it runs from a clean checkout, and
+`gate.yml` globs `bracket-*.js` so it was already in CI the moment it existed.
+
+**Two `selfcheck.js` arms, both spec'd by measurement rather than by taste.**
+
+*No bare seek before a capture.* An evaluate that seeks, a `.screenshot()` within
+six lines, and no pixel readback between — the pattern measured at 40/30/20 on a
+slow GL stack against 0 of 200 when seek and readback share a task. **The first
+two specs were wrong and are recorded in the source, because both looked
+reasonable.** "Requires backend.js, screenshots, never calls seekSynced" condemns
+`diagnose-determinism.js`, which is correct. "Any evaluate that seeks without
+reading back" condemns `bracket-liveplay.js`, which counts seek calls and never
+captures, and `sample-determinism.js`'s control arm — forbidding the control that
+proves the fix works is worse than not checking. A deliberate bare seek now
+declares itself at the site with a marker, the way path-privacy's skip-file works,
+rather than hiding in an allowlist. Demonstrated red by dropping the pre-fix
+bracket into the tree, and green when removed.
+
+*A comment may not cite a file that does not exist.* The decidable half of the
+boundary rule below. The broad version — any `\w+.(js|md|html)` token in a
+comment — was written first and reported 46 failures, of which 45 were
+`scene.html`, `template.html` and `three.js`: usage placeholders and a library's
+name. Narrowed to path-shaped tokens and bare filenames in a provenance frame,
+which leaves two hits in the whole tree, both explicable. Scene HTML is
+deliberately still out of scope: it carries the live instance, and that citation
+becomes true when `probe` ships, so widening now would mean shipping a check with
+a standing exemption for a known-bad line.
+
+### changed
+
+**`source-of-truth.md` gains the rule every claim-defect in this repo has
+broken:** a code comment may assert what its own line does, and may not assert
+what another file does. Five instances shared that shape and none was careless.
+Its table also gains two rows for the surfaces where the one-home rule was never
+applied and where it consequently failed — a check's pass criterion belongs to
+the code that implements it, and CI config and session logs point rather than
+restate.
+
+**`audit-claims` now covers `site/index.html`.** The site is a capability-claim
+surface and was out of scope: it states *"Every contact is probe-measured"* and
+ships a chip reading `Box3 contact probes` while the tool that would make either
+re-derivable does not exist. A public page describing what the code does is
+exactly what `doc-claim-auditor` is for, and it was the copy nobody read.
+
+## 0.16.30
+
+### fixed
+
+**`noise1`'s tracks are not all independent, and the KERNEL comment said they
+were.** The pool is 4000 draws and the per-track stride is 997, so
+`4 * 997 = -12 (mod 4000)`: tracks `k` and `k+4` are the **same** wobble lagged
+12 index samples, which at the handheld 1.9 Hz is 6.3 seconds — inside a normal
+film. Verified empirically before the comment was written: `k=4` against `k=0`
+lagged `12/f` agrees to 3.9e-15 over 1539 samples, while the control (`k=1`
+against `k=0`, same lag) differs by 0.92. No shipped scene hits it — the 3D
+solver uses tracks 11-14 and the 2D template 1-2, no pair differing by 4 — so
+this is luck in the constants rather than design. Corrected in the comment
+across all nine KERNEL carriers rather than by changing the stride, because a
+new stride changes every value `noise1` returns and would break byte comparison
+against every shipped film, every poster still and the site hero, to close a
+trap nothing currently reaches. A `selfcheck` arm for literal colliding `k`
+values is queued; a computed `k` stays beyond a static check, which the comment
+now says.
+
+**`bracket-determinism.js` captured with a bare seek on both sides**, so it
+passed while exercising a capture pattern nothing has shipped since 0.16.28.
+Now `seekSynced` + `settle`, mirroring `smoke.js`'s determinism arm. Run before
+the change (three rows as specified, both failing arms reachable) and after
+(same three verdicts) on macOS/WebGL2 — which proves the control still works,
+not that the change fixed anything there, since the race does not reproduce on
+macOS at 0 in 80. `scripts/diagnose-determinism.js` was accused of the same
+defect and is **not** guilty: its `gridAt` seeks and reads back inside one
+`page.evaluate`, which is `seekSynced`'s mechanism, and it cannot call
+`seekSynced` because there the barrier and the diagnostic payload are the same
+readback. That relationship is now a comment, so nobody consolidates it and
+loses the grid.
+
+**`build.js` cited a documentation path in a different repository**, which
+resolved for no reader holding that file — not in a clone, not in an install
+cache. The rule it names survives; the unreachable pointer does not.
+
+### changed
+
+**One criterion, one home.** `sample.yml`'s header stated a pass criterion that
+contradicted its own input description and its own recorded measurement, and it
+survived the commit that corrected the other two copies. The criterion now lives
+beside the flag it describes in `scripts/sample-determinism.js`, and the
+workflow points at it.
+
+**`gate.yml` no longer double-fires.** It triggered on `push` with no branch
+filter *and* on `pull_request`, so every push to a branch with an open PR bought
+two full runs of the same commit. Push is now `main`-only; branch work is free
+until a PR opens.
+
+**Claims that nothing could check from where they lived.** `CLAUDE.md` carried a
+fourth membership list for the window contract — six names, omitting
+`stopPlayback`, which is one of the four `smoke.js` actually enforces — and now
+points instead of restating. `CLAUDE.md` and `working-plan.md` both cited
+"invariant 6: say which copy", which became invariant 7 when a new 6 was
+inserted and neither pointer moved. `README.md` linked to a `#requirements`
+anchor deleted in 0.16.13, dangling for sixteen releases because the link check
+covers neither repo-root files nor fragments. `plan.md` cited three CHANGELOG
+versions from the predecessor's numbering that exist in no repo. `working-plan.md`
+called `film-reviewer` "a gate criterion at `plan.md:460`" in three places: it is
+cited at `:471` and `:509`, both inside DONE narrative, and the `examples/` gate
+is owner approval. The crushed-exposure carry-forward existed in three
+simultaneous states across two files and is now one (measured; disposition
+open). The `method.md` truncation test, recorded as never run, was run: 996
+lines against a 2000-line window, so the correctness argument for splitting it
+is closed.
+
+**`docs/restructure-2026-07.md`** records the plan this is the first phase of,
+and retires itself when its last gate is green. `docs/addressing.md` is new: what
+`t` is, and what the position-encoding literature does and does not transfer.
+
 ## 0.16.29
 
 ### verified

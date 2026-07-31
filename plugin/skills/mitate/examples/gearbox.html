@@ -648,13 +648,17 @@ var<${$}> ${J} : ${W};`}}var W9=new R$,PF=new UK,Sw=new Map([[Int8Array,["sint8"
 </script>
 <script>
 "use strict";
-/* ============================================================
+/* ==== CONTRACT-START ==================================================
    CONTRACT (do not rename): window.seekTo(t), window.DURATION,
    window.stopPlayback(), window.sceneReady.
    Everything on screen is a pure function of t — no Math.random(),
-   no Date.now(), no accumulated state. That is what makes the
-   HTML loop and the MP4 render provably identical.
-   ============================================================ */
+   no Date.now(), no accumulated state. That is what lets a frame be
+   re-rendered at any t, in any order, and compared against itself —
+   the property every instrument here rests on. (It does NOT mean an
+   exported recording matches live playback: frames are not
+   byte-identical across backends, and export is a lossy copy.)
+   ======================================================================= */
+/* ==== CONTRACT-END ==== */
 
 /* ============================================================
    BEATS — the single source of timing truth. Durations, not

@@ -7,6 +7,35 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.44
+
+### fixed
+
+**A false claim in the CONTRACT block of all eight shipped scenes.** Every
+carrier said, of `t` purity, *"That is what makes the HTML loop and the MP4
+render provably identical."* Nothing proves that: frames are not byte-identical
+across backends (repo invariant 5), the default record path is the WebGL2
+fallback while a viewer may be on hardware WebGPU, and an export is a lossy copy.
+It now says what purity actually buys — that a frame can be re-rendered at any
+`t`, in any order, and compared against itself — and says explicitly what it does
+*not* mean.
+
+This is the sentence that taught the inversion. It sat in the first block of
+every scene file, which is the first thing an author or an agent reads.
+
+### added
+
+**`CONTRACT` is now a fence, the seventh.** It was byte-identical across all
+eight carriers and fenced by nothing, so `--parity-only` could not see it and
+`--parity-fix` could not propagate it — which is exactly why a wrong sentence
+survived in eight places. Found by looking for what `--parity-fix` could not
+reach.
+
+The correction was made in one carrier and propagated by command, which is the
+first real use of `--parity-fix` outside its own fixtures: parity green after
+fencing, **red** on the one-file edit naming all eight carriers, green again
+after the propagation, and `smoke.js` passing every scene afterwards.
+
 ## 0.16.43
 
 ### added

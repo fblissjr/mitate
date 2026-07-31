@@ -927,7 +927,7 @@ async function checkScene(browser, file) {
   // describes and no author expects — worse than either finishing or declining
   // cleanly. That is why this collects `writes` and applies them at the end.
   if (parityFix) {
-    const FENCES = ['KERNEL', 'SOLVER', 'RIG', 'DRIVER', 'CHARACTER', 'HTML'];
+    const FENCES = ['CONTRACT', 'KERNEL', 'SOLVER', 'RIG', 'DRIVER', 'CHARACTER', 'HTML'];
     const reFor = name => name === 'HTML'
       ? new RegExp(`<!-- ==== ${name}-START ==== -->[\\s\\S]*?<!-- ==== ${name}-END ==== -->`)
       : new RegExp(`\\/\\* ==== ${name}-START ====[\\s\\S]*?\\/\\* ==== ${name}-END ==== \\*\\/`);
@@ -1021,7 +1021,12 @@ async function checkScene(browser, file) {
     // leave the parity set.
     const texts = new Map();                        // each file read ONCE
     for (const f of scenes) { try { texts.set(f, fs.readFileSync(f, 'utf8')); } catch (e) {} }
-    for (const name of ['KERNEL', 'SOLVER', 'RIG', 'DRIVER', 'CHARACTER', 'HTML']) {
+    // CONTRACT joins the set at 0.16.44. It was byte-identical across all eight
+    // carriers and fenced by nothing — 3 lines of it were also FALSE ("the HTML
+    // loop and the MP4 render provably identical"), which is how it was found:
+    // correcting a wrong sentence in eight files by hand is the exact tax the
+    // fences exist to remove, and the block sat outside every one of them.
+    for (const name of ['CONTRACT', 'KERNEL', 'SOLVER', 'RIG', 'DRIVER', 'CHARACTER', 'HTML']) {
       // HTML fences the shared page scaffold (overlay CSS + caption/title DOM),
       // which lives outside <script> — its markers are HTML comments, not JS ones.
       const RE = name === 'HTML'

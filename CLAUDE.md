@@ -95,10 +95,16 @@ for its red lines.
    Its dating lives in a **provenance header** in the body, which `selfcheck.js`
    check 4 verifies.
 
-   A **fenced** block (`KERNEL`, `SOLVER`, `RIG`, `DRIVER`, `CHARACTER`, `HTML`)
+   A **fenced** block (`CONTRACT`, `KERNEL`, `SOLVER`, `RIG`, `DRIVER`,
+   `CHARACTER`, `HTML`)
    is carried by both 3D templates and every example — more files than it looks,
    and the count grows with the corpus, so `--parity-only` reports it rather than
-   this file stating it. Edit every carrier together, then verify with `smoke.js
+   this file stating it. **Editing them by hand is no longer the only option:**
+   `smoke.js --parity-fix --from <canonical>` propagates a block from a source
+   you NAME (never a majority — that is how a drifted block rewrites the two
+   carriers that were right), refuses a malformed source or target, and writes
+   nothing until every file has validated. Edit every carrier together, then
+   verify with `smoke.js
    --parity-only templates/*.html examples/*.html` **cross-directory**: a
    per-directory green does not cover the template↔example boundary, and drift
    there is silent.

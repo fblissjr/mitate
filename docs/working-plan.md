@@ -1486,6 +1486,14 @@ not a target. Ships with its red arm in `scripts/bracket-selfcheck.js` proving i
 goes red when an encoder call appears outside the allowlist — invariant 6, and
 `static.yml` already runs `selfcheck.js`, so no CI edit is needed.
 
+**Resolve one question before writing the check**, raised by the second analysis
+and a real gap in the proposal as first stated: "may only shrink, never rise"
+handles drift-back cleanly but has no answer for a *deliberate, legitimate*
+addition later — a genuinely new export format verb. Check whether the
+measurement-assertion ratchet this is modelled on already has an escape hatch for
+"deliberate addition, not drift", and reuse it rather than inventing a second one
+for this case.
+
 Each later migration then deletes one function from the allowlist and one
 `needs: 'ffmpeg'` from `bracket-commands.js`, and both checks prove it. **Today
 9 of 17 bracket rows skip without an encoder; the target is 4.** That is a
@@ -1524,10 +1532,66 @@ Cheapest-risk first. **Do not batch these**; each has a different control.
   "port the metric" — it is "establish what the current numbers mean," because
   nobody can currently derive them.** That reframes the risk: the in-page
   reimplementation would be *defined*, where the incumbent is *accidental*.
-  **Not demonstrated:** that a different ffmpeg build or OS negotiates
-  differently. One binary was available. Running this same pair on a second build
-  (Linux distro package vs this static macOS build) is the concrete next step,
-  and it is cheap. `full` mode can shoot chunks
+  **The negotiation is nonetheless STABLE across builds, measured 2026-07-31 —
+  and this refutes a hypothesis two independent analyses both advanced.** Both
+  argued that because the conversion is unpinned, `motion` scores may *already*
+  vary machine to machine, which would make this a live defect rather than a
+  migration risk. Run on Ubuntu x86_64 with the distro's **ffmpeg 8.0.1**, the
+  same three cases return exactly what macOS arm64 with a static **ffmpeg 7.x**
+  returns: 1, 145, 0. Different OS, architecture, major version and build origin;
+  identical numbers.
+
+  So the accurate statement is **accidental but reproducible**, not unstable.
+  Two consequences, and they pull in opposite directions from what was assumed:
+  the incumbent is *not* already broken, so this migration is a deliberate
+  improvement rather than a bug fix and carries no urgency of its own — **and**
+  the existing fixtures (0.16, 3.90) and any published `motion` score remain
+  reproducible, so they are usable as verdict anchors even though they are not
+  interpretable as luma. Do not cite the "already varies across machines"
+  argument; it was tested and did not hold.
+
+  **A replacement owes ffmpeg no fidelity** (second analysis, and it is right):
+  ffmpeg was reached for as a convenient batch calculator, never chosen as ground
+  truth, so the new implementation needs only to be well-defined and
+  self-consistent, with `DEAD_FLOOR` re-established fresh by bracketing a
+  known-clean scene against a known dead-air one — the same method used for the
+  aspect-framing MAD threshold. Old and new numbers land on permanently
+  different, non-comparable scales, which is a **labeling** problem, not a
+  tolerance-band one. Hence:
+
+  - **Stamp the implementation in `motion`'s own output** — `motion
+    (ffmpeg-tblend/signalstats): median frame-diff 1.11` versus `motion
+    (in-page-delta v1): …`. Then any postmortem citing a score inherits the stamp
+    as part of the citation, and a future reader can tell without external
+    context whether two numbers are even the same unit. This is a control rather
+    than a comment asserting one: a number that cannot be traced to what produced
+    it is unauditable. Cheap, and it closes the comparability question
+    permanently instead of relying on anyone remembering.
+  - **Widen the calibration corpus past the two documented fixtures** before
+    setting any threshold — two observations is thin by this repo's own standard.
+    Run the full example corpus. A real external before/after pair exists (an
+    LFP-battery explainer, 8 beats, scores independently re-derived rather than
+    taken from a self-report) and is offered as additional data.
+  - **A `motion` score is sensitive to changes well outside the beat it scores.**
+    Measured on that scene: a revision targeting three beats moved *every* beat
+    up, because it touched shared geometry. That matters for anyone attributing a
+    score delta to a specific edit, and `instruments.md` does not currently list
+    it among the instrument's documented limits. Add it there when this lands.
+  - **The side-emission must be strictly read-only against the canvas** and run
+    *after* the frame is captured, never interleaved — a pure side-read, exactly
+    like `MANIFEST_OUT`. `seekTo`'s purity should make this safe; check it as an
+    explicit invariant rather than assuming the architecture guarantees it.
+  - **The worker lead-in needs its own test case**, not coverage by the general
+    parallel-workers byte-identity guarantee — that guarantee was established for
+    the current design, where ffmpeg's separate pass over finished PNGs does not
+    care which worker wrote which file. Force a chunk boundary onto a known beat
+    transition and confirm the delta there matches the single-worker value.
+    Otherwise the metric is wrong exactly at the seams, in a way that looks fine
+    in any single worker's own output.
+  - **Any parallel-run transition window needs an encoder-equipped CI job first.**
+    "Run both and diff the verdicts" assumes CI can still exercise the ffmpeg
+    path; it cannot, because the gate installs no encoders. See the CI decision
+    below, which this shares. `full` mode can shoot chunks
   across parallel workers, so frame N-1 may sit on another page — each worker
   needs a lead-in frame or the deltas break at chunk boundaries. **Deliverable is
   a calibration control, not a rewrite**: both implementations over the corpus,
@@ -1571,6 +1635,30 @@ review (`sheet`, `strip`, `aspect`, `motion`) · delivery (`poster`, the scene) 
 to every install cache — so it needs a version bump, a changelog entry and
 probably a deprecation window, not a silent rename.
 
+Three caveats before any of it is treated as settled, two of them from the second
+analysis and both fair:
+
+- **`video`'s `<name>` asymmetry has a fix, not just a flag.** Have `video`
+  accept `<scene.html>` like every other verb and call `frames()` internally when
+  the directory does not exist — removes the interface leak without losing the
+  one-command convenience.
+- **Do not demote `frames` on the fossil argument alone.** Check first whether
+  anyone consumes the raw PNG sequence outside this tool — a different encoder, a
+  custom pipeline. If nobody does it is a fossil; if somebody does it is a
+  legitimate export-adjacent verb that simply is not on the direct path to mp4.
+- **Collapsing `video`/`avif`/`loop` into one format-argument verb has a real
+  ergonomic cost**: `video` takes `fps` only while `avif` and `loop` take `fps`
+  *and* `width`, so unification needs format-conditional arguments or a flag
+  interface. Weigh it rather than assuming three-into-one is a pure win.
+
+**And "review" is operationally mixed, which is the proof the grouping is
+right rather than a problem with it**: `probe` never shells out at all,
+`sheet`/`strip`/`aspect` use ffmpeg to tile images, `motion` uses it for
+arithmetic and produces no image. Three implementations under one label, because
+the label tracks the question an author is asking — not what happens to touch an
+encoder today. Group by intent; that is the same lesson this whole track is
+about, applied to the act of designing the taxonomy.
+
 ### E3. Framing remediation, split by whether the code has earned it
 
 Three parallel sweeps, 2026-07-31, over shipped prose, code comments, and the
@@ -1599,6 +1687,7 @@ concentrates in `build.js` (7 of 9 code findings), `plugin/README.md`,
 | `delivery.md:29-31` | "co-equal delivery option" now reads as a ceiling against its own opening |
 | `docs/plan.md:210-212` | "delivery forensics" bucketed with the determinism kit as equal-weight inheritance |
 | `build.js` USAGE + header | group the verbs core/review/export — true *today*, independent of E1 |
+| `SKILL.md` step 4 (review block) | **omits `motion` entirely** — it lists `sheet`, `strip`, `aspect`, `probe`. The instrument is real and correctly documented in `film-reviewer.md` and `method.md`; the quick-reference an agent skims first does not mention it. Same shape as the rest of this table, and unrelated to ffmpeg |
 
 **Wait for the code — TRUE today, and editing them first would make the docs lie
 and delete the only signal the structure is wrong:** `CLAUDE.md:167`,

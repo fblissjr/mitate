@@ -1262,7 +1262,14 @@ property, not the proxy.
    nobody has listed. This paragraph exists because the discussion itself was
    lost once already.
 
-**Gate R4:** every `build.js` verb exercised in CI; `smoke.js` behaviour
+**Gate R4:** every **core and review** `build.js` verb exercised in CI, with the
+export verbs reported as deliberately skipped rather than counted missing
+(**amended 2026-07-31**: this clause read "every `build.js` verb exercised in
+CI", which became unmeetable the moment export tooling was ruled out of the gate
+— nine of seventeen rows skip by design and no encoder belongs in Actions. Left
+as written it invites the next session to either install ffmpeg to satisfy it or
+call the gate met while it is not; both undo the decision. The measurable form is
+`working-plan.md` E5's tiered tally); `smoke.js` behaviour
 byte-unchanged across the extraction (same verdicts on the same corpus); a fence
 edited in one carrier and propagated by command lands byte-identical in every
 other carrier, with the malformed-source refusal bracketed; every portfolio case

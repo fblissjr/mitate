@@ -7,6 +7,47 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.45
+
+### added
+
+**The defect corpus — R4.5.** `fixtures/defect-corpus/after-hours.html`, a scene
+kept **because it is broken**, with characterized defects at known timestamps. A
+new instrument gets a positive control the day it is written, and a regression
+control the day someone changes it.
+
+`working-plan.md` predicted its own failure here — *"`circus.html` is currently
+the third such fixture about to evaporate"* — and was right: the prototype lives
+on one machine, gitignored and unbacked-up. This is the fix.
+
+**Outside `plugin/`, deliberately.** Everything under the plugin subtree ships
+into the install cache, and a deliberately defective scene must not reach a user
+as though it were an example.
+
+**It JOINS the parity set**, and that decision is recorded beside the file. The
+reason is not tidiness: **a regression control running a stale kernel is not
+measuring the engine the instruments gate.** On import, 5 of its 7 fences had
+drifted — `CONTRACT` absent entirely, `KERNEL`/`SOLVER`/`DRIVER`/`HTML` months
+behind. It was brought current with `--parity-fix`, which is what makes a ninth
+carrier affordable, and is wired into `static.yml` and the pre-commit hook.
+
+Re-skinned from the prototype: theme, palette, title words and setting changed;
+beat names, durations, captions, `SHOTS` and the rig unchanged, because what the
+fixture is for is mechanical and none of it lives in the theme. Title words were
+length-matched (11 and 6 characters) so the glyph metrics did not move.
+
+**Measured constraint found the hard way:** the procedural alphabet defines
+thirteen letters (`T H E A M N Z I G C R U S`). A first pass matched the
+character count with `AFTER HOURS` and crashed in `buildWord` on the missing `F`.
+Character count is not glyph coverage.
+
+**Two of twelve defects re-measured against this build, and both numbers moved** —
+which is exactly why the plan forbade assuming they carry over. `endcap` dead air:
+`motion` 0.94 against peak 5.75 becomes **1.05 against peak 6.79**. The walker's
+declared `w:2.8`: the prototype's measured 3.62 does **not** reproduce, giving
+**3.12 @ t=5 and 3.30 @ t=20**. The remaining ten are listed in the corpus README
+as carried-over and **UNVERIFIED against this build**, not as properties of it.
+
 ## 0.16.44
 
 ### fixed

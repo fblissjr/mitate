@@ -354,6 +354,38 @@ thing directly.
 which needs to read the tables and is the first consumer that would pay for the
 fences.
 
+### The naming question is a different one, and it gates Phase 4 (2026-07-31)
+
+Everything above answers *what shape* the declarative layer should take. It does
+not answer what the layer **is called or contains**, and
+[`VISION.md`](../VISION.md) names that as the blocker on the physics bake: the
+existing layer is *"substantial, it works, and it is **unnamed, unspecified, and
+unvalidated as a whole**"*, and adding another layer on top of tables nobody has
+enumerated *"buys a capability with no foundation. **Enumerate first.**"*
+
+So there are **two vocabulary questions and they are not the same work**:
+
+| | what it names | where | gates |
+|---|---|---|---|
+| tooling vocabulary | what the tools *do* — `build.js`'s verbs | Track E, E2 | nothing; it is CLI ergonomics |
+| authoring vocabulary | what a scene *declares* — `BEATS`, `SHOTS`, `SUBJECTS`, `STYLE`, `CONFIG`, `SIZES`, `LENS` | here | **Phase 4** |
+
+**Run them independently — owner's call, 2026-07-31, and the reasoning is that
+one blocks a phase and the other does not.** E2 waits on E0's allowlist because
+that is what draws the export line for it. This enumeration waits on nothing: it
+has no encoder dependency, no relationship to the boundary work, and sequencing a
+Phase-4 prerequisite behind a verb rename would be backwards. Renaming `all`
+changes nothing about how a film is written; enumerating `SUBJECTS` changes what
+the engine can validate and what a bake is allowed to rest on.
+
+**The risk of running them separately is that two naming passes disagree**, and
+the mitigation is that neither pass invents its own rule. The principle is one
+line — *group by the question an author is asking, not by what the implementation
+happens to touch* — and it gets planted once in `method.md` (Track E, E3) so both
+passes cite the same sentence rather than each deriving a taste. Whatever either
+concludes lands in [`references/glossary.md`](../plugin/skills/mitate/references/glossary.md),
+which exists for exactly this and is 96 lines today.
+
 ## Salvaged from the ancestors, and what was deliberately left behind (2026-07-30)
 
 `internal/legacy/` is being archived off this machine. An audit checked every
@@ -1671,6 +1703,11 @@ Cheapest-risk first. **Do not batch these**; each has a different control.
   reads worse for silhouette, keep ffmpeg here or build a box-filter chain.
 
 ### E2. The verb taxonomy, after E0
+
+**This is the *tooling* vocabulary only.** The authoring vocabulary — what a
+scene declares — is a separate, larger question that gates Phase 4 and runs
+independently of this track; see "The naming question is a different one" above.
+Both cite the same grouping principle; neither derives its own.
 
 `build.js:2` declares the pipeline's terminus to be an mp4, and the verb set
 fossilised around it: **`all` = `bundle` + `frames` + `video`** (it means "the

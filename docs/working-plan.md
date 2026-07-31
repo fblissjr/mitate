@@ -1728,11 +1728,38 @@ Cheapest-risk first. **Do not batch these**; each has a different control.
   at a different size is a different image, not just a cheaper one. One
   comparison settles it. Note `poster` is a **delivery** command, not a review
   one (`instruments.md`: "a delivery command that happens to be frame-exact").
-- **`sheet` / `squint` / `strip` / `aspect` — measure before writing anything.**
-  The squint strip is a 480→90 downscale, where filter choice is load-bearing for
-  the instrument's whole job, and ffmpeg's scaler is better characterised than
-  canvas resampling. Generate both across the corpus and look first. If canvas
-  reads worse for silhouette, keep ffmpeg here or build a box-filter chain.
+- **`sheet` / `squint` / `strip` / `aspect` — measured 2026-07-31, and the
+  answer is "probably fine, not yet proven".** The squint strip is a 480→90
+  downscale where filter choice is load-bearing for the instrument's whole job.
+
+  **Conditions:** ONE frame — `gearbox.html` at `t=6.0`, scaled to 480 wide —
+  each downscale compared against a lanczos reference. macOS, ffmpeg 7.x static.
+
+  | downscale | PSNR vs ref | SSIM |
+  |---|---|---|
+  | ffmpeg default (ships today) | **49.94 dB** | 0.9992 |
+  | canvas `drawImage`, smoothing `high` | **40.45 dB** | 0.9920 |
+  | canvas `drawImage`, smoothing `low` | **40.45 dB** | 0.9920 |
+  | point-sampled (known-bad control) | 30.00 dB | 0.9592 |
+
+  Three things follow. **Canvas is 9.5 dB worse than what ships**, so this is not
+  a free swap. **It is 10.4 dB better than the known-bad control**, so it is
+  nowhere near point-sampling territory and SSIM stays at 0.992. And
+  **`imageSmoothingQuality` makes no difference at all** — `high` and `low` are
+  bit-identical here, so the obvious mitigation does not exist and there is no
+  quality knob to turn if the eye check goes against it.
+
+  **This does NOT clear the swap on its own.** `method.md`'s own PSNR rule is
+  that byte-identical or >70 dB is imperceptible rounding and anything lower gets
+  a difference-image look before it is trusted; 40 dB is well under. The
+  difference image was generated and handed to the owner `(local)`; that judgment
+  is not made here.
+
+  **And one frame from one scene is thin by this repo's own standard** — the same
+  sample-size argument this track makes against the two-fixture `motion`
+  calibration. Before the tilers move, run this across the example corpus rather
+  than resting on `gearbox` at one timestamp. The harness is four ffmpeg commands
+  plus a `page.evaluate`; re-running it wide is cheap.
 
 ### E2. The verb taxonomy, after E0
 

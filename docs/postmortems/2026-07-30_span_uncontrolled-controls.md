@@ -118,5 +118,35 @@ caught by reading.
 
 ## Annotations
 
-*(none yet — later corrections belong here, dated, rather than rewriting the
-above.)*
+**2026-07-30, same day — a fourth instance, and the sharpest one, found by the
+fix for the first.** Wiring the brackets into `static.yml` was recurrence 1's
+remedy. Their first unattended execution failed, and the defect was *in the
+bracket*: `bracket-selfcheck.js`'s arm for "an accept-set that differs between a
+laptop and CI" wrote a fixture into `site/films/` without creating the directory.
+`films/*.html` was gitignored, so git tracked nothing there and stored no empty
+directory — a clone had no such path, and the arm died with `ENOENT`. It had
+passed locally only because a previous `stage-films.sh` run left the directory
+behind.
+
+**The arm written to catch environment-dependence was environment-dependent.**
+`bracket-stage-films.js` carried the same fault latently, working only because an
+earlier arm had run `stage-films.sh` first — ordering, not a guarantee.
+
+This sharpens the verdict above rather than contradicting it. The finding was
+"nothing points at the check"; the correction is that **pointing CI at the check
+is what found the check to be wrong**, within hours, on a defect no amount of
+local running would have surfaced. Cost of the previous position: these controls
+existed for a day, ran nowhere, and were believed green.
+
+Fixed at the root rather than at the three callers that were each compensating:
+`site/films/.gitkeep` is tracked so the directory survives a clone, and
+`site/.gitignore` widened from `films/*.html` to `films/*` with `.gitkeep`
+negated — the narrower rule would have let a staged `.json` or sprite sheet get
+tracked by accident. The `mkdir -p` calls stay, covering directory *deletion*,
+which is how these arms get tested.
+
+One more self-inflicted stale claim in the process: the comments explaining the
+`mkdir` asserted "a fresh checkout has no `site/films/`", which stopped being
+true the moment `.gitkeep` landed. Half-life: ten minutes. Corrected.
+
+Range extends to `63200fb`; `gate` and `static` both green there.

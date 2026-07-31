@@ -1,4 +1,4 @@
-last updated: 2026-07-30
+last updated: 2026-07-31
 
 # Pattern ledger: how many times have we built this
 
@@ -121,3 +121,36 @@ move. The flywheel is making that move cheap enough that it happens by default.
 who decides where it lands, and how it avoids becoming a fifth place a fact can
 live. `source-of-truth.md`'s one-home rule is the constraint it must satisfy, not
 an obstacle to route around.
+
+### The flywheel ran manually on 2026-07-31, and its output is already at risk
+
+A parallel session did the whole loop by hand: built a scene end to end, reviewed
+it with `film-reviewer` and found six defects, wrote a postmortem, had an
+independent no-context pass review *that postmortem* (which found its own
+flagship claim false — a `probe` measurement projecting a hand-declared constant
+rather than the live geometry it claimed to measure), then investigated a
+different AI harness's scenes against source and produced a consolidated
+patterns / anti-patterns list.
+
+**That list is this flywheel's output, produced by discipline rather than by
+mechanism** — at the end of a long build, which is the condition named above as
+exactly when nobody is reflective. It is an existence proof that the loop yields
+something real, and the strongest argument yet for not leaving it to willingness.
+
+**And it lives in `internal/`, which is gitignored.** So a set of extracted,
+reviewed, cross-checked patterns is one directory deletion from gone — *the
+identical failure this section cites as its own motivation*, re-enacted the same
+week it was written down, with a fresh instance. The predecessor's cookbook
+survived only because an audit went looking; nothing is currently looking for
+this one.
+
+Two consequences for the design pass, both empirical rather than speculative now:
+
+- **"What counts as a pattern" has a worked example.** That list is real material
+  to design against instead of a hypothetical, and it was produced without any of
+  the tooling proposed above — which bounds how much tooling the answer needs.
+- **The promotion path is the missing half, not the noticing.** The session
+  noticed fine. What no mechanism did was move the result anywhere durable, and
+  the count in this file must not absorb those instances either: they come from
+  scenes outside this corpus, so folding them in would break what the number
+  means (see the entry conditions above).

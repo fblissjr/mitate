@@ -1777,13 +1777,43 @@ Cheapest-risk first. **Do not batch these**; each has a different control.
   matched content, and both methods fall together on `noise-chart` — that is the
   content being hard, not canvas failing on it.
 
-  **Verdict: no blocker found, and the failure mode that was feared is
-  measurably absent.** Remaining before the swap: the owner's eye check on the
-  difference image `(local)` — which read as "both look similar" on the first
-  panel — and, if wanted, an independent read. Not "cleared by PSNR": 40 dB is
-  under `method.md`'s 70 dB bar, and this measures fidelity to a reference rather
-  than legibility of a silhouette, which is the property that actually matters
-  and which no PSNR number reports.
+  **PSNR was the wrong metric, and an independent review is what exposed it.**
+  An outside read of the corrected difference image found the variance
+  **concentrated on edges and outlines**, with flat regions dark — canvas
+  feathers boundaries where ffmpeg holds them. That is the same physical fact as
+  the flat ~10 dB penalty above, but it inverts the conclusion drawn from it:
+  softness is benign for general image quality and **hostile to this instrument
+  specifically**, because at 90px there is no detail left to protect and the
+  outline is the entire signal. The reasoning error was applying a general
+  image-quality heuristic to an edge-critical measurement.
+
+  **So measure edge energy, not fidelity.** Sobel mean over the 90px image —
+  directly, how much edge contrast survived:
+
+  | 90px image | edge energy |
+  |---|---|
+  | **rendered natively at 90px** | **47.04** |
+  | lanczos reference | 46.44 |
+  | ffmpeg default (ships today) | 46.36 |
+  | canvas `drawImage` | 45.47 |
+
+  Two results. **Canvas loses 1.9% of edge energy against ffmpeg** — real,
+  matching the outside read's "subtly crisper", and far smaller than the 10 dB
+  PSNR gap implied. PSNR overstated the functional difference because it measures
+  fidelity to a reference rather than the property in use.
+
+  **And native rendering beats every downscale**, because it antialiases at
+  render time with the full scene rather than resampling an already-rasterized
+  image. It also needs no encoder, which dissolves the ffmpeg-versus-canvas
+  question for the riskiest verb instead of settling it.
+
+  **Take the native-render path for the squint strip.** Shoot the squint frames
+  at 90px rather than downscaling 480→90. Open before it lands: the scene
+  responds to viewport (`aspect` exists to prove that), so a native 90px render
+  is a *different* image, not a cheaper one — `ffmpeg-vs-native` sits at 28 dB,
+  which is a composition difference and not a quality signal. Confirm the framing
+  a director expects still holds at that viewport, the same caveat `poster`
+  carries.
 
 ### E2. The verb taxonomy, after E0
 

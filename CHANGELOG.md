@@ -7,6 +7,54 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.41
+
+### added
+
+**The harness tier: `templates/bracket-commands.js` runs every `build.js` verb
+once and asserts the path executes.** R4's cheapest item, and the gap it closes
+was the widest in the repo — `build.js` and `shoot.js` carried **zero** brackets
+between them, which is how `build.js aspect` came to throw a `ReferenceError` in
+two skills at once, undetected, because nothing invoked it.
+
+Thirteen verbs (`vendor`, `bundle`, `poster`, `sheet`, `aspect`, `strip`,
+`motion`, `probe`, `frames`, `video`, `all`, `avif`, `loop`) plus **four red
+arms**: an unknown verb, `probe` without an expression, a missing scene, and
+`bundle` against a shipped `*.template.html` — the last a real guard with real
+history, since running any command on a template used to inflate it with 0.77 MB
+of inlined three, idempotently, and it reached `git add` once.
+
+**Scope is the design, and it is stated in the file:** this does not check that
+output is *correct*. It checks that the path executes and names the artifact it
+promised. Correctness is what the instruments are for; this closes the other
+shape entirely — a command nobody has run since the feature landed.
+
+**Cheap by construction.** Every full-film verb takes an fps argument, so they
+run at 1fps (~17 frames instead of ~500) at small widths. 38 seconds locally.
+
+**Skips are reported, never silent.** `avifenc` and `img2webp` are not on a stock
+CI runner; those rows print SKIP with the missing binary named and are excluded
+from the tally rather than counted green. A harness that quietly covers less than
+it claims is the thing this file exists to prevent.
+
+**No CI edit was needed** — `gate.yml` already globs
+`templates/bracket-*.js`, so naming it `bracket-commands.js` covers it the day it
+is written. R4.3 as specified had prescribed adding a step; the glob is better,
+because a future harness is covered without anyone remembering to wire it.
+
+### fixed
+
+**Its first run failed, and found a real constraint rather than a bug.** The
+fixture was built in `os.tmpdir()`, and `vendor` failed there even with three
+installed: `vendor` shells out to `bun build`, which resolves `three` from the
+**entry file's** directory, and the entry is written beside the scene. A tmpdir
+has no `node_modules` to walk up to. `require.resolve` inside `build.js` falls
+back to `process.cwd()` and is satisfied; the bundler is not. That is CLAUDE.md's
+*"three resolves from the workspace where a scene is being built"* being
+literally true of the bundler — the kind of constraint no amount of reading
+finds. The fixture now lives inside the invoking workspace, and the reason is
+recorded at the line that depends on it.
+
 ## 0.16.40
 
 ### fixed

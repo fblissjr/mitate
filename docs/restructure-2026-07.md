@@ -14,7 +14,7 @@ last updated: 2026-07-30
 > same reordering recorded below. The `CLAUDE.md` byte clause was retired by
 > owner call in favour of "no rule lost, no line unearned".
 >
-> **Next: R4 — the harness, now seven items.** Its cheapest is also its most
+> **Next: R4 — the harness, seven items; 4.2 and 4.3 done in 0.16.41.** Its cheapest is also its most
 > alarming gap: `build.js` and `shoot.js` have **zero** brackets between them.
 > **Do R4.2 + R4.3 first** — the harness tier needs nothing from the `checkScene`
 > extraction, and R4.1's gate (byte-unchanged `smoke.js` behaviour) is the
@@ -943,10 +943,11 @@ property, not the proxy.
 > not preference, and a later item is not blocked by skipping an earlier one
 > except where stated.
 >
-> 1. **R4.2 + R4.3 — the harness tier.** Half a day. Zero dependencies, closes
->    the loudest gap (`build.js` and `shoot.js` carry no brackets at all), and
->    R4.3 collapses to a naming decision: call it
->    `templates/bracket-commands.js` and `gate.yml`'s existing glob covers it.
+> 1. ~~**R4.2 + R4.3 — the harness tier.**~~ **DONE 0.16.41.**
+>    `templates/bracket-commands.js`: 13 verbs, 4 red arms, 38s, and no CI edit
+>    because the existing glob covered it. Its first run found that `vendor`
+>    cannot run against a scene outside the workspace — `bun build` resolves
+>    three from the entry file's directory. **Next: item 2.**
 > 2. **R4.4 — `--parity-fix`.** Small, and it comes before R4.5 because R4.5
 >    adds a ninth fence carrier; propagation is what makes that cheap instead of
 >    a permanent tax.
@@ -974,7 +975,7 @@ property, not the proxy.
    page setup, which is why `bracket-determinism.js` needs its whole length to test one
    thing.
 
-2. **A harness tier below the chart tier** (`working-plan.md`, **"Add a harness tier below the chart tier"** — cited by
+2. **A harness tier below the chart tier — DONE 0.16.41** (`templates/bracket-commands.js`: 13 verbs, 4 red arms, 38s, skips reported not silent). (`working-plan.md`, **"Add a harness tier below the chart tier"** — cited by
    heading, not line: the 0.16.39 prune shifted every anchor in this file by ~140
    lines and nothing caught it). Run
    every `build.js` subcommand against one tiny scene; assert exit 0 and that
@@ -985,7 +986,7 @@ property, not the proxy.
    closes the command-never-run shape permanently. State what it is not: it
    checks the path executes, not that output is correct.
 
-3. **`gate.yml` runs the harness tier.** No new workflow — the existing gate job
+3. **`gate.yml` runs the harness tier — DONE 0.16.41, with no CI edit at all.** Naming it `bracket-commands.js` put it inside the existing `templates/bracket-*.js` glob, so it ran the day it was written and a future harness will too. The prescription below (add a step) was the more expensive answer. No new workflow — the existing gate job
    gains a step. `sample.yml` stays manual-only and correct as designed;
    `static.yml` needs no change. **Name it `templates/bracket-commands.js` and
    no CI edit is needed at all** — `gate.yml` already globs

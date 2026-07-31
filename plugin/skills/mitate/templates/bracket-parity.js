@@ -304,6 +304,65 @@ for (const [label, files, args, expect] of FIX_ARMS) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// SCAN INPUT HYGIENE — the read-only half, where the failure is that the check
+// scans FEWER FILES THAN ASKED and reports success for the ones it never read.
+//
+// This is the same family as the mangled-marker episode: nothing is wrong with
+// the verdict on what was scanned, the scan itself silently shrank. It is the
+// worst shape a gate can take, because the exit code is 0 and stays 0 forever.
+const SCAN_ARMS = [
+  // FINDING 5. An unmatched glob reaches argv as a LITERAL under bash (zsh
+  // errors first, bash does not), readFileSync threw, and the throw was
+  // swallowed by `catch (e) {}` — scanning nothing and printing ok. Live risk:
+  // a third glob was added to static.yml and the installed hook yesterday, so
+  // renaming fixtures/defect-corpus/ would silently drop a directory from CI
+  // and from every hook, green forever.
+  ['scan: refuses an argument it cannot read',
+    { 'a.html': FENCE, 'b.html': FENCE },
+    ['--parity-only', 'a.html', 'b.html', 'fixtures/nope/*.html'],
+    // [\s\S], not . — the offending argument is named on its own line, and a
+    // `.`-based regex passed the exit-code half while silently missing that.
+    { code: 'nonzero', says: /could not be read[\s\S]*fixtures\/nope\/\*\.html/ }],
+  // The companion, and NOT decoration: the guard above cannot see the other
+  // half of this failure. Under `nullglob` an unmatched glob is removed from
+  // argv entirely, so smoke is handed fewer arguments and has no way to know
+  // any were intended. Printing the count is the only thing that makes that
+  // case visible to a reader — a green line that states its own scope.
+  ['scan: states how many files it read',
+    { 'a.html': FENCE, 'b.html': FENCE },
+    ['--parity-only', 'a.html', 'b.html'],
+    { code: 'zero', says: /2 file\(s\) scanned/ }],
+  // A directory argument throws EISDIR, which the same swallow hid.
+  ['scan: refuses a directory argument',
+    { 'a.html': FENCE, 'b.html': FENCE },
+    ['--parity-only', 'a.html', 'b.html', '.'],
+    { code: 'nonzero', says: /could not be read[\s\S]*EISDIR/ }],
+];
+
+for (const [label, files, argv, expect] of SCAN_ARMS) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mitate-parityscan-'));
+  try {
+    for (const [name, v] of Object.entries(files)) fs.writeFileSync(path.join(dir, name), render(v));
+    let out = '', code = 0;
+    try {
+      out = execFileSync('bun', ['run', SMOKE, ...argv],
+        { cwd: dir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+    } catch (e) {
+      code = e.status ?? 1;
+      out = String(e.stdout || '') + String(e.stderr || '');
+    }
+    const codeOk = expect.code === 'zero' ? code === 0 : code !== 0;
+    const saidOk = expect.says.test(out);
+    const ok = codeOk && saidOk;
+    if (!ok) wrong++;
+    console.log(`${label.padEnd(52)} exit ${code}${saidOk ? '' : '  WRONG-MESSAGE'}`
+      + `${ok ? '' : `  BRACKET FAILED (expected exit ${expect.code}, saying ${expect.says})`}`);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+
 if (wrong) {
   console.log(`\n${wrong} arm(s) did not behave as specified — the parity check is not doing`
     + ` what this bracket claims. A drifted fence would ship, or a refusal would leave`

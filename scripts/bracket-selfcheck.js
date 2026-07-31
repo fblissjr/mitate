@@ -113,6 +113,36 @@ const ARMS = [
     return () => fs.rmSync(f, { force: true });
   }, 'call site'],
 
+  // install-hooks.sh refuses to overwrite a DIFFERING hook without --force,
+  // which is correct — it must not clobber a hand-edited one. The consequence
+  // is that a hook installed before a command changed runs the old command
+  // forever and nothing says so. Not hypothetical: every machine that installed
+  // before 0.16.45 was still running the two-glob parity command after a NINTH
+  // carrier joined, so the hook gated commits on one directory less than it
+  // claimed — including on the machine where this arm was written.
+  ['a stale installed pre-commit hook', () => {
+    const hook = path.join(ROOT, '.git', 'hooks', 'pre-commit.local');
+    const had = fs.existsSync(hook) ? fs.readFileSync(hook, 'utf8') : null;
+    // DERIVED from the generator, never written literally: a fixture that
+    // restates the hook body would drift away from the thing it imitates and
+    // start testing a shape that no longer exists. This reproduces the actual
+    // historical staleness — drop the third glob, and the line-continuation
+    // backslash that preceded it, which is byte-for-byte the old hook.
+    const gen = fs.readFileSync(path.join(__dirname, 'install-hooks.sh'), 'utf8');
+    // [^\n]* because the heredoc line carries `|| true` after the delimiter.
+    const body = (gen.match(/<<'HOOK_BODY'[^\n]*\n([\s\S]*?)\nHOOK_BODY/) || [])[1];
+    const stale = body.split('\n')
+      .filter(l => !l.includes('fixtures/defect-corpus'))
+      .join('\n').replace(/ \\\n$/, '\n').replace(/ \\$/, '');
+    fs.mkdirSync(path.dirname(hook), { recursive: true });
+    fs.writeFileSync(hook, stale + '\n');
+    fs.chmodSync(hook, 0o755);
+    return () => {
+      if (had === null) fs.rmSync(hook, { force: true });
+      else { fs.writeFileSync(hook, had); fs.chmodSync(hook, 0o755); }
+    };
+  }, 'STALE copy'],
+
   ['postmortem an index cannot read', () => {
     const dir = path.join(ROOT, 'docs', 'postmortems');
     const f = path.join(dir, '2026-01-01_session_bracket-fixture.md');

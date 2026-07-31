@@ -1990,6 +1990,14 @@ against live fixtures rather than argued. **Do not merge this branch until the
 write-path group is fixed.** Several contradict claims written into comments on
 this same branch, which is the class invariant 6 exists for.
 
+> **UPDATE 0.16.48 — findings 5 and 6 are FIXED too. Open: 7-9 and 12-15.**
+> An unreadable argument is a hard refusal, `--parity-only` states how many
+> files it scanned, and `selfcheck.js` now detects a stale installed hook — it
+> **fired immediately on the machine that wrote it**, which had been gating
+> commits on the pre-0.16.45 two-glob command. Finding 6's real content was
+> never "the installer should overwrite"; it was "nothing detects the stale
+> copy", so the fix is a check, not a flag.
+>
 > **UPDATE 0.16.47 — findings 1, 2, 3, 4, 10 and 11 are FIXED.** The write-path
 > group no longer blocks; **5-9 and 12-15 remain open** and the merge is still
 > blocked on them. Each fix carries a `bracket-parity.js` arm that was watched
@@ -2089,9 +2097,14 @@ when they were written.
 **Done in 0.16.47: 1-4, and 10-11 with them rather than after.** Splitting them
 was not possible in the stated order — writing new arms for 1-4 under 10's
 weakness would have meant knowingly building four more arms that any non-zero
-exit satisfies. **Next up is 5-6, then 7-9, then 12-15.** 5 is worth doing soon
-for the reason the finding gives: the third glob added yesterday makes a silent
-coverage loss reachable from CI and from every installed hook.
+exit satisfies.
+
+**Done in 0.16.48: 5-6.** Finding 6 turned out to have a live instance rather
+than a hypothetical one, and the check found it on the first run.
+
+**Next up: 7-9 (the three false claims), then 12-15 (bracket hazards and the
+duplicated workflow loop).** 12 is the one with teeth — a bracket that inflates
+a tracked source by ~1 MB if the guard it tests regresses.
 
 ## The defect corpus is in parity but nothing runs it (2026-07-31)
 

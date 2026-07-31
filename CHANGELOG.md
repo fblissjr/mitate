@@ -40,6 +40,43 @@ a downscale measurement. The commit was already pushed, so it was left alone
 rather than rewritten — this entry is where the addition is actually findable,
 which is what `source-of-truth.md` assigns the CHANGELOG.*
 
+## 0.16.48
+
+### fixed
+
+**The silent-coverage-loss group — findings 5 and 6 of the 2026-07-31 review.**
+Both have the same shape and it is the worst one a gate has: the verdict on what
+was scanned stays correct while the scan itself quietly shrinks, and the exit
+code is 0 forever.
+
+- **An argument `smoke.js` cannot read is now a hard refusal.** It was
+  `catch (e) {}`. Under bash an unmatched glob arrives as a literal string, so
+  renaming `fixtures/defect-corpus/` would have left CI and every installed hook
+  checking one directory less and reporting `parity/integrity: ok`. A directory
+  argument (EISDIR) went into the same swallow. All bad arguments are collected
+  and named at once rather than thrown on the first.
+- **`--parity-only` now states its scope: `ok — 9 file(s) scanned`.** This is not
+  decoration. The refusal above cannot catch the other half of the same failure:
+  under `nullglob` the unmatched argument is removed from argv *before* smoke
+  runs, so nothing inside it can know a directory was intended. A green line
+  that says how much it covered is the only thing that makes that visible.
+- **`selfcheck.js` detects a stale installed pre-commit hook.**
+  `install-hooks.sh` refuses to overwrite a differing hook without `--force`,
+  which is correct — but the consequence was that a hook installed before a
+  command changed ran the old command forever and nothing said so. The check
+  **fired on the machine that wrote it**: the installed hook was still the
+  two-glob version from before `fixtures/defect-corpus/` became the ninth
+  carrier, so commits were being gated on one directory less than the hook
+  claimed. Skipped when no hook is installed, since CI has none. The expected
+  body is extracted from `install-hooks.sh` rather than restated, so there is
+  still one home for it.
+
+Each fix was watched red first and then mutation-tested. One branch is labelled
+rather than controlled: the no-heredoc fallback in the hook check is fail-closed
+(it can only produce a red), and an arm for it would have to mutate the tracked
+`install-hooks.sh` in place — the shipped-artifact hazard this repo removed from
+another bracket. The comment says which of the two the mutation test kills.
+
 ## 0.16.47
 
 ### fixed

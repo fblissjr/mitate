@@ -51,7 +51,13 @@ last updated: 2026-07-31
 > **MERGE IS STILL BLOCKED, but no longer on the write path.** A
 > `/code-review high` over `main...HEAD` returned 15 findings, most reproduced
 > against live fixtures. **0.16.47 closed the write-path group (1-4) and the two
-> bracket weaknesses (10-11); 5-9 and 12-15 remain open.**
+> bracket weaknesses (10-11); 0.16.48 closed the silent-coverage-loss pair
+> (5-6). 7-9 and 12-15 remain open.**
+>
+> **If you develop this repo on a machine that installed the pre-commit hook
+> before 0.16.45, `selfcheck.js` will now tell you so** — it was running the
+> two-glob parity command and checking one directory less than it claimed. Run
+> `./scripts/install-hooks.sh --force`.
 >
 > `--parity-fix` is safe to run again. It now checks writability as part of
 > validation, inspects all seven fences in every target rather than the ones the

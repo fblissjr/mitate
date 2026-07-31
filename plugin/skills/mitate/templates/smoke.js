@@ -1072,6 +1072,7 @@ async function checkScene(browser, file) {
   // objective, and a drifted kit is exactly how the 2D and 3D backends stop
   // rendering the same ramp the same way.
   let kernelFail = false;
+  let sceneCount = 0;   // files actually READ, reported on the verdict line
   {
     // One check, four fences. KERNEL is the shared kit (all templates); SOLVER
     // is the cinematography solver, which reached SIX copies before its fence
@@ -1083,8 +1084,32 @@ async function checkScene(browser, file) {
     // nodeFrame tick), which is exactly the code whose silent drift would cost
     // the most. Scenes that legitimately diverge remove their markers and
     // leave the parity set.
+    // AN ARGUMENT THAT CANNOT BE READ IS A HARD FAILURE, not a skip. This was
+    // `catch (e) {}`, and the failure it hid is the worst shape a gate has: the
+    // verdict on what WAS scanned stays correct while the scan itself silently
+    // shrinks. Under bash an unmatched glob arrives as a literal (zsh errors
+    // first; bash does not), so `fixtures/defect-corpus/*.html` survives a
+    // rename of that directory as a string, matches nothing, and the run prints
+    // ok having checked one directory less — in CI and in every installed hook,
+    // green forever. A directory argument threw EISDIR into the same swallow.
+    //
+    // Collected rather than thrown on the first one: being told all three bad
+    // arguments at once is the difference between one fix and three runs.
     const texts = new Map();                        // each file read ONCE
-    for (const f of scenes) { try { texts.set(f, fs.readFileSync(f, 'utf8')); } catch (e) {} }
+    const unreadable = [];
+    for (const f of scenes) {
+      try { texts.set(f, fs.readFileSync(f, 'utf8')); }
+      catch (e) { unreadable.push(`${f} — ${e.code || e.message}`); }
+    }
+    if (unreadable.length) {
+      console.error(`smoke: ${unreadable.length} argument(s) could not be read, so they were `
+        + `never checked. Refusing rather than reporting on the rest:`);
+      for (const u of unreadable) console.error('       ' + u);
+      console.error('An unmatched glob reaches here as a literal string. If a directory was '
+        + 'renamed, every caller that globs it is now scanning one directory less.');
+      process.exit(1);
+    }
+    sceneCount = texts.size;
     // CONTRACT joins the set at 0.16.44. It was byte-identical across all eight
     // carriers and fenced by nothing — 3 lines of it were also FALSE ("the HTML
     // loop and the MP4 render provably identical"), which is how it was found:
@@ -1165,7 +1190,15 @@ async function checkScene(browser, file) {
   }
 
   if (parityOnly) {
-    console.log(kernelFail ? '\nparity/integrity: FAILED' : '\nparity/integrity: ok');
+    // THE COUNT IS PART OF THE VERDICT. The guard above catches an unmatched
+    // glob that arrives as a literal; it structurally CANNOT catch the other
+    // half — under `nullglob` the argument is removed from argv before smoke
+    // runs, so a scan that was meant to cover three directories covers two and
+    // nothing here knows a third was intended. A green line that states its own
+    // scope is the only thing that makes that visible, and it costs one number.
+    const scanned = `${sceneCount} file(s) scanned`;
+    console.log(kernelFail ? `\nparity/integrity: FAILED (${scanned})`
+                           : `\nparity/integrity: ok — ${scanned}`);
     process.exit(kernelFail ? 1 : 0);
   }
 

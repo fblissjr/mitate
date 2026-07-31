@@ -746,6 +746,61 @@ const toolJs = new Map([
   }
 }
 
+/* ---- 8. the installed pre-commit hook still matches its generator ----------
+ * install-hooks.sh REFUSES to overwrite a differing hook without --force, which
+ * is right: it must not clobber one someone edited on purpose. The consequence
+ * is that a hook installed before a command changed keeps running the OLD
+ * command forever, and nothing said so — the installer only speaks when you run
+ * it, and the whole point of a hook is that you never run it again.
+ *
+ * Live instance, and the reason this check exists: `fixtures/defect-corpus/`
+ * became a ninth parity carrier in 0.16.45 and the generator gained a third
+ * glob. Every machine that had installed before that kept gating commits on the
+ * two-glob command — checking one directory less than the message it printed
+ * claimed. It was found by reading the hook, not by any check.
+ *
+ * SKIPPED when no hook is installed. CI has none and that is not a defect; the
+ * note says so out loud rather than leaving a silent pass. `.git/hooks` is also
+ * absent-by-indirection in a linked worktree, which lands in the same branch.
+ *
+ * The expected body is EXTRACTED from install-hooks.sh, never restated here. A
+ * second copy of the hook body in this file is precisely the duplicate this
+ * file exists to catch, and it would rot the same way. Compared trimmed: the
+ * generator writes with `printf '%s\n'`, so trailing-newline count is an
+ * artifact of the writer, not a difference in what the hook runs.
+ *
+ * The no-heredoc branch is NOT bracketed, and deliberately so: an arm for it
+ * would have to mutate the tracked install-hooks.sh in place, which is the
+ * shipped-artifact hazard this repo just removed from another bracket. It is
+ * fail-CLOSED — it can only produce a red, never a false green — so what it
+ * risks is a nuisance, not a silent hole. Mutation-tested: neutralising the
+ * comparison above kills the arm in bracket-selfcheck.js; neutralising this
+ * branch does not, which is the honest reading of its coverage. */
+{
+  const hookPath = path.join(ROOT, '.git', 'hooks', 'pre-commit.local');
+  let installed = null;
+  try { installed = R(hookPath); } catch (e) {}
+  if (installed === null) {
+    notes.push('no pre-commit.local installed — nothing to compare (CI has none; run '
+             + './scripts/install-hooks.sh to get one)');
+  } else {
+    const gen = R(path.join(__dirname, 'install-hooks.sh'));
+    // [^\n]* because the heredoc line carries `|| true` after the delimiter.
+    const m = gen.match(/<<'HOOK_BODY'[^\n]*\n([\s\S]*?)\nHOOK_BODY/);
+    if (!m) {
+      fail('scripts/install-hooks.sh has no readable HOOK_BODY heredoc, so the installed hook '
+         + 'cannot be checked against it — the generator changed shape and this check went blind');
+    } else if (installed.trim() !== m[1].trim()) {
+      fail('.git/hooks/pre-commit.local is a STALE copy — it differs from what '
+         + 'scripts/install-hooks.sh generates, so every commit it gates is checked against an '
+         + 'older command than the one in the tree. Diff it, then run '
+         + './scripts/install-hooks.sh --force');
+    } else {
+      notes.push('installed pre-commit.local matches its generator');
+    }
+  }
+}
+
 for (const n of notes) console.log('  ok   ' + n);
 if (fails.length) {
   console.log('');

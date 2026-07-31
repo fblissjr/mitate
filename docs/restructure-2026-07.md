@@ -99,6 +99,20 @@ last updated: 2026-07-31
 >
 >    `motion` was carved out by name and stayed carved out — it needs its scale
 >    re-established, not ported, which is a different job.
+>
+>    **THE GATE CLAUSE IS NOT YET MET, and the difference is the one this
+>    document already warns about.** The clause says the review verbs are
+>    "exercised **in CI**". They have been exercised on a local PATH stripped of
+>    encoders, which is evidence about the code and not about CI. `gate.yml`
+>    fires on `main`, `pull_request` and `workflow_dispatch` only, so every run
+>    on this branch has been `static` — and `static` globs `scripts/`, while
+>    `bracket-commands.js` lives in `templates/`. **The review verbs have never
+>    executed in CI, before or after this migration.**
+>
+>    So: the work is done and the clause is satisfiable; closing it needs one
+>    `workflow_dispatch` of `gate.yml` and a green review tier in that log.
+>    Do not mark the gate met from the local measurement — "it would run" is the
+>    exact inference item 1's own correction above says to stop making.
 > 2. **R4.7 — reach grades** on `plan.md`'s nine portfolio cases. Unstarted, no
 >    dependencies, pure judgment work.
 > 3. **R4.6's cold-start test** — the cheapest gate clause left. Today produced

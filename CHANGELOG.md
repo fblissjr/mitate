@@ -11,6 +11,27 @@ make the record say things that never happened. The rename and repo split are
 
 ### fixed
 
+**The first CI run of the brackets caught a defect in the brackets — an
+environment-dependent arm inside the arm written to catch environment
+dependence.** `bracket-selfcheck.js`'s "comment citing gitignored build output"
+arm wrote a fixture into `site/films/` without creating the directory.
+`films/*.html` is gitignored, so git tracks nothing there and does not create the
+path: a fresh checkout has no `site/films/`, and the arm died with `ENOENT` the
+moment it ran anywhere that had not already executed `stage-films.sh`. It passed
+locally for exactly that reason.
+
+Both brackets now `mkdir -p` explicitly. `bracket-stage-films.js` had the same
+latent fault — arm 2 wrote into `site/films/` and worked only because arm 1 had
+run `stage-films.sh` first, which is ordering, not a guarantee.
+
+Reproduced locally by deleting `site/films/` before the fix and after, which is
+the only honest way to test a claim about a fresh checkout. **This is what wiring
+the brackets into `static.yml` was for:** they had never run anywhere but a
+laptop, and the first unattended execution found a defect of precisely the class
+the branch exists to remove.
+
+### fixed
+
 **`site/` is strictly downstream, and the direction was stated wrong in both
 directions before this landed.** Owner, 2026-07-30: *"the vision defines and
 informs site language, and plan informs site copy of plan... fundamentally the

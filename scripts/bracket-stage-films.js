@@ -63,6 +63,11 @@ const check = (label, ok, detail) => { results.push([label, ok, detail]); };
   const stale = path.join(FILMS, '_bracket_stale_film.html');
   let ok, detail;
   try {
+    // Explicit, not inherited from arm 1 having run stage-films.sh already:
+    // site/films/ is absent in a fresh checkout (gitignored output, so git
+    // creates no directory), and depending on arm ordering for its existence is
+    // how the sibling bracket died in CI.
+    fs.mkdirSync(FILMS, { recursive: true });
     fs.writeFileSync(stale, '<!-- an example that no longer exists -->\n');
     const r = run();
     ok = r.code === 0 && !fs.existsSync(stale);

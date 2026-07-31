@@ -69,8 +69,16 @@ const ARMS = [
     // present on a laptop that has run a build and absent in CI. A check whose
     // accept-set is the live filesystem therefore gives two different answers to
     // the same question -- the opposite of what this file is for.
-    const html = path.join(ROOT, 'site', 'films', '_bracket_fixture_derived.html');
+    // mkdir FIRST. site/films/ holds only gitignored build output, so git tracks
+    // no file there and does not create the directory -- a fresh checkout has no
+    // such path, and this arm died with ENOENT the first time CI ever ran it.
+    // The arm written to catch an environment-dependent accept-set was itself
+    // environment-dependent, and passed locally only because a previous
+    // stage-films.sh run had left the directory behind.
+    const films = path.join(ROOT, 'site', 'films');
+    const html = path.join(films, '_bracket_fixture_derived.html');
     const f = path.join(__dirname, '_bracket_fixture_ignored.js');
+    fs.mkdirSync(films, { recursive: true });
     fs.writeFileSync(html, '<!-- derived, not tracked -->\n');
     fs.writeFileSync(f, `// staged from ${'site/films/'}_bracket_fixture_derived.html\n`);
     return () => { fs.rmSync(html, { force: true }); fs.rmSync(f, { force: true }); };

@@ -14,7 +14,13 @@ last updated: 2026-07-31
 > same reordering recorded below. The `CLAUDE.md` byte clause was retired by
 > owner call in favour of "no rule lost, no line unearned".
 >
-> **Next: R4 — the harness, seven items; 4.2 and 4.3 done in 0.16.41.** Its cheapest is also its most
+> **Next: R4.5's remaining measurements — see "Start here" below, which is
+> current as of 0.16.45.** Done: 4.2 + 4.3 (0.16.41, corrected 0.16.42), 4.4
+> (0.16.43). Partial: 4.5 (0.16.45 — fixture tracked, 2 of 12 defects
+> re-measured). Untouched: 4.1, 4.7, and R4.6's cold-start test, which is now
+> cheap to close.
+>
+> **R4 — the harness, seven items.** Its cheapest is also its most
 > alarming gap: `build.js` and `shoot.js` have **zero** brackets between them.
 > **Do R4.2 + R4.3 first** — the harness tier needs nothing from the `checkScene`
 > extraction, and R4.1's gate (byte-unchanged `smoke.js` behaviour) is the
@@ -969,22 +975,55 @@ property, not the proxy.
 >    `gh run list --branch r4-harness` showed only `static` had ever run. Its
 >    first unattended run then failed on five rows and found three real defects.
 >    See item 3 for the inference to stop making. **Next: item 2.**
-> 2. **R4.4 — `--parity-fix`.** Small, and it comes before R4.5 because R4.5
->    adds a ninth fence carrier; propagation is what makes that cheap instead of
->    a permanent tax.
-> 3. **R4.5 — the defect corpus.** The largest item: it needs a film generated.
->    Do it before R4.1, because the current fixture is untracked and unbacked-up,
->    so its value decays with time in a way nothing else here does.
-> 4. **R4.1 — extract `checkScene`.** Last of the sequential items. Its gate
->    (byte-unchanged `smoke.js` verdicts) is the expensive one to satisfy, and
->    the harness tier already delivers part of what the extraction was for.
+> 2. ~~**R4.4 — `--parity-fix`.**~~ **DONE 0.16.43.** `smoke.js --parity-fix
+>    --from <canonical>`: source named and never inferred, malformed source or
+>    target refuses, and every file validates before the first byte is written.
+>    Twelve arms in `bracket-parity.js`. **Two of those arms were holes mutation
+>    testing found** — the partial-write property had no arm that could see it,
+>    and `refuses malformed source` passed with the guard removed. Both fixed.
+>    Exercised twice on real corpora since (0.16.44, 0.16.45).
+> 3. **R4.5 — the defect corpus. PARTIAL, 0.16.45. This is where to start.**
+>    `fixtures/defect-corpus/after-hours.html` is tracked, re-skinned, brought to
+>    the current engine with `--parity-fix` (5 of its 7 fences had drifted), and
+>    joined to the parity set with the decision recorded beside it. The decay
+>    risk is closed — the fixture no longer lives only on one machine.
+>
+>    **Three things remain, in this order:**
+>    - **Ten of the twelve defects are not re-measured**, and the corpus README
+>      lists them as carried-over and UNVERIFIED rather than as properties of
+>      this build. That labelling is doing real work: the **two** that were
+>      re-measured **both moved** (`endcap` 0.94/peak 5.75 → 1.05/peak 6.79; the
+>      walker's 3.62 does not reproduce, giving 3.12 and 3.30). Do not cite the
+>      other ten until each is re-run.
+>    - **`bracket-corpus.js`** — nothing executes the corpus today. Parity checks
+>      its fences; no check runs it. Do NOT solve this by adding it to the gate's
+>      scene list; the reasoning is in `working-plan.md` and in the corpus README.
+>    - **`bracket-noise.js` false-reds on macOS** (pre-existing, confirmed by
+>      stashing against clean `HEAD`; passes on the Linux gate). A control that
+>      cries wolf locally is one people learn to skip.
+> 4. **R4.1 — extract `checkScene`.** Last of the sequential items, and
+>    deliberately not started on 2026-07-31: its gate is byte-unchanged
+>    `smoke.js` verdicts, and refactoring the gate instrument at the end of a
+>    long session is how a regression enters the thing that catches regressions.
+>    Start it fresh.
 >
 > **R4.6 (retention) and R4.7 (portfolio grading) are continuous, not
 > sequential.** Do them alongside: record a design question the day it is raised,
 > grade a portfolio case the day its reach changes. Neither has a start date and
-> both are gate clauses.
+> both are gate clauses. **R4.6's gate clause is now cheap to close** — it asks
+> that a design question raised in a session be findable from `docs/` afterwards,
+> tested by a cold-start agent, and 2026-07-31 produced exactly that artifact
+> (the export-framing finding and the origin-story question, both recorded
+> below). Running that test builds nothing and closes a gate clause.
 >
-> **If you only do one thing:** item 1. It is the cheapest test in the repo.
+> **If you only do one thing:** the ten unmeasured defects. The corpus is
+> tracked but half-characterised, and a fixture nobody has measured is a fixture
+> nobody can cite.
+>
+> **Before trusting any of this, run:** `bun run scripts/selfcheck.js`, every
+> `scripts/bracket-*.js` and `templates/bracket-*.js`, and `smoke.js
+> --parity-only` **cross-directory including `fixtures/defect-corpus/*.html`**,
+> which is a ninth carrier as of 0.16.45.
 
 1. **Extract `checkScene`.** ~595 lines (`smoke.js:269`-~862) holding ~11 checks
    over shared mutable `fails`/`warnings`/`noise`/`dropped`. Each check already

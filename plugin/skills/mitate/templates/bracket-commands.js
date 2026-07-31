@@ -80,6 +80,14 @@ const REQUIRED = (process.env.REQUIRE_ENCODERS || '').split(',').map(s => s.trim
 const work = fs.mkdtempSync(path.join(process.cwd(), '.mitate-cmd-'));
 const scene = path.join(work, 'tiny.html');
 const base = scene.replace(/\.html$/, '');
+// A COPY, never the tracked template. The red arm below runs build.js against a
+// *.template.html to prove the embed guard fires — and if that guard ever
+// regresses, running it against the real file inflates a SHIPPED source by
+// ~1 MB. That is not hypothetical: neutralising the guard and running this
+// bracket changed the tracked file's hash, which is the documented damage that
+// "reached `git add` once", rebuilt inside the control meant to prevent it.
+// The basename is preserved because the guard matches on it.
+const templateCopy = path.join(work, path.basename(TEMPLATE));
 
 const run = (args, cwd) => {
   try {
@@ -98,7 +106,11 @@ const run = (args, cwd) => {
 //   expect.fails    — this row MUST exit non-zero, and print this substring
 //   expect.needs    — external binary; absent => SKIP, reported, not counted
 const ROWS = [
-  ['vendor',  ['vendor', scene],                  { stdout: '' }],
+  // `stdout: ''` here for the file's whole life, and never evaluated: the guard
+  // below read `if (ok && expect.stdout)`, where '' is falsy. So this row
+  // asserted exit 0 and nothing else, while looking like it asserted output.
+  // This row of bracket-commands.js measured the substring by running the verb.
+  ['vendor',  ['vendor', scene],                  { stdout: 'three already embedded' }],
   ['bundle',  ['bundle', scene],                  { stdout: 'self-contained' }],
   ['poster',  ['poster', scene, '0', '320'],      { artifact: base + '.jpg', needs: 'ffmpeg' }],
   ['sheet',   ['sheet', scene, '240', '0.6'],     { artifact: base + '.sheet.jpg', needs: 'ffmpeg' }],
@@ -120,14 +132,27 @@ const ROWS = [
   // ensureVendor refuses to embed into a shipped *.template.html -- a real guard
   // with a real history: running any command on one used to inflate it with
   // 0.77 MB of inlined three, idempotently, and it reached `git add` once.
-  ['(red) bundle a template', ['bundle', TEMPLATE], { fails: 'shipped' }],
+  ['(red) bundle a template', ['bundle', templateCopy], { fails: 'shipped' }],
 ];
 
 const results = [];
 try {
   fs.copyFileSync(SOURCE, scene);
+  fs.copyFileSync(TEMPLATE, templateCopy);
 
   for (const [label, argv, expect] of ROWS) {
+    // A vacuous expectation is a defect, not a style choice — see the vendor row.
+    if (expect.stdout === '') {
+      console.error(`${label}: expect.stdout is empty, which asserts nothing. `
+                  + `Name a substring the verb actually prints, or drop the key.`);
+      process.exit(1);
+    }
+    // AN ARTIFACT ASSERTION MUST PROVE THIS ROW WROTE THE FILE. `all` expected
+    // base.mp4 — which the `video` row two lines above had already produced, so
+    // `all` doing nothing at all still passed, "tiny.mp4 written" and green.
+    // Reproduced by removing the video() call from `all`. Clearing first makes
+    // every artifact row prove its own work rather than inherit a neighbour's.
+    if (expect.artifact) fs.rmSync(expect.artifact, { force: true });
     if (expect.needs && !has(expect.needs)) {
       const required = REQUIRED.includes(expect.needs);
       results.push([label, required ? 'FAIL' : 'SKIP',
@@ -146,7 +171,12 @@ try {
       ok = fs.existsSync(expect.artifact);
       why += ok ? `, ${path.basename(expect.artifact)} written` : `, ${path.basename(expect.artifact)} ABSENT`;
     }
-    if (ok && expect.stdout) {
+    // !== undefined, matching how `expect.fails` is tested twelve lines up. The
+    // truthiness form skipped any row whose expected substring was '' — which
+    // was exactly one row, and it had been silently unasserted since it was
+    // written. Two sibling checks in one function disagreeing about how to test
+    // presence is the shape to watch for.
+    if (ok && expect.stdout !== undefined) {
       ok = r.out.includes(expect.stdout);
       why += ok ? '' : `, stdout lacks "${expect.stdout}"`;
     }

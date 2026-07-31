@@ -40,6 +40,51 @@ a downscale measurement. The commit was already pushed, so it was left alone
 rather than rewritten — this entry is where the addition is actually findable,
 which is what `source-of-truth.md` assigns the CHANGELOG.*
 
+## 0.16.50
+
+### fixed
+
+**The last four review findings, 12-15 — the controls that did not control.**
+Each was demonstrated by breaking `build.js` and watching the bracket stay green
+before the fix, then go red after.
+
+- **`bracket-commands.js` ran `build.js` against the tracked
+  `scene.template.html` in place.** Neutralising the embed guard and running the
+  bracket **changed that tracked file's hash** — the ~1 MB inflation that
+  "reached `git add` once", rebuilt inside the control meant to prevent it. It
+  now runs against a copy in the temp workspace, keeping the basename so the
+  guard still fires. Re-measured after the fix: the tracked file's hash is
+  unchanged even with the guard removed.
+- **The `all` row was satisfied by the `video` row's leftover mp4.** Removing
+  the `video()` call from `all` left the row reporting `ok, tiny.mp4 written`.
+  Every artifact expectation is now cleared before its row runs, so each proves
+  its own work rather than inheriting a neighbour's.
+- **`expect.stdout: ''` was never evaluated** — a truthiness test where its
+  sibling correctly used `!== undefined`, so the `vendor` row had asserted exit
+  0 and nothing else for its whole life while looking like it asserted output.
+  Fixed both ways: the guard now tests presence, and an empty expectation is
+  rejected outright so the vacuous form cannot come back quietly.
+- **The `bash -e` bracket loop is one file, `scripts/run-brackets.sh`**, called
+  by both workflows instead of copy-pasted into each with ~10 lines of matching
+  prose. Fixing that trap at two call sites instead of once underneath is how
+  the `!cancelled()` defect reappeared one level down.
+
+### added
+
+**`scripts/bracket-run-brackets.js`** — the loop both workflows now depend on is
+the largest single point of failure here, since a defect in it disables every
+other control at once while CI stays green. Four arms: a red bracket does not
+hide its siblings, every red is reported rather than the first, a fully green set
+says how many ran, and **a glob matching nothing fails** rather than reporting
+green having run nothing.
+
+**One honest correction found by mutation-testing it.** The script's comment
+claimed `set -e`'s absence was what kept the loop going past a red bracket.
+Restoring `set -euo pipefail` changed nothing and no arm noticed: the
+load-bearing part is the `if ! bun run` construction, since a command inside a
+condition is exempt from `-e` regardless. The comment now says which one holds
+the property and which one is depth.
+
 ## 0.16.49
 
 ### fixed

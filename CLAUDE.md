@@ -41,7 +41,11 @@ copy of a router is the exact failure this file keeps catching.
   `templates/`), `static.yml` (cheap checks, every push; brackets under
   `scripts/`), `sample.yml` (manual only). **Brackets live in two directories and
   each workflow globs one** — put one in the wrong directory and it runs nowhere.
-  The pre-commit hook runs neither, by design.
+  The pre-commit hook runs neither, by design. Both workflows call one loop,
+  `scripts/run-brackets.sh <glob>` (controlled by `bracket-run-brackets.js`):
+  it runs every bracket even when one is red, and **fails when its glob matches
+  nothing**, because a green step that ran zero controls is indistinguishable
+  from one that ran five.
 - **The defect corpus** — `fixtures/defect-corpus/`, scenes kept BROKEN on
   purpose so a check that stops catching something is noticed. It is a parity
   carrier (the ninth), wired into `static.yml` and the pre-commit hook and

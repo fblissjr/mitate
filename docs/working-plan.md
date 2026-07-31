@@ -1990,6 +1990,18 @@ against live fixtures rather than argued. **Do not merge this branch until the
 write-path group is fixed.** Several contradict claims written into comments on
 this same branch, which is the class invariant 6 exists for.
 
+> **UPDATE 0.16.50 — 12-15 are FIXED. ALL 15 FINDINGS ARE CLOSED and this
+> section no longer blocks the merge.** Finding 12 was demonstrated rather than
+> argued: neutralising the embed guard and running `bracket-commands.js` changed
+> the tracked `scene.template.html`'s hash. 13 and 14 were shown by breaking
+> `build.js` and watching the bracket stay green. 15's extraction produced its
+> own control, `bracket-run-brackets.js`, whose mutation test then falsified a
+> comment I had just written (see below).
+>
+> **What is still open is NOT a review finding:** ten of the corpus's twelve
+> defects are unmeasured, `bracket-corpus.js` does not exist, `bracket-noise.js`
+> false-reds on macOS, and `/extract-patterns` has never been run.
+>
 > **UPDATE 0.16.49 — findings 7, 8 and 9 are FIXED. Open: 12-15 only.**
 > Two were worse than the review said. Finding 7's comment contradicted a commit
 > on this branch AND overstated a second control (`REQUIRE_ENCODERS` is set by
@@ -2112,11 +2124,18 @@ than a hypothetical one, and the check found it on the first run.
 **Done in 0.16.49: 7-9.** Verified against the tree before rewriting, which is
 how two of the three turned out worse than reported.
 
-**Next up: 12-15 only, and then the merge unblocks.** 12 is the one with teeth —
-a bracket that inflates a tracked source by ~1 MB if the guard it tests
-regresses, which is the same shipped-artifact hazard `static.yml:73-75` records
-being removed from another bracket. 13 and 14 are assertions that cannot fail;
-15 is the duplicated `bash -e` loop across both workflows.
+**Done in 0.16.50: 12-15. The review is fully dispositioned — 15 of 15 fixed,
+none deferred, none argued away.**
+
+**The pattern across all fifteen, worth more than any individual fix.** Nine of
+them were controls or claims about controls, not product defects: brackets that
+could not fail, assertions never evaluated, comments asserting guards that were
+not there. Three separate times a fix's own mutation test falsified something
+written minutes earlier — the `says` regex that could not cross a newline, the
+`set -e` comment naming the wrong guard, the Map audit that found five more
+misses than the review did. **Writing the check is not the measurement; running
+the check against a deliberately broken version is.** That step caught something
+in three of the five sessions' worth of work here, and it costs minutes.
 
 ## The defect corpus is in parity but nothing runs it (2026-07-31)
 

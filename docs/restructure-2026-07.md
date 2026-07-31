@@ -48,27 +48,31 @@ last updated: 2026-07-31
 >
 > ### Handoff, end of 2026-07-31 — start here
 >
-> **MERGE IS STILL BLOCKED, but no longer on the write path.** A
-> `/code-review high` over `main...HEAD` returned 15 findings, most reproduced
-> against live fixtures. **0.16.47 closed the write-path group (1-4) and the two
-> bracket weaknesses (10-11); 0.16.48 closed the silent-coverage-loss pair
-> (5-6); 0.16.49 closed the three false claims (7-9). Only 12-15 remain — the
-> bracket hazards and one duplication — and then this merge unblocks.**
+> **THE MERGE BLOCK IS LIFTED.** A `/code-review high` over `main...HEAD`
+> returned 15 findings; **all 15 are closed** — 0.16.47 (write path 1-4, and the
+> bracket weaknesses 10-11), 0.16.48 (silent coverage loss 5-6), 0.16.49 (false
+> claims 7-9), 0.16.50 (controls that did not control, 12-15). None deferred,
+> none argued away.
 >
 > **If you develop this repo on a machine that installed the pre-commit hook
 > before 0.16.45, `selfcheck.js` will now tell you so** — it was running the
 > two-glob parity command and checking one directory less than it claimed. Run
 > `./scripts/install-hooks.sh --force`.
 >
-> `--parity-fix` is safe to run again. It now checks writability as part of
-> validation, inspects all seven fences in every target rather than the ones the
-> source happens to carry, refuses `--parity-only` alongside it, and refuses
-> `--from` without it. Every fix was watched **red first** and then
-> **mutation-tested** — guard neutralised, arm confirmed red again.
+> `--parity-fix` is safe to run. It checks writability as part of validation,
+> inspects all seven fences in every target rather than the ones the source
+> happens to carry, refuses `--parity-only` alongside it, and refuses `--from`
+> without it.
 >
-> **Next: findings 5-6, then 7-9, then 12-15.** Full list and dispositions in
-> `working-plan.md`, first section. **Not at the end of a long session — the
-> review found them precisely because that is when they were written.**
+> **Every fix was watched red first and then mutation-tested** — guard
+> neutralised, its own arm confirmed red again. That step falsified three claims
+> written in the same sitting: a `says` regex that could not cross a newline, a
+> comment naming the wrong guard for a `bash -e` property, and a Map audit that
+> found five more misses than the review reported. Writing a check is not the
+> measurement; running it against a deliberately broken version is.
+>
+> **Next: Gate R4's four remaining items, listed below unchanged.** Finding
+> dispositions in `working-plan.md`, first section.
 >
 > **Shipped:** 0.16.42 (three harness defects) · 0.16.43 (**R4.4**,
 > `--parity-fix`) · 0.16.44 (`CONTRACT` becomes the seventh fence, carrying a

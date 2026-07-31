@@ -1245,6 +1245,36 @@ property, not the proxy.
    evidence of anything, this is the correction it needs. `internal/analysis/`
    holds the documents and is **`(local)`**.
 
+   **A fourth instance, produced accidentally on 2026-07-31, and the sharpest of
+   the four because it has a measurable ground truth.** A squint-downscale
+   comparison image was built for an eye check and handed out for independent
+   review. Its difference panel was broken twice over: built while the two source
+   images were still mismatched sizes, then amplified with a filter that pivots
+   on mid-grey, which crushed a genuinely dark difference to a flat field.
+
+   **Two independent reviewers read the flat panel as "zero difference", and both
+   then used it to CONFIRM their reading of the other two panels**, concluding the
+   methods were "entirely equivalent". The two images are **40.8 dB apart**, with
+   a real structured difference (YAVG 16.9, YMAX 35). Neither reviewer could have
+   caught it: they had the artifact and not the sources, so re-derivation was not
+   available to them. Only the party who built it could.
+
+   **The general form, and it sharpens the Victory Auditor lesson below rather
+   than repeating it: agreement between independent reviewers is worth nothing
+   when they share an input none of them can re-derive.** Independence is a
+   property of the *derivation*, not of the reviewers. Two models, separately
+   prompted, blind to each other, agreeing precisely — and the agreement carried
+   no information at all, because it was agreement about a corrupted artifact.
+   This is also why the "three sessions re-derived the ffmpeg finding" figure was
+   softened above: convergence is only evidence when the paths are genuinely
+   disjoint.
+
+   Practical rule this earns: **an artifact built for someone else to judge gets
+   a sanity assertion before it is sent** — for a difference image, that the
+   panel is not uniform; for a table, that the numbers reproduce. The corrected
+   image was verified varying (YMIN 16, YAVG 21, YMAX 131) before it went out the
+   second time.
+
    **A third instance, from outside this repo, worth keeping because its failure
    mode is one nothing here has hit yet.** A separate session investigated scenes
    built by a different multi-agent harness and found that harness's own audit

@@ -1195,6 +1195,17 @@ property, not the proxy.
    [`pattern-ledger.md`](pattern-ledger.md), which counts how often a shape gets
    rebuilt and has **no way to extract one**.
 
+   **One caveat on the "three sessions" figure itself, since it is the
+   measurement this item rests on.** Three sessions did reach the finding, but
+   they were not three independent derivations: one of the three documents is a
+   *synthesis* that cites the others, and its convergence table ticks rows that
+   originate in a single session. Only one of the three — the one that built a
+   scene end to end and ran the instruments itself — is independent work. The
+   cost is real and the retention argument stands; the number is softer than
+   "three independent analyses" reads, and if that phrase gets cited later as
+   evidence of anything, this is the correction it needs. `internal/analysis/`
+   holds the documents and is **`(local)`**.
+
    **A third instance, from outside this repo, worth keeping because its failure
    mode is one nothing here has hit yet.** A separate session investigated scenes
    built by a different multi-agent harness and found that harness's own audit

@@ -1598,7 +1598,9 @@ Cheapest-risk first. **Do not batch these**; each has a different control.
     setting any threshold — two observations is thin by this repo's own standard.
     Run the full example corpus. A real external before/after pair exists (an
     LFP-battery explainer, 8 beats, scores independently re-derived rather than
-    taken from a self-report) and is offered as additional data.
+    taken from a self-report) and is offered as additional data — **`(local)`**,
+    held outside this repo, so use it as corroboration and do not rest a
+    threshold on it.
   - **A `motion` score is sensitive to changes well outside the beat it scores.**
     Measured on that scene: a revision targeting three beats moved *every* beat
     up, because it touched shared geometry. That matters for anyone attributing a
@@ -1742,6 +1744,7 @@ concentrates in `build.js` (7 of 9 code findings), `plugin/README.md`,
 | `recordings.md:3-6` | scope named too narrowly — GitHub is one instance of "a README, a chat, a slide" |
 | `delivery.md:29-31` | "co-equal delivery option" now reads as a ceiling against its own opening |
 | `docs/plan.md:210-212` | "delivery forensics" bucketed with the determinism kit as equal-weight inheritance |
+| `docs/plan.md:358-361` | lists "`motion`'s frame-difference metric, `strip`, the delivery encoders" as one set of "instruments smoke does not cover" — the first two are real review-coverage gaps, the third is export tooling smoke was never meant to cover. Separate them |
 | `build.js` USAGE + header | group the verbs core/review/export — true *today*, independent of E1 |
 | `SKILL.md` step 4 (review block) | **omits `motion` entirely** — it lists `sheet`, `strip`, `aspect`, `probe`. The instrument is real and correctly documented in `film-reviewer.md` and `method.md`; the quick-reference an agent skims first does not mention it. Same shape as the rest of this table, and unrelated to ffmpeg |
 
@@ -1773,6 +1776,18 @@ no coverage. One line in the skill's scope. Probably the cheapest item on this
 track. Open question worth settling in the same edit: `plugin/agents/` is not
 `.claude/agents/`, and whether the routing covers it should be explicit rather
 than inferred, for a file that ships.
+
+### E5. The harness tier's output reads as a coverage hole when it is a scope line
+
+`bracket-commands.js` currently prints `8 verb path(s) exercised, 9 skipped for a
+missing encoder`. Under this track's opening that phrasing is wrong in a way that
+matters: it reads as nine missing tests when nine are **deliberately out of
+scope** for an unattended gate. Tier the tally so the harness reports core and
+review fully exercised, and export explicitly not gated — making the priority
+visible in the instrument rather than leaving it as a number a reader has to
+interpret. Plugin content, so it carries the cascade. Small, and it is the
+difference between a gate that looks 47% covered and one that says what it
+covers and why.
 
 ---
 

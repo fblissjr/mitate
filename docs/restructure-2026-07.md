@@ -1301,8 +1301,27 @@ property, not the proxy.
    nobody has listed. This paragraph exists because the discussion itself was
    lost once already.
 
-**Gate R4:** every **core and review** `build.js` verb exercised in CI, with the
-export verbs reported as deliberately skipped rather than counted missing
+**Gate R4:** every **core and review** `build.js` verb exercised in CI —
+**except `motion`, carved out by name** — with the export verbs reported as
+deliberately skipped rather than counted missing
+
+> **The `motion` exception, owner-agreed 2026-07-31, stated narrowly on purpose.**
+> Review verbs cannot be exercised in CI while they shell out to an encoder, so
+> this clause is satisfied by Track E1 moving them off it — `poster` and the
+> three tilers, which are mechanical and checkable by "did the artifact get
+> written". `motion` is excluded because its `DEAD_FLOOR` is calibrated against a
+> scale that corresponds to no documented luma computation, so moving it is a
+> calibration job rather than a port; carrying the threshold across unchanged is
+> a measured ~150x error that silences dead-air detection entirely. Tracked as
+> E1's `motion` bullet.
+>
+> **This is a carve-out, not a re-scope, and the difference is the point.** The
+> clause still requires the review tier in CI; it names one verb, gives the
+> reason, and points at the item that closes it. The rejected alternative was
+> narrowing the clause to whatever passes today and relocating "review verbs
+> exercised" into Track E's gate — which does not exist, so that would have
+> deleted the requirement while looking like bookkeeping. **Write a gate before
+> moving a requirement into it, never the reverse.**
 (**amended 2026-07-31**: this clause read "every `build.js` verb exercised in
 CI", which became unmeetable the moment export tooling was ruled out of the gate
 — nine of seventeen rows skip by design and no encoder belongs in Actions. Left

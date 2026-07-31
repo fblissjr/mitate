@@ -1508,9 +1508,24 @@ Two consequences, and the second reverses an earlier draft of this track:
   — flagged "after decoupling, export verbs are exercised nowhere unattended" as
   a problem wanting an encoder-equipped CI job. It is not a problem. A rotted
   export verb costs one annoyed moment at export time; a rotted review instrument
-  silently corrupts the loop the project exists to teach. **Do not add an
-  encoder to CI.** ffmpeg is already absent from all three workflows and the gate
-  is green without it; the correct action is to stop proposing an addition.
+  silently corrupts the loop the project exists to teach. No encoder-equipped CI
+  job for **export**.
+
+  > **CORRECTED 2026-07-31, same day, and the error is instructive.** This bullet
+  > first read *"Do not add an encoder to CI… stop proposing an addition"* —
+  > stated flatly, about ffmpeg in general. The owner's directive was
+  > **conditional**: *"**If ffmpeg is genuinely only used for export**, it doesn't
+  > belong in GitHub Actions or as a core test in any way."* It is **not** only
+  > used for export — five review verbs still call it — so the condition is not
+  > yet earned, and the conclusion was recorded as though it were.
+  >
+  > The asymmetry argument makes the same point in reverse: it says a rotted
+  > review instrument is the expensive one. **Review tooling therefore has the
+  > strongest possible claim on unattended coverage**, and today CI exercises
+  > none of it (`bracket-commands` prints `review 0 exercised, 5 skipped`). The
+  > directive was about export. It was never about the review tier, and applying
+  > it there would have used the owner's words to protect the exact hole those
+  > words were worried about.
 
 **The finding, measured, not argued.** `smoke.js` — the validation instrument —
 has no encoder dependency: the gate ran with no ffmpeg on PATH and reported `all

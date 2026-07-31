@@ -1504,7 +1504,30 @@ Cheapest-risk first. **Do not batch these**; each has a different control.
   over a series. Two things must be got right: the metric is the luma-weighted
   mean of per-channel `|diff|`, **not** `|diff of luma|` (they diverge when
   channels move oppositely), and ffmpeg's RGB→YUV range and coefficients set the
-  absolute scale that `DEAD_FLOOR = 0.05` lives in. `full` mode can shoot chunks
+  absolute scale that `DEAD_FLOOR = 0.05` lives in.
+
+  **Measured 2026-07-31, and it is worse than "the scale might shift".** The
+  invocation pins nothing colour-related — no `-colorspace`, `-color_range`,
+  `-pix_fmt`, no `format=` term. PNG decodes as RGB; `signalstats` requires YUV;
+  so ffmpeg silently auto-negotiates a conversion nothing in the command
+  specifies. On two solid frames (red → green, 64×64, macOS ffmpeg 7.x static
+  build): **the shipped chain reports `YAVG=1`, the same chain with an explicit
+  BT.601 conversion reports `YAVG=145`** — and a hand-computed BT.601 luma of the
+  difference image is ~150, so the *pinned* path is the one that matches theory
+  and the shipped path is the one that does not. A second control: two
+  byte-identical grey frames give 0 on the shipped path and **16** if the
+  conversion resolves to limited range, which would put every frame above
+  `DEAD_FLOOR` and silence dead-air detection entirely.
+
+  So `motion`'s absolute scale corresponds to no documented luma computation and
+  is set by an unspecified negotiation. **The calibration job is therefore not
+  "port the metric" — it is "establish what the current numbers mean," because
+  nobody can currently derive them.** That reframes the risk: the in-page
+  reimplementation would be *defined*, where the incumbent is *accidental*.
+  **Not demonstrated:** that a different ffmpeg build or OS negotiates
+  differently. One binary was available. Running this same pair on a second build
+  (Linux distro package vs this static macOS build) is the concrete next step,
+  and it is cheap. `full` mode can shoot chunks
   across parallel workers, so frame N-1 may sit on another page — each worker
   needs a lead-in frame or the deltas break at chunk boundaries. **Deliverable is
   a calibration control, not a rewrite**: both implementations over the corpus,

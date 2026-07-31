@@ -1755,11 +1755,35 @@ Cheapest-risk first. **Do not batch these**; each has a different control.
   difference image was generated and handed to the owner `(local)`; that judgment
   is not made here.
 
-  **And one frame from one scene is thin by this repo's own standard** — the same
-  sample-size argument this track makes against the two-fixture `motion`
-  calibration. Before the tilers move, run this across the example corpus rather
-  than resting on `gearbox` at one timestamp. The harness is four ffmpeg commands
-  plus a `page.evaluate`; re-running it wide is cheap.
+  **Widened to the whole example corpus, same day, because one frame from one
+  scene is thin by this repo's own standard.** One frame at `t=6.0` from each of
+  the five examples, PSNR against a lanczos reference:
+
+  | scene | ffmpeg | canvas | point-sampled | canvas penalty |
+  |---|---|---|---|---|
+  | gearbox | 50.10 | 40.48 | 30.00 | −9.6 dB |
+  | bear-and-bees | 48.18 | 38.39 | 29.29 | −9.8 |
+  | menagerie | 47.12 | 36.58 | 28.13 | −10.5 |
+  | materials | 48.83 | 39.03 | 29.13 | −9.8 |
+  | noise-chart | 39.69 | 28.90 | 21.72 | −10.8 |
+
+  **The consistency is the result, not the magnitude.** The original worry was
+  aliasing at a 5.3x reduction, and aliasing is content-dependent — it would
+  spike on `noise-chart`, which is high-frequency by construction. It does not:
+  that gap is 1.2 dB wider than `gearbox`'s, against content that is far harder.
+  A penalty this flat across this much variation is a **systematically softer
+  filter, not an aliasing failure**, and softness costs a silhouette far less
+  than aliasing does. Canvas also never drops below the point-sampled control on
+  matched content, and both methods fall together on `noise-chart` — that is the
+  content being hard, not canvas failing on it.
+
+  **Verdict: no blocker found, and the failure mode that was feared is
+  measurably absent.** Remaining before the swap: the owner's eye check on the
+  difference image `(local)` — which read as "both look similar" on the first
+  panel — and, if wanted, an independent read. Not "cleared by PSNR": 40 dB is
+  under `method.md`'s 70 dB bar, and this measures fidelity to a reference rather
+  than legibility of a silhouette, which is the property that actually matters
+  and which no PSNR number reports.
 
 ### E2. The verb taxonomy, after E0
 

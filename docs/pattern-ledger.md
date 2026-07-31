@@ -104,6 +104,35 @@ Two shapes it could take, and they are not exclusive:
   finished film, surface the things that look like generalised technique rather
   than this film's own solution, and propose which reference each belongs in.
 
+**A third property, owner's direction 2026-07-31, and it is the one that makes
+the other two work: it must be RUNNABLE ON WORK YOU DID NOT DO.** A command
+taking a scene *or a session*, handed to a different agent than the one that
+produced either — my work given to another session, that session's work given to
+me, a third harness's scenes given to both.
+
+Both shapes above quietly assume the party who built the thing also runs the
+extraction. That is the assumption to break, and this file already contains the
+reason: *"Today that depends on an author being reflective at the end of a long
+build, which is exactly when nobody is."* The author is not merely tired — they
+are the **worst-positioned observer**, because they felt the necessity that
+produced each choice and therefore cannot easily see which choices were general.
+A session with no investment in them can.
+
+The corpus evidence is unambiguous and was gathered independently of this idea:
+
+- The prototype's twelve defects came from a **single** independent
+  `film-reviewer` pass on a film its author had already reviewed over eight
+  look-and-edit rounds and shipped. It found almost nothing the author had
+  considered and dismissed, and nearly everything they had never looked at.
+- On 2026-07-31 a session had an independent no-context pass review *its own
+  postmortem*, which found that postmortem's flagship claim false.
+
+**One constraint that falls out immediately: it PROPOSES, it never writes.**
+Extraction that writes is how this becomes the fifth place a fact can live, which
+`source-of-truth.md`'s one-home rule forbids. Proposing also settles part of "who
+decides where it lands" — the command surfaces candidates and names a destination;
+the session or owner holding the one-home rule disposes.
+
 Why it matters more than it sounds: the predecessor's procedural cookbook —
 eight worked shape recipes — was written once, cited from two tracked files as
 though it had been carried over, and was **not carried over**. It survived only

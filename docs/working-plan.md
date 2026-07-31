@@ -1599,6 +1599,33 @@ Cheapest-risk first. **Do not batch these**; each has a different control.
   and the dead-air verdicts. A `control-builder` job.
   **Do not propose a self-normalising threshold** — `DEAD_FLOOR` is absolute
   deliberately, and the reasoning is recorded beside it.
+  **Two things were learned from an incidental attempt, and neither is a design
+  to adopt.** A separate scene-building session on another machine happened to
+  cut `build.js` from 10 encoder call sites to 4 as a side effect of its own
+  work. Owner's framing, and the right one: not a source of truth, not an E1
+  design pass, and its code is not the plan. Inspected read-only, purely for
+  what it demonstrates:
+
+  1. **The capture-time side-emission works** — an existence proof, which is
+     genuinely useful because it is the part of E1 that was unproven. In-page
+     `page.evaluate` + canvas `getImageData`, deltas accumulated during the
+     existing shoot rather than a second pass. It also got the subtle part right:
+     per-channel diff **then** luma weight, in that order. So the design E1
+     prescribes is implementable; that question is closed.
+  2. **Carrying `DEAD_FLOOR = 0.05` across is a silent ~150x miscalibration**,
+     and this is the finding worth keeping. Measured on one frame pair: the old
+     shipped chain reports 1 where the in-page formula's quantity is 150 (hand
+     arithmetic: 151.4). The equivalent floor on the new scale is ~7.5. Left at
+     0.05 it is ~150x too low, no frame falls below it, and dead-air detection
+     never fires — `motion` would report "0 dead-air stretches" on every film,
+     which `build.js`'s own comment already calls worse than no check at all.
+     **Derived, not run end to end:** the scale factor is measured, the
+     consequence is arithmetic.
+
+  That second point is the concrete evidence that the calibration step here is
+  load-bearing rather than ceremony — it is the exact failure this item exists to
+  prevent, produced for free by someone not trying to implement this item.
+
 - **`poster` — small, not free.** Playwright screenshots JPEG natively. The
   interesting option is rendering at the target width rather than downscaling a
   larger render, since the geometry is resolution-independent — but scenes *do*

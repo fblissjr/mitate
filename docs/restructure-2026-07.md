@@ -1193,6 +1193,26 @@ beat byte-identical or above the 70 dB bar on the three canonical edits
 
 ## Deliberately not doing
 
+- **Mechanical coverage for `.claude/`** — deferred 2026-07-30, owner's call.
+  0.16.40 found six stale claims there and the structural cause is real: those
+  files carry no freshness marker *by design*, so `selfcheck.js` derives a set
+  that excludes them and nothing checks the tree. `/audit-claims` routing at them
+  is the only control, and it is a practice rather than a gate.
+  **Two ways out, neither taken now:** build the coverage, or **decouple the
+  rules into their own repo**, where they can be versioned and checked on their
+  own cadence instead of riding a plugin's version cascade. The second is worth
+  real consideration if the set keeps growing — a directory that governs agent
+  behaviour and is exempt from every check is a strange thing to keep inside the
+  artifact it governs.
+  **Trigger to revisit:** a stale prior in `.claude/` produces a wrong verdict
+  that reaches a commit, or the directory grows past what one review pass reads.
+
+- **Repointing the six PR SHAs that moved in the re-sign.** Owner, 2026-07-30:
+  *"if it's stale it's stale, I'm fine with that."* The threads on PR #2 cite
+  pre-rebase hashes for six commits. The prose is correct, the links are not, and
+  the PR is a narrative of a merged migration rather than a live index. Do not
+  spend edits on it.
+
 - **Renaming `templates/`.** It holds two kinds of thing, but it is already
   self-labeling (`*.template.html` versus tools; `bracket-` prefix). A rename
   costs the cascade, every doc pointer, CI paths and user habit to remove one

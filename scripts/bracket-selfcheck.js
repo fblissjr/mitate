@@ -69,11 +69,14 @@ const ARMS = [
     // present on a laptop that has run a build and absent in CI. A check whose
     // accept-set is the live filesystem therefore gives two different answers to
     // the same question -- the opposite of what this file is for.
-    // mkdir FIRST. site/films/ holds only gitignored build output, so git tracks
-    // no file there and does not create the directory -- a fresh checkout has no
-    // such path, and this arm died with ENOENT the first time CI ever ran it.
-    // The arm written to catch an environment-dependent accept-set was itself
-    // environment-dependent, and passed locally only because a previous
+    // mkdir FIRST, and it is belt to site/films/.gitkeep's braces rather than a
+    // duplicate of it: the tracked .gitkeep is what makes the directory survive
+    // a clone, this covers the case where it has been removed (which is exactly
+    // how this arm gets tested). Before that .gitkeep existed, git stored no
+    // empty directory here and a fresh checkout had no site/films/ at all --
+    // this arm died with ENOENT the first time CI ever ran it, so the arm
+    // written to catch an environment-dependent accept-set was itself
+    // environment-dependent, passing locally only because a previous
     // stage-films.sh run had left the directory behind.
     const films = path.join(ROOT, 'site', 'films');
     const html = path.join(films, '_bracket_fixture_derived.html');

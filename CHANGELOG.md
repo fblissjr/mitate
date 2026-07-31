@@ -20,8 +20,16 @@ path: a fresh checkout has no `site/films/`, and the arm died with `ENOENT` the
 moment it ran anywhere that had not already executed `stage-films.sh`. It passed
 locally for exactly that reason.
 
-Both brackets now `mkdir -p` explicitly. `bracket-stage-films.js` had the same
-latent fault — arm 2 wrote into `site/films/` and worked only because arm 1 had
+**Fixed at the root as well as at the consumers.** `site/films/.gitkeep` is now
+tracked, so the directory survives a clone instead of three separate callers each
+compensating for its absence — and `site/.gitignore` widens from `films/*.html`
+to `films/*` with `.gitkeep` negated, because the narrower rule would have let a
+staged `.json`, sprite sheet or map file get tracked by accident, which is the
+second-copy problem arriving through a side door.
+
+The `mkdir -p` calls stay as belt to that braces: `.gitkeep` covers the clone,
+the `mkdir` covers the directory being removed — which is precisely how these
+arms get tested. `bracket-stage-films.js` had the same latent fault — arm 2 wrote into `site/films/` and worked only because arm 1 had
 run `stage-films.sh` first, which is ordering, not a guarantee.
 
 Reproduced locally by deleting `site/films/` before the fix and after, which is

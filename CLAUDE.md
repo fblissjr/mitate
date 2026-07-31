@@ -42,9 +42,26 @@ copy of a router is the exact failure this file keeps catching.
   `scripts/`), `sample.yml` (manual only). **Brackets live in two directories and
   each workflow globs one** — put one in the wrong directory and it runs nowhere.
   The pre-commit hook runs neither, by design.
-- **Repo-development agents** — `.claude/agents/control-builder.md`,
+- **The defect corpus** — `fixtures/defect-corpus/`, scenes kept BROKEN on
+  purpose so a check that stops catching something is noticed. It is a parity
+  carrier (the ninth), wired into `static.yml` and the pre-commit hook and
+  **deliberately not into `gate.yml`**: a general pass/fail gate that goes red
+  for a correct reason is one people learn to route around. Read its `README.md`
+  before adding a defect — most of the twelve are still labelled UNVERIFIED
+- **Repo-development agents and skills** — `.claude/agents/control-builder.md`,
   `doc-claim-auditor.md`, `.claude/skills/audit-claims/`,
-  `.claude/rules/model-delegation.md`
+  `.claude/skills/extract-patterns/`, `.claude/rules/model-delegation.md`
+- **Manifests, config and legal** — `.claude-plugin/marketplace.json` (the
+  marketplace half of the version cascade; the plugin half is under `plugin/`),
+  `.postmortem.json` (pins where postmortems live), `.oxlintrc.json`,
+  `.gitignore`, `LICENSE`, and
+  [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md) (required, because
+  three.js ships inside every scene — see invariant 1). One bullet on purpose:
+  they are here so the map is total, not because each earns a paragraph
+- **This file** — `CLAUDE.md`, the front door. `scripts/selfcheck.js` check 9
+  asserts every tracked top-level entry appears in this Map, because the claim
+  below it is a completeness claim and prose could not hold it: a review found
+  two directories missing, and auditing the rest of the claim found five more
 
 ## The prime directive
 
@@ -104,10 +121,23 @@ for its red lines.
    you NAME (never a majority — that is how a drifted block rewrites the two
    carriers that were right), refuses a malformed source or target, and writes
    nothing until every file has validated. Edit every carrier together, then
-   verify with `smoke.js
-   --parity-only templates/*.html examples/*.html` **cross-directory**: a
-   per-directory green does not cover the template↔example boundary, and drift
-   there is silent.
+   verify **cross-directory** — a per-directory green does not cover the
+   template↔example boundary, and drift there is silent:
+
+   ```
+   bun run plugin/skills/mitate/templates/smoke.js --parity-only \
+     plugin/skills/mitate/templates/*.html \
+     plugin/skills/mitate/examples/*.html \
+     fixtures/defect-corpus/*.html
+   ```
+
+   **Three globs, not two.** `fixtures/defect-corpus/` is the ninth carrier as of
+   0.16.45, and this line printed the two-glob command after it joined — so two
+   tracked files prescribed different commands for the same check. The
+   authoritative copy is `scripts/install-hooks.sh`'s `HOOK_BODY`, which
+   `selfcheck.js` check 8 compares the installed hook against; this is a reading
+   copy and the run now states its own scope (`ok — 9 file(s) scanned`), so a
+   command that covers less says so.
 
 3. **The plugin lives under `plugin/`, not at the repo root.** `marketplace add`
    shallow-clones the whole repo, but `plugin install` copies *the plugin

@@ -52,7 +52,8 @@ last updated: 2026-07-31
 > `/code-review high` over `main...HEAD` returned 15 findings, most reproduced
 > against live fixtures. **0.16.47 closed the write-path group (1-4) and the two
 > bracket weaknesses (10-11); 0.16.48 closed the silent-coverage-loss pair
-> (5-6). 7-9 and 12-15 remain open.**
+> (5-6); 0.16.49 closed the three false claims (7-9). Only 12-15 remain — the
+> bracket hazards and one duplication — and then this merge unblocks.**
 >
 > **If you develop this repo on a machine that installed the pre-commit hook
 > before 0.16.45, `selfcheck.js` will now tell you so** — it was running the

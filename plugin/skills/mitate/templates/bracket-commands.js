@@ -32,10 +32,19 @@
  * encoders stripped from PATH; the fix is the table below, not the verbs.
  *
  * REQUIRE_ENCODERS=ffmpeg,avifenc turns a skip of a NAMED binary into a
- * failure. A skip is honest on a laptop and a hole in CI: the workflow installs
- * ffmpeg precisely so those nine rows run, so a skip there means the install
- * silently stopped working and the harness is covering eight verbs while
- * printing green. That includes `aspect`, whose undetected ReferenceError is
+ * failure. A skip is honest on a laptop and a hole in CI.
+ *
+ * READ THE NEXT SENTENCE BEFORE TRUSTING A GREEN GATE. **No workflow installs
+ * ffmpeg, and nothing sets REQUIRE_ENCODERS** — so in CI those nine rows SKIP,
+ * every time. This comment used to assert the opposite ("the workflow installs
+ * ffmpeg precisely so those nine rows run"), which contradicted 444a649 on this
+ * same branch — the commit that DECLINED the encoder job — and was therefore a
+ * load-bearing comment asserting a control that does not exist. Exactly the
+ * class invariant 6 is for, written into the file that exists to prevent it.
+ *
+ * The flag is the mechanism for the day an encoder reaches CI (Track E1). Until
+ * then the tiered tally is the honest reading: `review 0 exercised / 5 skipped`,
+ * printed as a HOLE. That includes `aspect`, whose undetected ReferenceError is
  * the reason this file exists — the one verb least affordable to skip.
  */
 const { execFileSync } = require('child_process');

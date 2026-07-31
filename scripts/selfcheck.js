@@ -801,6 +801,47 @@ const toolJs = new Map([
   }
 }
 
+/* ---- 9. CLAUDE.md's Map covers every tracked top-level entry --------------
+ * The Map states that it covers "everything outside `docs/`", on the stated
+ * reasoning that anything absent from a map is unreachable in practice. That is
+ * a completeness claim, and nothing checked it.
+ *
+ * It was wrong. A review caught two directories a branch had added; auditing the
+ * rest of the claim found five more entries never listed at all. Seven misses in
+ * one file is not carelessness, it is the wrong instrument — a claim of
+ * completeness maintained by remembering to update it will drift every time
+ * someone adds a directory, which is precisely when nobody is thinking about
+ * this file.
+ *
+ * NO EXEMPTION LIST, deliberately. An exemption list is the same prose problem
+ * one level down: it grows a line each time this fails and eventually exempts
+ * the thing that mattered. If an entry is too minor to name, it can share a
+ * bullet with its neighbours — that costs one clause and keeps the rule total.
+ *
+ * Substring match, because the Map names things in prose (`site/`, `README.md`,
+ * `.claude/agents/...`) rather than in a list. That accepts a bit less than it
+ * could: naming `.claude/agents/` satisfies `.claude`. Deliberate — the check is
+ * "is there a way in from here", not "is the description good". */
+{
+  const mapSection = (R(path.join(ROOT, 'CLAUDE.md'))
+    .match(/^## Map$([\s\S]*?)^## /m) || [])[1];
+  if (!mapSection) {
+    fail('CLAUDE.md has no "## Map" section — the front door lost its map, and this check '
+       + 'cannot verify a claim that is no longer there');
+  } else {
+    const top = new Set(execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' })
+      .split('\n').filter(Boolean).map(f => f.split('/')[0]));
+    const missing = [...top].filter(e => !mapSection.includes(e)).sort();
+    if (missing.length) {
+      fail(`CLAUDE.md's Map claims to cover everything outside docs/ but never names: `
+         + `${missing.join(', ')}. Add a bullet, or share one with a neighbour — an entry `
+         + `absent from the map is unreachable in practice, which is the Map's own argument`);
+    } else {
+      notes.push(`${top.size} tracked top-level entries, each named in CLAUDE.md's Map`);
+    }
+  }
+}
+
 for (const n of notes) console.log('  ok   ' + n);
 if (fails.length) {
   console.log('');

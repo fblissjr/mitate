@@ -40,6 +40,45 @@ a downscale measurement. The commit was already pushed, so it was left alone
 rather than rewritten — this entry is where the addition is actually findable,
 which is what `source-of-truth.md` assigns the CHANGELOG.*
 
+## 0.16.49
+
+### fixed
+
+**Three false claims — findings 7, 8 and 9 of the 2026-07-31 review.** Each was
+verified against the tree before being rewritten, and two turned out worse than
+the review said.
+
+- **`bracket-commands.js` asserted a CI ffmpeg install that does not exist.** It
+  read "the workflow installs ffmpeg precisely so those nine rows run",
+  contradicting `444a649` on this same branch — the commit that *declined* the
+  encoder job. No workflow installs ffmpeg and nothing sets `REQUIRE_ENCODERS`,
+  so those nine rows skip in CI every time. The comment now says so and points at
+  the tiered tally that reports it as a HOLE.
+- **`fixtures/defect-corpus/README.md` claimed `gate.yml` coverage it does not
+  have**, then explained five lines later why `gate.yml` cannot see the
+  directory. A reader who believed the first sentence would have read the second
+  as describing something else.
+- **`CLAUDE.md`'s Map omitted the two directories this branch added, and
+  invariant 2 still printed the two-glob verify command** after a ninth carrier
+  joined — so two tracked files prescribed different commands for the same check.
+  Both fixed; the command is now a fenced block naming all three globs.
+
+### added
+
+**`selfcheck.js` check 9: the Map's completeness claim is now checked.** The Map
+says it covers "everything outside `docs/`" on the argument that anything absent
+from a map is unreachable. Auditing that claim after fixing finding 9 found
+**five more entries it had never named** — seven misses in one file. That is not
+carelessness, it is the wrong instrument: a completeness claim maintained by
+remembering to update it drifts exactly when someone adds a directory, which is
+when nobody is thinking about `CLAUDE.md`.
+
+**No exemption list, deliberately** — that would be the same prose problem one
+level down, growing a line per failure until it exempts the thing that mattered.
+An entry too minor for its own bullet shares one with its neighbours. Bracketed
+in `bracket-selfcheck.js` by an intent-to-add fixture, because the check reads
+`git ls-files` and an untracked file would have passed while proving nothing.
+
 ## 0.16.48
 
 ### fixed

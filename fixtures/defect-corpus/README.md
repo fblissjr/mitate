@@ -57,7 +57,11 @@ plugin/skills/mitate/templates/scene.character.template.html`, which is the
 second real use of that command and the reason joining is affordable at all.
 
 So: include this directory in every `--parity-only` invocation. It is wired into
-`gate.yml`, `static.yml` and the pre-commit hook.
+`static.yml` and the pre-commit hook — **and deliberately not into `gate.yml`,
+which does not see this directory at all.** An earlier version of this line
+claimed `gate.yml` too and was contradicted five lines below by the section that
+explains why it is absent; the reader who believed the first sentence would have
+read the second as describing a different problem.
 
 ### Open: nothing checks this file still RUNS (2026-07-31)
 

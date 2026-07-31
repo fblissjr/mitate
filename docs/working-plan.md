@@ -1990,6 +1990,13 @@ against live fixtures rather than argued. **Do not merge this branch until the
 write-path group is fixed.** Several contradict claims written into comments on
 this same branch, which is the class invariant 6 exists for.
 
+> **UPDATE 0.16.49 — findings 7, 8 and 9 are FIXED. Open: 12-15 only.**
+> Two were worse than the review said. Finding 7's comment contradicted a commit
+> on this branch AND overstated a second control (`REQUIRE_ENCODERS` is set by
+> nothing). Finding 9's Map was missing **five more** top-level entries beyond
+> the two the review caught — so the completeness claim is now enforced by
+> `selfcheck.js` check 9 rather than by remembering, with no exemption list.
+>
 > **UPDATE 0.16.48 — findings 5 and 6 are FIXED too. Open: 7-9 and 12-15.**
 > An unreadable argument is a hard refusal, `--parity-only` states how many
 > files it scanned, and `selfcheck.js` now detects a stale installed hook — it
@@ -2102,9 +2109,14 @@ exit satisfies.
 **Done in 0.16.48: 5-6.** Finding 6 turned out to have a live instance rather
 than a hypothetical one, and the check found it on the first run.
 
-**Next up: 7-9 (the three false claims), then 12-15 (bracket hazards and the
-duplicated workflow loop).** 12 is the one with teeth — a bracket that inflates
-a tracked source by ~1 MB if the guard it tests regresses.
+**Done in 0.16.49: 7-9.** Verified against the tree before rewriting, which is
+how two of the three turned out worse than reported.
+
+**Next up: 12-15 only, and then the merge unblocks.** 12 is the one with teeth —
+a bracket that inflates a tracked source by ~1 MB if the guard it tests
+regresses, which is the same shipped-artifact hazard `static.yml:73-75` records
+being removed from another bracket. 13 and 14 are assertions that cannot fail;
+15 is the duplicated `bash -e` loop across both workflows.
 
 ## The defect corpus is in parity but nothing runs it (2026-07-31)
 

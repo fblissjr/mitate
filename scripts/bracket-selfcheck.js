@@ -143,6 +143,26 @@ const ARMS = [
     };
   }, 'STALE copy'],
 
+  // The Map's completeness claim, which prose could not hold: a review found two
+  // directories missing and auditing the rest found five more. This arm adds a
+  // top-level entry and asserts the Map notices it is unlisted.
+  //
+  // `git add -N` (intent-to-add), because check 9 reads `git ls-files` — an
+  // untracked file is invisible to it, so a plain writeFileSync fixture would
+  // pass while proving nothing. Intent-to-add records a path with no content and
+  // touches no other staged work, and the undo removes exactly that path.
+  ['a top-level entry the Map does not name', () => {
+    const name = '_bracket_fixture_unmapped';
+    const f = path.join(ROOT, name);
+    fs.writeFileSync(f, 'fixture\n');
+    execFileSync('git', ['add', '-N', '--', name], { cwd: ROOT });
+    return () => {
+      try { execFileSync('git', ['rm', '--cached', '--force', '--quiet', '--', name], { cwd: ROOT }); }
+      catch (e) {}
+      fs.rmSync(f, { force: true });
+    };
+  }, 'never names'],
+
   ['postmortem an index cannot read', () => {
     const dir = path.join(ROOT, 'docs', 'postmortems');
     const f = path.join(dir, '2026-01-01_session_bracket-fixture.md');

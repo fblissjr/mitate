@@ -186,10 +186,14 @@ const ARMS = [
 
   ['a second encoder call inside an allowed function', () => {
     const f = path.join(__dirname, '_bracket_fixture_encoder2.js');
-    // `poster` is pinned at 1. Two calls in a function of that name must trip
-    // the over-budget arm even though the NAME is on the allowlist.
+    // `video` is pinned at 1 and is an EXPORT verb, so it stays pinned as the
+    // boundary shrinks. This arm first named `poster`, which Track E1 then
+    // migrated out of the budget — and the arm went red for the wrong reason,
+    // tripping the outside-the-boundary case instead of the over-budget one.
+    // Pick a function the ratchet is not aimed at, or the control decays with
+    // the very progress it is measuring.
     const call = 'run' + `('${'ff' + 'mpeg'}', ['-y'])`;
-    fs.writeFileSync(f, `function poster() {\n  ${call};\n  ${call};\n}\n`);
+    fs.writeFileSync(f, `function video() {\n  ${call};\n  ${call};\n}\n`);
     return () => fs.rmSync(f, { force: true });
   }, 'more encoder calls than pinned'],
 

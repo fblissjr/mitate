@@ -68,6 +68,45 @@ a downscale measurement. The commit was already pushed, so it was left alone
 rather than rewritten — this entry is where the addition is actually findable,
 which is what `source-of-truth.md` assigns the CHANGELOG.*
 
+## 0.16.51
+
+### changed
+
+**Track E1 — `poster`, `sheet`, `aspect` and `strip` no longer need an encoder.**
+The review tier runs on bun and a browser alone. That is the point of the track,
+not dependency hygiene: `VISION.md`'s subject is the build-review loop, and every
+external dependency on that loop is a tax on what the project is for.
+
+All four did the same thing through ffmpeg — read already-rasterized stills,
+scale each, lay them out on a background — so they collapse into one in-page
+tiler (`build.js` `tileStills`) that replaces **five** call sites. `aspect`'s
+hardest constraint disappears with it: its cells have different pixel dimensions,
+which ruled out ffmpeg's tile filter *and* the image2 demuxer, and a `contain`
+fit into a square box expresses it directly.
+
+**Measured, both directions.** With no encoder on PATH the harness tier goes from
+`review 0 exercised / 5 skipped` to **`4 exercised / 1`** — the one remaining is
+`motion`, which is deferred rather than blocked. With encoders present all 17
+rows still pass. Output geometry was checked against the layout arithmetic rather
+than assumed: `sheet` 966×546 (2 cols × 480 + 6 padding), `squint` 276×51
+(3 cells × 90 + 3), `aspect` 960×240 (4 shapes × a 240 square box).
+
+**The downscale did NOT change, and that is the load-bearing part.** The squint
+strip's 480→90 reduction is 5.3× supersampling and that supersampling *is* the
+antialiasing; a native 90px render scores 44.8% intermediate tones on edges
+against canvas's 59.9%. Only the scaler moved. The reasoning is recorded in
+`build.js` beside the code, labelled as a recorded finding rather than a control
+— nothing in the repo re-runs those numbers, and the comment says so.
+
+**The encoder ratchet tightened 10 → 5** in the same commit, which is what proves
+the migration happened rather than asserting it. `selfcheck.js`'s check 10 fails
+if a pinned site disappears without the pin being lowered.
+
+**Docs corrected in the same edit, not after:** `SKILL.md`'s Environment section
+and `build.js`'s header both listed ffmpeg as a flat prerequisite. Both now say
+what actually needs one. `bracket-commands.js`'s header said "nine rows need an
+encoder"; it says five, with the note that this number has been wrong before.
+
 ## 0.16.50
 
 ### fixed

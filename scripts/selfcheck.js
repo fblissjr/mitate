@@ -871,8 +871,11 @@ const toolJs = new Map([
 {
   const ENCODER_BUDGET = {
     video: 1, shootAndScale: 1, avif: 1, loop: 1,          // export — the four that stay
-    poster: 1, aspectSheet: 1, sheet: 2, strip: 1,         // review stills — E1's targets
     motion: 1,                                             // measurement — needs recalibration
+    // RATCHETED 10 -> 6 by Track E1: poster, aspectSheet, sheet (x2) and strip
+    // moved to build.js's in-page tiler. Those five lines are deleted rather
+    // than zeroed, so re-adding an encoder to any of them trips the
+    // outside-the-boundary arm instead of quietly fitting under a stale budget.
   };
   const ENCODERS = /\b(?:run|execFileSync|spawnSync|spawn)\(\s*['"](?:ffmpeg|avifenc|img2webp)['"]/;
   const DECL = /^(?:async\s+)?function\s+([A-Za-z0-9_]+)|^const\s+([A-Za-z0-9_]+)\s*=\s*(?:async\s*)?\(/;

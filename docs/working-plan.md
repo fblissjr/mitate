@@ -1562,6 +1562,26 @@ Ordering note that is easy to get backwards: **E0 makes E1 and E2 safe**, becaus
 once the allowlist has ratcheted down, "what is export?" stops being a judgment
 call and becomes whatever is left inside it.
 
+> **E0 DONE (0.16.51-adjacent, unreleased) and E1's still-tilers DONE (0.16.51).**
+> The ratchet is `selfcheck.js` check 10, seeded at ten sites across nine
+> functions and now standing at **five across five** — `video`, `shootAndScale`,
+> `avif`, `loop`, `motion`. `poster`, `aspectSheet`, `sheet` (×2) and `strip` run
+> through `build.js`'s `tileStills` and need no binary.
+>
+> **The finish line this section names is met early.** It said "today 9 of 17
+> bracket rows skip without an encoder; the target is 4." Measured on a PATH with
+> no encoder at all: **5 skip**, and the review tier reports `4 exercised / 1`.
+> The 5th is `motion`, which this same section defers — so the target is reached
+> for everything except the item that was never in this batch.
+>
+> **The open question E0 raised is answered by reuse, as instructed:** the escape
+> hatch is the one `ASSERT_BUDGET` already uses. A legitimate new export verb
+> edits the literal, in a diff, with a reason. No second mechanism was invented.
+>
+> **Still open in E1: `motion`.** Everything below about its calibration stands
+> unchanged, including that its scale corresponds to no documented luma
+> computation and must be re-established rather than ported.
+
 ### E0. An encoder-boundary ratchet in `selfcheck.js`
 
 Pin the exact set of functions permitted to invoke `ffmpeg`/`avifenc`/`img2webp`,

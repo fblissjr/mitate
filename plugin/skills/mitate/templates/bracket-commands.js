@@ -23,29 +23,31 @@
  * than counted as green. A harness that quietly covers less than it says is the
  * thing this file exists to prevent.
  *
- * NINE ROWS NEED AN ENCODER, NOT TWO, and this file asserted the wrong number
- * until its first unattended run. It recorded `needs: ffmpeg` on video and all
- * only, while poster, sheet, aspect, strip and motion shell out to ffmpeg too
- * (build.js 476, 530, 569, 642, 675). On a runner without it those five did not
- * skip — they reported FAIL, which is how the 0.16.41 gate run failed on five
- * rows that were never broken. Reproduced exactly by running this file with the
- * encoders stripped from PATH; the fix is the table below, not the verbs.
+ * FIVE ROWS NEED AN ENCODER as of Track E1's migration, down from nine, and the
+ * REVIEW TIER NEEDS NONE. `poster`, `sheet`, `aspect` and `strip` moved to the
+ * in-page tiler (build.js `tileStills`), so the instruments the build-review
+ * loop runs on are now exercised on a bare runner instead of skipping there.
+ * That closes the hole the tally below used to print in capitals.
+ *
+ * The count in this comment has been wrong before and the history is the
+ * warning: it said TWO when nine were true, so five rows that were never broken
+ * reported FAIL on the first unattended run rather than skipping. If you change
+ * a `needs:` below, change this sentence in the same edit — or delete the number
+ * and let the tally speak, which is what it is for.
  *
  * REQUIRE_ENCODERS=ffmpeg,avifenc turns a skip of a NAMED binary into a
  * failure. A skip is honest on a laptop and a hole in CI.
  *
- * READ THE NEXT SENTENCE BEFORE TRUSTING A GREEN GATE. **No workflow installs
- * ffmpeg, and nothing sets REQUIRE_ENCODERS** — so in CI those nine rows SKIP,
+ * READ THIS BEFORE TRUSTING A GREEN GATE. **No workflow installs ffmpeg, and
+ * nothing sets REQUIRE_ENCODERS** — so the remaining encoder rows SKIP in CI,
  * every time. This comment used to assert the opposite ("the workflow installs
  * ffmpeg precisely so those nine rows run"), which contradicted 444a649 on this
  * same branch — the commit that DECLINED the encoder job — and was therefore a
  * load-bearing comment asserting a control that does not exist. Exactly the
  * class invariant 6 is for, written into the file that exists to prevent it.
  *
- * The flag is the mechanism for the day an encoder reaches CI (Track E1). Until
- * then the tiered tally is the honest reading: `review 0 exercised / 5 skipped`,
- * printed as a HOLE. That includes `aspect`, whose undetected ReferenceError is
- * the reason this file exists — the one verb least affordable to skip.
+ * What still skips is `motion` (a measurement awaiting recalibration) and the
+ * three export verbs, which stay ungated by decision rather than by accident.
  */
 const { execFileSync } = require('child_process');
 const fs = require('fs');
@@ -112,10 +114,10 @@ const ROWS = [
   // This row of bracket-commands.js measured the substring by running the verb.
   ['vendor',  ['vendor', scene],                  { stdout: 'three already embedded' }],
   ['bundle',  ['bundle', scene],                  { stdout: 'self-contained' }],
-  ['poster',  ['poster', scene, '0', '320'],      { artifact: base + '.jpg', needs: 'ffmpeg' }],
-  ['sheet',   ['sheet', scene, '240', '0.6'],     { artifact: base + '.sheet.jpg', needs: 'ffmpeg' }],
-  ['aspect',  ['aspect', scene, '0', '240'],      { artifact: base + '.aspect.jpg', needs: 'ffmpeg' }],
-  ['strip',   ['strip', scene, '0', '0.5', '4'],  { artifact: base + '.strip.jpg', needs: 'ffmpeg' }],
+  ['poster',  ['poster', scene, '0', '320'],      { artifact: base + '.jpg' }],
+  ['sheet',   ['sheet', scene, '240', '0.6'],     { artifact: base + '.sheet.jpg' }],
+  ['aspect',  ['aspect', scene, '0', '240'],      { artifact: base + '.aspect.jpg' }],
+  ['strip',   ['strip', scene, '0', '0.5', '4'],  { artifact: base + '.strip.jpg' }],
   ['motion',  ['motion', scene, '1'],             { stdout: 'motion:', needs: 'ffmpeg' }],
   ['probe',   ['probe', scene, '0', 'DURATION'],  { stdout: 'DURATION' }],
   ['frames',  ['frames', scene, '1'],             { artifact: path.join(work, 'frames', 'f00001.png') }],
@@ -228,11 +230,20 @@ const line = (name, note) => {
 };
 console.log(`\n${ran} verb path(s) exercised, ${skipped} skipped for a missing encoder`);
 line('core',   'no encoder needed — this tier must always be fully exercised');
-line('review', tally.review?.skipped
-  ? 'HOLE: encoder-blocked, not by design. These are the instruments the build-review'
-    + '\n                                   loop runs on, and CI exercises none of them. '
-    + 'Track E1 closes it.'
-  : 'the build-review loop, fully exercised');
+// The review line distinguishes the two states it can be in, because before
+// Track E1 it printed HOLE at `0 exercised / 5 skipped` and printing the same
+// words at `4 / 1` would overstate what is left. What remains is `motion`, and
+// it is a KNOWN DEFERRAL rather than an accident: migrating it needs a
+// recalibration (its current scale corresponds to no documented luma
+// computation), which is a different job from swapping a scaler.
+line('review', !tally.review?.skipped
+  ? 'the build-review loop, fully exercised — no encoder needed'
+  : tally.review.ran
+    ? 'the tilers run encoder-free (Track E1). What still skips is `motion`, a'
+      + '\n                                   measurement awaiting recalibration — a known deferral, not a hole.'
+    : 'HOLE: encoder-blocked, not by design. These are the instruments the build-review'
+      + '\n                                   loop runs on, and CI exercises none of them. '
+      + 'Track E1 closes it.');
 line('export', 'DELIBERATELY not gated — no encoder belongs in CI (working-plan Track E)');
 line('red',    'the dispatch must refuse these');
 

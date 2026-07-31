@@ -85,13 +85,20 @@ last updated: 2026-07-31
 >
 > **What is left for Gate R4, in the order to do it:**
 >
-> 1. **`poster` + the three tilers move off ffmpeg** — this is what closes gate
->    clause 1, and the blocking measurement is **done**: canvas is cleared
->    (better antialiased than ffmpeg, 59.9% vs 57.4% intermediate tones on
->    edges), and rendering natively at 90px is **rejected** — it is aliased at
->    44.8%, because the 480→90 downscale is 5.3x supersampling and that *is* the
->    antialiasing. Keep the downscale, swap the scaler. `motion` is carved out by
->    name; do not touch it here.
+> 1. ~~**`poster` + the three tilers move off ffmpeg**~~ **DONE (0.16.51), with
+>    Track E0's ratchet landed first so the migration is proved rather than
+>    asserted.** All four run through `build.js`'s `tileStills` — one in-page
+>    tiler replacing five call sites. The downscale stayed (5.3x supersampling
+>    *is* the antialiasing; native 90px is aliased at 44.8% against canvas's
+>    59.9%); only the scaler moved.
+>
+>    **Measured on a PATH with no encoder:** the review tier went from
+>    `0 exercised / 5 skipped` to **`4 exercised / 1`**, and the encoder ratchet
+>    from **10 sites to 5**. With encoders present all 17 harness rows still pass
+>    and `smoke.js` reports all scenes pass.
+>
+>    `motion` was carved out by name and stayed carved out — it needs its scale
+>    re-established, not ported, which is a different job.
 > 2. **R4.7 — reach grades** on `plan.md`'s nine portfolio cases. Unstarted, no
 >    dependencies, pure judgment work.
 > 3. **R4.6's cold-start test** — the cheapest gate clause left. Today produced

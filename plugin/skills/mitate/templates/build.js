@@ -16,9 +16,12 @@
 //   bun run build.js strip  <scene.html> <t0> <t1> [fps] -> <name>.strip.jpg, consecutive frames
 //   bun run build.js motion <scene.html> [fps]     -> per-beat motion profile + dead air, no files kept
 //
-// Prereqs: bun add three@0.185.1 playwright-core@1.61.1 ; ffmpeg on PATH.
-// `avif` needs avifenc (macOS: brew install libavif); `loop` needs img2webp
-// (macOS: brew install webp).
+// Prereqs: bun add three@0.185.1 playwright-core@1.61.1. That is the whole list
+// for BUILDING AND REVIEWING a scene — `vendor`, `bundle`, `frames`, `probe`,
+// `poster`, `sheet`, `aspect` and `strip` need no external binary at all.
+// EXPORT needs encoders: `video`/`all` need ffmpeg, `avif` needs avifenc (macOS:
+// brew install libavif), `loop` needs img2webp (brew install webp). `motion`
+// still needs ffmpeg pending a recalibration of its scale.
 // execFileSync, not execSync: no shell means no quoting rules to get wrong, and
 // a path containing a space cannot break the command. Same class of bug as the
 // exec-form rule for plugin hooks -- that rule covers hooks.json and says
@@ -455,11 +458,96 @@ function loop(scene, width = 720, fps = 12) {
   });
 }
 
+// ---- the review tiler: scale and lay out stills, with no encoder -----------
+//
+// Track E1. `poster`, `aspect`, `sheet` (twice) and `strip` all did the same
+// thing through ffmpeg — read already-rasterized stills, scale each, lay them
+// out on a background — and that one shape was the whole reason five review
+// verbs needed a binary on PATH. VISION.md's subject is the build-review loop;
+// every external dependency on that loop is a tax on what the project is for.
+// Export keeps its encoders, deliberately: see working-plan.md Track E.
+//
+// WHY THE DOWNSCALE STAYS, since removing it is the obvious cheaper idea and is
+// REJECTED on evidence. The squint strip's 480→90 reduction is 5.3x
+// supersampling, and that supersampling IS the antialiasing. A native 90px
+// render gets only the renderer's MSAA and scored **44.8%** intermediate tones
+// on edges against canvas's **59.9%** — aliased, not crisp. So only the scaler
+// changed; the two-step render-then-reduce did not.
+//
+// WHY CANVAS IS SAFE HERE: on that same evidence canvas is better antialiased
+// than the ffmpeg default (59.9% vs 57.4%), at a 1.9% edge-energy cost.
+//
+// NOTHING IN THIS REPO RE-RUNS THOSE NUMBERS. They were established once, by
+// hand, and the table lives in working-plan.md Track E1 — treat them as a
+// recorded finding, not as a control. What IS controlled is that these verbs
+// execute and write their artifact with no encoder present, which is the
+// review-tier row in bracket-commands.js. Three metrics were needed to get the
+// finding right: PSNR ranked fidelity to a reference rather than the property
+// in use, Sobel could not separate a crisp edge from a jagged one, and both
+// produced clean, plausible, wrong tables. Do not re-derive this from PSNR.
+//
+// NO GPU FLAGS, and that is not an oversight: this is 2D canvas work over
+// decoded stills, so it takes none of backend.js's ANGLE/WEBGPU selection. A
+// review still therefore does not change shape because someone exported
+// WEBGPU=metal, which the ffmpeg path also guaranteed and which is worth
+// keeping.
+const REVIEW_JPEG_Q = 0.92;          // ~ffmpeg's -q:v 4, the quality it replaced
+async function tileStills({ files, cellW, cellH, cols, rows, pad, bg, out, quality = REVIEW_JPEG_Q }) {
+  // Lazy require, exactly like probe() and smoke.js's loadBrowserDeps: `bundle`
+  // and `vendor` are string work and must not be made to need a browser.
+  const { chromium } = require('playwright-core');
+  const { chromiumPath } = require(path.join(__dirname, 'backend.js'));
+  const srcs = files.map(f => {
+    const mime = path.extname(f).toLowerCase() === '.png' ? 'image/png' : 'image/jpeg';
+    return `data:${mime};base64,${fs.readFileSync(f).toString('base64')}`;
+  });
+  const browser = await chromium.launch({ executablePath: chromiumPath(),
+    args: ['--hide-scrollbars', '--no-sandbox'] });
+  try {
+    const page = await browser.newPage();
+    const b64 = await page.evaluate(async (a) => {
+      const imgs = await Promise.all(a.srcs.map(s => new Promise((res, rej) => {
+        const im = new Image();
+        im.onload = () => res(im);
+        im.onerror = () => rej(new Error('could not decode a still'));
+        im.src = s;
+      })));
+      // Cell height derives from the FIRST image when the caller does not fix
+      // it. Uniform inputs (sheet, strip, poster) then fit exactly; `aspect`
+      // passes a square box on purpose and every cell letterboxes into it,
+      // which is what shows each window shape at true proportions.
+      const cw = a.cellW;
+      const ch = a.cellH || Math.round(cw * imgs[0].height / imgs[0].width);
+      const cv = document.createElement('canvas');
+      cv.width  = a.cols * cw + (a.cols - 1) * a.pad;
+      cv.height = a.rows * ch + (a.rows - 1) * a.pad;
+      const g = cv.getContext('2d');
+      // The default is already true; set it because it is the entire reason
+      // this produces an antialiased reduction rather than a point-sampled one,
+      // and a future edit that turns it off would look harmless.
+      g.imageSmoothingEnabled = true;
+      g.fillStyle = a.bg;
+      g.fillRect(0, 0, cv.width, cv.height);
+      imgs.forEach((im, i) => {
+        const col = i % a.cols, row = Math.floor(i / a.cols);
+        const x0 = col * (cw + a.pad), y0 = row * (ch + a.pad);
+        const s = Math.min(cw / im.width, ch / im.height);       // contain
+        const w = Math.round(im.width * s), h = Math.round(im.height * s);
+        g.drawImage(im, x0 + Math.round((cw - w) / 2), y0 + Math.round((ch - h) / 2), w, h);
+      });
+      return cv.toDataURL('image/jpeg', a.quality).split(',')[1];
+    }, { srcs, cellW, cellH: cellH || 0, cols, rows, pad, bg, quality });
+    fs.writeFileSync(out, Buffer.from(b64, 'base64'));
+  } finally {
+    await browser.close();
+  }
+}
+
 // The inline artifact for a MOVING-camera scene. A swooping walkthrough makes a
 // multi-megabyte loop AND shows different content than the mp4, so don't make
 // one — ship a still that links to the video instead. Costs ~20KB and needs no
 // held-camera compromise. Prints the markdown to paste.
-function poster(scene, t = 0, width = 960) {
+async function poster(scene, t = 0, width = 960) {
   const base = outBase(scene);
   const out = base + '.jpg';
   const tag = String(t).replace('.', '_');
@@ -473,8 +561,9 @@ function poster(scene, t = 0, width = 960) {
         { env: { ...process.env, FRAMES_DIR: pdir } });
     const shotPath = path.join(pdir, `${path.basename(base)}_sample_${tag}.png`);
     if (!fs.existsSync(shotPath)) throw new Error(`poster: shoot.js did not write ${shotPath}`);
-    run('ffmpeg', ['-y', '-i', shotPath, '-vf', `scale=${width}:-2`,
-      '-q:v', '4', out], { stdio: ['ignore', 'ignore', 'inherit'] });
+    // One cell, no padding: the same scale-and-encode ffmpeg did, minus ffmpeg.
+    await tileStills({ files: [shotPath], cellW: width, cols: 1, rows: 1, pad: 0,
+      bg: '#000000', out });
   } finally { fs.rmSync(pdir, { recursive: true, force: true }); }
   console.log(`poster -> ${out} (${(fs.statSync(out).size / 1024).toFixed(0)} KB)`);
   console.log(`\nPaste into the README, with VIDEO_URL from dragging the mp4 into an\n` +
@@ -505,7 +594,7 @@ function poster(scene, t = 0, width = 960) {
 //
 // Shapes are expressed RELATIVE to the scene's own FRAME.aspect, so this stays
 // meaningful for a 9:16 vertical or 1:1 square scene, not just 16:9.
-function aspectSheet(scene, t = 0, width = 520) {
+async function aspectSheet(scene, t = 0, width = 520) {
   ensureVendor(scene);
   const out = outBase(scene) + '.aspect.jpg';
   const dir = workspace(scene, 'aspect');
@@ -515,19 +604,17 @@ function aspectSheet(scene, t = 0, width = 520) {
         stdio: ['ignore', 'pipe', 'inherit'] });
     const shapes = JSON.parse(stdout.trim().split('\n').pop()).shapes;
     const n = shapes.length;
-    // Each shape has DIFFERENT pixel dimensions. That rules out both the tile
-    // filter (needs uniform inputs) AND the image2 sequence demuxer, which stops
-    // reading at the first dimension change -- either way you silently get a
-    // sheet containing only the first cell. Feed them as separate inputs, fit
-    // each into a common box, and hstack, so every cell shows its window shape
-    // at true proportions against the same reference area.
-    const inputs = [];
-    for (let i = 0; i < n; i++) inputs.push('-i', path.join(dir, `f${String(i).padStart(5, '0')}.${REVIEW_EXT}`));
-    const box = `scale=${width}:${width}:force_original_aspect_ratio=decrease,` +
-                `pad=${width}:${width}:(ow-iw)/2:(oh-ih)/2:color=0x101010`;
-    const chains = shapes.map((_, i) => `[${i}:v]${box}[a${i}]`).join(';');
-    const stack = shapes.map((_, i) => `[a${i}]`).join('') + `hstack=inputs=${n}`;
-    run('ffmpeg', ['-y', ...inputs, '-filter_complex', `${chains};${stack}`, out]);
+    // Each shape has DIFFERENT pixel dimensions, which is the whole point of the
+    // command and used to be its hardest constraint: it ruled out ffmpeg's tile
+    // filter (needs uniform inputs) AND the image2 demuxer (stops reading at the
+    // first dimension change), either of which silently yields a sheet holding
+    // only the first cell. The tiler's `contain` fit into a SQUARE box handles
+    // it directly — every cell shows its window shape at true proportions
+    // against the same reference area, and the letterbox is the background.
+    const files = [];
+    for (let i = 0; i < n; i++) files.push(path.join(dir, `f${String(i).padStart(5, '0')}.${REVIEW_EXT}`));
+    await tileStills({ files, cellW: width, cellH: width, cols: n, rows: 1, pad: 0,
+      bg: '#101010', out });
     console.log(`aspect -> ${out}`);
     console.log('\nlegend (each cell is the SAME t at a different window shape):');
     shapes.forEach((sh, i) => console.log(`  cell ${i + 1}  ${sh.tag.padEnd(10)} ${sh.w}x${sh.h}  aspect ${(sh.w / sh.h).toFixed(2)}`));
@@ -542,7 +629,7 @@ function aspectSheet(scene, t = 0, width = 520) {
 // `strip` here is the text-strip flag, not the strip command: sheet(scene, w,
 // frac, true) renders the same beats with every word removed, which is the
 // semantics pass. An author used to build this by hand-editing a copy.
-function sheet(scene, width = 480, frac = 0.6, stripText = false) {
+async function sheet(scene, width = 480, frac = 0.6, stripText = false) {
   ensureVendor(scene);
   const base = outBase(scene);
   const sheetOut = base + (stripText ? '.nocap.sheet.jpg' : '.sheet.jpg');
@@ -566,15 +653,19 @@ function sheet(scene, width = 480, frac = 0.6, stripText = false) {
     const cols = Math.min(4, Math.ceil(Math.sqrt(n)));
     const rows = Math.ceil(n / cols);
 
-    run('ffmpeg', ['-y', '-i', path.join(dir, `f%05d.${REVIEW_EXT}`), '-vf',
-      `scale=${width}:-2,tile=${cols}x${rows}:padding=6:color=0x1a1a1a`,
-      '-frames:v', '1', '-update', '1', '-q:v', '4', sheetOut]);
+    // Named explicitly rather than handed to a %05d pattern: the sequence is
+    // dense and zero-based here, but `strip` below is neither, and one way of
+    // naming frames for both is one fewer thing that can be subtly wrong.
+    const files = [];
+    for (let i = 0; i < n; i++) files.push(path.join(dir, `f${String(i).padStart(5, '0')}.${REVIEW_EXT}`));
+
+    await tileStills({ files, cellW: width, cols, rows, pad: 6, bg: '#1a1a1a', out: sheetOut });
 
     // 90px wide, one row: small enough that detail disappears and only the
-    // silhouette is left, which is the point.
-    run('ffmpeg', ['-y', '-i', path.join(dir, `f%05d.${REVIEW_EXT}`), '-vf',
-      `scale=90:-2,tile=${n}x1:padding=3:color=0x1a1a1a`,
-      '-frames:v', '1', '-update', '1', '-q:v', '4', squintOut]);
+    // silhouette is left, which is the point. This is the reduction the whole
+    // scaler question was about — 480→90 is 5.3x supersampling, and it is what
+    // antialiases the silhouette. See tileStills's header before touching it.
+    await tileStills({ files, cellW: 90, cols: n, rows: 1, pad: 3, bg: '#1a1a1a', out: squintOut });
 
     console.log(`sheet -> ${sheetOut}`);
     console.log(`squint -> ${squintOut}`);
@@ -619,7 +710,7 @@ function sheet(scene, width = 480, frac = 0.6, stripText = false) {
 // Use it as a look-closer, not a gate, and keep checking the three source
 // shapes in references/method.md -- those cover the cases below the bracket.
 const STRIP_MAX = 16;
-function strip(scene, t0, t1, fps = 30, width = 480) {
+async function strip(scene, t0, t1, fps = 30, width = 480) {
   ensureVendor(scene);
   const base = outBase(scene);
   const out = base + '.strip.jpg';
@@ -636,12 +727,13 @@ function strip(scene, t0, t1, fps = 30, width = 480) {
     run('bun', ['run', path.join(__dirname, 'shoot.js'), scene, 'range',
       String(a), String(a + n), String(fps)], { env: { ...process.env, FRAMES_DIR: dir, SHOOT_FORMAT: REVIEW_FMT } });
     const cols = Math.min(4, n), rows = Math.ceil(n / cols);
-    // -start_number because `range` names frames by their GLOBAL index (f00259),
-    // not from zero -- that is what makes a re-shot range drop back into a full
-    // render, and it means ffmpeg has to be told where the sequence begins.
-    run('ffmpeg', ['-y', '-start_number', String(a), '-i', path.join(dir, `f%05d.${REVIEW_EXT}`),
-      '-vf', `scale=${width}:-2,tile=${cols}x${rows}:padding=6:color=0x1a1a1a`,
-      '-frames:v', '1', '-update', '1', '-q:v', '4', out]);
+    // `range` names frames by their GLOBAL index (f00259), not from zero -- that
+    // is what makes a re-shot range drop back into a full render. ffmpeg needed
+    // -start_number told to it; naming the files outright says the same thing
+    // without a second convention, and it is the same loop `sheet` uses.
+    const files = [];
+    for (let i = 0; i < n; i++) files.push(path.join(dir, `f${String(a + i).padStart(5, '0')}.${REVIEW_EXT}`));
+    await tileStills({ files, cellW: width, cols, rows, pad: 6, bg: '#1a1a1a', out });
     console.log(`strip -> ${out}  (${n} consecutive frames at ${fps}fps)`);
     console.log('\nlegend:');
     for (let i = 0; i < n; i++) {
@@ -945,17 +1037,24 @@ const [, , step, target, arg1, arg2, arg3] = process.argv;
 if (step && !target) {
   console.error(`${step}: missing <scene.html>\n${USAGE}`); process.exit(1);
 }
+// The four review-still verbs became async when they moved off ffmpeg (Track
+// E1): the tiler drives a browser, where the encoder was a blocking child
+// process. `die` gives them the same failure shape the synchronous verbs have —
+// message on stderr, exit 1 — because an unhandled rejection would otherwise
+// print a stack trace AND exit 0 on some runtimes, which is a command that fails
+// while reporting success.
+const die = p => p.catch(e => { console.error(String(e && e.message || e)); process.exit(1); });
 if (step === 'vendor') { const tp = path.resolve(target); vendor(path.dirname(tp), tp); }
 else if (step === 'avif') avif(target, Number(arg2 || 720), Number(arg1 || 12));
 else if (step === 'loop') loop(target, Number(arg2 || 720), Number(arg1 || 12));
-else if (step === 'poster') poster(target, Number(arg1 || 0), Number(arg2 || 960));
+else if (step === 'poster') die(poster(target, Number(arg1 || 0), Number(arg2 || 960)));
 else if (step === 'bundle') bundle(target);
 else if (step === 'frames') frames(target, Number(arg1 || 30));
 else if (step === 'video') video(target, Number(arg1 || 30));
 else if (step === 'all') { bundle(target); frames(target, Number(arg1 || 30)); video(target, Number(arg1 || 30)); }
-else if (step === 'aspect') aspectSheet(target, Number(arg1 || 0), Number(arg2 || 520));
-else if (step === 'sheet') sheet(target, Number(arg1 || 480), arg2 === undefined ? 0.6 : Number(arg2), arg3 === 'nocap');
-else if (step === 'strip') strip(target, Number(arg1), Number(arg2), Number(arg3 || 30));
+else if (step === 'aspect') die(aspectSheet(target, Number(arg1 || 0), Number(arg2 || 520)));
+else if (step === 'sheet') die(sheet(target, Number(arg1 || 480), arg2 === undefined ? 0.6 : Number(arg2), arg3 === 'nocap'));
+else if (step === 'strip') die(strip(target, Number(arg1), Number(arg2), Number(arg3 || 30)));
 else if (step === 'motion') motion(target, Number(arg1 || 12));
 // probe takes ALL remaining argv rather than the neutral arg1..arg3 slots: the
 // point is measuring several offsets at one t in one page load, and capping it

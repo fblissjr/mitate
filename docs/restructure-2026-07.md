@@ -84,8 +84,15 @@ last updated: 2026-07-31
 > do not fire it — see R4.3's correction).
 >
 > **Gate R4 clause 1 is MET** — observed in CI run 30672205795, not inferred
-> from a local run. **R4.7 is DONE** (portfolio graded in `plan.md`). What
-> remains is R4.6's cold-start test and R4.1's `checkScene` extraction.
+> from a local run. **R4.7 is DONE** (portfolio graded in `plan.md`).
+> **R4.6's cold-start clause is MET** — two zero-context agents, two recorded
+> design questions, both reached; the routing gap they both hit is fixed in
+> `docs/README.md` (see the box at the end of this section).
+>
+> **Only R4.1 remains: extract `checkScene`.** Its baseline was re-taken
+> 2026-07-31 and the old one was wrong — four advisory warnings, not one. Start
+> it fresh, and re-capture the baseline on the machine and backend you will
+> compare against.
 >
 > **What is left for Gate R4, in the order to do it:**
 >
@@ -1536,6 +1543,44 @@ other carrier, with the malformed-source refusal bracketed; every portfolio case
 carries a reach grade; and **a design question raised in a session is findable
 from `docs/` afterwards** — tested the only way it can be, by a cold-start agent
 asked about one and reaching it without being told where to look.
+
+> ### Cold-start findability: RUN 2026-07-31, clause MET, and it found something
+>
+> Two zero-context agents, two of the design questions this migration recorded
+> *because they had evaporated* — the declarative-layer shape question and the
+> origin-story question. Each was asked as a newcomer would ask it, deliberately
+> **not** using the docs' own distinctive wording (or the test measures grep, not
+> retention), and neither was told where to look.
+>
+> **Both reached a correct, complete, quotable answer** — owner position, date,
+> analysis, prerequisites and triggers. The retention channel works: these two
+> questions are exactly the ones that previously survived only in a transcript.
+>
+> **Both also reported the same failure, independently: the router did not get
+> them there, and both nearly stopped at it.** `docs/README.md` had no row for
+> either question. One won by grepping `declarative` — the repo's own word,
+> guessed — and said plainly that "authoring tables" or "scene manifest" would
+> have missed. The other's topic-word grep *did* miss, and it recovered only by
+> switching to the repo's **epistemic** vocabulary, searching `open question`
+> rather than any noun for the subject.
+>
+> **That convergence is admissible under this document's own rule.** Weight
+> independent agreement by the granularity of the claim: these two agreed on a
+> coarse structural observation about routing, not on a fine judgment, which is
+> the case where agreement carries information. They also derived it
+> independently — different questions, different search paths, no shared artifact.
+>
+> **Fixed the same day, in the cheapest place.** `docs/README.md` gains one row:
+> unresolved design questions are filed under the exact phrase `Open question`,
+> so grep the phrase rather than the topic. Verified as a real convention before
+> routing to it — four instances across three files, all identical. This is the
+> spine's first rule applied to itself: the correct move was already available
+> and cost more than the mistake, so it lost.
+>
+> **The clause is met as written** — they were not told where to look, and they
+> reached it from `docs/`. Recording the margin anyway, because it was luck: the
+> honest reading is that retention passed and routing failed, and only the first
+> is what this clause measures.
 
 ---
 

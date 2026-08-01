@@ -174,6 +174,29 @@ const ARMS = [
   // anchor against the working tree over `plugin/`, so a new untracked file
   // would not appear in `git diff` at all. Appending a comment to a template is
   // the smallest true instance of the thing being gated.
+  // Check 12 — a bracket may not state its own arm count in prose. The arm
+  // injects the exact shape that shipped four times (a header saying "N ways")
+  // into a real bracket file, because the check reads tracked tool JS and a
+  // fixture file would not be in that set. The negative arm matters as much:
+  // narrative counts like "one arm each" are everywhere in these files and are
+  // NOT the defect, so a check that reddened on them would be unusable and
+  // would look identical on the positive arm alone.
+  ['a bracket header states its own arm count', () => {
+    const f = path.join(ROOT, 'plugin', 'skills', 'mitate', 'templates', 'bracket-parity.js');
+    const before = fs.readFileSync(f, 'utf8');
+    fs.writeFileSync(f, before.replace('/* Bracket for the FENCE PARITY check.',
+                                       '/* Bracket for the FENCE PARITY check, five ways.'));
+    return () => fs.writeFileSync(f, before);
+  }, 'arm count in prose'],
+
+  ['a bracket comment counts arms NARRATIVELY (must stay green)', () => {
+    const f = path.join(ROOT, 'plugin', 'skills', 'mitate', 'templates', 'bracket-parity.js');
+    const before = fs.readFileSync(f, 'utf8');
+    fs.writeFileSync(f, before.replace('/* Bracket for the FENCE PARITY check.',
+                                       '/* Bracket for the FENCE PARITY check.\n * Two guarantees, one arm each; the four arms below were added separately.'));
+    return () => fs.writeFileSync(f, before);
+  }, null],
+
   ['plugin content changed without a version bump', () => {
     const f = path.join(ROOT, 'plugin', 'skills', 'mitate', 'templates', 'smoke.js');
     const before = fs.readFileSync(f, 'utf8');

@@ -1,4 +1,4 @@
-/* Bracket for the CHECK DRIVER in smoke.js — the guards C4 and C5 added, ten ways.
+/* Bracket for the CHECK DRIVER in smoke.js — the guards C4 and C5 added.
  *
  * What is under test is not a scene property. It is smoke.js's own structure:
  * the order its two check lists run in, and the ctx keys each check is allowed
@@ -7,7 +7,7 @@
  * would notice a reorder.
  *
  * WHY THIS BRACKET IS NOT OPTIONAL. Every one of these guards fires only on a
- * smoke.js bug, so on a healthy tree all ten arms are invisible: the guards
+ * smoke.js bug, so on a healthy tree every arm is invisible: the guards
  * emit nothing, and a version with them deleted produces byte-identical output
  * on all nine scenes. That is precisely the shape invariant 6 exists for — a
  * control whose green is indistinguishable from its absence has to be watched
@@ -78,7 +78,7 @@ const SHOT = "const SHOT_CHECKS = [\n  checkDeterminism,\n  checkReloadDetermini
 
 // [label, mutate, expect] — expect.code is 'zero' or 'nonzero', expect.says is a
 // pattern the run MUST print. Asserting the MESSAGE and not only the exit code
-// is load-bearing here: five of these arms are non-zero exits, so without a
+// is load-bearing here: most arms below are non-zero exits, so without a
 // message assertion any crash would satisfy all five and they could not tell
 // each other's failure apart. That weakness was found in bracket-parity.js and
 // is not being re-introduced one file over.
@@ -206,7 +206,7 @@ try {
 
   for (const [label, mutate, expect] of BROWSER_ARMS) {
     if (!browserReady) {
-      // Reported, never absent. A bracket that quietly runs eight of ten arms
+      // Reported, never absent. A bracket that quietly runs its static arms
       // and prints "all arms as specified" is the failure mode CLAUDE.md names:
       // a green step that ran zero controls reads identically to one that ran
       // five. Say the number.

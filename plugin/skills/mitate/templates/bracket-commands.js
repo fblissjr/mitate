@@ -253,4 +253,4 @@ if (wrong) {
     + ` nobody runs rots quietly; do not trust the toolchain until this is 0.`);
   process.exit(1);
 }
-console.log('all rows as specified');
+console.log(`all ${ran} rows as specified`);

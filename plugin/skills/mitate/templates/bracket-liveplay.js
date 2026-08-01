@@ -1,4 +1,4 @@
-/* Bracket for the live-playback gate (shipped in 0.16.1), four ways.
+/* Bracket for the live-playback gate (shipped in 0.16.1).
  *
  * Builds its own broken copies of a shipped example in a temp dir, so its
  * fixtures need no upkeep. The first version of this depended on scratch files
@@ -105,5 +105,5 @@ const INJECTIONS = [
               + ` doing what this bracket claims. Do not trust a green smoke run until this is 0.`);
     process.exit(1);
   }
-  console.log('\nall rows as specified');
+  console.log(`\nall ${INJECTIONS.length} rows as specified`);
 })();

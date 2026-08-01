@@ -994,6 +994,62 @@ const toolJs = new Map([
   }
 }
 
+/* ---- 12. a bracket may not state its own arm count in prose ---------------
+ * `source-of-truth.md` already says "never hand-write what a command produces".
+ * The rule did not hold, and the instructive part is WHERE it failed:
+ * `bracket-driver.js` opened with "nine ways" while printing `10 arm(s)
+ * exercised` at runtime two lines below. The correct number was derived, on
+ * screen, every run — and the prose beside it was still wrong, because adding an
+ * arm updates the array and nothing updates the sentence.
+ *
+ * THREE PRIOR INSTANCES OF THE SAME SHAPE, which is why this became a check
+ * rather than a fourth reminder: `gate.yml` read "all three" while four brackets
+ * were globbed; `CLAUDE.md` asserted "9 references" while selfcheck derived the
+ * same number every run; `bracket-parity.js` said "five ways" while running 22
+ * rows across three blocks. A rule that has been written down and violated four
+ * times is not a rule, it is a wish.
+ *
+ * NARROW ON PURPOSE, because the obvious wide version is unusable. A first cut
+ * flagged any number near "arm" and matched 28 lines, nearly all legitimate:
+ * "one arm each", "the two arms that matter", "four arms that could not tell
+ * each other's failure apart" — narrative and history, which do not rot. The
+ * distinguishing property of the dangerous ones is that they describe the file's
+ * OWN CURRENT structure, and those take three forms. Anything else is prose
+ * about the past and is left alone.
+ *
+ * The escape hatch is to say it structurally instead — "one arm per property",
+ * "the static half and the browser half" — and let the run print the number. */
+{
+  const SELF_COUNT = [
+    /\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+)\s+ways\b/i,
+    /\ball\s+(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+)\s+arms?\b/i,
+    /\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+)\s+of\s+(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+|these|those|the|its)\s+arms?\b/i,
+  ];
+  const hits = [];
+  for (const [f, text] of toolJs) {
+    if (!/^bracket-.*\.js$/.test(path.posix.basename(f))) continue;
+    text.split('\n').forEach((line, i) => {
+      // BEGINS with a comment marker, never merely CONTAINS one. The first cut
+      // used /(^\s*\*|\/\/|\/\*)/ and immediately flagged bracket-selfcheck.js's
+      // own fixture — a STRING LITERAL holding the bad header it injects. That
+      // is this repo's oldest check-authoring failure (five specs shipped wrong
+      // the same way, each unable to separate carrying a thing from describing
+      // it), reproduced by the check written to stop counts drifting. A line of
+      // prose starts with its marker; a mention inside code does not.
+      if (!/^\s*(\/\/|\*|\/\*)/.test(line)) return;
+      if (SELF_COUNT.some(re => re.test(line))) hits.push(`${f}:${i + 1}`);
+    });
+  }
+  if (hits.length) {
+    fail(`${hits.length} bracket comment(s) state an arm count in prose: ${hits.join(', ')}. `
+       + `Every bracket prints its own tally at runtime — say it structurally ("one arm per `
+       + `property", "the static half") and let the run produce the number. A count in a comment `
+       + `goes stale the next time an arm lands, and this one has four times.`);
+  } else {
+    notes.push('no bracket states its own arm count in prose (the count is derived at runtime)');
+  }
+}
+
 for (const n of notes) console.log('  ok   ' + n);
 if (fails.length) {
   console.log('');

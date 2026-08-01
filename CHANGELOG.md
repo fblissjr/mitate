@@ -7,6 +7,37 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.56
+
+### added
+
+**`selfcheck` check 12 — a bracket may not state its own arm count in prose.**
+Built red against **eight live violations in five bracket files**, which is the
+argument for it: `source-of-truth.md` has said "never hand-write what a command
+produces" for weeks, and the rule has now been broken four separate times —
+`gate.yml` read "all three" while four brackets were globbed; `CLAUDE.md`
+asserted "9 references" while selfcheck derived the number every run;
+`bracket-parity.js` said "five ways" while running 22 rows; `bracket-driver.js`
+said "nine ways" while printing `10 arm(s) exercised` two lines below it. A rule
+written down and violated four times is not a rule, it is a wish.
+
+**Narrow on purpose.** A first cut flagged any number near "arm" and matched 28
+lines, nearly all legitimate — "one arm each", "the two arms that matter",
+"four arms that could not tell each other's failure apart". Those are narrative
+and history, and history does not rot. The dangerous ones describe the file's
+OWN CURRENT structure and take three forms; the check matches those and nothing
+else, and a bracket arm pins the distinction by injecting a narrative count and
+requiring it to stay green.
+
+### changed
+
+**Every bracket now prints a derived count, so the number exists without anyone
+writing it.** Five of six previously ended on "all rows as specified" with no
+figure — the count was only obtainable by counting rows by eye, which is why the
+prose copies survived. `bracket-parity.js` now reports `all 22 arms as
+specified`, against a header that claimed five. `bracket-commands.js` already
+derived its own `ran` and simply was not printing it.
+
 ## 0.16.55
 
 ### fixed

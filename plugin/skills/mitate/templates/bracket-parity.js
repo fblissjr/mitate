@@ -1,4 +1,4 @@
-/* Bracket for the FENCE PARITY check, five ways.
+/* Bracket for the FENCE PARITY check.
  *
  * Parity is this repo's whole answer to duplication. Self-containment forbids a
  * shared import, so KERNEL/SOLVER/RIG/DRIVER/CHARACTER/HTML are written into
@@ -52,7 +52,7 @@ const ARMS = [
   ['only one carrier', { 'a.html': FENCE, 'b.html': 'const kit = 1;' }, 'inert'],
 ];
 
-let wrong = 0;
+let wrong = 0, ran = 0;
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mitate-parity-'));
 try {
   for (const [label, files, expect] of ARMS) {
@@ -72,6 +72,7 @@ try {
     const said = /parity inert|no fence was checked/.test(out);
     const verdict = code !== 0 ? 'fail' : said ? 'inert' : 'pass';
     const ok = verdict === expect;
+    ran++;
     if (!ok) wrong++;
     console.log(`${label.padEnd(22)} exit ${code}  -> ${verdict}`
       + `${ok ? '' : `  BRACKET FAILED (expected: ${expect})`}`);
@@ -289,6 +290,7 @@ for (const [label, files, args, expect] of FIX_ARMS) {
       || Object.keys(files).every(n => after[n] === before[n]);
     const saidOk = expect.says.test(out);
     const ok = codeOk && bOk && untouched && saidOk;
+    ran++;
     if (!ok) wrong++;
     const bState = expect.b === 'unchanged'
       ? (after['b.html'] === before['b.html'] ? 'unchanged' : 'MODIFIED')
@@ -355,6 +357,7 @@ for (const [label, files, argv, expect] of SCAN_ARMS) {
     const codeOk = expect.code === 'zero' ? code === 0 : code !== 0;
     const saidOk = expect.says.test(out);
     const ok = codeOk && saidOk;
+    ran++;
     if (!ok) wrong++;
     console.log(`${label.padEnd(52)} exit ${code}${saidOk ? '' : '  WRONG-MESSAGE'}`
       + `${ok ? '' : `  BRACKET FAILED (expected exit ${expect.code}, saying ${expect.says})`}`);
@@ -370,4 +373,4 @@ if (wrong) {
     + ` until this is 0.`);
   process.exit(1);
 }
-console.log('\nall arms as specified');
+console.log(`\nall ${ran} arms as specified`);

@@ -1,4 +1,4 @@
-/* Bracket for the CROSS-RELOAD determinism check (shipped in 0.16.9), three ways.
+/* Bracket for the CROSS-RELOAD determinism check (shipped in 0.16.9).
  *
  * Builds its own broken copies of a shipped example in a temp dir, so its
  * fixtures need no upkeep. A bracket you cannot re-run is a claim, not a
@@ -125,5 +125,5 @@ let wrong = 0;
               + ` doing what this bracket claims. Do not trust a green smoke run until this is 0.`);
     process.exit(1);
   }
-  console.log('\nall rows as specified');
+  console.log(`\nall ${INJECTIONS.length} rows as specified`);
 })();

@@ -7,6 +7,40 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.60
+
+### fixed
+
+**`SKILL.md`'s frontmatter description was 1093 characters against the Agent
+Skills 1024 limit, and had been over it since 0.16.18.** Bisected rather than
+assumed: `406d9ec` migrated the skill in at **898** (under), `9f99ce4` took it to
+**1371** at 0.16.18, and it has been over ever since — drifting down to 1093 but
+never back under. That is roughly forty versions, including the 0.16.40 sitting
+in the local install cache right now.
+
+**The predecessor hit the same defect independently** — `predecessor-record.md`
+has it at 1150, "pre-existing, surfaced only because 0.17.0 had to touch the
+file", closing with **"Nothing in the run's checkpoint checks it."** Nothing here
+did either. Two lineages, one defect, twice written down and never checked: that
+is a missing control, not a missing reminder.
+
+Trimmed to 986 with 38 characters of margin. Nothing load-bearing was dropped:
+every trigger word survives (`video`, `animation`, `cutscene`, `walkthrough`,
+`explainer`, `simulation`, `movie`, `animated meme`) and so does every cost
+disclosure the description exists to make before invocation — SILENT, NOT
+INTERACTIVE, RE-AUTHORED with no import path, and the do-not-use clause. The
+register list lost two entries that the trigger list already carried.
+
+### added
+
+**`selfcheck` check 14 — the description limit is now enforced**, so the third
+occurrence cannot be silent. Bracketed both ways in `bracket-selfcheck.js`: an
+over-limit arm that must red, and a within-limit arm that must stay green, since
+a length check is trivially satisfied by one that always fails. The over-limit
+fixture pads a continuation line so the folded scalar stays valid YAML and only
+the length changes — a malformed block would red for parsing and prove nothing
+about the limit.
+
 ## 0.16.59
 
 ### added

@@ -29,6 +29,31 @@ const run = () => {
   catch (e) { return { code: e.status ?? 1, out: String(e.stdout || '') + String(e.stderr || '') }; }
 };
 
+// Mutate SKILL.md AND carry the version cascade with it. SKILL.md is plugin
+// content, so check 11 fires on any edit without a bump: a green-expectation arm
+// touching it could never be green, and a red one would red for check 11 rather
+// than for the thing under test. The check 12 arms below dodge this by mutating a
+// bracket under scripts/; check 14 cannot, because SKILL.md is the only file it
+// reads. Found by running it -- the green arm came back DIRTY on first attempt.
+const withCascade = (mutateSkill) => () => {
+  const f = path.join(ROOT, 'plugin', 'skills', 'mitate', 'SKILL.md');
+  const pj = path.join(ROOT, 'plugin', '.claude-plugin', 'plugin.json');
+  const mkt = path.join(ROOT, '.claude-plugin', 'marketplace.json');
+  const chg = path.join(ROOT, 'CHANGELOG.md');
+  const had = { f: fs.readFileSync(f, 'utf8'), pj: fs.readFileSync(pj, 'utf8'),
+                mkt: fs.readFileSync(mkt, 'utf8'), chg: fs.readFileSync(chg, 'utf8') };
+  const cur = JSON.parse(had.pj).version;
+  const next = cur.replace(/(\d+)$/, (n) => String(Number(n) + 1));
+  fs.writeFileSync(f, mutateSkill(had.f));
+  fs.writeFileSync(pj, had.pj.split(cur).join(next));
+  fs.writeFileSync(mkt, had.mkt.split(cur).join(next));
+  fs.writeFileSync(chg, had.chg.replace(/^## /m, `## ${next}\n\n### changed\n\nbracket fixture.\n\n## `));
+  return () => {
+    fs.writeFileSync(f, had.f); fs.writeFileSync(pj, had.pj);
+    fs.writeFileSync(mkt, had.mkt); fs.writeFileSync(chg, had.chg);
+  };
+};
+
 // [label, break, expected substring in the failure]. `break` returns its undo.
 const ARMS = [
   ['clean tree', () => () => {}, null],
@@ -263,6 +288,35 @@ const ARMS = [
   // correctly, not a regression — commit the cascade, then re-run. Observed
   // while adding check 13, and written down because the symptom (a long-green
   // arm suddenly red) invites exactly the wrong diagnosis.
+  // Check 14 — SKILL.md's frontmatter description may not exceed the Agent
+  // Skills limit. This is a REGRESSION the repo has already paid for once: the
+  // predecessor record has it at 1150 against the 1024 limit, "pre-existing,
+  // surfaced only because 0.17.0 had to touch the file", and closes with
+  // "Nothing in the run's checkpoint checks it." That stayed true, and it drifted
+  // back to 1093 unnoticed. A defect that recurs after being written down is the
+  // signature of a missing control, not a missing reminder.
+  //
+  // The green arm is the one that matters here: a limit check is trivially
+  // satisfiable by a check that always fails, so the pair proves it discriminates
+  // rather than merely reddens.
+  // Both arms carry the cascade — see `withCascade` above for why.
+  //
+  // Padded on a continuation line so the folded scalar stays valid YAML and ONLY
+  // the length changes -- a malformed block would red for PARSING, not for
+  // length, and the arm would prove nothing about the limit.
+  //
+  // The expected message is the failure's own wording, not "frontmatter
+  // description": that substring also appears in check 14's PASSING note
+  // ("mitate frontmatter description 986/1024"), so the loose form would read
+  // CAUGHT off a green check 14 plus any unrelated failure. Caught by running it.
+  ['SKILL.md description over the frontmatter limit', withCascade(
+    s => s.replace('description: >\n', 'description: >\n  ' + 'x'.repeat(1200) + '\n')),
+    'over the Agent Skills limit'],
+
+  ['SKILL.md description within the limit (must stay green)', withCascade(
+    s => s.replace('description: >\n', 'description: >\n  padding well under the cap.\n')),
+    null],
+
   ['plugin content changed without a version bump', () => {
     const f = path.join(ROOT, 'plugin', 'skills', 'mitate', 'templates', 'smoke.js');
     const before = fs.readFileSync(f, 'utf8');

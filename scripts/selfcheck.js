@@ -1106,13 +1106,14 @@ const toolJs = new Map([
 }
 
 /* ---- 14. a skill's frontmatter description must fit the Agent Skills limit --
- * THE THIRD OCCURRENCE OF ONE DEFECT, which is why it is a check and not a note.
- * `predecessor-record.md` records the description at 1150 against the 1024 cap —
- * "pre-existing, surfaced only because 0.17.0 had to touch the file" — and ends
- * with "Nothing in the run's checkpoint checks it." Nothing did, so it drifted
- * back to 1093 and was found only because someone thought to count. A defect
- * that recurs after being written down is a missing control, not a missing
- * reminder.
+ * ONE DEFECT IN TWO LINEAGES, which is why it is a check and not a note. Here it
+ * crossed at 0.16.18 (898 -> 1371, bisected) and stayed over for ~40 versions,
+ * reaching 1093 by the time anyone counted — including the build in the local
+ * install cache. `predecessor-record.md` records the predecessor hitting it
+ * independently at 1150, "pre-existing, surfaced only because 0.17.0 had to
+ * touch the file", ending with "Nothing in the run's checkpoint checks it."
+ * Nothing here did either. Twice written down, never checked: a missing control,
+ * not a missing reminder.
  *
  * DERIVED over plugin/skills/*, not hardcoded to mitate: a second skill would
  * otherwise ship unchecked, which is the silent-coverage-loss shape this file

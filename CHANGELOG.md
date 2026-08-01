@@ -12,12 +12,17 @@ make the record say things that never happened. The rename and repo split are
 ### fixed
 
 **`SKILL.md`'s frontmatter description was 1093 characters against the Agent
-Skills 1024 limit — a regression of a defect this repo has already paid for.**
-`predecessor-record.md` records it at 1150, "pre-existing, surfaced only because
-0.17.0 had to touch the file", and closes with **"Nothing in the run's checkpoint
-checks it."** That stayed true, so it drifted back over the cap unnoticed. A
-defect that recurs after being written down is a missing control, not a missing
-reminder.
+Skills 1024 limit, and had been over it since 0.16.18.** Bisected rather than
+assumed: `406d9ec` migrated the skill in at **898** (under), `9f99ce4` took it to
+**1371** at 0.16.18, and it has been over ever since — drifting down to 1093 but
+never back under. That is roughly forty versions, including the 0.16.40 sitting
+in the local install cache right now.
+
+**The predecessor hit the same defect independently** — `predecessor-record.md`
+has it at 1150, "pre-existing, surfaced only because 0.17.0 had to touch the
+file", closing with **"Nothing in the run's checkpoint checks it."** Nothing here
+did either. Two lineages, one defect, twice written down and never checked: that
+is a missing control, not a missing reminder.
 
 Trimmed to 986 with 38 characters of margin. Nothing load-bearing was dropped:
 every trigger word survives (`video`, `animation`, `cutscene`, `walkthrough`,

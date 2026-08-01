@@ -7,6 +7,35 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.60
+
+### fixed
+
+**`SKILL.md`'s frontmatter description was 1093 characters against the Agent
+Skills 1024 limit — a regression of a defect this repo has already paid for.**
+`predecessor-record.md` records it at 1150, "pre-existing, surfaced only because
+0.17.0 had to touch the file", and closes with **"Nothing in the run's checkpoint
+checks it."** That stayed true, so it drifted back over the cap unnoticed. A
+defect that recurs after being written down is a missing control, not a missing
+reminder.
+
+Trimmed to 986 with 38 characters of margin. Nothing load-bearing was dropped:
+every trigger word survives (`video`, `animation`, `cutscene`, `walkthrough`,
+`explainer`, `simulation`, `movie`, `animated meme`) and so does every cost
+disclosure the description exists to make before invocation — SILENT, NOT
+INTERACTIVE, RE-AUTHORED with no import path, and the do-not-use clause. The
+register list lost two entries that the trigger list already carried.
+
+### added
+
+**`selfcheck` check 14 — the description limit is now enforced**, so the third
+occurrence cannot be silent. Bracketed both ways in `bracket-selfcheck.js`: an
+over-limit arm that must red, and a within-limit arm that must stay green, since
+a length check is trivially satisfied by one that always fails. The over-limit
+fixture pads a continuation line so the folded scalar stays valid YAML and only
+the length changes — a malformed block would red for parsing and prove nothing
+about the limit.
+
 ## 0.16.59
 
 ### added

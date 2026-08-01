@@ -1105,6 +1105,63 @@ const toolJs = new Map([
   }
 }
 
+/* ---- 14. a skill's frontmatter description must fit the Agent Skills limit --
+ * THE THIRD OCCURRENCE OF ONE DEFECT, which is why it is a check and not a note.
+ * `predecessor-record.md` records the description at 1150 against the 1024 cap —
+ * "pre-existing, surfaced only because 0.17.0 had to touch the file" — and ends
+ * with "Nothing in the run's checkpoint checks it." Nothing did, so it drifted
+ * back to 1093 and was found only because someone thought to count. A defect
+ * that recurs after being written down is a missing control, not a missing
+ * reminder.
+ *
+ * DERIVED over plugin/skills/*, not hardcoded to mitate: a second skill would
+ * otherwise ship unchecked, which is the silent-coverage-loss shape this file
+ * exists to catch. The limit itself is an EXTERNAL constant — it belongs to the
+ * Agent Skills spec, not to this repo — so it is named once here rather than
+ * restated anywhere else.
+ *
+ * The description is the only field measured. It is what a model reads when
+ * deciding whether to invoke, so an over-limit one is not a style problem: it is
+ * the routing surface being silently truncated or rejected. */
+{
+  const DESCRIPTION_LIMIT = 1024;              // Agent Skills spec, not ours
+  const skillsRoot = path.join(PLUGIN_ROOT, 'skills');
+  const skills = fs.existsSync(skillsRoot)
+    ? fs.readdirSync(skillsRoot, { withFileTypes: true })
+        .filter(e => e.isDirectory() && fs.existsSync(path.join(skillsRoot, e.name, 'SKILL.md')))
+        .map(e => [e.name, path.join(skillsRoot, e.name, 'SKILL.md')])
+    : [];
+  if (!skills.length) {
+    fail(`no plugin/skills/*/SKILL.md found — check 14 would pass by having nothing to measure`);
+  }
+  for (const [name, file] of skills) {
+    const fm = (R(file).match(/^---\n([\s\S]*?)\n---/) || [, ''])[1];
+    // Folded scalar: single newlines become spaces, which is what the consumer
+    // sees. Measuring the raw block instead would count indentation and report a
+    // length no reader ever receives.
+    const lines = fm.split('\n');
+    let desc = [], inDesc = false;
+    for (const l of lines) {
+      if (/^description:\s*>/.test(l)) { inDesc = true; continue; }
+      if (inDesc) { if (/^[A-Za-z_-]+:/.test(l)) break; desc.push(l.trim()); }
+    }
+    // A single-line `description: ...` form is legal too and must not read as 0.
+    const inline = (fm.match(/^description:[ \t]+(?!>)(.+)$/m) || [])[1];
+    const value = desc.length ? desc.join(' ').trim() : (inline || '').trim();
+    if (!value) {
+      fail(`plugin/skills/${name}/SKILL.md has no readable frontmatter description`);
+    } else if (value.length > DESCRIPTION_LIMIT) {
+      fail(`plugin/skills/${name}/SKILL.md frontmatter description is ${value.length} characters, `
+         + `over the Agent Skills limit of ${DESCRIPTION_LIMIT}. It is the routing surface a model `
+         + `reads to decide whether to invoke, so over-limit means truncated or rejected, not untidy. `
+         + `This has now happened three times — see predecessor-record.md.`);
+    } else {
+      notes.push(`${name} frontmatter description ${value.length}/${DESCRIPTION_LIMIT} `
+               + `(${DESCRIPTION_LIMIT - value.length} to spare)`);
+    }
+  }
+}
+
 for (const n of notes) console.log('  ok   ' + n);
 if (fails.length) {
   console.log('');

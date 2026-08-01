@@ -263,6 +263,34 @@ const ARMS = [
   // correctly, not a regression — commit the cascade, then re-run. Observed
   // while adding check 13, and written down because the symptom (a long-green
   // arm suddenly red) invites exactly the wrong diagnosis.
+  // Check 14 — SKILL.md's frontmatter description may not exceed the Agent
+  // Skills limit. This is a REGRESSION the repo has already paid for once: the
+  // predecessor record has it at 1150 against the 1024 limit, "pre-existing,
+  // surfaced only because 0.17.0 had to touch the file", and closes with
+  // "Nothing in the run's checkpoint checks it." That stayed true, and it drifted
+  // back to 1093 unnoticed. A defect that recurs after being written down is the
+  // signature of a missing control, not a missing reminder.
+  //
+  // The green arm is the one that matters here: a limit check is trivially
+  // satisfiable by a check that always fails, so the pair proves it discriminates
+  // rather than merely reddens.
+  ['SKILL.md description over the frontmatter limit', () => {
+    const f = path.join(ROOT, 'plugin', 'skills', 'mitate', 'SKILL.md');
+    const before = fs.readFileSync(f, 'utf8');
+    // Padded on a continuation line so the folded scalar stays valid YAML and
+    // ONLY the length changes -- a malformed block would red for parsing, not
+    // for length, and the arm would prove nothing about the limit.
+    fs.writeFileSync(f, before.replace('description: >\n', 'description: >\n  ' + 'x'.repeat(1200) + '\n'));
+    return () => fs.writeFileSync(f, before);
+  }, 'frontmatter description'],
+
+  ['SKILL.md description within the limit (must stay green)', () => {
+    const f = path.join(ROOT, 'plugin', 'skills', 'mitate', 'SKILL.md');
+    const before = fs.readFileSync(f, 'utf8');
+    fs.writeFileSync(f, before.replace('description: >\n', 'description: >\n  padding well under the cap.\n'));
+    return () => fs.writeFileSync(f, before);
+  }, null],
+
   ['plugin content changed without a version bump', () => {
     const f = path.join(ROOT, 'plugin', 'skills', 'mitate', 'templates', 'smoke.js');
     const before = fs.readFileSync(f, 'utf8');

@@ -1,21 +1,20 @@
 ---
 name: mitate
 description: >
-  Create deterministic animated films of any register — an explainer, a game
-  cutscene, a meme, a character short — as a self-contained looping HTML page
-  (and able to be exported to MP4/AVIF/WebP). Use when asked to "make a video
-  / animation / cutscene / walkthrough / explainer / simulation / movie /
-  animated meme" of anything: a mechanism, a story beat, a system, an
-  organism, a joke, a document, an image or screenshot, an existing video
-  re-staged from scratch. mitate (見立て) is to see one thing as another — here,
-  seeing any input as a scene. What that costs, so it is known before invoking
-  rather than after: films are SILENT (no narration, no audio track; MP4 is
-  merely the one container that could carry one) and NOT INTERACTIVE (a film
-  plays; it does not respond to clicks, and there are no chapters, quizzes or
-  branching), and every input is RE-AUTHORED as procedural geometry — there is
-  no import path for an image, a document, a video, or any asset, which is
-  what "re-staged from scratch" means literally. Do NOT use for editing
-  existing video files, screen recordings, or slide decks.
+  Create deterministic animated films of any register — a game cutscene, a
+  character short, a meme — as a self-contained looping HTML page
+  (exportable to MP4/AVIF/WebP). Use when asked to "make a video / animation
+  / cutscene / walkthrough / explainer / simulation / movie / animated meme"
+  of anything: a mechanism, a story beat, a system, a joke, a document, an
+  image or screenshot, an existing video re-staged from scratch. mitate
+  (見立て) is to see one thing as another — here, seeing any input as a scene.
+  What that costs, known before invoking rather than after: films are SILENT
+  (no narration, no audio; MP4 is merely a container that could carry one)
+  and NOT INTERACTIVE (it plays; no clicks, chapters, quizzes or branching),
+  and every input is RE-AUTHORED as procedural geometry — there is no import
+  path for an image, document, video or any asset, which is literally what
+  "re-staged from scratch" means. Do NOT use for editing existing video
+  files, screen recordings, or slide decks.
 ---
 
 # mitate

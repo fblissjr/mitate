@@ -676,9 +676,10 @@ checkLivePlayback.requires = ['page', 'file', 'fails', 'warnings'];
 // choice of order and there is none to make here — nothing can precede the load
 // that produces the page the rest of the file measures.
 //
-// It is the ONLY thing in this file that writes to ctx besides checkDeterminism,
-// and that asymmetry is the reason the requires/provides derivation in
-// CHECK_ORDER stays refuted rather than merely rejected.
+// There are THREE writers to ctx and this is one: setupScene (dur/PLAN/t/backend),
+// checkDeterminism (frames), and checkScene itself (beats, read late and
+// deliberately — see its comment). An earlier version of this line claimed there
+// were two, which was wrong the day it was written.
 //
 // The contract assertions live here and NOT in the trio, exactly as they did
 // inline: a missing hard name pushes a fail and execution continues, so the
@@ -897,14 +898,21 @@ const ADVISORY_CHECKS = [
 
    ORDER IS ASSERTED, NOT DERIVED, and the derivation was designed, measured and
    refuted rather than merely rejected. The idea was a requires/provides table
-   feeding a topological sort. Measured 2026-08-01: none of these checks writes
-   to `ctx` at all, so `provides` is empty for every one of them, the sort has
-   ZERO edges, and every permutation is equally valid under the scheme while
-   exactly one is correct — strictly worse than the array it would replace. Nor
-   would adding edges revive it: the constraints that actually order this file
-   are page state, not ctx keys — browser coldness, viewport at entry, whether
-   #cap was mutated directly — so a sort obeying every edge still admits orders
-   that are wrong for those reasons. Do not retry it.
+   feeding a topological sort. When it was designed on 2026-08-01 the six checks
+   that existed then wrote nothing to `ctx` — a property of the code at that
+   commit, readable with `git show`, not a measurement anything reproduces — so
+   `provides` was empty for all of them and the sort had ZERO edges — every permutation equally valid while
+   exactly one was correct.
+
+   THAT PREMISE HAS SINCE EXPIRED, and the conclusion has not. B3 gave the trio
+   real edges: checkDeterminism provides `frames`, and both other members require
+   it. A sort would now derive that one constraint and still admit orders that are
+   wrong, because the constraints that actually order this file are PAGE STATE and
+   not ctx keys — browser coldness, viewport at entry, whether #cap was mutated
+   directly. None of those is a key anything provides. So derivation went from
+   deriving nothing to deriving a fraction, which is worse than either: it would
+   look principled and still need the hand-written rows below to be correct. Do
+   not retry it.
 
    So the order is a tripwire, and each row carries the constraint that puts its
    function at that index. A reorder then has to argue with a reason instead of

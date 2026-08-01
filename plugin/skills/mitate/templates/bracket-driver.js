@@ -1,4 +1,4 @@
-/* Bracket for the CHECK DRIVER in smoke.js — the guards C4 and C5 added, nine ways.
+/* Bracket for the CHECK DRIVER in smoke.js — the guards C4 and C5 added, ten ways.
  *
  * What is under test is not a scene property. It is smoke.js's own structure:
  * the order its two check lists run in, and the ctx keys each check is allowed
@@ -7,26 +7,22 @@
  * would notice a reorder.
  *
  * WHY THIS BRACKET IS NOT OPTIONAL. Every one of these guards fires only on a
- * smoke.js bug, so on a healthy tree all nine arms are invisible: the guards
+ * smoke.js bug, so on a healthy tree all ten arms are invisible: the guards
  * emit nothing, and a version with them deleted produces byte-identical output
  * on all nine scenes. That is precisely the shape invariant 6 exists for — a
  * control whose green is indistinguishable from its absence has to be watched
  * going red on purpose, or it is decorative.
  *
- * The defect the ctx guard closes was measured — bracket-driver.js keeps it
- * reachable, which is why the record sits here rather than in a session log
- * (2026-08-01, by moving smoke.js's setup assignment after the advisory loop):
- *   - checkExposure drew a hard `render is 100.0% near-black` on a CORRECT
- *     scene, because `dur` was undefined so every sample time was NaN;
- *   - checkFramingInvariance went silently all-clear on that same run, because
- *     every window shape sampled at NaN is identical and a check comparing a
- *     frame against itself cannot fail.
- * Confidently wrong on one arm and quietly powerless on the other, from one
- * missing key. Before the extraction this was a TDZ ReferenceError; `ctx.dur`
- * made it silent, which is debt the extraction created and this repays.
+ * WHAT THIS FILE DOES NOT DO. It exercises the GUARDS; it does not reproduce
+ * the DEFECT they close. No arm moves smoke.js's setup assignment after the
+ * advisory loop, so nothing here keeps that failure reachable. An earlier
+ * version of this header claimed otherwise — a claim of measurement naming no
+ * control that reproduces it, which is the exact shape invariant 6 ratchets, in
+ * the file whose whole job is controls. The observation itself is a dated record
+ * and lives in CHANGELOG 0.16.53 and working-plan.md, not here.
  *
- * Arms 1-7 need no browser and no node_modules: the guards run at MODULE LOAD,
- * before argv is read, so `--parity-only` reaches them. Arms 8-9 need both,
+ * Arms 1-8 need no browser and no node_modules: the guards run at MODULE LOAD,
+ * before argv is read, so `--parity-only` reaches them. Arms 9-10 need both,
  * because the presence check runs per scene, and they SKIP loudly rather than
  * pass quietly when playwright cannot be resolved.
  *
@@ -179,7 +175,7 @@ try {
   }
 
   // -------------------------------------------------------------------------
-  // Arms 8-9: the PER-SCENE half. `runChecks` validates ctx on every call, and
+  // Arms 9-10: the PER-SCENE half. `runChecks` validates ctx on every call, and
   // nothing above reaches it -- the module-load guards fire first and exit.
   //
   // The fixture is SCENE above -- a contract-satisfying page that fails other
@@ -210,7 +206,7 @@ try {
 
   for (const [label, mutate, expect] of BROWSER_ARMS) {
     if (!browserReady) {
-      // Reported, never absent. A bracket that quietly runs seven of nine arms
+      // Reported, never absent. A bracket that quietly runs eight of ten arms
       // and prints "all arms as specified" is the failure mode CLAUDE.md names:
       // a green step that ran zero controls reads identically to one that ran
       // five. Say the number.

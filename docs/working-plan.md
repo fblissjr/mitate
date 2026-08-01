@@ -2516,24 +2516,94 @@ reasoning, and it outlives the PR.
    deterministic — scene carries state across frames (checked 12, 24, 36, 48,
    2.128, 3.88)`, on the `[source, webgpu]` path.
 
-   This is the fixture imported specifically to reproduce the **open 1-in-6
-   `WEBGPU=metal` determinism failure** (see `fixtures/defect-corpus/README.md`),
-   so the likeliest reading is that it did its job. **Likely is not measured**,
-   and the counter-evidence is that it did not reproduce: 6 isolated runs and 3
-   full-corpus runs on the PRE-extraction `smoke.js`, 6 isolated runs on the
-   post-extraction one, and 4 further full-corpus runs — all clean. One event in
-   ~19 opportunities, against a recorded 1-in-6.
+   **REVISED after an audit, and the first write-up was wrong in two ways.**
 
-   **What is ruled out:** the extraction did not touch the seek/settle/screenshot
-   sequence, and the whole-extraction verdict comparison is byte-identical.
-   **What is not ruled out:** anything about the underlying flake, because a
-   single event characterises nothing. Recorded here rather than chased — it is
-   a discovery, not an invariant violation in this diff nor debt it created, and
-   it belongs to the already-open determinism item rather than to this PR.
+   **(1) It pooled two different experiments.** "One event in ~19 opportunities"
+   mixed isolated single-scene runs with full-corpus runs. Split, the data has a
+   shape: **2 of 2 observed events came from FULL-CORPUS runs, and 0 of 17
+   isolated runs have ever produced one.** A second event was then seen by an
+   independent audit, also under full corpus. Load — or simply running eight
+   other scenes first — is the only variable the data distinguishes, and pooling
+   hid it.
+
+   **(2) `[source, webgpu]` was offered as evidence for a `WEBGPU=metal` reading,
+   and it cannot carry that.** `window.BACKEND` is set from
+   `renderer.backend.isWebGPUBackend` — it reports which three.js backend ran,
+   not which launch flags were used. `backend.js` defaults `WEBGPU=off`, and
+   macOS Chromium exposes a WebGPU adapter anyway, so every default-path run on
+   this machine prints `[source, webgpu]`. Separately,
+   `fixtures/defect-corpus/README.md` attributes the 1-in-6 reproducer role to
+   the **prototype**; `after-hours.html` is a re-skin that preserves the
+   mechanics, and its own determinism behaviour has never been measured.
+
+   **Current tally, pinned deps, full-corpus runs:** ~9 on the PRE-extraction
+   `smoke.js` with 0 failures, ~9 on the post-extraction one with 1. Both
+   observed events on this machine were post-extraction copies. **That is not
+   attribution and must not be read as one** — 1-of-9 against 0-of-9 is far from
+   distinguishable, the extraction touches no part of the seek/settle/screenshot
+   sequence, and two independent whole-extraction verdict comparisons came back
+   byte-identical. It is recorded at this strength because the earlier write-up
+   claimed less and implied more.
+
+   **It has a consequence beyond itself:** every byte-unchanged gate on this
+   branch is an equality comparison over a corpus containing a flaky scene, so a
+   single green run is weaker evidence than it reads, and a single red one would
+   not have been proof either. Any future stage gate should run the comparison
+   more than once or exclude the known-flaky scene by name.
+
+### Filed: move session logs out of `internal/` (2026-08-01, owner-agreed)
+
+**Not started, not scheduled, and deliberately not part of PR #3.** Recorded with
+its reasoning so the decision is not re-derived.
+
+**Why the current location is wrong.** The logs are in `internal/` because
+`internal/` meant "local, gitignored". Tracking them (2026-08-01, owner's call)
+falsified that premise for exactly one child. `git ls-files internal/` returns
+one directory — `internal/log` — so `internal/` is a tracked top-level entry
+solely because of a directory whose whole point is that it is not internal. The
+location was inherited, never re-chosen.
+
+**The cost is a privacy hazard, not an aesthetic one.** `.gitignore` must read
+`internal/*` + `!internal/log/`, never `internal/` + a negation, because git does
+not descend into an excluded directory. `CLAUDE.md` spends ten lines on that and
+warns that widening the negation publishes the rest — and the rest is
+`internal/outside_comms/` (third-party correspondence) and the circus fixture. A
+public repo sits one careless `.gitignore` edit from publishing private
+correspondence, and that exposure exists ONLY because a tracked directory lives
+inside a private tree.
+
+**Proposed destination: `docs/log/`.** It puts narration beside its counterpart —
+`CLAUDE.md` already pairs them ("the log is narration, the postmortem is the
+finding") and `docs/postmortems/` is right there, so siblings make the pairing
+structural instead of stated. `docs/` already has the property logs need: tracked,
+and ships nowhere. `internal/` then reverts to a plain `internal/` ignore, which
+is the robust form, and the documented footgun disappears rather than being
+managed.
+
+**What it would break, checked rather than assumed:**
+
+| thing | says | impact |
+|---|---|---|
+| `dev-conventions` directive, **auto-loaded every session** | "Internal docs in ./internal/ (gitignored). Session logs in ./internal/log/…" | becomes a false always-loaded claim |
+| `skill-maintainer:session-log-drafter` | drafts at `internal/log/log_YYYY-MM-DD.md` | writes to the wrong place |
+| `dev-conventions` session-start hook | gated on `-d internal/log` **or** `-d internal` | safe — `internal/` stays for local artifacts |
+| 3 citations in this file (incl. `log_2026-07-30.md:54`) | file:line into logs | **silently dangle** — `selfcheck` check 8 covers tool and scene comments only, not docs |
+
+**Trigger:** do it when the `dev-conventions` plugin is next edited for any
+reason, so the convention and the repo move together — a repo diverging from an
+always-loaded global rule is the two-copies-disagree failure in its worst
+possible position. Do it sooner if `internal/` gains a second tracked child, or
+if anything is ever added to `outside_comms/` that would be costly to publish.
+
+**Checklist when it happens:** `git mv` (history survives) · rewrite `.gitignore`
+to plain `internal/` · update `CLAUDE.md` (3 spots), `source-of-truth.md`,
+`restructure-2026-07.md`'s homes table · `grep -rn "internal/log"` over tracked
+files and fix every citation, because nothing mechanical will catch them ·
+update the plugin directive and the drafter agent in the same change.
 
 ### E — long-term, Phase R
 
-7. The ratchet for undocumented-and-uncontrolled code · `bracket-determinism.js`
+8. The ratchet for undocumented-and-uncontrolled code · `bracket-determinism.js`
    driving the shipped path instead of its own copy · 11 `smoke.js` thresholds
    named by zero brackets · 12 silent swallows · 21 uncontrolled measurement
    claims. **Add to this list: a `selfcheck` arm that fails when anything under
@@ -2569,10 +2639,17 @@ silently, which is what the PR body's debt list is for.
 **All of A, B and C are now closed** (0.16.52, 0.16.53, 0.16.54) and the order
 above was followed as written. **The stopping rule held under load**: stage 3
 turned up two Bun engine behaviours and one unexplained determinism event, and
-all three were recorded — as code comments, bracket arms, and item 7 — without
-any of them becoming work. The two engine facts DID change code, and that is
-consistent rather than an exception: both were defects in the guard being built
-in this diff, which is (b).
+all three were recorded without any becoming work.
+
+**One correction to how that was first written.** It said "both were defects in
+the guard being built in this diff, which is (b)". Only ONE was. Bun merging
+adjacent `const`s false-redded a semicolon-anchored regex — a real guard defect,
+fixed. The `toString()` re-print produced a **correct** verdict: the mutation was
+semantically identical, so accepting it was right, and the defect was in the
+MUTANT, not the guard. That fact changed the code by ADDING an arm, not by
+fixing anything. It was also found by `smoke.js`'s own module-load guard going
+red, not by a bracket arm. The stopping-rule conclusion survives; the stated
+reason for it did not, which is the whole point of writing reasons down.
 
 ### Filed, not built: the reasoning-capture architecture (2026-08-01)
 

@@ -7,6 +7,37 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.55
+
+### fixed
+
+**Four false or stale claims, three of them inside shipped files.** Found by an
+independent audit of what 0.16.53 and 0.16.54 recorded against what the tree
+actually does — the claims were written in the same sitting as the code they
+describe, and every one of them read as correct.
+
+- **`bracket-driver.js` said "nine ways" and "Arms 1-7 / 8-9" after 0.16.54 added
+  a tenth arm** (`SHOT_CHECKS reordered`). Five stale spots in the header of a
+  file that ships to every installed user, and the commit that added the arm
+  mentioned it nowhere. The count is derived and printed at runtime
+  (`10 arm(s) exercised`), so the prose was the only wrong copy.
+- **`bracket-driver.js` claimed it keeps the ctx defect reachable. It does not** —
+  no arm moves the setup assignment after the advisory loop. That is a claim of
+  measurement naming no control that reproduces it, in the file whose whole job
+  is controls. The claim is removed rather than weakened; the observation is a
+  dated record and lives in 0.16.53's entry above.
+- **`smoke.js` said `setupScene` was the only writer to `ctx` besides
+  `checkDeterminism`.** There are three: `checkScene` writes `ctx.beats`.
+- **`smoke.js`'s "zero edges" premise had expired.** It was true of the six checks
+  that existed when the derivation was refuted; B3 then gave the trio real edges
+  (`checkDeterminism` provides `frames`, two others require it). The CONCLUSION
+  is unchanged and now rests on the right reason: a sort would derive that one
+  constraint and still admit wrong orders, because what actually orders this file
+  is page state, which is not a ctx key. Deriving a fraction is worse than
+  deriving nothing — it looks principled and still needs the hand-written rows.
+
+No behaviour changed. Verdicts are unaffected: every edit is a comment.
+
 ## 0.16.54
 
 ### changed

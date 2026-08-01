@@ -14,14 +14,25 @@ last updated: 2026-08-01
 > same reordering recorded below. The `CLAUDE.md` byte clause was retired by
 > owner call in favour of "no rule lost, no line unearned".
 >
-> **Next: R4.5's remaining measurements — see "Start here" below, which is
-> current as of 0.16.45.** Done: 4.2 + 4.3 (0.16.41, corrected 0.16.42), 4.4
-> (0.16.43). Partial: 4.5 (0.16.45 — fixture tracked, 2 of 12 defects
-> re-measured). Untouched: 4.1, 4.7, and R4.6's cold-start test, which is now
-> cheap to close.
+> **NEXT: R5, which is entirely unstarted — see the GATE R4 IS MET block below,
+> then jump to `## R5 — Capability`.** All of R4 is done: 4.1 (0.16.54), 4.2 +
+> 4.3 (0.16.41, corrected 0.16.42), 4.4 (0.16.43), 4.6, 4.7. Partial: 4.5
+> (0.16.45 — fixture tracked, 2 of 12 defects re-measured), which is not
+> gate-blocking.
 >
-> **R4 — the harness, seven items.** Its cheapest is also its most
-> alarming gap: `build.js` and `shoot.js` have **zero** brackets between them.
+> **This paragraph said "Next: R4.5" and "Untouched: 4.1, 4.7" while the same
+> block reported all three done 100 lines below.** That is the second time this
+> exact defect has been fixed in this block in one day — `97b12d7` fixed it in
+> the morning, and `d4e6434` re-created it by APPENDING a new dated section
+> instead of updating the top. **A dated block appended to a stale summary does
+> not correct the summary; it buries it.** `docs/README.md` routes "what should I
+> work on next" straight here, so a zero-context session reads the top and starts
+> the wrong tier. If you close a gate, edit this paragraph — do not only append.
+>
+> **R4 — the harness, seven items.** Its cheapest was also its most
+> alarming gap: `build.js` and `shoot.js` had **zero** brackets between them.
+> `build.js` gained `bracket-commands.js` at 0.16.41; **`shoot.js` still has
+> none**, which is what that sentence means today.
 > **Do R4.2 + R4.3 first** — the harness tier needs nothing from the `checkScene`
 > extraction, and R4.1's gate (byte-unchanged `smoke.js` behaviour) is the
 > expensive one. **R4.4-R4.7 are new (owner-directed 2026-07-30)**, all four about
@@ -119,19 +130,42 @@ last updated: 2026-08-01
 > gate, and that is this branch's own lesson (see R4.3's amendment) applied
 > before rather than after the fact.
 >
-> ### 2026-08-01, later — GATE R4 IS MET, all five clauses
+> ### 2026-08-01, later — GATE R4 IS MET, and R5 is untouched
+>
+> **The document does NOT retire here.** Its rule is "delete when R5's gate is
+> green", and all four R5 items are unstarted — verified against the tree, not
+> read off this plan: `setCamera(t)` is still the signature in every carrier,
+> `references/breakdown.md` does not exist, `build.js` has no `check` verb, and
+> `physics-bake-proposal.md` contains no occurrence of "kinematic". Gate R5 also
+> depends on the Regression-by-edit case, which its own text calls untested.
+>
+> **On clause NUMBERS: do not use them.** The gate paragraph below defines its
+> clauses in a different order than the PR table lists them, so "clause 5" names
+> the `smoke.js` clause in one place and the cold-start clause in the other — and
+> those are the strongest-evidenced and weakest-evidenced clauses in the set.
+> Name the clause, never its index.
 >
 > **R4.1 is done (0.16.54).** `checkScene` finishes at **155 lines**, from 594.
 > Stage 3 took the setup block and the determinism trio; C4 and C5 (0.16.53)
 > closed the two pieces of debt stages 1-2 created, in that order, per the
 > stopping rule.
 >
-> **Clause 5 is met in its STRONGEST form, not its per-stage one.** Each stage
-> was gated on byte-unchanged verdicts as it landed, but the clause is about the
-> extraction, so it was also run end to end: `ee92780^`'s `smoke.js` — the last
-> pre-extraction copy — against the current one, same machine, same backend, same
-> 9 scenes. **Byte-identical.** Only the four R4.1 commits touched `smoke.js` in
-> that range, so the comparison isolates the extraction and nothing else.
+> **The byte-unchanged clause is met end to end, not just per-stage.** Each stage
+> was gated as it landed, but the clause is about the extraction, so it was also
+> run end to end: `ee92780^`'s `smoke.js` — the last pre-extraction copy — against
+> the current one, same machine, same backend, same 9 scenes. **Byte-identical**,
+> reproduced independently a second time on a correctly pinned workspace. Only
+> the four R4.1 commits touched `smoke.js` in that range, so the comparison
+> isolates the extraction and nothing else.
+>
+> **The method has a limit, found by auditing it rather than by trusting it.**
+> Equality over the corpus is only as stable as the corpus, and
+> `after-hours.html` is intermittently nondeterministic — see `working-plan.md`
+> bucket D. So a single equality run can differ for a reason that has nothing to
+> do with the change under test, and a green one is weaker evidence than it
+> reads. Two independent green comparisons and ~18 further full-corpus runs is
+> what this clause actually rests on; one run would not have been enough, and
+> every earlier stage gate on this branch WAS one run.
 >
 > **A green diff was again not treated as sufficient, and for stage 3 it is the
 > weakest oracle in the file.** The trio emits nothing on an all-green corpus, so

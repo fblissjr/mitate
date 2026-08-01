@@ -323,7 +323,7 @@ defect count but the *self-inflicted* share of it.
 | the count that fires promotion triggers | `docs/pattern-ledger.md` | unchanged |
 | Phase 4 constraints | `docs/physics-bake-proposal.md` | gains the kinematic-body option |
 | inherited history | `docs/predecessor-record.md` | unchanged |
-| session narration | `internal/log/` | local; the log is narration, the postmortem is the finding |
+| session narration | `internal/log/` | **tracked 2026-08-01** (was local); the log is narration, the postmortem is the finding |
 | third-party correspondence | `internal/outside_comms/` | never citable from tracked content; already private by gitignore |
 | frozen predecessors | `internal/legacy/` | already invisible to ripgrep via gitignore — the proposed reshuffle was retracted, see R2.5 |
 | repo-development agents | `.claude/agents/` | `control-builder`, `doc-claim-auditor` audit *this repo* |

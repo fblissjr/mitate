@@ -22,7 +22,7 @@ other surface points at the home. Nothing restates.
 | **why determinism comes first**, and what it is first for | `VISION.md` | `site/` is DOWNSTREAM of this, one-directionally — see below |
 | history — what happened and why | CHANGELOG.md and git | docs speak present tense only |
 | **a check's pass criterion** | the code that implements the check, beside the flag or constant it governs | CI config and session logs POINT; they never restate it |
-| **what a session did** | `internal/` session logs, one per day | a finding worth keeping is promoted to a postmortem; the log is narration and is not cited by tracked content |
+| **what a session did** | `internal/log/`, one file per working day — **tracked as of 2026-08-01** | a finding worth keeping is still promoted to a postmortem. Tracking made the log citable; it did NOT make it doctrine. Cite it for what happened, never for what is true — where a log and a postmortem disagree, the postmortem wins |
 
 
 **Render, delivery and recording are separate domains and must not share a

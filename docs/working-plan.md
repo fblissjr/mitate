@@ -2237,8 +2237,10 @@ What the archaeology found, recorded so it is not repeated:
 - **No rationale anywhere.** The nine-line comment above it documents the check
   in forensic detail and never mentions the guard. The CHANGELOG entry is equally
   thorough and equally silent. Nothing in `docs/`, `references/`, the postmortems
-  or the local `internal/` tree discusses it. (`internal/log/` starts 2026-07-29;
-  the guard predates the first log by four days.)
+  or the session logs discusses it. (`internal/log/` starts 2026-07-29; the guard
+  predates the first log by four days. Those logs were local when this was
+  searched and are tracked as of 2026-08-01, so the search is now reproducible by
+  anyone with the repo — it was not at the time.)
 - **It is NOT inherited from the predecessor**, which is the natural guess and is
   wrong. `internal/circus_prototype/smoke.js` (local) has no across-reload check
   at all. The rename is 0.13.0 and this is 0.16.9, so it was written in this repo,

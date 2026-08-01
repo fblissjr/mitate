@@ -62,6 +62,11 @@ copy of a router is the exact failure this file keeps catching.
   [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md) (required, because
   three.js ships inside every scene — see invariant 1). One bullet on purpose:
   they are here so the map is total, not because each earns a paragraph
+- **Session narration** — `internal/log/`, one file per working day. **This is
+  the only tracked thing under `internal/`**; the directory is otherwise local
+  and stays that way. Narration, not doctrine — read it for what a day actually
+  did and why, and read `docs/postmortems/` for what was concluded. Tracked as of
+  2026-08-01, so a log is now citable; that changed its reach, not its standing
 - **This file** — `CLAUDE.md`, the front door. `scripts/selfcheck.js` check 9
   asserts every tracked top-level entry appears in this Map, because the claim
   below it is a completeness claim and prose could not hold it: a review found
@@ -222,12 +227,21 @@ the check.
 
 ## Conventions
 
-- Session logs and scratch renders go under `internal/` (gitignored).
+- **Session logs are TRACKED, in `internal/log/`, as of 2026-08-01** (owner's
+  call). Everything else under `internal/` stays local — the circus fixture, the
+  prior-artifacts tree, `outside_comms/`, scratch renders. `.gitignore` excludes
+  `internal/*` and re-includes only `internal/log/`, which is the form that
+  works: git does not descend into an excluded *directory*, so ignoring
+  `internal/` and negating the subdirectory re-includes nothing and fails
+  silently. Widening that negation publishes the rest.
 - **Postmortems are TRACKED, in [`docs/postmortems/`](docs/postmortems/), named
   `YYYY-MM-DD_<mode>_<slug>.md`** so the listing sorts chronologically and a slug
-  grep finds a topic; `.postmortem.json` pins that location. **Session logs stay
-  local**: the log is narration, the postmortem is the distilled finding, and
-  only the second is citable. A tracked postmortem MAY cite a local-only
+  grep finds a topic; `.postmortem.json` pins that location. **The log and the
+  postmortem still differ in KIND, and tracking did not merge them**: the log is
+  narration, the postmortem is the distilled finding, and only the second is
+  doctrine. A log being citable now is a change in reach, not in authority —
+  where the two disagree the postmortem wins, and a claim resting on narration is
+  still resting on narration. A postmortem MAY cite a local-only
   artifact, but must label it `(local)` and must not rest a claim on it.
   Deliberately no hand-written index — `/postmortem:postmortem-index` generates
   one from frontmatter. Read the newest first: a postmortem carries dated

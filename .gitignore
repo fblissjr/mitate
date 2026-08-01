@@ -3,8 +3,21 @@
 .AppleDouble
 .LSOverride
 
-# internal only folders
-internal/
+# internal only folders — everything EXCEPT the session logs, which are tracked
+# as of 2026-08-01 (owner's call). See CLAUDE.md's Conventions.
+#
+# `internal/*` and not `internal/`, deliberately: git does not descend into an
+# excluded DIRECTORY, so `internal/` followed by `!internal/log/` re-includes
+# nothing and fails silently — the logs would stay untracked while this file
+# looked like it tracked them. Excluding the children instead leaves the parent
+# traversable so the negation can take effect.
+#
+# The negation is deliberately narrow. internal/ still holds the circus fixture,
+# the prior-artifacts tree, outside_comms and scratch renders, and NONE of that
+# is tracked. Widening this pattern publishes them; add a new negated line for a
+# specific path instead.
+internal/*
+!internal/log/
 
 # Editors / IDEs
 .vscode/

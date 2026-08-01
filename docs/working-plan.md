@@ -2316,6 +2316,75 @@ bracket arm is not optional.
 
 ---
 
+## PR #3 readiness, bucketed (2026-08-01)
+
+**"Not ready to merge" was one phrase covering five different kinds of thing**,
+which is how a merge decision turns into a mood. Split so each bucket can be
+argued and closed separately. Live state is in the PR body; this is the
+reasoning, and it outlives the PR.
+
+### A — merge-blocking, mechanical
+
+1. **The version cascade is violated in this branch right now.**
+   `plugin/skills/mitate/templates/smoke.js` is plugin content — invariant 2 says
+   templates count, not only SKILL.md prose — and R4.1 stages 1 and 2 both edited
+   it. `plugin.json` and `marketplace.json` still read 0.16.51 and the CHANGELOG
+   has no R4.1 entry. Without the cascade, `marketplace update` never reaches
+   installed users.
+
+   **Nothing caught it, and that is the more useful half.** `selfcheck`'s cascade
+   check verifies the three sources *agree*; it does not detect that plugin
+   content changed *without* a bump. It printed `ok — version cascade coherent at
+   0.16.51` on every commit that broke the rule. **Invariant 2 is prose with no
+   mechanical enforcement** — the exact Phase R shape, found inside Phase R's own
+   PR. The durable fix is bucket E; the immediate fix is a bump and an entry.
+2. **Gate green on the extraction is unconfirmed** at the time of writing. Not a
+   formality: the R4.1 baseline was captured on WebGPU-Metal and CI runs the
+   WebGL2 fallback, and **invariant 5 says byte comparison is valid only within
+   one backend**. CI is an independent signal here, not a rubber stamp.
+
+### B — closes gate R4
+
+3. **R4.1 stage 3** — the setup block and the determinism trio. The only gap in
+   clause 2, and the coupled slice: three assertions over one captured `shots`,
+   no individual `try/catch` by design, and the `!fails.length` guard inside it.
+
+### C — debt this branch INTRODUCED (named, because it is ours)
+
+4. **The `ctx` refactor traded a loud failure for a silent one.** `dur` and `t`
+   were block-scoped `const`s, so reading one before its declaration threw a TDZ
+   `ReferenceError`. `ctx.dur` read before the setup block assigns it is
+   `undefined`, silently, and a check computing against `undefined` will often
+   still emit something plausible. That surface did not exist before stage 1.
+   Cheap fix: assert the keys a check requires, on entry.
+5. **Check order is load-bearing, documented, and unasserted.** Both
+   `PRE_RECORD_CHECKS` and `ADVISORY_CHECKS` carry comments saying a reorder is a
+   behaviour change. Nothing enforces it; alphabetise `ADVISORY_CHECKS` and
+   caption-overflow's viewport restore stops preceding exposure.
+
+### D — pre-existing, carried, not worsened here
+
+6. Most defect-corpus defects UNVERIFIED (both re-measured ones moved) ·
+   `bracket-corpus.js` absent · `bracket-noise.js` false-reds on macOS ·
+   `/extract-patterns` has no bracket and has never run · the `!fails.length`
+   guard (Track F's first instance).
+
+### E — long-term, Phase R
+
+7. The ratchet for undocumented-and-uncontrolled code · `bracket-determinism.js`
+   driving the shipped path instead of its own copy · 11 `smoke.js` thresholds
+   named by zero brackets · 12 silent swallows · 21 uncontrolled measurement
+   claims. **Add to this list: a `selfcheck` arm that fails when anything under
+   `plugin/` changes without the cascade** — item 1 is the evidence that the rule
+   needs teeth, and it would have caught it the same day.
+
+**Order to work them:** A1 (an invariant violation should not sit in a PR), then
+C (small, and it is debt this branch created), then B3, then merge with D and E
+filed. D and E are explicitly NOT merge blockers — carrying them knowingly is
+different from carrying them silently, and the PR body lists them for that reason.
+
+---
+
 ## Deferred, with the trigger that revives each
 
 Recorded so nobody re-argues them from scratch, and so the trigger is explicit

@@ -783,6 +783,33 @@ comment beside them, with the measured figures, and those claims are counted as
 debt by check 5 exactly because they name no runnable control. So the gate
 instrument is where both the risk and the payoff sit.
 
+**The premise got three independent confirmations in one afternoon
+(2026-08-01), by accident, and they are the best argument for this phase.**
+Three designs were proposed, each looked obviously right, each was run against
+the actual repo, and **none survived**:
+
+1. **A `selfcheck` arm for the version cascade**, anchored on
+   `merge-base(origin/main, HEAD)` — **exited 0 on the live violation.** An
+   earlier bump on the branch permanently satisfied a whole-branch version delta.
+   A control that cannot go red on the instance that motivated it, proposed in
+   the same breath as the rule against decorative controls.
+2. **Deriving check order from a `requires`/`provides` table** — **zero edges to
+   derive from.** None of the six checks writes to `ctx`, so every permutation
+   was equally valid while exactly one was correct. The real constraints were
+   page state: coldness, viewport at entry, whether the page was actually
+   re-seeked.
+3. **Mandatory `Rejected:` fields in commit messages** — **the motivating
+   commit already had one.** `2c5742f` recorded two rejected alternatives
+   voluntarily, in the comment and the CHANGELOG. The field would have been
+   satisfied and the guard would still be unexplained.
+
+Each was refuted by running it, not by arguing about it, and each would have
+shipped as an improvement. **That is the whole phase in miniature:** the
+dangerous artifact is not the obviously-broken one, it is the one that looks
+correct and has never been executed against the case it exists for. Extend the
+suspicion to the *fix* as readily as to the code — all three of these were
+fixes.
+
 **Gate R:** a ratchet exists for bucket (d) — behaviour-affecting code with no
 recorded reason and no control — seeded at a counted baseline, failing when the
 count rises, on the same escape hatch as `ASSERT_BUDGET` (edit the literal, in a

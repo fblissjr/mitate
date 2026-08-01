@@ -517,6 +517,162 @@ async function checkExposure(ctx) {
   }
 }
 
+// CHECK (hard, FIRST — while the browser is cold): the SHIPPED frame both
+// changes across the film and contains an image. A half-dead backend can
+// pass every other check: SwiftShader-WebGPU was measured rendering real
+// frames into the drawing buffer while the COMPOSITOR — the layer
+// screenshots and the shipped MP4 capture — showed the flat clear color at
+// every t. The clear color was not near-black (near-black check silent),
+// the caption kept the PNG-size check happy, and a flat frame is perfectly
+// deterministic. Worse, the failure is warmth-dependent: the same adapter
+// renders on a page opened after the GPU process has been working, which
+// is why this check runs FIRST, on a fresh caption-stripped page
+// (?strip=text — captions change per beat and would mask a dead canvas),
+// at the recorder's own cadence. Two conditions, both fatal:
+//   - every sampled t ships the identical image (film never moves), or
+//   - the RICHEST sampled frame has luma spread below SHIPPED_SPREAD_FLOOR
+//     (film ships a flat wash; see the bracket at the constant).
+// Scenes without strip support keep their captions and lose power on the
+// first condition rather than gaining false positives.
+async function checkShippedFrame(ctx) {
+  const { browser, file, fails, noise, classify } = ctx;
+  try {
+    const p2 = await browser.newPage({ viewport: VIEWPORT, deviceScaleFactor: 1 });
+    // Same listeners as `page` — and literally the same `classify`, not a
+    // second copy of it. Without them this load was an error blind spot: a
+    // defect that manifests ONLY under ?strip=text went green here while the
+    // identical defect on the live load went red.
+    p2.on('pageerror', e => noise.push('page error: ' + e.message));
+    p2.on('console', classify);
+    try {
+      await p2.goto('file://' + path.resolve(file) + '?record=1&strip=text');
+      await p2.waitForFunction('window.sceneReady === true', { timeout: 20000 });
+      await p2.evaluate('window.stopPlayback()');
+      const dur2 = await p2.evaluate('window.DURATION');
+      const fl2 = await p2.evaluate('window.FLASHES').catch(() => []) || [];
+      const PLAN2 = samplePlan(dur2, fl2, 4);
+      const sigs = []; let maxSpread = 0;
+      for (const ts of PLAN2) {
+        // seekSynced: this is the COLDEST page in the suite — loaded fresh,
+        // before the GPU process is warm — which is where the capture race was
+        // worst, and this check's verdict is a comparison of signatures.
+        await seekSynced(p2, ts);
+        await settle(p2);
+        const png = await p2.screenshot();
+        sigs.push(sha256(png));
+        // Spread of the SHIPPED image: decode the screenshot back inside the
+        // page (createImageBitmap) — no image dependency in this file, and
+        // it measures the exact bytes the recorder would write to disk. The
+        // PNG travels as an evaluate ARGUMENT, not spliced into the source
+        // string — same bytes measured, without making the browser parse a
+        // megabyte-scale JS literal per sample.
+        const spread = await p2.evaluate(async ({ b64, w }) => {
+          const bmp = await createImageBitmap(await (await fetch('data:image/png;base64,' + b64)).blob());
+          const o = document.createElement('canvas');
+          o.width = w; o.height = Math.round(w * bmp.height / bmp.width);
+          const g = o.getContext('2d'); g.drawImage(bmp, 0, 0, o.width, o.height);
+          const d = g.getImageData(0, 0, o.width, o.height).data, L = [];
+          for (let i = 0; i < d.length; i += 4) L.push(0.2126*d[i] + 0.7152*d[i+1] + 0.0722*d[i+2]);
+          L.sort((a, b) => a - b);
+          return L[Math.floor(.95 * (L.length - 1))] - L[Math.floor(.05 * (L.length - 1))];
+        }, { b64: png.toString('base64'), w: EXPOSURE_SAMPLE_WIDTH });
+        maxSpread = Math.max(maxSpread, spread);
+      }
+      if (new Set(sigs).size === 1) {
+        fails.push(`shipped frame is pixel-identical at every sampled t (${PLAN2.join(', ')}, captions `
+                 + `stripped) — the compositor is not receiving the render (check WEBGPU/ANGLE_BACKEND) `
+                 + `or the scene genuinely never moves`);
+      } else if (maxSpread < SHIPPED_SPREAD_FLOOR) {
+        fails.push(`shipped frames are a flat wash at every sampled t (max luma spread `
+                 + `${maxSpread.toFixed(1)} < ${SHIPPED_SPREAD_FLOOR}, captions stripped) — the render `
+                 + `backend is compositing the clear color, not the scene (check WEBGPU/ANGLE_BACKEND)`);
+      }
+    } finally {
+      await p2.close();
+    }
+  } catch (e) {
+    fails.push('shipped-frame check errored — ' + e.message.split('\n')[0]);
+  }
+}
+
+// CHECK (hard): the film actually PLAYS. Every other check in this file --
+// and every page load in shoot.js -- opens the scene with `?record=1`, and
+// all three templates gate their rAF loop on the ABSENCE of that flag
+// (`if(!location.search.includes('record'))requestAnimationFrame(loop)`).
+// So the code path every human viewer gets was executed by nothing in this
+// suite. A scene whose loop dies on its first frame ships perfect recorded
+// frames and sits motionless for every person who opens it -- measured
+// exactly that way once, on a film that had passed this gate green on both
+// backends. The recorder cannot see it by construction, so the gate has to.
+//
+// Observed at the MECHANISM, not at the pixels: the loop's whole job is to
+// call seekTo with a rising t, so wrap seekTo once the scene is ready and
+// count the calls. A pixel diff would have to guess how far a given film
+// moves in 200ms and would false-positive on a held title card -- the same
+// "one frame answers no question about motion" trap the strip exists for.
+// Counting cannot.
+//
+// This is the ONE load in this file without `?record=1`, which is the whole
+// point of it. It runs AFTER the cold shipped-frame check so that check
+// keeps the cold browser it needs, and on `page` rather than a third tab so
+// a throw inside the loop lands in the same console/page-error listener
+// that already reports it.
+async function checkLivePlayback(ctx) {
+  const { page, file, fails, warnings } = ctx;
+  try {
+    await page.goto('file://' + path.resolve(file));
+    await page.waitForFunction('window.sceneReady === true', { timeout: 20000 });
+    await page.evaluate(`(() => {
+      window.__ticks = [];
+      const inner = window.seekTo;
+      // Count AFTER the inner call returns, never before: a seekTo that throws
+      // on every call would otherwise register a tick per attempt and inflate
+      // its way past the count arm while rendering nothing.
+      window.seekTo = function (t) { const r = inner.apply(this, arguments); window.__ticks.push(t); return r; };
+    })()`);
+    // 3 frames is ~50ms at 60fps and ~200ms on the software path at this
+    // viewport, so 5s of headroom means a timeout here is a dead loop rather
+    // than a slow one. Two DISTINCT t values is the real assertion: a loop
+    // that runs but recomputes the same t (a clock that never starts) is as
+    // frozen as one that never ran, and the call count alone would pass it.
+    await page.waitForFunction('window.__ticks.length >= 3', { timeout: 5000 }).catch(() => {});
+    const ticks = await page.evaluate('window.__ticks');
+    // ZERO is the only hard fail, and the asymmetry is deliberate. A dead
+    // chain drives seekTo exactly 0 times no matter how long you wait, so it
+    // is distinguishable from slow WITHOUT calibrating a wall clock. A count
+    // of 1-2 is genuinely ambiguous -- a loop that ran once and died looks
+    // identical, in a 5s window, to a healthy film on a contended box under
+    // software GL -- and failing that ambiguity would make a correct scene
+    // red for being slow. The 5s budget was bracketed on ONE machine at this
+    // viewport; treating it as a universal threshold is the
+    // measured-on-one-machine error this suite exists to catch.
+    if (ticks.length === 0) {
+      fails.push(`live playback stalled -- the scene reached sceneReady but its rAF loop drove `
+               + `seekTo 0 times in 5s. Every RECORDED frame can still be perfect: `
+               + `the recorder loads ?record=1, which skips this path entirely`);
+    } else if (ticks.length < 3) {
+      warnings.push(`live playback [ambiguous]: only ${ticks.length} seekTo call(s) in 5s. Either the `
+               + `loop ran and died, or this machine is slow enough that 3 frames did not fit. `
+               + `Re-run; a dead chain stays at 0 and a slow one climbs`);
+    } else if (new Set(ticks).size < 2) {
+      fails.push(`live playback is frozen -- the loop runs but every seekTo received the same t `
+               + `(${ticks[0]}), so the film holds one frame forever`);
+    }
+    await page.evaluate('window.stopPlayback()').catch(() => {});
+  } catch (e) {
+    fails.push('live-playback check errored -- ' + e.message.split('\n')[0]);
+  }
+}
+
+// The two hard checks that precede the ?record=1 load. Ordered, and the order is
+// the one they ran in inline: the shipped-frame check needs the COLD browser --
+// its failure is warmth-dependent, see its own comment -- so live playback,
+// which navigates `page`, runs after it and never before.
+const PRE_RECORD_CHECKS = [
+  checkShippedFrame,
+  checkLivePlayback,
+];
+
 // The order these run in is the order they ran in when they were inline, and it
 // is not arbitrary — caption overflow leaves the page at VIEWPORT and seeks back
 // to t, which is the state framing invariance and exposure both assume on entry.
@@ -595,148 +751,19 @@ async function checkScene(browser, file) {
     noise.push(`console ${m.type()}: ${text}`);
   };
   page.on('console', classify);
+  // ONE ctx for the whole scene, built here and extended by the setup block below
+  // (dur, t, beats). The pre-record checks need browser/file/classify; the
+  // advisory ones need dur/t. Building it once means a check reads whatever the
+  // checks before it established, which is exactly the coupling that was implicit
+  // in the shared locals this function used to carry.
+  const ctx = { browser, file, page, fails, warnings, noise, classify };
 
   try {
-    // CHECK (hard, FIRST — while the browser is cold): the SHIPPED frame both
-    // changes across the film and contains an image. A half-dead backend can
-    // pass every other check: SwiftShader-WebGPU was measured rendering real
-    // frames into the drawing buffer while the COMPOSITOR — the layer
-    // screenshots and the shipped MP4 capture — showed the flat clear color at
-    // every t. The clear color was not near-black (near-black check silent),
-    // the caption kept the PNG-size check happy, and a flat frame is perfectly
-    // deterministic. Worse, the failure is warmth-dependent: the same adapter
-    // renders on a page opened after the GPU process has been working, which
-    // is why this check runs FIRST, on a fresh caption-stripped page
-    // (?strip=text — captions change per beat and would mask a dead canvas),
-    // at the recorder's own cadence. Two conditions, both fatal:
-    //   - every sampled t ships the identical image (film never moves), or
-    //   - the RICHEST sampled frame has luma spread below SHIPPED_SPREAD_FLOOR
-    //     (film ships a flat wash; see the bracket at the constant).
-    // Scenes without strip support keep their captions and lose power on the
-    // first condition rather than gaining false positives.
-    try {
-      const p2 = await browser.newPage({ viewport: VIEWPORT, deviceScaleFactor: 1 });
-      // Same listeners as `page` — and literally the same `classify`, not a
-      // second copy of it. Without them this load was an error blind spot: a
-      // defect that manifests ONLY under ?strip=text went green here while the
-      // identical defect on the live load went red.
-      p2.on('pageerror', e => noise.push('page error: ' + e.message));
-      p2.on('console', classify);
-      try {
-        await p2.goto('file://' + path.resolve(file) + '?record=1&strip=text');
-        await p2.waitForFunction('window.sceneReady === true', { timeout: 20000 });
-        await p2.evaluate('window.stopPlayback()');
-        const dur2 = await p2.evaluate('window.DURATION');
-        const fl2 = await p2.evaluate('window.FLASHES').catch(() => []) || [];
-        const PLAN2 = samplePlan(dur2, fl2, 4);
-        const sigs = []; let maxSpread = 0;
-        for (const ts of PLAN2) {
-          // seekSynced: this is the COLDEST page in the suite — loaded fresh,
-          // before the GPU process is warm — which is where the capture race was
-          // worst, and this check's verdict is a comparison of signatures.
-          await seekSynced(p2, ts);
-          await settle(p2);
-          const png = await p2.screenshot();
-          sigs.push(sha256(png));
-          // Spread of the SHIPPED image: decode the screenshot back inside the
-          // page (createImageBitmap) — no image dependency in this file, and
-          // it measures the exact bytes the recorder would write to disk. The
-          // PNG travels as an evaluate ARGUMENT, not spliced into the source
-          // string — same bytes measured, without making the browser parse a
-          // megabyte-scale JS literal per sample.
-          const spread = await p2.evaluate(async ({ b64, w }) => {
-            const bmp = await createImageBitmap(await (await fetch('data:image/png;base64,' + b64)).blob());
-            const o = document.createElement('canvas');
-            o.width = w; o.height = Math.round(w * bmp.height / bmp.width);
-            const g = o.getContext('2d'); g.drawImage(bmp, 0, 0, o.width, o.height);
-            const d = g.getImageData(0, 0, o.width, o.height).data, L = [];
-            for (let i = 0; i < d.length; i += 4) L.push(0.2126*d[i] + 0.7152*d[i+1] + 0.0722*d[i+2]);
-            L.sort((a, b) => a - b);
-            return L[Math.floor(.95 * (L.length - 1))] - L[Math.floor(.05 * (L.length - 1))];
-          }, { b64: png.toString('base64'), w: EXPOSURE_SAMPLE_WIDTH });
-          maxSpread = Math.max(maxSpread, spread);
-        }
-        if (new Set(sigs).size === 1) {
-          fails.push(`shipped frame is pixel-identical at every sampled t (${PLAN2.join(', ')}, captions `
-                   + `stripped) — the compositor is not receiving the render (check WEBGPU/ANGLE_BACKEND) `
-                   + `or the scene genuinely never moves`);
-        } else if (maxSpread < SHIPPED_SPREAD_FLOOR) {
-          fails.push(`shipped frames are a flat wash at every sampled t (max luma spread `
-                   + `${maxSpread.toFixed(1)} < ${SHIPPED_SPREAD_FLOOR}, captions stripped) — the render `
-                   + `backend is compositing the clear color, not the scene (check WEBGPU/ANGLE_BACKEND)`);
-        }
-      } finally {
-        await p2.close();
-      }
-    } catch (e) {
-      fails.push('shipped-frame check errored — ' + e.message.split('\n')[0]);
-    }
-
-    // CHECK (hard): the film actually PLAYS. Every other check in this file --
-    // and every page load in shoot.js -- opens the scene with `?record=1`, and
-    // all three templates gate their rAF loop on the ABSENCE of that flag
-    // (`if(!location.search.includes('record'))requestAnimationFrame(loop)`).
-    // So the code path every human viewer gets was executed by nothing in this
-    // suite. A scene whose loop dies on its first frame ships perfect recorded
-    // frames and sits motionless for every person who opens it -- measured
-    // exactly that way once, on a film that had passed this gate green on both
-    // backends. The recorder cannot see it by construction, so the gate has to.
-    //
-    // Observed at the MECHANISM, not at the pixels: the loop's whole job is to
-    // call seekTo with a rising t, so wrap seekTo once the scene is ready and
-    // count the calls. A pixel diff would have to guess how far a given film
-    // moves in 200ms and would false-positive on a held title card -- the same
-    // "one frame answers no question about motion" trap the strip exists for.
-    // Counting cannot.
-    //
-    // This is the ONE load in this file without `?record=1`, which is the whole
-    // point of it. It runs AFTER the cold shipped-frame check so that check
-    // keeps the cold browser it needs, and on `page` rather than a third tab so
-    // a throw inside the loop lands in the same console/page-error listener
-    // that already reports it.
-    try {
-      await page.goto('file://' + path.resolve(file));
-      await page.waitForFunction('window.sceneReady === true', { timeout: 20000 });
-      await page.evaluate(`(() => {
-        window.__ticks = [];
-        const inner = window.seekTo;
-        // Count AFTER the inner call returns, never before: a seekTo that throws
-        // on every call would otherwise register a tick per attempt and inflate
-        // its way past the count arm while rendering nothing.
-        window.seekTo = function (t) { const r = inner.apply(this, arguments); window.__ticks.push(t); return r; };
-      })()`);
-      // 3 frames is ~50ms at 60fps and ~200ms on the software path at this
-      // viewport, so 5s of headroom means a timeout here is a dead loop rather
-      // than a slow one. Two DISTINCT t values is the real assertion: a loop
-      // that runs but recomputes the same t (a clock that never starts) is as
-      // frozen as one that never ran, and the call count alone would pass it.
-      await page.waitForFunction('window.__ticks.length >= 3', { timeout: 5000 }).catch(() => {});
-      const ticks = await page.evaluate('window.__ticks');
-      // ZERO is the only hard fail, and the asymmetry is deliberate. A dead
-      // chain drives seekTo exactly 0 times no matter how long you wait, so it
-      // is distinguishable from slow WITHOUT calibrating a wall clock. A count
-      // of 1-2 is genuinely ambiguous -- a loop that ran once and died looks
-      // identical, in a 5s window, to a healthy film on a contended box under
-      // software GL -- and failing that ambiguity would make a correct scene
-      // red for being slow. The 5s budget was bracketed on ONE machine at this
-      // viewport; treating it as a universal threshold is the
-      // measured-on-one-machine error this suite exists to catch.
-      if (ticks.length === 0) {
-        fails.push(`live playback stalled -- the scene reached sceneReady but its rAF loop drove `
-                 + `seekTo 0 times in 5s. Every RECORDED frame can still be perfect: `
-                 + `the recorder loads ?record=1, which skips this path entirely`);
-      } else if (ticks.length < 3) {
-        warnings.push(`live playback [ambiguous]: only ${ticks.length} seekTo call(s) in 5s. Either the `
-                 + `loop ran and died, or this machine is slow enough that 3 frames did not fit. `
-                 + `Re-run; a dead chain stays at 0 and a slow one climbs`);
-      } else if (new Set(ticks).size < 2) {
-        fails.push(`live playback is frozen -- the loop runs but every seekTo received the same t `
-                 + `(${ticks[0]}), so the film holds one frame forever`);
-      }
-      await page.evaluate('window.stopPlayback()').catch(() => {});
-    } catch (e) {
-      fails.push('live-playback check errored -- ' + e.message.split('\n')[0]);
-    }
+    // The two hard checks that run BEFORE the scene is opened with ?record=1.
+    // Order is load-bearing: the shipped-frame check must have the COLD browser
+    // (its failure is warmth-dependent -- see its own comment), so live playback,
+    // which reloads the page, runs after it and never before.
+    for (const check of PRE_RECORD_CHECKS) await check(ctx);
 
     await page.goto('file://' + path.resolve(file) + '?record=1');
     // Order matters and is a compromise, not an ideal. `sceneReady` MUST be
@@ -887,7 +914,7 @@ async function checkScene(browser, file) {
     // `beats` is read HERE and not inside them, unguarded, exactly as before —
     // a scene whose window.BEATS getter throws still reaches the outer catch
     // and fails, rather than being downgraded to four separate warnings.
-    const ctx = { page, fails, warnings, dur, t, beats: await page.evaluate('window.BEATS') };
+    Object.assign(ctx, { dur, t, beats: await page.evaluate('window.BEATS') });
     // Driven from an array because the ORDER is load-bearing, not incidental:
     // caption overflow mutates #cap and must follow the determinism capture,
     // and three of the four resize the viewport and restore it for the next.

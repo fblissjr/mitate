@@ -163,6 +163,46 @@ const ARMS = [
     };
   }, 'never names'],
 
+  // Check 11 — invariant 2's teeth. Two directions, and the second is the one
+  // that matters: a check whose only arm is "does it fire" cannot tell you it
+  // fires for the RIGHT reason. So one arm changes plugin content without a
+  // bump (must go red), and one changes it WITH a bump (must stay green),
+  // because a check that reddens on any plugin edit whatsoever would be
+  // unusable and would look identical on the first arm alone.
+  //
+  // Touching a real shipped file rather than a fixture: the check diffs the
+  // anchor against the working tree over `plugin/`, so a new untracked file
+  // would not appear in `git diff` at all. Appending a comment to a template is
+  // the smallest true instance of the thing being gated.
+  ['plugin content changed without a version bump', () => {
+    const f = path.join(ROOT, 'plugin', 'skills', 'mitate', 'templates', 'smoke.js');
+    const before = fs.readFileSync(f, 'utf8');
+    fs.writeFileSync(f, before + '\n// bracket fixture, removed by teardown\n');
+    return () => fs.writeFileSync(f, before);
+  }, 'did not move'],
+
+  ['plugin content changed WITH a version bump', () => {
+    const f = path.join(ROOT, 'plugin', 'skills', 'mitate', 'templates', 'smoke.js');
+    const pj = path.join(ROOT, 'plugin', '.claude-plugin', 'plugin.json');
+    const mkt = path.join(ROOT, '.claude-plugin', 'marketplace.json');
+    const chg = path.join(ROOT, 'CHANGELOG.md');
+    const had = { f: fs.readFileSync(f, 'utf8'), pj: fs.readFileSync(pj, 'utf8'),
+                  mkt: fs.readFileSync(mkt, 'utf8'), chg: fs.readFileSync(chg, 'utf8') };
+    const cur = JSON.parse(had.pj).version;
+    // Bump the patch component so check 1 (cascade coherence) stays satisfied
+    // too — otherwise this arm would go red for a DIFFERENT reason and quietly
+    // prove nothing about check 11.
+    const next = cur.replace(/(\d+)$/, (n) => String(Number(n) + 1));
+    fs.writeFileSync(f, had.f + '\n// bracket fixture, removed by teardown\n');
+    fs.writeFileSync(pj, had.pj.split(cur).join(next));
+    fs.writeFileSync(mkt, had.mkt.split(cur).join(next));
+    fs.writeFileSync(chg, had.chg.replace(/^## /m, `## ${next}\n\n### changed\n\nbracket fixture.\n\n## `));
+    return () => {
+      fs.writeFileSync(f, had.f); fs.writeFileSync(pj, had.pj);
+      fs.writeFileSync(mkt, had.mkt); fs.writeFileSync(chg, had.chg);
+    };
+  }, null],
+
   // Track E0's ratchet, three directions. It has to fail on a NEW encoder call
   // outside the boundary (drift in), on an extra call inside an allowed
   // function (drift within), and on a migration that removed one without

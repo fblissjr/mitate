@@ -962,7 +962,12 @@ const toolJs = new Map([
     notes.push('cascade trigger: SKIPPED — no commit in history touches ' + PLUGIN_JSON
              + ' (shallow clone?). This check needs full history; static.yml supplies it');
   } else {
-    const changed = (sh(`git diff --name-only ${anchor}..HEAD -- plugin/`) || '')
+    // `${anchor}` and not `${anchor}..HEAD`: diff the anchor against the WORKING
+    // TREE, so an uncommitted or staged edit to plugin/ counts. Comparing
+    // commits only would fire one commit AFTER the violation, which is too late
+    // for a pre-commit hook — the whole point is to stop the unversioned change
+    // from landing, not to report it afterwards.
+    const changed = (sh(`git diff --name-only ${anchor} -- plugin/`) || '')
       .split('\n').filter(Boolean);
     // Compare the VERSION STRING against the anchor's, not the commit dates.
     // The first cut compared history alone and could never go green in the

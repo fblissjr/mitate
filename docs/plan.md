@@ -1,4 +1,4 @@
-last updated: 2026-07-31
+last updated: 2026-08-01
 
 # mitate: founding plan
 
@@ -709,6 +709,88 @@ driver still owns `t` is a delivery feature and is admitted; an input driver tha
 *replaces* the state stream is Phase 6 and stays behind this gate. The recorder
 never arms either, so neither can reach a shipped frame. Without this amendment
 Track C is correctly blocked; with it, the fence still holds where it matters.
+
+**Phase R — Restructuring under a proven oracle (owner-directed 2026-08-01).**
+Remove inherited and unexamined code while what it does stays fixed. Numbered
+out of band because it is **not sequenced behind Phase 6** — it is available
+whenever a unit is about to be rewritten, and it gets more expensive the longer
+the tree grows around what it would remove.
+
+**The premise, stated because it is unusual and load-bearing:** most codebases
+attempting this are blocked on defining "functionally the same." This one is
+not. Sameness is already mechanical at four levels — byte-identical frames on
+one backend, byte-unchanged `smoke.js` verdicts over the corpus, fence parity
+across the nine carriers, and the harness tier's tallied rows. The expensive
+prerequisite exists. So the binding constraint is not *can we define sameness*
+but **which oracles can actually fail.**
+
+**The rule.** Not new doctrine — invariant 6 (*red before green, on
+modifications too*) extended from checks to restructuring:
+
+> **Before refactoring a unit, prove that unit's oracle can go red. Mutation-test
+> the oracle, not just the code.**
+
+R4.1's stage 1 is the worked example and the reason this is written as a rule.
+Byte-identical verdicts across the extraction said nothing until the
+crushed-exposure threshold was neutralised inside the extracted function and the
+diff caught it — three warnings gone, the tally 4 → 1. Without that step, "the
+verdicts did not change" is indistinguishable from a comparison that cannot
+change.
+
+**The trap it exists to catch, found live 2026-08-01:** `bracket-determinism.js`
+proves across-reload nondeterminism is *detectable*, but it reimplements the
+comparison with its own Playwright calls and never invokes `smoke.js`.
+Refactoring `smoke.js` under it would be refactoring under an oracle
+structurally incapable of seeing the code being changed. Generalised: **a control
+that rebuilds its subject verifies a reimplementation.** Check that before
+trusting any oracle, not after.
+
+**Triage, five buckets — because a sweep is the wrong instrument.** A sweep
+rewrites the reasoned code alongside the rest, and here the reasoned code is the
+majority:
+
+| | reason recorded | control exists | action | covered today by |
+|---|---|---|---|---|
+| a | yes | yes | leave it alone | — |
+| b | yes | no | build the control, keep the code | **`selfcheck.js` check 5**, ratcheted at 51 |
+| c | no | yes | recover intent from the control's arms — they are a spec nobody wrote as prose | nothing |
+| d | no | no | archaeology, then decide | **nothing** — `working-plan.md` Track F |
+| e | duplicated by construction | — | the seven fences | `--parity-fix` + cross-directory parity |
+
+**Two of the five are already instrumented, and that is the model to copy.**
+Check 5 counts comment lines asserting a measurement without naming a runnable
+control, seeded at an honest baseline and permitted to fall but never rise.
+Bucket (d) needs the same instrument and does not have one — and (d) is the
+harder class precisely because its members **make no claim at all**, so there is
+nothing for a claim auditor to grade.
+
+**Inventory, counted 2026-08-01 rather than estimated.** Uncontrolled
+measurement claims, by file, and the silent-swallow count beside them:
+
+| file | lines | uncontrolled claims | silent swallows |
+|---|---|---|---|
+| `smoke.js` | 1331 | 21 | 11 |
+| `build.js` | 1070 | 12 | 0 |
+| `shoot.js` | 327 | 3 | 0 |
+| `backend.js` | 182 | 1 | 1 |
+
+**The debt is concentrated, which is good news and should shape the order of
+work.** `build.js` and `shoot.js` carry zero silent swallows across 1,397 lines.
+Every one of `smoke.js`'s eleven behaviour-defining thresholds
+(`SHIPPED_SPREAD_FLOOR`, `FRAMING_INVARIANCE_MAD`, the four `EXPOSURE_*`, …) is
+named by **no bracket at all** — several carry a `Bracketed:` claim in the
+comment beside them, with the measured figures, and those claims are counted as
+debt by check 5 exactly because they name no runnable control. So the gate
+instrument is where both the risk and the payoff sit.
+
+**Gate R:** a ratchet exists for bucket (d) — behaviour-affecting code with no
+recorded reason and no control — seeded at a counted baseline, failing when the
+count rises, on the same escape hatch as `ASSERT_BUDGET` (edit the literal, in a
+diff, with a reason); at least one unit restructured under an oracle **recorded
+red before the change and green after**, with both runs cited rather than
+asserted; and `bracket-determinism.js` driving the shipped `smoke.js` path rather
+than its own copy of it. The last clause is the cheapest of the three and the one
+that makes the others trustworthy.
 
 ## Examples policy (decided 2026-07-23, measured on a live install)
 

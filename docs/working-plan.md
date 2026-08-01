@@ -35,6 +35,7 @@ trigger this document can write for itself.**
 | Track D (kit) | no phase, but `STYLE.palette` discharges a 0.9.1 carry-forward |
 | type primitive (deferred) | the **chart tier** — chart before showcase before film |
 | paths-nothing-exercises sweep (below) | no phase — see [Evidence](#evidence-calibration) |
+| Track F (unexamined originals) | **Phase R** (restructuring under a proven oracle), added 2026-08-01 |
 
 So: **let the gates rank what maps, and the spine rank what doesn't.** Read
 [the spine](#the-spine) first — it is one criterion, and without it the
@@ -2200,6 +2201,13 @@ exists) — a silent skip would be the worse of the two and is the failure
 ---
 
 ## Track F — unexamined originals (2026-08-01, owner-directed)
+
+> **This track maps to Phase R in [`plan.md`](plan.md) and inherits its gate**,
+> which is the stronger commitment — see this document's own mapping rule above.
+> Phase R carries the method (prove the oracle red before refactoring under it),
+> the five-bucket triage, and the counted inventory across all four harness
+> files. **What lives HERE is bucket (d) alone**: the absences, and the
+> archaeology on the instance that opened the track. Do not restate the rest.
 
 **The class:** code that changes what the gate reports, carries no recorded
 reason, and is covered by no control. Nobody changes it because nobody knows why

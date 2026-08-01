@@ -275,6 +275,259 @@ async function flashTimes(page) {
   try { return (await page.evaluate('window.FLASHES')) || []; } catch (e) { return []; }
 }
 
+// --- The checks, one function each. -----------------------------------------
+//
+// Extracted from checkScene, which was 594 lines of them sharing four mutable
+// arrays (R4.1). Each takes the same `ctx` and reports by pushing to
+// ctx.fails/ctx.warnings, because that IS the existing contract between these
+// blocks — rewriting it into return values would have changed what the outer
+// catch sees, and this extraction's gate is byte-unchanged verdicts.
+//
+// THE ERROR SEMANTICS ARE NOT UNIFORM AND MUST NOT BE MADE SO. Six of these
+// carry their own try/catch and degrade to a warning; the determinism trio
+// deliberately does not, so a throw there reaches checkScene's outer catch,
+// becomes a FAIL, and abandons the remaining checks. That asymmetry is the
+// design — an advisory check crashing must never flip the exit code, and a
+// determinism check crashing must. The restructure plan described all of these
+// as already having "its own try/catch and its own name"; three of them do not,
+// and extracting them as if they did would have quietly converted three hard
+// fails into warnings while every verdict on the shipped corpus stayed green.
+//
+// ORDER IS LOAD-BEARING, so they are driven from an array rather than called
+// ad hoc: caption overflow mutates #cap directly and must run after determinism
+// has captured its frames, and several checks resize the viewport and restore it
+// for whatever runs next. See each check's own comment.
+
+// CHECK: caption reading speed. A caption is only fully legible between its
+// fade-in and fade-out, so the readable window is (dur - 2*capFade), not the
+// whole beat. Flags a beat where the caption is too long to actually read
+// before it fades — see CPS_WARN_THRESHOLD above for where the number comes
+// from. Deliberately does not restate it: this comment said 25 for the whole
+// life of the 30 it was pointing at.
+async function checkCaptionSpeed(ctx) {
+  const { page, beats, warnings } = ctx;
+  try {
+    if (!beats) {
+      warnings.push('caption reading speed: skipped, window.BEATS not present');
+    } else {
+      // From the contract (window.CAPFADE), not from probing scene internals —
+      // same rule as FLASHES: when a tool is tempted to parse scene state, the
+      // contract is missing an export. The constant covers legacy scenes.
+      const capFade = await page.evaluate('window.CAPFADE');
+      const fade = typeof capFade === 'number' ? capFade : CAP_FADE_DEFAULT;
+      for (const b of beats) {
+        if (!b.cap) continue;
+        const effectiveWindow = Math.max(b.dur - 2 * fade, 0.01);
+        const cps = b.cap.length / effectiveWindow;
+        if (cps > CPS_WARN_THRESHOLD) {
+          warnings.push(`caption reading speed: beat "${b.name}" at ${cps.toFixed(1)} cps — "${b.cap}"`);
+        }
+      }
+    }
+  } catch (e) {
+    warnings.push('caption reading speed: check errored — ' + e.message.split('\n')[0]);
+  }
+}
+
+// CHECK: caption overflow. #cap is white-space:nowrap, so an over-long
+// caption doesn't wrap — it silently extends past the viewport with no
+// error anywhere, just a clipped pill. This mutates #cap.textContent
+// directly (bypassing seekTo), so it MUST run after the determinism check
+// above, and MUST call seekTo() again afterward to put the caption back to
+// whatever the scene itself renders at t — otherwise this would leave the
+// page in a synthetic state that a later check reads.
+async function checkCaptionOverflow(ctx) {
+  const { page, beats, warnings, t } = ctx;
+  try {
+    if (!beats) {
+      warnings.push('caption overflow: skipped, window.BEATS not present');
+    } else {
+      // Measure at the SHIPPING viewport, not this file's small check viewport.
+      // The caption is sized in fixed CSS px (30px in the template), so the
+      // pill occupies ~3x the frame width at 640 that it does at 1920 — the
+      // first run of this check measured at 640 and reported the shipped
+      // template as overflowing, which is a measurement artifact, not a
+      // finding. Anything comparing an element against the frame has to be
+      // measured at the size the frame is actually rendered.
+      // NO resize. This used to jump to a 1920x1080 shipping viewport (a
+      // SHIP_VIEWPORT constant, since removed) on the theory that the
+      // caption is fixed CSS px, so a ratio measured at 640 would not hold at
+      // 1920. That stopped being true: the template sizes it
+      // `calc(var(--fw)*.015625)`, i.e. frame-relative, and the pill/frame
+      // ratio measures 1.219 at 640 and 1.217 at 1920 — scale-invariant, so
+      // the resize bought nothing. It also cost everything: resizing WITHOUT
+      // settling reads a pill still laid out at the old size against a frame
+      // computed at the new one, under-measuring by ~3x, and a caption
+      // overflowing by 32% produced no warning at all. The framing block's own
+      // comment states the rule this broke — any check that changes viewport
+      // must re-settle before it measures. Measuring at VIEWPORT is now
+      // equivalent and cannot go stale.
+      for (const b of beats) {
+        if (!b.cap) continue;
+        const { width, frameW } = await page.evaluate(`(() => {
+          const el = document.getElementById('cap');
+          el.textContent = ${JSON.stringify(b.cap)};
+          const ar = (window.FRAME && window.FRAME.aspect) || 16/9;
+          const frameW = Math.min(window.innerWidth, window.innerHeight * ar);
+          return { width: el.offsetWidth, innerWidth: window.innerWidth, frameW };
+        })()`);
+        // Measure against the FRAME, not the raw viewport. Overlays are sized
+        // as a fraction of the frame, so the frame is the only basis on which
+        // this number means the same thing at every window shape.
+        const limit = frameW * CAP_OVERFLOW_FRACTION;
+        if (width > limit) {
+          warnings.push(`caption overflow: beat "${b.name}" measured ${width}px wide against a ${frameW.toFixed(0)}px frame (limit ${limit.toFixed(0)}px)`);
+        }
+      }
+      await page.setViewportSize(VIEWPORT);
+      await page.evaluate(`window.seekTo(${t})`); // restore — see comment above
+    }
+  } catch (e) {
+    try { await page.setViewportSize(VIEWPORT); } catch (e2) {}
+    warnings.push('caption overflow: check errored — ' + e.message.split('\n')[0]);
+    try { await page.evaluate(`window.seekTo(${t})`); } catch (e2) {}
+  }
+}
+
+// CHECK: framing is invariant across window shapes.
+//
+// This is the guard for a whole bug CLASS, not one bug. Every other check in
+// this file samples ONE window shape, and so did every other tool: shoot.js
+// pinned 1920x1080, build.js opens no browser at all. A defect that only
+// appears at a different aspect was therefore invisible to the entire test
+// surface BY CONSTRUCTION -- which is exactly how both backends shipped a
+// silent horizontal crop that only a human resizing a window ever saw.
+//
+// The invariant: the scene composes against FRAME.aspect and CONTAINS it, so
+// the contents of the design frame must not depend on the window shape. We
+// read the frame rect out of the canvas at three aspects, reduce each to a
+// coarse luma grid, and compare. Cheap, because seekTo is pure.
+//
+// Tolerance, not equality: resampling a different pixel count into the same
+// grid is never bit-exact. Bracketed on the real defect -- the pre-fix
+// templates score 20-60 mean absolute difference here, a correct scene
+// scores under 3.
+async function checkFramingInvariance(ctx) {
+  const { page, dur, t, fails, warnings } = ctx;
+  try {
+    const ar = (await page.evaluate('window.FRAME && window.FRAME.aspect')) || 16 / 9;
+    // Through sampleAt — render and grid-read in one task (see the helper).
+    const grid = (ts) => sampleAt(page, ts, framingReader, ar);
+    // Three of the four shared shapes; each shape costs a resize+settle.
+    const shapes = aspectShapes(ar).filter(sh => sh.tag !== 'square');
+    // Sample several points across the film and take the WORST. The first cut
+    // of this check sampled one t, landed on a near-blank title card, scored
+    // ~0 on a template known to crop, and reported all-clear -- a green
+    // control that never ran. A blank frame is invariant under every window
+    // shape precisely because it contains nothing.
+    const mad = (a, b) => a.reduce((s2, v, i) => s2 + Math.abs(v - b[i]), 0) / a.length;
+    // Outer loop over SHAPES, inner over sample times: one resize+settle per
+    // shape (3 total) instead of one per shape per time (9). seekTo is pure,
+    // so grids taken at the same ts under different shapes are comparable
+    // regardless of visit order.
+    const grids = {};                       // grids[tag][frac-index]
+    for (const sh of shapes) {
+      await page.setViewportSize({ width: sh.w, height: sh.h });
+      // Wait for the scene's own resize handler to land before sampling.
+      // Without this the grid is read off a STALE canvas and the numbers are
+      // nonsense in both directions -- the first run of this check scored a
+      // correctly-fixed template WORSE than a known-broken one. Same class as
+      // the smoke.js sampling race already recorded in the plan's postmortem;
+      // any check that changes viewport must re-settle before it measures.
+      await settle(page);
+      grids[sh.tag] = [];
+      for (const frac of SAMPLE_FRACTIONS) grids[sh.tag].push(await grid(dur * frac));
+    }
+    const worst = { narrow: 0, wide: 0 };
+    for (const tag of ['narrow', 'wide']) {
+      for (let i = 0; i < SAMPLE_FRACTIONS.length; i++) {
+        worst[tag] = Math.max(worst[tag], mad(grids.design[i], grids[tag][i]));
+      }
+    }
+    for (const tag of ['narrow', 'wide']) {
+      if (worst[tag] > FRAMING_INVARIANCE_MAD) {
+        fails.push(`framing not aspect-invariant: the design frame's contents change at the ${tag} window shape (worst mean abs luma diff ${worst[tag].toFixed(1)} > ${FRAMING_INVARIANCE_MAD}). The scene is cropping or reflowing instead of containing FRAME.aspect.`);
+      }
+    }
+    await page.setViewportSize(VIEWPORT);
+    await page.evaluate(`window.seekTo(${t})`);
+  } catch (e) {
+    try { await page.setViewportSize(VIEWPORT); await page.evaluate(`window.seekTo(${t})`); } catch (e2) {}
+    warnings.push('framing invariance: check errored — ' + e.message.split('\n')[0]);
+  }
+}
+
+// CHECK: exposure, both tails. This template's renderer uses ACES tone
+// mapping (scene.template.html), which blows out pale materials — but a
+// dark-palette scene fails the opposite way, coming out crushed and muddy.
+// Checking only for overexposure would fire the wrong way on half of all
+// scenes. Sampled at three points across the film and aggregated by worst
+// case, since a scene can be fine at one timestamp and clip or crush at
+// another. Measured in-page with an offscreen 2D canvas (drawImage +
+// getImageData) rather than pulling in an image-decoding dependency — see
+// the file header. Does not depend on window.BEATS: #c is part of the base
+// contract, not the beats extension.
+async function checkExposure(ctx) {
+  const { page, dur, t, fails, warnings } = ctx;
+  try {
+    // The overflow check above restored the viewport, and the scene's resize
+    // handler runs from the event loop — so without settling, the sample
+    // below races it and reads whichever canvas size happens to be current.
+    // Observed as run-to-run flips of the dynamic-range warning on the same
+    // scene: the ink fraction of a flat frame sits near the p05 percentile
+    // and moves with raster size. Wait for the buffer to match the viewport;
+    // scenes without a resize handler just eat the short timeout.
+    await page.waitForFunction(`(() => { const c = document.querySelector('canvas'); return !c || c.width === window.innerWidth; })()`,
+      { timeout: 2000 }).catch(() => {});
+    const times = SAMPLE_FRACTIONS.map(f => f * dur);
+    let worstClipped = 0, worstCrushed = 0, worstSpread = Infinity;
+    for (const et of times) {
+      // Through sampleAt — render and sample in one task (see the helper;
+      // the interleaved-resize race this prevents was observed live as
+      // "crushed 100%" on a known-good pale scene, 0-for-3 on reruns).
+      const stats = await sampleAt(page, et, exposureReader,
+        EXPOSURE_SAMPLE_WIDTH, EXPOSURE_LUMA_CLIP, EXPOSURE_LUMA_CRUSH);
+      worstClipped = Math.max(worstClipped, stats.clipped);
+      worstCrushed = Math.max(worstCrushed, stats.crushed);
+      worstSpread = Math.min(worstSpread, stats.p95 - stats.p05);
+    }
+    await page.evaluate(`window.seekTo(${t})`); // restore after sampling across the film
+
+    if (worstClipped > EXPOSURE_CLIPPED_THRESHOLD) {
+      warnings.push(`exposure [provisional threshold]: washed out — ${(worstClipped * 100).toFixed(1)}% of pixels clipped to white — lower the exposure (STYLE.exposure in current templates) and desaturate/darken pale materials`);
+    }
+    // A near-total black frame is not a register, it is a broken render.
+    // Bandaid by nature -- one threshold promoted from warn to fail -- but the
+    // class it closes is real: a 342-frame all-black film reported
+    // `all scenes pass` because the caption pill kept the frame from being
+    // technically EMPTY, so the blank check never fired and this one only
+    // whispered. >=99% near-black is never a design choice.
+    if (worstCrushed >= 0.99) {
+      fails.push(`render is ${(worstCrushed * 100).toFixed(1)}% near-black — this is a broken render, `
+               + `not a dark register (check the GL backend and the post chain)`);
+    } else if (worstCrushed > EXPOSURE_CRUSHED_THRESHOLD) {
+      warnings.push(`exposure [provisional threshold]: crushed — ${(worstCrushed * 100).toFixed(1)}% of pixels near black — raise exposure or add a fill/rim light`);
+    }
+    if (worstSpread < EXPOSURE_DYNRANGE_THRESHOLD) {
+      warnings.push(`exposure [provisional threshold]: low dynamic range — the frame is nearly flat, ${worstSpread.toFixed(1)} points between p05 and p95 (a deliberately flat design can legitimately read low here — judge by looking; see the threshold note)`);
+    }
+  } catch (e) {
+    warnings.push('exposure: check errored — ' + e.message.split('\n')[0]);
+    try { await page.evaluate(`window.seekTo(${t})`); } catch (e2) {}
+  }
+}
+
+// The order these run in is the order they ran in when they were inline, and it
+// is not arbitrary — caption overflow leaves the page at VIEWPORT and seeks back
+// to t, which is the state framing invariance and exposure both assume on entry.
+// Reordering this array is a behaviour change, not a formatting one.
+const ADVISORY_CHECKS = [
+  checkCaptionSpeed,
+  checkCaptionOverflow,
+  checkFramingInvariance,
+  checkExposure,
+];
+
 async function checkScene(browser, file) {
   const fails = [];
   const warnings = [];
@@ -627,216 +880,18 @@ async function checkScene(browser, file) {
     // this header said "never fail the build", contradicting code 130 lines
     // down. What IS true for all four: each is wrapped so an unexpected error
     // becomes a warning, never a FAIL. -----------------------------------
-    // Each is wrapped so an unexpected error becomes a warning, not a FAIL —
-    // an advisory check crashing must never flip the exit code.
-    const beats = await page.evaluate('window.BEATS');
-
-    // CHECK: caption reading speed. A caption is only fully legible between its
-    // fade-in and fade-out, so the readable window is (dur - 2*capFade), not the
-    // whole beat. Flags a beat where the caption is too long to actually read
-    // before it fades — see CPS_WARN_THRESHOLD above for where the number comes
-    // from. Deliberately does not restate it: this comment said 25 for the whole
-    // life of the 30 it was pointing at.
-    try {
-      if (!beats) {
-        warnings.push('caption reading speed: skipped, window.BEATS not present');
-      } else {
-        // From the contract (window.CAPFADE), not from probing scene internals —
-        // same rule as FLASHES: when a tool is tempted to parse scene state, the
-        // contract is missing an export. The constant covers legacy scenes.
-        const capFade = await page.evaluate('window.CAPFADE');
-        const fade = typeof capFade === 'number' ? capFade : CAP_FADE_DEFAULT;
-        for (const b of beats) {
-          if (!b.cap) continue;
-          const effectiveWindow = Math.max(b.dur - 2 * fade, 0.01);
-          const cps = b.cap.length / effectiveWindow;
-          if (cps > CPS_WARN_THRESHOLD) {
-            warnings.push(`caption reading speed: beat "${b.name}" at ${cps.toFixed(1)} cps — "${b.cap}"`);
-          }
-        }
-      }
-    } catch (e) {
-      warnings.push('caption reading speed: check errored — ' + e.message.split('\n')[0]);
-    }
-
-    // CHECK: caption overflow. #cap is white-space:nowrap, so an over-long
-    // caption doesn't wrap — it silently extends past the viewport with no
-    // error anywhere, just a clipped pill. This mutates #cap.textContent
-    // directly (bypassing seekTo), so it MUST run after the determinism check
-    // above, and MUST call seekTo() again afterward to put the caption back to
-    // whatever the scene itself renders at t — otherwise this would leave the
-    // page in a synthetic state that a later check reads.
-    try {
-      if (!beats) {
-        warnings.push('caption overflow: skipped, window.BEATS not present');
-      } else {
-        // Measure at the SHIPPING viewport, not this file's small check viewport.
-        // The caption is sized in fixed CSS px (30px in the template), so the
-        // pill occupies ~3x the frame width at 640 that it does at 1920 — the
-        // first run of this check measured at 640 and reported the shipped
-        // template as overflowing, which is a measurement artifact, not a
-        // finding. Anything comparing an element against the frame has to be
-        // measured at the size the frame is actually rendered.
-        // NO resize. This used to jump to a 1920x1080 shipping viewport (a
-        // SHIP_VIEWPORT constant, since removed) on the theory that the
-        // caption is fixed CSS px, so a ratio measured at 640 would not hold at
-        // 1920. That stopped being true: the template sizes it
-        // `calc(var(--fw)*.015625)`, i.e. frame-relative, and the pill/frame
-        // ratio measures 1.219 at 640 and 1.217 at 1920 — scale-invariant, so
-        // the resize bought nothing. It also cost everything: resizing WITHOUT
-        // settling reads a pill still laid out at the old size against a frame
-        // computed at the new one, under-measuring by ~3x, and a caption
-        // overflowing by 32% produced no warning at all. The framing block's own
-        // comment states the rule this broke — any check that changes viewport
-        // must re-settle before it measures. Measuring at VIEWPORT is now
-        // equivalent and cannot go stale.
-        for (const b of beats) {
-          if (!b.cap) continue;
-          const { width, frameW } = await page.evaluate(`(() => {
-            const el = document.getElementById('cap');
-            el.textContent = ${JSON.stringify(b.cap)};
-            const ar = (window.FRAME && window.FRAME.aspect) || 16/9;
-            const frameW = Math.min(window.innerWidth, window.innerHeight * ar);
-            return { width: el.offsetWidth, innerWidth: window.innerWidth, frameW };
-          })()`);
-          // Measure against the FRAME, not the raw viewport. Overlays are sized
-          // as a fraction of the frame, so the frame is the only basis on which
-          // this number means the same thing at every window shape.
-          const limit = frameW * CAP_OVERFLOW_FRACTION;
-          if (width > limit) {
-            warnings.push(`caption overflow: beat "${b.name}" measured ${width}px wide against a ${frameW.toFixed(0)}px frame (limit ${limit.toFixed(0)}px)`);
-          }
-        }
-        await page.setViewportSize(VIEWPORT);
-        await page.evaluate(`window.seekTo(${t})`); // restore — see comment above
-      }
-    } catch (e) {
-      try { await page.setViewportSize(VIEWPORT); } catch (e2) {}
-      warnings.push('caption overflow: check errored — ' + e.message.split('\n')[0]);
-      try { await page.evaluate(`window.seekTo(${t})`); } catch (e2) {}
-    }
-
-    // CHECK: framing is invariant across window shapes.
     //
-    // This is the guard for a whole bug CLASS, not one bug. Every other check in
-    // this file samples ONE window shape, and so did every other tool: shoot.js
-    // pinned 1920x1080, build.js opens no browser at all. A defect that only
-    // appears at a different aspect was therefore invisible to the entire test
-    // surface BY CONSTRUCTION -- which is exactly how both backends shipped a
-    // silent horizontal crop that only a human resizing a window ever saw.
-    //
-    // The invariant: the scene composes against FRAME.aspect and CONTAINS it, so
-    // the contents of the design frame must not depend on the window shape. We
-    // read the frame rect out of the canvas at three aspects, reduce each to a
-    // coarse luma grid, and compare. Cheap, because seekTo is pure.
-    //
-    // Tolerance, not equality: resampling a different pixel count into the same
-    // grid is never bit-exact. Bracketed on the real defect -- the pre-fix
-    // templates score 20-60 mean absolute difference here, a correct scene
-    // scores under 3.
-    try {
-      const ar = (await page.evaluate('window.FRAME && window.FRAME.aspect')) || 16 / 9;
-      // Through sampleAt — render and grid-read in one task (see the helper).
-      const grid = (ts) => sampleAt(page, ts, framingReader, ar);
-      // Three of the four shared shapes; each shape costs a resize+settle.
-      const shapes = aspectShapes(ar).filter(sh => sh.tag !== 'square');
-      // Sample several points across the film and take the WORST. The first cut
-      // of this check sampled one t, landed on a near-blank title card, scored
-      // ~0 on a template known to crop, and reported all-clear -- a green
-      // control that never ran. A blank frame is invariant under every window
-      // shape precisely because it contains nothing.
-      const mad = (a, b) => a.reduce((s2, v, i) => s2 + Math.abs(v - b[i]), 0) / a.length;
-      // Outer loop over SHAPES, inner over sample times: one resize+settle per
-      // shape (3 total) instead of one per shape per time (9). seekTo is pure,
-      // so grids taken at the same ts under different shapes are comparable
-      // regardless of visit order.
-      const grids = {};                       // grids[tag][frac-index]
-      for (const sh of shapes) {
-        await page.setViewportSize({ width: sh.w, height: sh.h });
-        // Wait for the scene's own resize handler to land before sampling.
-        // Without this the grid is read off a STALE canvas and the numbers are
-        // nonsense in both directions -- the first run of this check scored a
-        // correctly-fixed template WORSE than a known-broken one. Same class as
-        // the smoke.js sampling race already recorded in the plan's postmortem;
-        // any check that changes viewport must re-settle before it measures.
-        await settle(page);
-        grids[sh.tag] = [];
-        for (const frac of SAMPLE_FRACTIONS) grids[sh.tag].push(await grid(dur * frac));
-      }
-      const worst = { narrow: 0, wide: 0 };
-      for (const tag of ['narrow', 'wide']) {
-        for (let i = 0; i < SAMPLE_FRACTIONS.length; i++) {
-          worst[tag] = Math.max(worst[tag], mad(grids.design[i], grids[tag][i]));
-        }
-      }
-      for (const tag of ['narrow', 'wide']) {
-        if (worst[tag] > FRAMING_INVARIANCE_MAD) {
-          fails.push(`framing not aspect-invariant: the design frame's contents change at the ${tag} window shape (worst mean abs luma diff ${worst[tag].toFixed(1)} > ${FRAMING_INVARIANCE_MAD}). The scene is cropping or reflowing instead of containing FRAME.aspect.`);
-        }
-      }
-      await page.setViewportSize(VIEWPORT);
-      await page.evaluate(`window.seekTo(${t})`);
-    } catch (e) {
-      try { await page.setViewportSize(VIEWPORT); await page.evaluate(`window.seekTo(${t})`); } catch (e2) {}
-      warnings.push('framing invariance: check errored — ' + e.message.split('\n')[0]);
-    }
-
-    // CHECK: exposure, both tails. This template's renderer uses ACES tone
-    // mapping (scene.template.html), which blows out pale materials — but a
-    // dark-palette scene fails the opposite way, coming out crushed and muddy.
-    // Checking only for overexposure would fire the wrong way on half of all
-    // scenes. Sampled at three points across the film and aggregated by worst
-    // case, since a scene can be fine at one timestamp and clip or crush at
-    // another. Measured in-page with an offscreen 2D canvas (drawImage +
-    // getImageData) rather than pulling in an image-decoding dependency — see
-    // the file header. Does not depend on window.BEATS: #c is part of the base
-    // contract, not the beats extension.
-    try {
-      // The overflow check above restored the viewport, and the scene's resize
-      // handler runs from the event loop — so without settling, the sample
-      // below races it and reads whichever canvas size happens to be current.
-      // Observed as run-to-run flips of the dynamic-range warning on the same
-      // scene: the ink fraction of a flat frame sits near the p05 percentile
-      // and moves with raster size. Wait for the buffer to match the viewport;
-      // scenes without a resize handler just eat the short timeout.
-      await page.waitForFunction(`(() => { const c = document.querySelector('canvas'); return !c || c.width === window.innerWidth; })()`,
-        { timeout: 2000 }).catch(() => {});
-      const times = SAMPLE_FRACTIONS.map(f => f * dur);
-      let worstClipped = 0, worstCrushed = 0, worstSpread = Infinity;
-      for (const et of times) {
-        // Through sampleAt — render and sample in one task (see the helper;
-        // the interleaved-resize race this prevents was observed live as
-        // "crushed 100%" on a known-good pale scene, 0-for-3 on reruns).
-        const stats = await sampleAt(page, et, exposureReader,
-          EXPOSURE_SAMPLE_WIDTH, EXPOSURE_LUMA_CLIP, EXPOSURE_LUMA_CRUSH);
-        worstClipped = Math.max(worstClipped, stats.clipped);
-        worstCrushed = Math.max(worstCrushed, stats.crushed);
-        worstSpread = Math.min(worstSpread, stats.p95 - stats.p05);
-      }
-      await page.evaluate(`window.seekTo(${t})`); // restore after sampling across the film
-
-      if (worstClipped > EXPOSURE_CLIPPED_THRESHOLD) {
-        warnings.push(`exposure [provisional threshold]: washed out — ${(worstClipped * 100).toFixed(1)}% of pixels clipped to white — lower the exposure (STYLE.exposure in current templates) and desaturate/darken pale materials`);
-      }
-      // A near-total black frame is not a register, it is a broken render.
-      // Bandaid by nature -- one threshold promoted from warn to fail -- but the
-      // class it closes is real: a 342-frame all-black film reported
-      // `all scenes pass` because the caption pill kept the frame from being
-      // technically EMPTY, so the blank check never fired and this one only
-      // whispered. >=99% near-black is never a design choice.
-      if (worstCrushed >= 0.99) {
-        fails.push(`render is ${(worstCrushed * 100).toFixed(1)}% near-black — this is a broken render, `
-                 + `not a dark register (check the GL backend and the post chain)`);
-      } else if (worstCrushed > EXPOSURE_CRUSHED_THRESHOLD) {
-        warnings.push(`exposure [provisional threshold]: crushed — ${(worstCrushed * 100).toFixed(1)}% of pixels near black — raise exposure or add a fill/rim light`);
-      }
-      if (worstSpread < EXPOSURE_DYNRANGE_THRESHOLD) {
-        warnings.push(`exposure [provisional threshold]: low dynamic range — the frame is nearly flat, ${worstSpread.toFixed(1)} points between p05 and p95 (a deliberately flat design can legitimately read low here — judge by looking; see the threshold note)`);
-      }
-    } catch (e) {
-      warnings.push('exposure: check errored — ' + e.message.split('\n')[0]);
-      try { await page.evaluate(`window.seekTo(${t})`); } catch (e2) {}
-    }
+    // The four bodies now live at module scope (R4.1), which is the point of
+    // the extraction: a bracket can drive one of them against a page it set up
+    // itself, instead of rebuilding this whole function to reach one check.
+    // `beats` is read HERE and not inside them, unguarded, exactly as before —
+    // a scene whose window.BEATS getter throws still reaches the outer catch
+    // and fails, rather than being downgraded to four separate warnings.
+    const ctx = { page, fails, warnings, dur, t, beats: await page.evaluate('window.BEATS') };
+    // Driven from an array because the ORDER is load-bearing, not incidental:
+    // caption overflow mutates #cap and must follow the determinism capture,
+    // and three of the four resize the viewport and restore it for the next.
+    for (const check of ADVISORY_CHECKS) await check(ctx);
   } catch (e) {
     fails.push(e.message.split('\n')[0]);
   }

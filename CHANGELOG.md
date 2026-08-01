@@ -7,6 +7,69 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.61
+
+### changed
+
+**Phase R's first unit: the determinism trio, restructured under an oracle that
+existed first.** The trio bundled two decisions into one `try` block, and only
+one of them had ever been argued.
+
+**"Fail rather than warn" stays** — deliberate and correct: an advisory check
+crashing must never flip the exit code, a determinism check crashing must.
+
+**"Abandon every remaining check" is gone as a blanket rule.** It was never a
+decision; it is what a throw does inside a `try`, and the trio shared one.
+Preserving a behaviour through an extraction is not the same as it having a
+reason. The two are independent axes and this file already proved it before the
+split: `checkShippedFrame` and `checkLivePlayback` are HARD checks that catch
+internally and continue, so "hard" never implied "abandon". There were three
+tiers in the code and the comments described two.
+
+What a throw costs is now **declared per check** (`onThrow`, beside `requires`),
+with `abandon` / `continue` / `warn` mapping onto those three tiers.
+**Undeclared is a hard error, never a default** — a default is exactly how the
+unargued behaviour arrived, and would let a new check inherit a policy nobody
+chose for it.
+
+Only one policy actually changed: `checkBlankFrame`, `abandon` → `continue`. It
+destructures `{ PLAN, frames, fails }`, touches no page state, and is array
+indexing. **Measured red:** forcing it to throw took the run from 3 advisory
+warnings to 1 — the two caption results vanished and framing/exposure never ran,
+losing information for no safety gain.
+
+### fixed
+
+**The `!fails.length` guard is gone, and what it cost is measured.** It read
+`fails` GLOBALLY, so any unrelated earlier failure silently disabled the only
+check covering load-time nondeterminism. Written at 0.16.9 with no recorded
+reason, never exercised by any control, and it survived four months because
+demonstrating it needs a fixture carrying TWO defects at once — which is why the
+plan recorded the fix as blocked on a red-able fixture that did not exist.
+
+`bracket-driver.js`'s `CLEAN` fixture (0.16.58) made one constructible: a random
+drawn at load, plus a playback loop never started so an unrelated hard fail lands
+before the trio. **With the guard, smoke reported only the playback failure — a
+scene whose live HTML and recorded MP4 are different films shipped green on the
+clause the project rests on.** Without it, both are reported.
+
+`frames.length` stays and is a real precondition (the check compares against
+`frames[0]`). `!fails.length` never was one: this check navigates and reloads the
+page itself, so nothing it reads depends on an earlier check having succeeded.
+Two halves of one `if` with opposite justifications.
+
+**The arm for it was 3% flaky on its first cut and that is recorded rather than
+quietly fixed.** It offset a rect by `Math.round(loadSeed * 90)` — 32 reachable
+values, so two loads collided about one run in thirty, the frames matched, and
+the arm read WRONG-MESSAGE. Observed failing once and passing once with no code
+change. The load value now drives a continuous rotation, which differs unless two
+raw doubles are bitwise equal. A control that is right 97% of the time teaches
+people to re-run it until it agrees.
+
+Gate for the unit, per Gate R's second clause: red recorded before the change and
+green after, both re-runnable as arms rather than cited from memory, and corpus
+verdicts byte-identical across all 9 scenes.
+
 ## 0.16.60
 
 ### fixed

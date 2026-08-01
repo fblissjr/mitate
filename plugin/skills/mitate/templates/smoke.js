@@ -328,6 +328,7 @@ async function checkCaptionSpeed(ctx) {
     warnings.push('caption reading speed: check errored — ' + e.message.split('\n')[0]);
   }
 }
+checkCaptionSpeed.requires = ['page', 'beats', 'warnings'];
 
 // CHECK: caption overflow. #cap is white-space:nowrap, so an over-long
 // caption doesn't wrap — it silently extends past the viewport with no
@@ -388,6 +389,7 @@ async function checkCaptionOverflow(ctx) {
     try { await page.evaluate(`window.seekTo(${t})`); } catch (e2) {}
   }
 }
+checkCaptionOverflow.requires = ['page', 'beats', 'warnings', 't'];
 
 // CHECK: framing is invariant across window shapes.
 //
@@ -456,6 +458,7 @@ async function checkFramingInvariance(ctx) {
     warnings.push('framing invariance: check errored — ' + e.message.split('\n')[0]);
   }
 }
+checkFramingInvariance.requires = ['page', 'dur', 't', 'fails', 'warnings'];
 
 // CHECK: exposure, both tails. This template's renderer uses ACES tone
 // mapping (scene.template.html), which blows out pale materials — but a
@@ -516,6 +519,7 @@ async function checkExposure(ctx) {
     try { await page.evaluate(`window.seekTo(${t})`); } catch (e2) {}
   }
 }
+checkExposure.requires = ['page', 'dur', 't', 'fails', 'warnings'];
 
 // CHECK (hard, FIRST — while the browser is cold): the SHIPPED frame both
 // changes across the film and contains an image. A half-dead backend can
@@ -594,6 +598,7 @@ async function checkShippedFrame(ctx) {
     fails.push('shipped-frame check errored — ' + e.message.split('\n')[0]);
   }
 }
+checkShippedFrame.requires = ['browser', 'file', 'fails', 'noise', 'classify'];
 
 // CHECK (hard): the film actually PLAYS. Every other check in this file --
 // and every page load in shoot.js -- opens the scene with `?record=1`, and
@@ -663,6 +668,7 @@ async function checkLivePlayback(ctx) {
     fails.push('live-playback check errored -- ' + e.message.split('\n')[0]);
   }
 }
+checkLivePlayback.requires = ['page', 'file', 'fails', 'warnings'];
 
 // The two hard checks that precede the ?record=1 load. Ordered, and the order is
 // the one they ran in inline: the shipped-frame check needs the COLD browser --
@@ -683,6 +689,126 @@ const ADVISORY_CHECKS = [
   checkFramingInvariance,
   checkExposure,
 ];
+
+/* ---------- The check driver, and the two things it will not run ------------
+   Both assertions below run at MODULE LOAD, before argv is even read, so a
+   mis-declared or mis-ordered list stops every invocation of this file
+   including --parity-only. That is deliberate: neither condition is a property
+   of a scene, so there is no scene whose verdict should absorb it.
+
+   ORDER IS ASSERTED, NOT DERIVED, and the derivation was designed, measured and
+   refuted rather than merely rejected. The idea was a requires/provides table
+   feeding a topological sort. Measured 2026-08-01: none of these checks writes
+   to `ctx` at all, so `provides` is empty for every one of them, the sort has
+   ZERO edges, and every permutation is equally valid under the scheme while
+   exactly one is correct — strictly worse than the array it would replace. Nor
+   would adding edges revive it: the constraints that actually order this file
+   are page state, not ctx keys — browser coldness, viewport at entry, whether
+   #cap was mutated directly — so a sort obeying every edge still admits orders
+   that are wrong for those reasons. Do not retry it.
+
+   So the order is a tripwire, and each row carries the constraint that puts its
+   function at that index. A reorder then has to argue with a reason instead of
+   with a list. */
+const CHECK_ORDER = [
+  ['PRE_RECORD_CHECKS', PRE_RECORD_CHECKS, [
+    ['checkShippedFrame', 'needs the COLD browser — its failure is warmth-dependent'],
+    ['checkLivePlayback', 'navigates `page` and warms the GPU process; never before the cold check'],
+  ]],
+  ['ADVISORY_CHECKS', ADVISORY_CHECKS, [
+    ['checkCaptionSpeed',      'reads beats only, touches no page state'],
+    ['checkCaptionOverflow',   'mutates #cap.textContent directly, so it must follow the frame capture; restores VIEWPORT and seeks back to t'],
+    ['checkFramingInvariance', 'assumes VIEWPORT and t on entry — exactly the state overflow leaves behind'],
+    ['checkExposure',          'assumes VIEWPORT and t on entry, and waits for the canvas to match the viewport framing restored'],
+  ]],
+];
+
+// The read set every driven check declares is CROSS-CHECKED against the pattern
+// it destructures, because `requires` sitting beside that pattern is two copies
+// of one fact and this repo's organizing finding is that nothing checks such
+// copies agree. Derivation is the CONTROL here, not the source: it is too weak
+// to BE the declaration — a check reading `ctx.foo` outside its pattern is
+// invisible to both copies, so both can still be wrong together — but it is
+// strong enough to catch a hand-edited pattern drifting from its list, which is
+// the failure that actually happens. Smaller hole than the one it closes, stated
+// rather than papered over.
+//
+// WHAT IT READS IS NOT THE FILE. `Function.prototype.toString()` under Bun
+// returns a RE-PRINT of the parsed AST, not the original text — pinned by an
+// arm of bracket-driver.js, 2026-08-01: `const p = ctx.page, d = ctx.dur;` comes back as
+// `const { page: p, dur: d } = ctx;`, a destructuring pattern that was never
+// typed. That is engine-specific (node returns source verbatim) and it cuts the
+// useful way: the guard compares against the binding the check actually
+// performs, so an equivalent spelling passes instead of false-reding. It also
+// means the first mutant written to prove this arm red — sequential `const`s
+// instead of a pattern — came back GREEN, because Bun normalised the mutation
+// into the very shape being looked for. The arm is reachable; that mutant was
+// not a mutation. `ctx.page` used inline with no bindings at all, or a pattern
+// destructured from `ctx.inner`, both go red.
+const CTX_DESTRUCTURE = /const\s*\{([^}]*)\}\s*=\s*ctx\s*;/;
+for (const [listName, list, expected] of CHECK_ORDER) {
+  const actual = list.map(f => f.name);
+  const want = expected.map(([n]) => n);
+  if (actual.join(', ') !== want.join(', ')) {
+    throw new Error(`${listName} is out of order: expected [${want.join(', ')}], found `
+                  + `[${actual.join(', ')}]. The order is load-bearing — see CHECK_ORDER for `
+                  + `the constraint each position encodes.`);
+  }
+  for (const check of list) {
+    if (!Array.isArray(check.requires) || !check.requires.length) {
+      throw new Error(`${check.name}: no ctx requirements declared. Every check in a driven `
+                    + `list must set \`${check.name}.requires\` — an undeclared check is one `
+                    + `the driver validates nothing about, which is the coverage this adds.`);
+    }
+    const m = CTX_DESTRUCTURE.exec(check.toString());
+    if (!m) {
+      throw new Error(`${check.name}: no \`const { ... } = ctx;\` pattern found, so its declared `
+                    + `requires cannot be cross-checked. Destructure ctx once at the top, or `
+                    + `this guard is silently covering nothing.`);
+    }
+    const read = m[1].split(',').map(s => s.trim()).filter(Boolean);
+    const odd = read.filter(n => !/^[A-Za-z_$][\w$]*$/.test(n));
+    if (odd.length) {
+      throw new Error(`${check.name}: ctx destructuring uses renames or defaults (${odd.join(', ')}), `
+                    + `which this cross-check cannot read. Use plain names.`);
+    }
+    const declared = [...check.requires].sort().join(', ');
+    if (declared !== [...read].sort().join(', ')) {
+      throw new Error(`${check.name}: declared requires [${declared}] does not match the keys it `
+                    + `destructures from ctx [${[...read].sort().join(', ')}].`);
+    }
+  }
+}
+
+// ONE place, not per check. A check that validated its own ctx would be a check
+// that can be added WITHOUT validating it, which is the same silent-coverage-loss
+// shape the declaration guard above closes one level up.
+//
+// PRESENCE (`in`), never definedness. `beats` is legitimately `undefined` on a
+// scene that exports no window.BEATS, and both caption checks handle that
+// themselves with an explicit `skipped, window.BEATS not present` warning — so
+// validating definedness would fail such a scene outright. Every one of the nine
+// scenes in today's corpus exports BEATS, which means the two readings are
+// indistinguishable here and the wrong one would have shipped green.
+//
+// A throw lands in checkScene's outer catch and fails the scene loudly. That is
+// the point: it can only fire on a smoke.js bug, and the alternative is what
+// bracket-driver.js's header records, measured 2026-08-01 by moving the setup
+// assignment after this loop — one correct scene drew a hard `render is 100.0%
+// near-black` (dur undefined → t NaN), while framing invariance went silently
+// all-clear, because every window shape sampled at NaN is identical and a check
+// comparing a frame to itself cannot fail. Confidently wrong on one arm and
+// quietly powerless on the other, from one missing key.
+async function runChecks(checks, ctx) {
+  for (const check of checks) {
+    const missing = check.requires.filter(k => !(k in ctx));
+    if (missing.length) {
+      throw new Error(`${check.name} ran before ctx carried ${missing.join(', ')} — this is a `
+                    + `smoke.js ordering bug, not a scene defect`);
+    }
+    await check(ctx);
+  }
+}
 
 async function checkScene(browser, file) {
   const fails = [];
@@ -763,7 +889,7 @@ async function checkScene(browser, file) {
     // Order is load-bearing: the shipped-frame check must have the COLD browser
     // (its failure is warmth-dependent -- see its own comment), so live playback,
     // which reloads the page, runs after it and never before.
-    for (const check of PRE_RECORD_CHECKS) await check(ctx);
+    await runChecks(PRE_RECORD_CHECKS, ctx);
 
     await page.goto('file://' + path.resolve(file) + '?record=1');
     // Order matters and is a compromise, not an ideal. `sceneReady` MUST be
@@ -918,7 +1044,9 @@ async function checkScene(browser, file) {
     // Driven from an array because the ORDER is load-bearing, not incidental:
     // caption overflow mutates #cap and must follow the determinism capture,
     // and three of the four resize the viewport and restore it for the next.
-    for (const check of ADVISORY_CHECKS) await check(ctx);
+    // Through runChecks, so the keys assigned one line above are asserted rather
+    // than assumed; bracket-driver.js is what says that guard still fires.
+    await runChecks(ADVISORY_CHECKS, ctx);
   } catch (e) {
     fails.push(e.message.split('\n')[0]);
   }

@@ -7,6 +7,50 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.53
+
+### added
+
+**The check driver validates `ctx`, and the check order is asserted** — the two
+pieces of debt R4.1's extraction created, both in `smoke.js`, both now under
+`bracket-driver.js` (nine arms, seven of them browser-free).
+
+Before the extraction, `dur` and `t` were block-scoped `const`s, so reading one
+early threw a TDZ `ReferenceError`. `ctx.dur` read before the setup block
+assigns it is `undefined`, silently. That trade was measured rather than
+assumed, by moving the setup assignment after the advisory loop: one correct
+scene drew a hard `render is 100.0% near-black` (every sample time became NaN),
+while framing invariance went **silently all-clear** on the same run, because
+every window shape sampled at NaN is identical and a check comparing a frame to
+itself cannot fail. Confidently wrong on one arm and quietly powerless on the
+other, from a single missing key.
+
+Each check now declares the ctx keys it reads, and one driver — `runChecks`,
+not the checks themselves — asserts them on entry. Validation is by **presence**
+(`k in ctx`), never definedness: `beats` is legitimately `undefined` for a scene
+exporting no `window.BEATS`, and both caption checks handle that themselves. All
+nine corpus scenes export it, so the two readings are indistinguishable here and
+the wrong one would have shipped green — measured against a BEATS-stripped
+scene, where presence passes with the intended `skipped` warnings and
+definedness fails the scene outright.
+
+The declaration is **cross-checked against the pattern each check destructures**,
+so `requires` cannot drift from the code beside it. That guard rests on an
+engine behaviour worth naming: `Function.prototype.toString()` under Bun returns
+a re-print of the parsed AST, not source text, so `const p = ctx.page` comes
+back as a destructuring pattern that was never typed. The first mutant written
+to prove this arm red came back **green** for that reason — the mutation was
+normalised into the shape being looked for. An arm now pins the behaviour.
+
+**Order is asserted, not derived.** Deriving it from a `requires`/`provides`
+table was designed and refuted by measurement: no check writes to `ctx`, so
+`provides` is empty for every one of them and the topological sort has zero
+edges — every permutation equally valid under the scheme while exactly one is
+correct. `CHECK_ORDER` records the constraint that puts each check at its index,
+so a reorder argues with a reason rather than with a list.
+
+Verdicts are byte-unchanged across all nine scenes.
+
 ## 0.16.52
 
 ### changed

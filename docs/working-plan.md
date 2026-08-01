@@ -1,4 +1,4 @@
-last updated: 2026-07-31
+last updated: 2026-08-01
 
 # Working plan: instruments, routing, and the viewer
 
@@ -2196,6 +2196,86 @@ sits in the same directory as four that are honest. Fix by forcing the fallback
 rather than assuming it (or by skipping the arm, loudly, where an adapter
 exists) — a silent skip would be the worse of the two and is the failure
 `bracket-commands` already had.
+
+---
+
+## Track F — unexamined originals (2026-08-01, owner-directed)
+
+**The class:** code that changes what the gate reports, carries no recorded
+reason, and is covered by no control. Nobody changes it because nobody knows why
+it is there, so it survives every review by looking deliberate.
+
+**This is NOT what `selfcheck.js` check 6 covers, and the difference is why the
+class is invisible.** Check 6 finds comments that *assert* a measurement without
+naming the control behind them — a false claim, which is auditable because there
+is a claim to audit. Track F's members make **no claim at all**. There is nothing
+for a doc auditor or a claim checker to catch, which is precisely why they
+accumulate. An absence cannot be graded against its source.
+
+**The instance that opened the track**, and the shape to generalise from:
+`smoke.js`'s across-reload determinism check is guarded by
+`if (!fails.length && shots.length)`. The `shots.length` half is a data
+dependency and must stay. The `!fails.length` half reads `fails` **globally**, so
+a failure in the shipped-frame check, live playback, or the contract check
+silently disables the one check covering load-time nondeterminism — the class its
+own comment says nothing else can reach, and which shipped green once while
+producing three different films across three loads.
+
+What the archaeology found, recorded so it is not repeated:
+
+- **One commit, `2c5742f` (0.16.9, 2026-07-25).** The guard entered in the same
+  hunk as the check. There is no later patch and no "we added this because X"
+  story to recover.
+- **No rationale anywhere.** The nine-line comment above it documents the check
+  in forensic detail and never mentions the guard. The CHANGELOG entry is equally
+  thorough and equally silent. Nothing in `docs/`, `references/`, the postmortems
+  or the local `internal/` tree discusses it. (`internal/log/` starts 2026-07-29;
+  the guard predates the first log by four days.)
+- **It is NOT inherited from the predecessor**, which is the natural guess and is
+  wrong. `internal/circus_prototype/smoke.js` (local) has no across-reload check
+  at all. The rename is 0.13.0 and this is 0.16.9, so it was written in this repo,
+  after the rename. The other local copies carrying it are downstream snapshots,
+  which is why it looks older and more widespread than it is.
+- **It has never been executed by a control.** The CHANGELOG says "Bracketed: the
+  load-seeded mutant fails" — but `bracket-determinism.js` reimplements the reload
+  comparison with its own Playwright calls and never invokes `smoke.js`. It proves
+  the *property* is detectable; it says nothing about whether the shipped code
+  path runs. **That is the trap to generalise: a control that rebuilds the thing
+  it is testing verifies a reimplementation.**
+
+**Seeded at the honest baseline, 2026-08-01, counted rather than estimated** —
+these are candidates, not defects, and the work is triage:
+
+| shape | count | where |
+|---|---|---|
+| silent swallow (`catch (e) {}`, `.catch(() => {})`) | 12 | `smoke.js` 11, `backend.js` 1 |
+| a conditional gating whether a check runs at all | 1 | `smoke.js` reload guard |
+| a cap on how much gets checked (`.slice(0, N)`) | 3 | `smoke.js` |
+
+**Some of these are correct and documented** — `smoke.js:785`'s `.slice(0, 2)` on
+blend-window midpoints states its reason in the comment beside it. The job is not
+to remove them; it is that **nothing distinguishes the reasoned ones from the
+unexamined ones**, so every reader re-does the archaeology or, more often,
+assumes intent that was never there.
+
+**Method, per instance:** recover intent from history first (`git log -S` on the
+line, the CHANGELOG entry for that version, `internal/` for the same date); then
+either document it with the reason and a control, or fix it with a control that
+would have caught it. **Not a sweep** — a sweep would rewrite the reasoned ones
+alongside the rest, and the reasoned ones are the majority.
+
+**Sequencing:** after R4.1 lands. The extraction is what makes the controls
+cheap — once a check is a function taking `ctx`, a bracket can drive it directly
+with an earlier failure present, instead of rebuilding the page setup and
+accidentally testing its own copy.
+
+**Trigger:** R4.1 green. Its first instance is the reload guard, whose fix is
+already specified: narrow it to the failures that genuinely make the comparison
+meaningless, give the block its own `try/catch` so a `missing contract:` throw
+degrades rather than stacking a raw `TypeError`, and **report the skip** when it
+skips. Note that narrowing is invisible on today's corpus — all nine scenes pass,
+so the guard never fires — which means the R4.1 gate cannot validate it and the
+bracket arm is not optional.
 
 ---
 

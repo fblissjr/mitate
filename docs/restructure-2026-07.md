@@ -72,7 +72,8 @@ last updated: 2026-08-01
 > measurement; running it against a deliberately broken version is.
 >
 > **Next: R4.1, the only gate clause still open.** Finding dispositions in
-> `working-plan.md`, first section.
+> `working-plan.md`, first section. **(Closed 2026-08-01 — see the GATE R4 IS
+> MET block below.)**
 >
 > **Shipped:** 0.16.42 (three harness defects) · 0.16.43 (**R4.4**,
 > `--parity-fix`) · 0.16.44 (`CONTRACT` becomes the seventh fence, carrying a
@@ -94,6 +95,11 @@ last updated: 2026-08-01
 > it fresh, and re-capture the baseline on the machine and backend you will
 > compare against.
 >
+> **SUPERSEDED — R4.1 is done (0.16.54); see the 2026-08-01 block below.** The
+> re-capture advice held up in practice: the baseline was taken fresh on this
+> machine and matched the recorded four warnings, which made it a verification
+> rather than a citation.
+>
 > ### 2026-08-01 — re-verified, and the PR opens BEFORE R4.1
 >
 > The four clause verdicts above were checked against their evidence rather than
@@ -113,7 +119,49 @@ last updated: 2026-08-01
 > gate, and that is this branch's own lesson (see R4.3's amendment) applied
 > before rather than after the fact.
 >
-> **What is left for Gate R4, in the order to do it:**
+> ### 2026-08-01, later — GATE R4 IS MET, all five clauses
+>
+> **R4.1 is done (0.16.54).** `checkScene` finishes at **155 lines**, from 594.
+> Stage 3 took the setup block and the determinism trio; C4 and C5 (0.16.53)
+> closed the two pieces of debt stages 1-2 created, in that order, per the
+> stopping rule.
+>
+> **Clause 5 is met in its STRONGEST form, not its per-stage one.** Each stage
+> was gated on byte-unchanged verdicts as it landed, but the clause is about the
+> extraction, so it was also run end to end: `ee92780^`'s `smoke.js` — the last
+> pre-extraction copy — against the current one, same machine, same backend, same
+> 9 scenes. **Byte-identical.** Only the four R4.1 commits touched `smoke.js` in
+> that range, so the comparison isolates the extraction and nothing else.
+>
+> **A green diff was again not treated as sufficient, and for stage 3 it is the
+> weakest oracle in the file.** The trio emits nothing on an all-green corpus, so
+> an extraction that orphaned one of the three would produce identical output.
+> Each of its three assertions was forced true in turn: all three fired on all 9
+> scenes with the exit code flipping. That is what says they are still wired to
+> the verdict.
+>
+> **New control: `templates/bracket-driver.js`**, 10 arms, 8 needing no browser.
+> It is the first bracket over `smoke.js`'s own structure rather than over a
+> scene property — which it has to be, because every guard C4 and C5 added fires
+> only on a smoke.js bug and is therefore invisible on a healthy tree.
+>
+> **Two Bun engine behaviours were found by that bracket and both changed code**,
+> which is worth reading as a pattern rather than as trivia:
+> `Function.prototype.toString()` returns a re-print of the parsed AST, not
+> source text, so the first mutant written to prove an arm red came back
+> **green** — Bun had normalised the mutation into the very shape being looked
+> for. And it merges adjacent `const` declarations, which false-redded the new
+> guard the moment `checkDeterminism` was written. Neither was findable by
+> reading; both took a control that ran.
+>
+> **One thing is recorded and NOT resolved:** `after-hours.html` failed
+> determinism once during a reachability run and did not reproduce in ~19 further
+> runs across both the pre- and post-extraction copies. It is the fixture
+> imported to reproduce the open 1-in-6 `WEBGPU=metal` failure, so that is the
+> likely reading — but one event characterises nothing, and it is filed as
+> `working-plan.md` bucket D item 7 rather than attributed.
+>
+> **What was left for Gate R4, in the order it was done:**
 >
 > 1. ~~**`poster` + the three tilers move off ffmpeg**~~ **DONE (0.16.51), with
 >    Track E0's ratchet landed first so the migration is proved rather than
@@ -177,9 +225,9 @@ last updated: 2026-08-01
 >    the second run would tell them. Weigh it as a passed experiment, not as a
 >    standing check. The half that *is* checkable holds: the router row exists,
 >    and `Open question` is a real convention.
-> 4. **R4.1 — extract `checkScene`.** Deliberately not started; its gate is
->    byte-unchanged smoke verdicts. `checkScene` measures **594 lines**
->    (`smoke.js:278-871`).
+> 4. ~~**R4.1 — extract `checkScene`.**~~ **DONE (0.16.54), 594 → 155 lines.**
+>    Its gate was byte-unchanged smoke verdicts, met per-stage and end to end —
+>    see the block above.
 >
 >    **BASELINE, RE-RUN 2026-07-31, and it corrects this block.** This said "all
 >    9 scenes pass, with one `warn` on `menagerie.html`". All 9 do pass, but

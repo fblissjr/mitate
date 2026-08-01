@@ -2374,24 +2374,69 @@ reasoning, and it outlives the PR.
 
 ### B — closes gate R4
 
-3. **R4.1 stage 3** — the setup block and the determinism trio. The only gap in
-   clause 2, and the coupled slice: three assertions over one captured `shots`,
-   no individual `try/catch` by design, and the `!fails.length` guard inside it.
+3. ~~**R4.1 stage 3** — the setup block and the determinism trio.~~ **DONE
+   (0.16.54).** `checkScene` finishes at **155 lines**, from 594. `setupScene`
+   is called directly rather than driven from a list (a list models a choice of
+   order, and nothing can precede the load that makes the page); the trio
+   becomes `SHOT_CHECKS`, through the same validating driver and the same
+   `CHECK_ORDER` as the other two lists. The array is `ctx.frames`, not
+   `ctx.shots` — `window.SHOTS` is the scene's shot list, a second meaning for
+   one word that the inline version shadowed one block apart.
+
+   **Error semantics preserved exactly**: none of the three carries a
+   `try/catch`, so a throw reaches the outer catch, becomes a FAIL, and abandons
+   the rest. The `!fails.length` guard is carried unchanged and stays item 6's
+   debt, for the reason that put it there — it is invisible on an all-green
+   corpus, so the run that makes it visible cannot validate a fix.
+
+   **Gated twice.** Verdicts byte-unchanged over the 9 scenes, and — because
+   these checks emit nothing when the corpus is green, so an orphaned one is
+   indistinguishable from a working one — each of the three assertions was
+   forced true in turn. All three fired on all 9 scenes with the exit code
+   flipping, which is what says they are still wired to the verdict.
 
 ### C — debt this branch INTRODUCED (named, because it is ours)
 
-4. **The `ctx` refactor traded a loud failure for a silent one.** `dur` and `t`
-   were block-scoped `const`s, so reading one before its declaration threw a TDZ
-   `ReferenceError`. `ctx.dur` read before the setup block assigns it is
-   `undefined`, silently, and a check computing against `undefined` will often
-   still emit something plausible. That surface did not exist before stage 1.
-   Cheap fix: assert the keys a check requires, on entry.
-5. **Check order is load-bearing, documented, and unasserted.** Both
-   `PRE_RECORD_CHECKS` and `ADVISORY_CHECKS` carry comments saying a reorder is a
-   behaviour change. Nothing enforces it; alphabetise `ADVISORY_CHECKS` and
-   caption-overflow's viewport restore stops preceding exposure.
+4. ~~**The `ctx` refactor traded a loud failure for a silent one.**~~ **DONE
+   (0.16.53).** `dur` and `t` were block-scoped `const`s, so reading one before
+   its declaration threw a TDZ `ReferenceError`. `ctx.dur` read early is
+   `undefined`, silently. Each check now declares the keys it reads and one
+   driver — `runChecks`, not the checks themselves — asserts them on entry.
 
-   **Fix: assert the order. Do NOT derive it.**
+   **"Something plausible" understated it, and the measurement is the useful
+   part.** Moving the setup assignment after the advisory loop produced BOTH
+   failure modes at once on a correct scene: `checkExposure` drew a hard
+   `render is 100.0% near-black` (every sample time became NaN), while
+   `checkFramingInvariance` went **silently all-clear** on the same run, because
+   every window shape sampled at NaN is identical and a check comparing a frame
+   against itself cannot fail. Confidently wrong on one arm, quietly powerless
+   on the other, from one missing key.
+
+   **Presence (`k in ctx`), never definedness** — `beats` is legitimately
+   `undefined` for a scene exporting no `window.BEATS`, and both caption checks
+   handle that themselves. All nine corpus scenes export it, so the two readings
+   are indistinguishable here and the wrong one would have shipped green.
+   Measured against a BEATS-stripped scene: presence passes with the intended
+   `skipped` warnings, definedness fails the scene outright and blames smoke.js.
+
+   The declaration is cross-checked against the pattern each check destructures,
+   so `requires` cannot drift from the code beside it. Two engine facts came out
+   of building that, both in `bracket-driver.js`: `Function.prototype.toString()`
+   under Bun returns a re-print of the parsed AST rather than source text (so the
+   first mutant written to red that arm came back **green** — Bun had normalised
+   the mutation into the shape being looked for), and it **merges adjacent
+   `const` declarations**, which false-redded the guard the moment
+   `checkDeterminism` was written.
+5. ~~**Check order is load-bearing, documented, and unasserted.**~~ **DONE
+   (0.16.53).** Both lists carried comments saying a reorder is a behaviour
+   change and nothing enforced it. `CHECK_ORDER` now asserts all three lists
+   (`SHOT_CHECKS` joined at 0.16.54) at module load, before argv is read, so a
+   mis-ordered list stops every invocation including `--parity-only` — neither
+   condition is a property of a scene, so no scene's verdict should absorb it.
+
+   Each row carries the constraint that puts its check at that index, so a
+   reorder argues with a reason rather than with a list. **Fix: assert the
+   order. Do NOT derive it.**
 
    > **Rejected: deriving order from a `requires`/`provides` declaration table.**
    > The idea was one structure solving three problems — validate ctx keys,
@@ -2428,6 +2473,26 @@ reasoning, and it outlives the PR.
    `/extract-patterns` has no bracket and has never run · the `!fails.length`
    guard (Track F's first instance).
 
+7. **`after-hours.html` failed determinism once, 2026-08-01, and it is NOT
+   attributed.** Observed during a stage-3 reachability run: `seekTo(2.128) not
+   deterministic — scene carries state across frames (checked 12, 24, 36, 48,
+   2.128, 3.88)`, on the `[source, webgpu]` path.
+
+   This is the fixture imported specifically to reproduce the **open 1-in-6
+   `WEBGPU=metal` determinism failure** (see `fixtures/defect-corpus/README.md`),
+   so the likeliest reading is that it did its job. **Likely is not measured**,
+   and the counter-evidence is that it did not reproduce: 6 isolated runs and 3
+   full-corpus runs on the PRE-extraction `smoke.js`, 6 isolated runs on the
+   post-extraction one, and 4 further full-corpus runs — all clean. One event in
+   ~19 opportunities, against a recorded 1-in-6.
+
+   **What is ruled out:** the extraction did not touch the seek/settle/screenshot
+   sequence, and the whole-extraction verdict comparison is byte-identical.
+   **What is not ruled out:** anything about the underlying flake, because a
+   single event characterises nothing. Recorded here rather than chased — it is
+   a discovery, not an invariant violation in this diff nor debt it created, and
+   it belongs to the already-open determinism item rather than to this PR.
+
 ### E — long-term, Phase R
 
 7. The ratchet for undocumented-and-uncontrolled code · `bracket-determinism.js`
@@ -2462,6 +2527,14 @@ exactly when the pull to expand scope is strongest. Filed anyway.
 A1's bump (green) → C4/C5 → B3 → merge, with D and E filed. D and E are
 explicitly NOT merge blockers; carrying them knowingly differs from carrying them
 silently, which is what the PR body's debt list is for.
+
+**All of A, B and C are now closed** (0.16.52, 0.16.53, 0.16.54) and the order
+above was followed as written. **The stopping rule held under load**: stage 3
+turned up two Bun engine behaviours and one unexplained determinism event, and
+all three were recorded — as code comments, bracket arms, and item 7 — without
+any of them becoming work. The two engine facts DID change code, and that is
+consistent rather than an exception: both were defects in the guard being built
+in this diff, which is (b).
 
 ### Filed, not built: the reasoning-capture architecture (2026-08-01)
 

@@ -7,6 +7,53 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.57
+
+### added
+
+**`selfcheck` check 13 — a derived count may not drift from the thing it
+counts.** Check 12 closed one shape of the no-hand-written-counts rule; this
+closes the class. The instrument is a **generator, not a scanner**, and the
+reason is measured: the forms a count takes in prose are unbounded, and the
+`CLAUDE.md` violation the rule was written for was a parenthetical —
+`` `references/` (9) `` — so three greps written specifically to find it came
+back empty on a violation this repo had already documented. A scanner has to
+recognise a count in arbitrary prose and cannot. A generator fills a marker it
+placed itself, so it can neither miss nor false-positive.
+
+`scripts/derived-counts.js` owns a REGISTRY of countables — data, so adding one
+is an entry rather than a new check — and a `--write` path that refills every
+`<!--derived:key-->` marker. Check 13 recomputes them and fails on disagreement,
+the same shape check 8 already uses against the installed pre-commit hook.
+
+**Found immediately, which is the argument for it.** `instruments.md` asserted
+"Six fences are registered" and listed six, omitting `CONTRACT` — stale since
+0.16.44 made it the seventh, in a file that **ships to every installed user**, so
+the count and the list had disagreed with `smoke.js` for eleven versions. The
+same stale six appeared in `docs/plan.md` and in `.claude/skills/extract-patterns/`,
+the last of which nothing mechanical had ever covered. The corpus README said
+"twelve characterized defects" while carrying fourteen table rows, three of the
+twelve having been split into sub-lettered rows with the sentence never
+revisited. Four more counts were correct but latent — "the five shipped
+examples", "Three companion references" — each certain to rot on the next
+addition.
+
+### changed
+
+The bare-count half is **best-effort by admission** and scoped by data: registry
+nouns only, live-claim files only. Scanning every tracked file surfaced 71 hits,
+essentially all legitimate history; scanning the front-door files surfaced five.
+Both figures were measured before the check was written. `CHANGELOG.md`, the
+session logs, the postmortems and the two planning documents are excluded as
+dated records, and a genuine mention carries `<!--count-mention-->` on its line —
+the use-versus-mention seam this repo has now failed six times, made explicit
+rather than inferred.
+
+What it does not cover is stated in the check: a noun outside the REGISTRY, and
+anything in an excluded record. A handoff listing four cached plugin versions
+where five are installed is outside every guard here; the answer there is to
+cite the command, not its output.
+
 ## 0.16.56
 
 ### added

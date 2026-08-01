@@ -202,6 +202,67 @@ const ARMS = [
     return () => fs.writeFileSync(f, before);
   }, null],
 
+  // Check 13 — a derived count may not drift from what it counts. Both halves
+  // are load-bearing and for different reasons. The DRIFT arm proves the marker
+  // is actually compared rather than merely parsed; the AGREES arm proves the
+  // comparison can still return true, which a check that failed unconditionally
+  // would also satisfy. The BARE pair is the use-versus-mention seam this repo
+  // has now failed six times: a check that reddened on "the prototype's twelve
+  // defects" would be turned off within a week, so the exemption is tested as
+  // deliberately as the catch.
+  //
+  // docs/README.md is the fixture because it is a live-claim file that is NOT
+  // under plugin/ — the same isolation the check 12 arms above needed, and for
+  // the same reason: an edit under plugin/ trips check 11 and the arm would go
+  // red for a check it is not testing.
+  ['a derived count marker drifts from its source', () => {
+    const f = path.join(ROOT, 'docs', 'README.md');
+    const before = fs.readFileSync(f, 'utf8');
+    // DERIVED, never written down — a control that hard-codes the number it is
+    // policing is the defect it exists to catch, one file over.
+    const wrong = require('./derived-counts.js').REGISTRY.references.derive() + 1;
+    fs.writeFileSync(f, before + `\n<!--derived:references-->${wrong}<!--/derived-->\n`);
+    return () => fs.writeFileSync(f, before);
+  }, 'derived'],
+
+  ['a derived count marker that AGREES (must stay green)', () => {
+    const f = path.join(ROOT, 'docs', 'README.md');
+    const before = fs.readFileSync(f, 'utf8');
+    const right = require('./derived-counts.js').REGISTRY.references.derive();
+    fs.writeFileSync(f, before + `\n<!--derived:references-->${right}<!--/derived-->\n`);
+    return () => fs.writeFileSync(f, before);
+  }, null],
+
+  ['a bare count of a registered noun in a live-claim doc', () => {
+    const f = path.join(ROOT, 'docs', 'README.md');
+    const before = fs.readFileSync(f, 'utf8');
+    // ASSEMBLED, so this control's own source does not carry the string it is
+    // injecting. bracket-selfcheck.js has been bitten by exactly that before.
+    const claim = ['fifteen', 'references'].join(' ');
+    fs.writeFileSync(f, before + `\nThe subtree carries ${claim} today.\n`);
+    return () => fs.writeFileSync(f, before);
+    // Asserts selfcheck's wording, not derived-counts.js's. The first cut
+    // expected the CLI's "BARE" prefix, which selfcheck never prints -- the arm
+    // went red for the right reason and reported the wrong one, which is the
+    // failure mode this bracket exists to make visible in other checks.
+  }, 'hand-written count'],
+
+  ['a historical mention carrying its exemption (must stay green)', () => {
+    const f = path.join(ROOT, 'docs', 'README.md');
+    const before = fs.readFileSync(f, 'utf8');
+    const claim = ['fifteen', 'references'].join(' ');
+    const { EXEMPT } = require('./derived-counts.js');
+    fs.writeFileSync(f, before + `\nThe prototype had ${claim}. ${EXEMPT}\n`);
+    return () => fs.writeFileSync(f, before);
+  }, null],
+
+  // PRECONDITION: the working tree carries no pending version bump. Check 11
+  // compares the anchor commit's version against the WORKING TREE's, so while an
+  // uncommitted bump sits in plugin.json it reports "the version moved" whatever
+  // this arm does to plugin/, and the arm reads MISSED. That is check 11 behaving
+  // correctly, not a regression — commit the cascade, then re-run. Observed
+  // while adding check 13, and written down because the symptom (a long-green
+  // arm suddenly red) invites exactly the wrong diagnosis.
   ['plugin content changed without a version bump', () => {
     const f = path.join(ROOT, 'plugin', 'skills', 'mitate', 'templates', 'smoke.js');
     const before = fs.readFileSync(f, 'utf8');

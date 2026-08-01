@@ -27,10 +27,15 @@ copy of a router is the exact failure this file keeps catching.
   knew them), `templates/`, `examples/`, and `plugin/agents/film-reviewer.md`
 - **What happened and why** — `CHANGELOG.md`
 - **Repo tools** — `scripts/selfcheck.js`, `install-hooks.sh`,
-  `stage-films.sh`, `diagnose-determinism.js`, `sample-determinism.js`.
-  `scripts/bracket-*.js` are their controls, and **cover two of the five** —
-  `selfcheck.js` and `stage-films.sh`. The other three are uncontrolled, which
-  invariant 6 wants visible rather than glossed
+  `stage-films.sh`, `derived-counts.js`, `diagnose-determinism.js`,
+  `sample-determinism.js`. `scripts/bracket-*.js` are their controls, and cover
+  `selfcheck.js`, `stage-films.sh` and `derived-counts.js` (through
+  `bracket-selfcheck.js`'s check 13 arms). **`diagnose-determinism.js`,
+  `sample-determinism.js` and `install-hooks.sh` are uncontrolled**, which
+  invariant 6 wants visible rather than glossed. Named rather than counted, on
+  purpose: this line read "cover two of the five" and adding one tool made both
+  numbers wrong at once. A list of names goes stale loudly; a count goes stale
+  silently
 - **The website** — `site/` (`index.html`, `app.js`, `posters/`; films are staged
   in, never tracked). A glorified `README.md` with example scenes: how the vision
   and the plan get communicated outward. **Strictly downstream** — `VISION.md`,

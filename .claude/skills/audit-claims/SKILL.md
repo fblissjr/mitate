@@ -11,7 +11,7 @@ heroic. A change that touches code a reference describes gets a
 
 The rule existed and the agent existed for the whole life of this repo, and
 nothing made the pass happen — so it didn't. This is that rule, executable. It
-exists because on 2026-07-29 a hand-invoked audit found two real defects that no
+exists because on 2026-07-29 a hand-invoked audit found two real defects that no <!--count-mention-->
 check in the repo can reach, and it found them only because someone happened to
 remember the agent's name.
 

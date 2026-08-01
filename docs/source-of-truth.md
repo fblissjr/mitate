@@ -147,6 +147,36 @@ requiring a line to BEGIN with a comment marker rather than contain one. Read
 that as evidence for the warning, not against it: the guard was written by
 someone who had just read this paragraph, and it still happened.
 
+**2026-08-01 — check 13 closes the class, and the design lesson is that a
+scanner cannot.** Check 12 covered one shape; the rule kept losing everywhere
+else. The first design was a scanner over prose, and it is wrong for a reason
+worth keeping: the forms a count takes are unbounded — "9 references",
+"`references/` (9)", "all three", "five ways", "two of twelve" — so three greps
+written specifically to find the `CLAUDE.md` violation came back **empty on a
+violation already written down two paragraphs above**, because it was a
+parenthetical. A line-based scan then missed a second class outright: these files
+wrap at ~80 columns, so `docs/addressing.md`'s "all five shipped\nexamples"
+straddles a newline and is invisible to anything matching one line at a time.
+
+So the instrument is a **generator**. `scripts/derived-counts.js` holds a
+REGISTRY of countables and fills a marker it placed itself; check 13 recomputes
+and fails on disagreement. It cannot miss and cannot false-positive, because it
+never has to recognise anything. Adding a countable is a data edit.
+
+**What it found on its first run is the argument for it**: `instruments.md`
+asserted six registered fences and listed six, omitting `CONTRACT`, stale since
+0.16.44 — in a file that SHIPS, so it had disagreed with `smoke.js` for eleven
+versions for every installed user. The same stale six sat in `docs/plan.md` and
+in `.claude/skills/`, which nothing mechanical had ever covered.
+
+**The bare-count half is best-effort by admission**, scoped by measurement:
+scanning every tracked file surfaced 71 hits, essentially all legitimate history;
+the front-door files surfaced five. `CHANGELOG.md`, the logs, the postmortems and
+the two planning documents are excluded as dated records. What remains uncovered
+is a noun outside the REGISTRY and anything inside an excluded record — a handoff
+listing four cached plugin versions where five exist is outside every guard here.
+**There the answer is not a check: cite the command, not its output.**
+
 ## The rules
 
 - **A number appears once.** Re-measure it → update its home plus a CHANGELOG

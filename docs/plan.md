@@ -313,8 +313,8 @@ exist. Each of these isolates ONE new variable, which is Phase 1's lesson
 applied to the portfolio itself.
 
 - **A 2D film — and this is a hole, not a nicety.** `scene2d.template.html`
-  ships to every installed user and **no example exercises it**: all five
-  examples carry the `RIG` fence, and the 2D template carries only `CONTRACT` and
+  ships to every installed user and **no example exercises it**: every
+  example carries the `RIG` fence, and the 2D template carries only `CONTRACT` and
   `KERNEL`. Its `drawOn`/`alongPath` phase-locked draw-on and in-canvas text have
   no worked demonstration anywhere. A 2D data explainer would close that and is a
   natural rung below `market-crash`.
@@ -386,8 +386,10 @@ recording because they are findings, not moves. **0.14.0 shipped
 `build.js` had cited since 0.1.0 without either file ever existing here** — a
 dangling pointer every installed user has followed for the plugin's whole life,
 found only once the tree sat in one place. Porting them was an audit, not a
-copy, and it corrected four claims that had gone stale against this stack (six
-parity fences, not two; the shipped-frame spread
+copy, and it corrected four claims that had gone stale against this stack (six <!--count-mention-->
+parity fences, not two — six was right at that audit and `CONTRACT` has since
+made it seven, which is why this sentence is marked as a record of what the
+audit said rather than a live count; the shipped-frame spread
 floor and `build.js poster` undocumented entirely; the predecessor's
 cross-backend PSNR figure relabelled inherited). And **the predecessor's measured
 record now lives here**, consolidated verbatim into
@@ -442,7 +444,7 @@ variable.
    39/40) with two refinements — the trigger is a REVISITED state after a
    depth-order change (object motion suffices; camera cuts are the common
    case), and it is 100% deterministic on revisit, not flaky. An
-   independent film review then found two HIGH semantic defects in gearbox
+   independent film review then found two HIGH semantic defects in gearbox <!--count-mention-->
    (ring parked off the interlock; ratio trails asserting 1:1 against a
    3:1 caption) plus an uncovered loop seam — all fixed in 0.2.1, with the
    loop made seamless BY CONSTRUCTION (SPIN derived from TOTAL so both
@@ -588,7 +590,7 @@ identical unfenced copies; now HTML-comment-fenced in all five 3D scenes and
 in smoke's parity loop (a second regex arm, since the block lives outside
 `<script>`). Plus four small cleanups; ledger in
 [`predecessor-record.md`](predecessor-record.md), not this CHANGELOG. The
-standing cross-directory parity rule now covers six fences.
+standing cross-directory parity rule now covers <!--derived:fences-->7<!--/derived--> fences.
 
 *Phase 2 GATE MET 2026-07-23 (mitate 0.11.0):*
 `examples/bear-and-bees.html` — the comedy short, carrying the
@@ -755,7 +757,7 @@ majority:
 | b | yes | no | build the control, keep the code | **`selfcheck.js` check 5**, ratcheted at 51 |
 | c | no | yes | recover intent from the control's arms — they are a spec nobody wrote as prose | nothing |
 | d | no | no | archaeology, then decide | **nothing** — `working-plan.md` Track F |
-| e | duplicated by construction | — | the seven fences | `--parity-fix` + cross-directory parity |
+| e | duplicated by construction | — | the <!--derived:fences-->7<!--/derived--> fences | `--parity-fix` + cross-directory parity |
 
 **Two of the five are already instrumented, and that is the model to copy.**
 Check 5 counts comment lines asserting a measurement without naming a runnable
@@ -884,7 +886,7 @@ Examples stay in the plugin dirs. The mechanics, verified on this machine:
 `/plugin marketplace add` shallow-clones the ENTIRE repo regardless of which
 plugin the user wants; `/plugin install` then copies just that plugin's
 subtree — examples included — into a per-version cache. (Re-measured 2026-07-25 by byte-summing `git ls-files`: **7.9 MB tracked in
-total, a 5.8 MB plugin subtree of which 5.5 MB is examples** — the method matters,
+total, a 5.8 MB plugin subtree of which 5.5 MB is examples** — the method matters, <!--count-mention-->
 since `du` block-sums differ at this precision. The earlier figures, 9.6/5.9/5.5,
 were taken right after the repo split and carried neither date nor method. The original measurement was taken in the predecessor's
 multi-plugin marketplace at ~18 MB; the ratio is what carried, not the figure.) So yes, examples ship; and no, it does not matter

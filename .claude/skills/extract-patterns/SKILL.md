@@ -32,7 +32,7 @@ Not tiredness. The author **felt the necessity that produced each choice**, and
 therefore cannot easily see which choices were general — every one of them felt
 required at the time. A session with no investment in them can.
 
-The corpus says so twice: the prototype's twelve defects came from a *single*
+The corpus says so twice: the prototype's twelve defects came from a *single* <!--count-mention-->
 independent `film-reviewer` pass on a film its author had already reviewed over
 eight rounds and shipped, and on 2026-07-31 an independent no-context pass on a
 postmortem found that postmortem's flagship claim false. Both are recorded in
@@ -251,8 +251,8 @@ unrecoverable, which is the failure the ledger's closing section is about.
    ~500 characters after the bundle.
 
 3. **Search five regions, and only three of them are code.**
-   - **Unfenced code — the search space by definition.** The six fences
-     (`KERNEL`, `SOLVER`, `RIG`, `DRIVER`, `CHARACTER`, `HTML`) are already
+   - **Unfenced code — the search space by definition.** The <!--derived:fences-->7<!--/derived--> fences
+     (`CONTRACT`, `KERNEL`, `SOLVER`, `RIG`, `DRIVER`, `CHARACTER`, `HTML`) are already
      promoted kit; something found inside one is a parity concern for `smoke.js
      --parity-only`, not a pattern. Nothing marks unfenced code as this film's
      private solution — that is the ledger's complaint, and it is also the map:

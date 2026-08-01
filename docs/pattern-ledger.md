@@ -1,4 +1,4 @@
-last updated: 2026-07-31
+last updated: 2026-08-01
 
 # Pattern ledger: how many times have we built this
 
@@ -120,7 +120,7 @@ A session with no investment in them can.
 
 The corpus evidence is unambiguous and was gathered independently of this idea:
 
-- The prototype's twelve defects came from a **single** independent
+- The prototype's twelve defects came from a **single** independent <!--count-mention-->
   `film-reviewer` pass on a film its author had already reviewed over eight
   look-and-edit rounds and shipped. It found almost nothing the author had
   considered and dismissed, and nearly everything they had never looked at.
@@ -154,7 +154,7 @@ an obstacle to route around.
 ### The flywheel ran manually on 2026-07-31, and its output is already at risk
 
 A parallel session did the whole loop by hand: built a scene end to end, reviewed
-it with `film-reviewer` and found six defects, wrote a postmortem, had an
+it with `film-reviewer` and found six defects, wrote a postmortem, had an <!--count-mention-->
 independent no-context pass review *that postmortem* (which found its own
 flagship claim false — a `probe` measurement projecting a hand-declared constant
 rather than the live geometry it claimed to measure), then investigated a

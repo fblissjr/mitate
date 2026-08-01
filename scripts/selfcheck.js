@@ -1050,6 +1050,53 @@ const toolJs = new Map([
   }
 }
 
+/* ---- 13. a derived count may not drift from the thing it counts -----------
+ * Check 12 closed ONE shape of the rule `source-of-truth.md` states -- a
+ * bracket naming its own arm count. The rule kept losing everywhere else,
+ * because the dangerous forms are unbounded: "9 references", "`references/`
+ * (9)", "all three", "five ways", "two of twelve". A scanner has to RECOGNISE a
+ * count in arbitrary prose and cannot; the CLAUDE.md instance was a
+ * parenthetical, and three greps written specifically to find it came back
+ * empty on a violation the repo had already documented.
+ *
+ * So the instrument is a GENERATOR, not a scanner. `derived-counts.js` owns a
+ * REGISTRY of countables and fills a marker it placed itself, which can neither
+ * miss nor false-positive. This check is the drift half: it recomputes every
+ * marker and fails when one disagrees. Same shape as check 8, which compares
+ * the installed hook against its generator -- a pattern already proven here.
+ *
+ * The second half (bare counts) is best-effort BY ADMISSION and scoped by data:
+ * registry nouns only, live-claim files only. Scanning everything surfaced 71
+ * hits, essentially all legitimate history; scanning the front-door files
+ * surfaced five. Both numbers were measured before this was written. A
+ * legitimate mention carries `<!--count-mention-->` on its line, which is the
+ * use-versus-mention seam this repo has now failed six times and is therefore
+ * explicit rather than inferred.
+ *
+ * WHAT IT DOES NOT COVER, said plainly: a count in a noun not in the REGISTRY,
+ * and any count in CHANGELOG.md, the logs, the postmortems or the two planning
+ * documents. Those are dated records. A handoff that lists four cached plugin
+ * versions where five exist is outside every guard here -- the answer there is
+ * to cite the command, not its output. */
+{
+  const { scan, REGISTRY } = require('./derived-counts.js');
+  const { drift, bare } = scan();
+  if (drift.length) {
+    fail(`${drift.length} derived count(s) drifted from what they count: ${drift.join('; ')}. `
+       + `Run 'bun run scripts/derived-counts.js --write' — the marker is refilled from the `
+       + `REGISTRY, never by hand.`);
+  }
+  if (bare.length) {
+    fail(`${bare.length} hand-written count(s) in live-claim prose: ${bare.join('; ')}. `
+       + `Replace with a <!--derived:key--> marker, drop the number (it usually carries nothing), `
+       + `or mark a genuine historical mention with <!--count-mention--> on its line.`);
+  }
+  if (!drift.length && !bare.length) {
+    notes.push(`${Object.keys(REGISTRY).length} registered countables, every marker matching its `
+             + `source and no bare count in live-claim prose`);
+  }
+}
+
 for (const n of notes) console.log('  ok   ' + n);
 if (fails.length) {
   console.log('');

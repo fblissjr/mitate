@@ -13,7 +13,7 @@ controls discipline, continuity and semantics review, and the determinism
 rules. Everything here holds for any scene that implements the window
 contract, whatever renders the pixels.
 
-Three companion references hold what this file deliberately does not:
+The companion references hold what this file deliberately does not:
 
 - `instruments.md` — what every check can and cannot see, with its measured
   bracket. Read it before trusting a green result.
@@ -401,7 +401,7 @@ there.
 Stills cannot show time. Every failure in the composition axis is visible in one
 frame, which is why the documented loop finds them. Nothing in this section is.
 A film can pass a careful frame-by-frame review and still stutter, pop and slide,
-and every one of the defects below shipped in a scene whose sampled frames all
+and every one of the defects below shipped in a scene whose sampled frames all <!--count-mention-->
 looked correct.
 
 ```bash
@@ -831,7 +831,7 @@ Untested; recorded because it is the specific thing to watch a spike for.
 4. Budget 3-4 rounds on composition — that's the axis that converges with
    rounds. Continuity and semantics do not, no matter how many times you repeat
    this loop; they need the separate passes in steps 5-7 — see the worked
-   instance above, where four composition rounds converged cleanly while two
+   instance above, where four composition rounds converged cleanly while two <!--count-mention-->
    continuity defects rode along untouched to a confident all-clear.
 5. `bun run build.js motion <scene.html>` — read the per-beat profile. Any beat
    far below its neighbours, or any dead air you did not intend, is a question.

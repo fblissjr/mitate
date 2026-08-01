@@ -1,4 +1,4 @@
-last updated: 2026-07-31
+last updated: 2026-08-01
 
 # The defect corpus — apparatus, not an example
 
@@ -50,7 +50,7 @@ and because a file that silently leaves the parity set is the exact failure
 
 The reason is not tidiness. **A regression control running a stale kernel is not
 measuring the engine the instruments actually gate.** When this file was
-imported, 5 of its 7 fences had drifted from the shipped corpus — `CONTRACT` was
+imported, 5 of its 7 fences had drifted from the shipped corpus — `CONTRACT` was <!--count-mention-->
 absent entirely, and `KERNEL`, `SOLVER`, `DRIVER` and `HTML` were months behind.
 It was brought current with `smoke.js --parity-fix --from
 plugin/skills/mitate/templates/scene.character.template.html`, which is the
@@ -84,10 +84,14 @@ file and failing when that changes in either direction. Not yet written.
 
 ## The defects, and which have been re-measured
 
-The prototype carried twelve characterized defects. **They are mechanical and
-most should survive a re-skin, but "should" is not a measurement** — and the
-engine changed underneath this build when the fences were brought current, which
-can move both framings and numbers.
+The prototype carried twelve characterized defects, <!--count-mention--> and
+this build enumerates them as <!--derived:defect-rows-->14<!--/derived--> rows
+across the two tables below — three of the twelve are split into sub-lettered
+rows (`2b`, `5b`, `10b`), which is why the two numbers differ and why the
+sentence that used to state only the first one misled every reader who counted
+the second. **The defects are mechanical and most should survive a re-skin, but
+"should" is not a measurement** — and the engine changed underneath this build
+when the fences were brought current, which can move both framings and numbers.
 
 **Re-measured against THIS build:**
 
@@ -126,7 +130,7 @@ to serve.
 
 ## The finding that justifies the whole directory
 
-The prototype's twelve defects were found by a **single** `film-reviewer` pass on
+The prototype's twelve defects were found by a **single** `film-reviewer` pass on <!--count-mention-->
 a film its author had already reviewed over roughly eight look-and-edit rounds
 and delivered as an MP4. The review found almost nothing the author had
 considered and dismissed, and nearly everything the author had never looked at.

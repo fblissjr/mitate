@@ -87,6 +87,18 @@ window.sceneReady = true;
 //     region at every window shape (MAD 30.3 narrow, 34.6 wide against a
 //     threshold of 8 — re-derived by bracket-driver.js's clean-fixture arm,
 //     which goes red the moment the fixture stops passing).
+//
+//     THE MARGIN, because a green arm on its own does not give one. Observed
+//     on macOS: 0.473 narrow / 0.422 wide against a threshold of 8. Those two
+//     figures are an observation and nothing re-derives them, so do not build
+//     on them and do not read them as cross-platform — CI establishes only
+//     that the fixture is under the threshold there.
+//
+//     What IS controlled is the headroom: bracket-driver.js's "clean fixture
+//     holds at HALF the framing threshold" arm halves it to 4 and requires the
+//     fixture to still pass, on every platform the bracket runs on. So the
+//     margin is asserted by a run rather than claimed by this comment, and it
+//     reds with slack left instead of at the moment coverage is lost.
 //   - It draws ~240 deterministic cells. A flat two-rect frame compressed to
 //     1555 bytes against a 5760-byte floor, so the fixture failed the very
 //     blank-frame check the third arm exists to force.
@@ -353,6 +365,17 @@ try {
     // verdict" rests on three arms that have never been shown capable of
     // noticing that they do not. If smoke.js is ever hardened so a push cannot
     // be disconnected, this arm goes red and should be retired deliberately.
+    // HEADROOM, not just a pass. The fixture scoring under the real threshold
+    // says nothing about BY HOW MUCH, and a control resting on an unmeasured
+    // margin is one renderer change away from failing for a reason nothing on
+    // hand explains. Halving the threshold and requiring the fixture to still
+    // pass turns the margin into something a run asserts rather than something
+    // a comment claims -- and it reds while there is still 4 points of slack,
+    // instead of at the moment real coverage is lost.
+    ['clean fixture holds at HALF the framing threshold', s => s.replace(
+      'const FRAMING_INVARIANCE_MAD = 8;', 'const FRAMING_INVARIANCE_MAD = 4;'),
+      { code: 'zero', says: /all scenes pass/ }],
+
     ['a disconnected push is invisible (negative control)', s => s
       .replace('if (sha256(x) !== sha256(y)) {', 'if (true) {')
       .replace('const { page, dur, PLAN, fails } = ctx;',

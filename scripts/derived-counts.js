@@ -96,8 +96,23 @@ const HISTORICAL = [
   /^docs\/working-plan\.md$/,
   /^docs\/source-of-truth\.md$/,
 ];
-const liveClaimFiles = () => tracked().filter(f =>
-  f.endsWith('.md') && !HISTORICAL.some(re => re.test(f)));
+// TRACKED AND PRESENT, which are not the same set. `git ls-files` lists the
+// index, and a file deleted in the working tree but not yet staged is still in
+// it -- so reading every entry blindly throws ENOENT and takes the whole
+// self-check down. That happened on a tracked rule file that another session in
+// a shared checkout had deleted without staging (deliberately not cited by path
+// here: the path stopped resolving, which is what check 6 exists to catch, and
+// a comment about a missing file must not itself dangle). A crash is the worst
+// of the three available outcomes: it reports
+// nothing about the counts AND blames the wrong file. Missing entries are
+// skipped and RETURNED, so the run can say what it did not read rather than
+// quietly reading less than it claims.
+const liveClaimFiles = () => {
+  const all = tracked().filter(f => f.endsWith('.md') && !HISTORICAL.some(re => re.test(f)));
+  const present = [], missing = [];
+  for (const f of all) (fs.existsSync(path.join(ROOT, f)) ? present : missing).push(f);
+  return { present, missing };
+};
 
 /* ---- MARKERS. `<!--derived:key-->N<!--/derived-->` */
 const MARKER = /<!--derived:([a-z-]+)-->([^<]*)<!--\/derived-->/g;
@@ -126,7 +141,8 @@ const EXEMPT = '<!--count-mention-->';
  * marker naming nothing in the REGISTRY is itself a defect worth reporting. */
 function scan() {
   const drift = [], bare = [];
-  for (const rel of liveClaimFiles()) {
+  const { present, missing } = liveClaimFiles();
+  for (const rel of present) {
     const text = R(path.join(ROOT, rel));
     const lines = text.split('\n');
 
@@ -170,14 +186,14 @@ function scan() {
       bare.push(`${where(m.index)} "${m[0].replace(/\s+/g, ' ')}" — ${noun.what}`);
     }
   }
-  return { drift, bare };
+  return { drift, bare, missing };
 }
 
 /* Refill every marker from its derivation. Only ever rewrites BETWEEN the
  * marker delimiters, so prose is never touched. */
 function write() {
   const changed = [];
-  for (const rel of liveClaimFiles()) {
+  for (const rel of liveClaimFiles().present) {
     const p = path.join(ROOT, rel);
     const before = R(p);
     const after = before.replace(new RegExp(MARKER.source, 'g'),

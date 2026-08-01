@@ -7,6 +7,41 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.59
+
+### added
+
+**A sixteenth arm makes the `CLEAN` fixture's framing HEADROOM a controlled
+claim, not a comment.** A green arm says the fixture is under the threshold; it
+says nothing about by how much, and a control resting on an unmeasured margin is
+one renderer change away from failing for a reason nothing on hand explains. The
+arm halves `FRAMING_INVARIANCE_MAD` to 4 and requires the fixture to still pass,
+so the margin is asserted by a run on every platform the bracket reaches, and it
+reds with slack left rather than at the moment coverage is lost. Verified both
+ways: green at 4, and BRACKET FAILED at 0.4.
+
+Observed on macOS, recorded as an observation and nothing more: 0.473 narrow /
+0.422 wide. Those figures are not re-derived by anything and are explicitly not
+cross-platform — 0.16.58's gate run establishes only that the fixture is under
+the threshold on CI's WebGL2-fallback path.
+
+**The first draft of that comment asserted the numbers held on both platforms,
+from a single-platform measurement, and then tried to dodge the
+measurement-assertion ratchet by rewording.** Both were caught before commit.
+The ratchet was right: an unsourced number is debt whether or not the sentence
+containing it uses the word "measured", and the fix is a control, not a
+synonym.
+
+### fixed
+
+**Check 13 crashed instead of reporting when a tracked file was absent from the
+working tree.** `git ls-files` lists the index, so a file deleted but not staged
+is still in it, and reading every entry blindly threw ENOENT and took the whole
+self-check down — reporting nothing about the counts while blaming the wrong
+file. Missing entries are now skipped and named in the check's own line, in both
+the passing and failing branches, so a run cannot quietly read less than it
+claims. Found on a live instance in a shared checkout.
+
 ## 0.16.58
 
 ### added

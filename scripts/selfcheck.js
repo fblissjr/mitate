@@ -1080,7 +1080,13 @@ const toolJs = new Map([
  * to cite the command, not its output. */
 {
   const { scan, REGISTRY } = require('./derived-counts.js');
-  const { drift, bare } = scan();
+  const { drift, bare, missing } = scan();
+  // A tracked .md absent from the working tree is not this check's business to
+  // fix, but reading less than claimed without saying so IS. Reported in both
+  // branches rather than only the green one, so it cannot hide behind a failure.
+  const scope = missing.length
+    ? ` (${missing.length} tracked file(s) not in the working tree, unread: ${missing.join(', ')})`
+    : '';
   if (drift.length) {
     fail(`${drift.length} derived count(s) drifted from what they count: ${drift.join('; ')}. `
        + `Run 'bun run scripts/derived-counts.js --write' — the marker is refilled from the `
@@ -1093,7 +1099,9 @@ const toolJs = new Map([
   }
   if (!drift.length && !bare.length) {
     notes.push(`${Object.keys(REGISTRY).length} registered countables, every marker matching its `
-             + `source and no bare count in live-claim prose`);
+             + `source and no bare count in live-claim prose${scope}`);
+  } else if (scope) {
+    fail(`derived-count scan read an incomplete file set${scope}`);
   }
 }
 

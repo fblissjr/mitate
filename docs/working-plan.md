@@ -2480,9 +2480,25 @@ costs more than reading it.
   — the 0.16.9 CHANGELOG is forensic about every other decision in that commit,
   which is strong evidence it was never a discussed decision at all. **So there
   are two problems, not one:** reasoning *discussed then lost to compaction*
-  (the hook solves it) and reasoning *never articulated* (only a forcing function
-  like `Rejected:` or `Unexplained:` reaches it). Building only the hook would
-  feel like a fix and leave the motivating gap open.
+  (the hook solves it) and reasoning *never articulated* (nothing above reaches
+  it).
+
+  > **Superseded by the retrospective below, same day.** This paragraph
+  > originally ended "*only a forcing function like `Rejected:` or `Unexplained:`
+  > reaches it*." **The `Rejected:` half is false, and the counter-evidence sits
+  > inside the guard's own commit.** `2c5742f` already carries a rejected
+  > alternative, written voluntarily and at length — *"Two closes were tried and
+  > rejected. Filtering on the message's ORIGIN fails because three.js is inlined
+  > in every scene... Requiring a bounded tail is unmaintainable against driver
+  > text nobody controls"* — in the code comment AND in the CHANGELOG. A
+  > mandatory `Rejected:` field would have been **satisfied by that content**,
+  > passed, and left the guard exactly as unexplained as it is.
+  >
+  > **The mismatch is granularity.** The guard is a fifteen-character
+  > sub-expression inside one of five fixes in a 94-line hunk. The author
+  > recorded every decision they were conscious of; the guard was never one.
+  > **Commits are the wrong unit.** `Unexplained: <file:line>` survives because
+  > it operates per line; a per-commit `Rejected:` does not.
 - **Auto-memory drift is documented, not incidental:** only the first 200 lines
   / 25 KB load at session start, and there is **no invalidation mechanism**. The
   supersession gap is real in the platform, not an oversight in this plan.
@@ -2490,6 +2506,64 @@ costs more than reading it.
 **Trigger:** after gate R4 closes. **Verify before building** — the event names
 and the `PreCompact` payload shape came from a research pass, not from a handler
 anyone has run.
+
+### DECLINED: mandatory capture fields in commit messages (2026-08-01)
+
+Proposed `Why:` / `Rejected:` / `Verified:` / `Unexplained:` / `Supersedes:` as
+mandated commit fields. **Assessed against the real corpus — 213 commits, the
+CHANGELOG, all three postmortems and all three session logs — and declined.**
+Recorded at length because it is a good idea that this repo's own evidence
+refutes, and the next person to have it deserves the measurement rather than the
+argument.
+
+**1. It misidentifies the failure it is named after.** See the supersession box
+above: the guard's commit already contained a voluntary rejected-alternative
+passage. The field would have been filled and the guard would still be
+unexplained.
+
+**2. The prose already carries the content.** Median commit body **206 words**;
+**61** commits carry rejection language, **140** carry verification language, and
+`Verified:` already appears in **10** commits as an unmandated habit. The
+strongest passages contain things no field prompt elicits — an admission that an
+oracle is blind, a metric that nearly shipped a wrong decision — and a field
+format would flatten exactly those.
+
+**3. A mandated `Verified:` manufactures the artifact check 5 exists to
+eliminate.** `ASSERT_BUDGET` may only fall, and its exemption is "does it name a
+control a reader can run." `2c5742f`'s own verification claim was **unrunnable
+within an hour** (its controls were heredocs deleted in the same command) and
+**false within four days** (the gate it claimed to have measured was broken for
+seven releases). In a code comment that gets corrected; the 2026-07-30
+postmortem measured a rationale rotting in **ten minutes** and fixed it. **In a
+commit message it is immutable** — this repo does not rewrite pushed history.
+
+**4. It taxes the channel that passed its test.** The cold-start run put two
+zero-context agents on two evaporated questions and both reached correct
+answers; the failure was *routing*, fixed with one router row. A fixed phrase
+inside prose beat structure there.
+
+**On mandatory-everywhere vs behaviour-changing-only:** the distinction does not
+rescue it. Behaviour-changing commits have the strongest prose already, so the
+mandate targets the population with least to gain; restricting it to trivial
+commits produces pure filler. There is no slice of this history where it pays.
+
+**ADOPTED INSTEAD — both already on this plan, which is itself a finding:**
+
+- **The per-line ratchet** (Phase R's top item): count bucket (d) shapes carrying
+  no reason on the line, seed at today's counted **16**, allow only to fall.
+  Line granularity is the one instrument at the guard's granularity, and it
+  **would have counted the guard from the day it shipped.**
+- **A closed list of four greppable phrases** — `Open question`, `Unexplained:`,
+  `Decision:`, `Superseded by:` — advisory, in **docs and logs only**, with
+  router rows in `docs/README.md`. Extends the convention with a measurement
+  behind it, in mutable artifacts where a rotted marker can be corrected. It also
+  consolidates real sprawl: the session logs already carry eight distinct ad-hoc
+  bold labels with zero reuse.
+
+**Caveat kept deliberately:** the corpus is 213 commits, nine days, **one
+author**. A fixed-vocabulary mandate has a much stronger case in a
+multi-contributor repo, and nothing here speaks to that. Revisit on a second
+contributor, or if a verification claim omits its environment twice more.
 
 ---
 

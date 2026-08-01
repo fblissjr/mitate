@@ -59,7 +59,11 @@ copy of a router is the exact failure this file keeps catching.
   before adding a defect — most of the twelve are still labelled UNVERIFIED
 - **Repo-development agents and skills** — `.claude/agents/control-builder.md`,
   `doc-claim-auditor.md`, `.claude/skills/audit-claims/`,
-  `.claude/skills/extract-patterns/`, `.claude/rules/model-delegation.md`
+  `.claude/skills/extract-patterns/`. **No standing model-delegation rule**, by
+  owner call 2026-08-01: the always-loaded tiering rule cost more than it bought,
+  and `working-plan.md` had already filed "inline the intent or drop it, since
+  that rule does not ship". Each agent states its own model reasoning in its own
+  file, where the decision is actually made
 - **Manifests, config and legal** — `.claude-plugin/marketplace.json` (the
   marketplace half of the version cascade; the plugin half is under `plugin/`),
   `.postmortem.json` (pins where postmortems live), `.oxlintrc.json`,

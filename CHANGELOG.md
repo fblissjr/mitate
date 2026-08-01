@@ -32,6 +32,24 @@ The ratchet was right: an unsourced number is debt whether or not the sentence
 containing it uses the word "measured", and the fix is a control, not a
 synonym.
 
+### removed
+
+**`.claude/rules/model-delegation.md` is gone, by owner call** — the standing
+tiering rule was costing more than it bought in practice. `working-plan.md` had
+already filed the same conclusion from a different direction ("inline the intent
+or drop it, since that rule does not ship"), so this closes that step rather
+than opening a question.
+
+**Two live pointers were rewritten with it**, which is the part a deletion
+usually leaves behind: `CLAUDE.md`'s Map cited the file, and
+`.claude/agents/control-builder.md` cited it to justify inheriting the session
+model. The agent now states that criterion inline, where the decision is
+actually made. Nothing mechanical would have caught either — `.claude/agents/*`
+carry no freshness marker by design, and `CLAUDE.md`'s Map is checked in the
+entry-to-Map direction only, so a Map line pointing at a deleted file is exactly
+the gap. Remaining mentions are in the CHANGELOG, a postmortem and
+`working-plan.md`, all dated records that stay true.
+
 ### fixed
 
 **Check 13 crashed instead of reporting when a tracked file was absent from the

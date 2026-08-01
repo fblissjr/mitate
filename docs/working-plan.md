@@ -2260,7 +2260,45 @@ these are candidates, not defects, and the work is triage:
 |---|---|---|
 | silent swallow (`catch (e) {}`, `.catch(() => {})`) | 12 | `smoke.js` 11, `backend.js` 1 |
 | a conditional gating whether a check runs at all | 1 | `smoke.js` reload guard |
+| control flow that skips checks on a throw | 3 | `smoke.js` determinism trio |
 | a cap on how much gets checked (`.slice(0, N)`) | 3 | `smoke.js` |
+
+**The silent-swallow counts are UNCHANGED by R4.1** — 11 in `smoke.js` and 1 in
+`backend.js` at both `918b062` (where this was seeded) and after 0.16.54. The
+extraction moved them; it neither added nor removed one. Checked rather than
+assumed, because a baseline that drifts under the work it is measuring is worth
+nothing.
+
+**The third row is new (2026-08-01) and is this track's second instance.** The
+determinism trio carries no `try/catch`, so a throw in any of the three reaches
+`checkScene`'s outer catch, becomes a FAIL, and abandons every remaining check.
+The FAIL half is argued in the file and correct. The **abandon** half is
+inherited: it is what a throw does to the rest of a `try` block, and the trio was
+inline inside one `try` before R4.1. Preserving it through the extraction was
+required by that stage's gate; it is not a reason.
+
+Archaeology, so it is not repeated:
+
+- **`grep -rn "abandon"` across all four session logs and all three postmortems
+  returns nothing.** Every occurrence in the tree is a code comment describing
+  the mechanism. No log, plan, postmortem or CHANGELOG entry argues for it.
+- **The nearest prior discussion got it wrong.**
+  `internal/log/log_2026-07-30.md:54` reads *"Each check already has its own
+  try/catch and its own name"* — false for three of them, and the premise that
+  would have converted three hard fails into warnings during R4.1 stage 1. The
+  same error survives today as a `smoke.js` module comment claiming six checks
+  "degrade to a warning" when two of the six degrade to a FAIL.
+- **Severity and abandonment are independent axes, demonstrated in the same
+  file:** `checkShippedFrame` and `checkLivePlayback` are hard checks that catch
+  internally and let execution continue.
+- **It is defensible for one of the three and indefensible for another.** A throw
+  in `checkDeterminism` leaves the page seeked arbitrarily, and two following
+  advisory checks carry hard-fail branches — so continuing could blame the scene
+  for a harness crash. `checkBlankFrame` touches no page state at all.
+
+**This is not scheduled here.** The unit, its rationale and its gate are Phase R's
+first unit in [`plan.md`](plan.md) — this row is the inventory entry, and
+restating the plan would be the duplication this track exists to stop.
 
 **Some of these are correct and documented** — `smoke.js:785`'s `.slice(0, 2)` on
 blend-window midpoints states its reason in the comment beside it. The job is not

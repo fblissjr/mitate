@@ -810,6 +810,65 @@ correct and has never been executed against the case it exists for. Extend the
 suspicion to the *fix* as readily as to the code — all three of these were
 fixes.
 
+### Phase R's first unit: the determinism trio (owner-directed 2026-08-01)
+
+**Named here rather than left to whoever picks the phase up**, because "available
+whenever a unit is about to be rewritten" is a rule that selects no unit, and a
+phase with no first move is a phase that does not start.
+
+**The unit:** `checkDeterminism`, `checkReloadDeterminism`, `checkBlankFrame` —
+about 100 lines in `smoke.js`, sharing one captured `ctx.frames`.
+
+**Why this one, and why now.** Phase R's binding constraint is not defining
+sameness, it is *which oracles can actually fail*. For this unit that oracle now
+exists and was exercised on 2026-08-01: `bracket-driver.js` covers the driver the
+trio runs under, the nine-scene corpus covers verdicts, and the trio's three
+assertions were each **forced true in turn and observed firing on all 9 scenes
+with the exit code flipping**. That last technique is the reusable part — it is
+how a check that emits nothing on a green corpus is shown to still be wired to
+the verdict, and it is what R4.1's own gate could not do by equality alone.
+
+**What the redesign has to decide, stated so it is not rediscovered.** The trio
+bundles two decisions that are currently one:
+
+1. **Fail rather than warn** on an unexpected throw. Deliberate, argued in the
+   file, and correct — an advisory check crashing must never flip the exit code,
+   a determinism check crashing must.
+2. **Abandon every remaining check.** Inherited, never argued. It is what a throw
+   inside a `try` block does to the statements after it, and the trio was inline
+   inside one `try` before R4.1. The extraction preserved it because the gate was
+   byte-unchanged verdicts; preserving a behaviour is not the same as it having a
+   reason.
+
+**These are independent axes, and this file already proves it:**
+`checkShippedFrame` and `checkLivePlayback` are HARD checks that push to `fails`,
+and both catch internally and let execution continue. So "it is a hard check"
+does not imply "abandon". There are three tiers in the code and the module
+comment describes two.
+
+**The strongest argument FOR abandonment is unstated and covers only part of the
+trio**, which is the finding: a throw inside `checkDeterminism` leaves the page
+seeked somewhere arbitrary, and two of the four advisory checks that follow carry
+hard-fail branches (framing invariance; exposure's >=99% near-black). Running
+them on a broken page can manufacture a hard fail that blames the SCENE for a
+HARNESS crash — the exact misattribution this repo already ate once, when a
+capture race was reported as a scene defect. That reasoning holds for
+`checkDeterminism`, holds more weakly for `checkReloadDeterminism` (mid-reload),
+and **does not hold at all for `checkBlankFrame`**, which destructures
+`{ PLAN, frames, fails }`, touches no page state, and is array indexing.
+
+**So the unit is a genuine Phase R case rather than a tidy-up:** the reasoned code
+and the inherited code are in the same control-flow decision. The triage table's
+premise — that a sweep is wrong because reasoned code is the majority — is sound
+for `smoke.js` as a whole and is *weakest here*, because separating the two means
+separating statements, not files.
+
+**Gate for this unit** is Gate R's second clause applied to it: the oracle
+recorded red before the change and green after, both runs cited. The `!fails.length`
+guard (Track F's opening instance) is inside this same unit and is the natural
+thing to settle in the same pass — but only if a fixture that can go red exists
+first, which today it does not.
+
 **Gate R:** a ratchet exists for bucket (d) — behaviour-affecting code with no
 recorded reason and no control — seeded at a counted baseline, failing when the
 count rises, on the same escape hatch as `ASSERT_BUDGET` (edit the literal, in a

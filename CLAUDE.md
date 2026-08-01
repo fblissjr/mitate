@@ -56,7 +56,9 @@ copy of a router is the exact failure this file keeps catching.
   carrier (the ninth), wired into `static.yml` and the pre-commit hook and
   **deliberately not into `gate.yml`**: a general pass/fail gate that goes red
   for a correct reason is one people learn to route around. Read its `README.md`
-  before adding a defect — most of the twelve are still labelled UNVERIFIED
+  before adding a defect — **most rows are still labelled UNVERIFIED**, and the
+  README carries the row count as a derived marker rather than in prose, because
+  this line used to say "the twelve" while the tables held fourteen
 - **Repo-development agents and skills** — `.claude/agents/control-builder.md`,
   `doc-claim-auditor.md`, `.claude/skills/audit-claims/`,
   `.claude/skills/extract-patterns/`. **No standing model-delegation rule**, by

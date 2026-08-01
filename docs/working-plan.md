@@ -2268,8 +2268,35 @@ to remove them; it is that **nothing distinguishes the reasoned ones from the
 unexamined ones**, so every reader re-does the archaeology or, more often,
 assumes intent that was never there.
 
+**Feed the track from logs, with one greppable marker: `Unexplained:`.** Proposed
+2026-08-01, owner-raised, and recorded here rather than left in a transcript —
+which is the failure this whole track is about. A session log line reading
+`Unexplained: <file:line> — <what looks deliberate and has no stated reason>` is
+how a bucket (d) candidate gets captured **by whoever trips over it**, mid-task,
+without stopping to do the archaeology. Today's instance was found only because
+someone happened to refactor the function containing it; that is not a discovery
+mechanism.
+
+The form is deliberately copied from **`Open question`**, which is the only
+retention convention in this repo with a measurement behind it: one exact phrase,
+greppable, and R4.6's cold-start test showed two zero-context agents reaching
+recorded questions through it. A fixed phrase inside prose beat structure there,
+so this does not schematise the logs further. **`Decision:`** is the natural
+sibling — a call made *and the alternative rejected* — and the reload guard is
+the argument for it, having recorded neither.
+
+**Not proposed: a log database.** A derived, regenerable index (the shape
+`/postmortem:postmortem-index` already uses, with a hand-written index
+deliberately refused) stays consistent with the one-home rule and is worth
+building when the log count justifies it — three does not. An authoritative store
+is the fifth-home failure `source-of-truth.md` forbids and `/extract-patterns`
+was built to avoid. Raw transcripts hold the reasoning that evaporates, which is
+real, but importing them raises volume without raising the odds anyone reads
+them; the scarce act is distillation at the moment, not storage afterwards.
+
 **Method, per instance:** recover intent from history first (`git log -S` on the
-line, the CHANGELOG entry for that version, `internal/` for the same date); then
+line, the CHANGELOG entry for that version, `internal/log/` for the same date —
+tracked since 2026-08-01, so this step is now reproducible from a clone); then
 either document it with the reason and a control, or fix it with a control that
 would have caught it. **Not a sweep** — a sweep would rewrite the reasoned ones
 alongside the rest, and the reasoned ones are the majority.

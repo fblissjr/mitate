@@ -124,6 +124,29 @@ rather than a series of accidents. Deleting the copy is O(0) and cannot misfire.
 Prose still carries rules, rationale and design arguments. Those are not
 derivable, and they do not rot the way a count does.
 
+**2026-08-01 — the rule got a check anyway, and the paragraph above is why that
+needs explaining.** `selfcheck` check 12 fails when a bracket states its own arm
+count in prose. That is exactly the O(n) guard this section says is outranked by
+deletion, and it was added because **deletion alone did not hold**: the rule was
+written here, and then broken four separate times — `gate.yml`'s "all three"
+against four globbed brackets, `CLAUDE.md`'s "9 references", `bracket-parity.js`
+saying "five ways" while running 22 rows, and `bracket-driver.js` saying "nine
+ways" two lines above its own printed count of ten. A rule written down and
+violated four times is not being followed, so the choice was not
+*delete-versus-check*, it was *check-or-keep-losing*.
+
+**Two things keep it consistent with the rule rather than an exception to it.**
+The check does not guard a copy; it forbids the copy existing, and the same
+change made every bracket print its count so the derived number is on screen —
+which is the deletion this section asks for, with the check only preventing
+reintroduction. And the second: **check 12 immediately demonstrated this
+section's own warning.** Its first cut flagged `bracket-selfcheck.js`, whose
+fixture is a string literal *containing* the forbidden header — a guard failing
+to tell carrying a fact from describing one, for the sixth time. Fixed by
+requiring a line to BEGIN with a comment marker rather than contain one. Read
+that as evidence for the warning, not against it: the guard was written by
+someone who had just read this paragraph, and it still happened.
+
 ## The rules
 
 - **A number appears once.** Re-measure it → update its home plus a CHANGELOG

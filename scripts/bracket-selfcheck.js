@@ -174,26 +174,31 @@ const ARMS = [
   // anchor against the working tree over `plugin/`, so a new untracked file
   // would not appear in `git diff` at all. Appending a comment to a template is
   // the smallest true instance of the thing being gated.
-  // Check 12 — a bracket may not state its own arm count in prose. The arm
-  // injects the exact shape that shipped four times (a header saying "N ways")
-  // into a real bracket file, because the check reads tracked tool JS and a
-  // fixture file would not be in that set. The negative arm matters as much:
-  // narrative counts like "one arm each" are everywhere in these files and are
-  // NOT the defect, so a check that reddened on them would be unusable and
-  // would look identical on the positive arm alone.
+  // Check 12 — a bracket may not state its own arm count in prose. Both arms
+  // mutate a bracket under scripts/ and NOT one under plugin/, which is not
+  // cosmetic: check 11 fires on any plugin edit without a version bump, so a
+  // green-expectation arm touching plugin/ can never be green and a red one
+  // would go red for the wrong check. Isolating on a non-shipped bracket makes
+  // each arm test check 12 and nothing else. Found by running it.
+  //
+  // The negative arm carries as much weight as the positive one: narrative
+  // counts ("one arm each", "the two arms that matter") are everywhere in these
+  // files and are NOT the defect, because they describe history rather than
+  // current structure. A check that reddened on them would be unusable, and on
+  // the positive arm alone the two are indistinguishable.
   ['a bracket header states its own arm count', () => {
-    const f = path.join(ROOT, 'plugin', 'skills', 'mitate', 'templates', 'bracket-parity.js');
+    const f = path.join(ROOT, 'scripts', 'bracket-run-brackets.js');
     const before = fs.readFileSync(f, 'utf8');
-    fs.writeFileSync(f, before.replace('/* Bracket for the FENCE PARITY check.',
-                                       '/* Bracket for the FENCE PARITY check, five ways.'));
+    fs.writeFileSync(f, before.replace('/* Bracket for scripts/run-brackets.sh',
+                                       '/* Three ways. Bracket for scripts/run-brackets.sh'));
     return () => fs.writeFileSync(f, before);
   }, 'arm count in prose'],
 
-  ['a bracket comment counts arms NARRATIVELY (must stay green)', () => {
-    const f = path.join(ROOT, 'plugin', 'skills', 'mitate', 'templates', 'bracket-parity.js');
+  ['a bracket counts arms NARRATIVELY (must stay green)', () => {
+    const f = path.join(ROOT, 'scripts', 'bracket-run-brackets.js');
     const before = fs.readFileSync(f, 'utf8');
-    fs.writeFileSync(f, before.replace('/* Bracket for the FENCE PARITY check.',
-                                       '/* Bracket for the FENCE PARITY check.\n * Two guarantees, one arm each; the four arms below were added separately.'));
+    fs.writeFileSync(f, before.replace('/* Bracket for scripts/run-brackets.sh',
+                                       '/* Two guarantees, one arm each; the four arms below came later.\n * Bracket for scripts/run-brackets.sh'));
     return () => fs.writeFileSync(f, before);
   }, null],
 

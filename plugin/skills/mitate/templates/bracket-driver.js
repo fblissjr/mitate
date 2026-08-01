@@ -67,6 +67,74 @@ window.sceneReady = true;
 </script></body></html>
 `;
 
+// The fixture for the REACHABILITY arms, and the reason it is not SCENE above.
+// Those arms force one assertion inside the determinism trio and require the
+// message to appear; that only proves something if the fixture does NOT produce
+// the message on its own, and if the check under test actually RUNS.
+//
+// checkReloadDeterminism is guarded by `!fails.length`, so ANY earlier failure
+// silently skips it -- and SCENE fails live playback by construction. Forcing
+// the reload assertion against SCENE would therefore have produced nothing, and
+// read as a broken arm rather than as the guard doing this. This fixture passes
+// smoke.js OUTRIGHT (`all scenes pass`, exit 0 — measured by bracket-driver.js's
+// own "clean fixture, unmutated" arm, which re-runs it every time), which is
+// what makes the trio reachable and each arm's message attributable.
+//
+// Two properties are load-bearing and were each arrived at by running it:
+//   - It draws its own letterbox instead of using CSS. framingReader maps
+//     WINDOW coordinates into the canvas buffer via canvas.width/innerWidth, so
+//     a fixed-size buffer letterboxed in CSS makes the check read a different
+//     region at every window shape (MAD 30.3 narrow, 34.6 wide against a
+//     threshold of 8 — re-derived by bracket-driver.js's clean-fixture arm,
+//     which goes red the moment the fixture stops passing).
+//   - It draws ~240 deterministic cells. A flat two-rect frame compressed to
+//     1555 bytes against a 5760-byte floor, so the fixture failed the very
+//     blank-frame check the third arm exists to force.
+const CLEAN = `<!doctype html><html><head><style>
+html,body{margin:0;background:#000;height:100%;overflow:hidden}
+canvas{display:block;position:absolute;inset:0}
+</style></head><body><canvas id="c"></canvas>
+<script>
+const c = document.getElementById('c'), g = c.getContext('2d');
+window.DURATION = 2;
+window.FRAME = { aspect: 16 / 9 };
+let lastT = 0;
+function fit() { c.width = window.innerWidth; c.height = window.innerHeight; }
+window.seekTo = function (t) {
+  lastT = t;
+  const W = c.width, H = c.height, AR = window.FRAME.aspect;
+  const fw = Math.min(W, H * AR), fh = fw / AR;
+  const fx = (W - fw) / 2, fy = (H - fh) / 2;
+  g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
+  g.save();
+  g.beginPath(); g.rect(fx, fy, fw, fh); g.clip();
+  g.translate(fx, fy); g.scale(fw / 640, fh / 360);
+  g.fillStyle = 'rgb(' + Math.round(12 + 40 * t) + ',18,34)';
+  g.fillRect(0, 0, 640, 360);
+  for (let i = 0; i < 240; i++) {
+    const a = i * 2.399963 + t * 0.7;
+    const x = (Math.sin(a) * 0.5 + 0.5) * 640, y = (Math.cos(a * 1.37) * 0.5 + 0.5) * 360;
+    g.fillStyle = 'rgb(' + ((i * 37) % 200 + 40) + ',' + ((i * 71) % 180 + 30) + ',' + ((i * 113) % 210 + 20) + ')';
+    g.fillRect(x, y, 9 + (i % 7) * 3, 7 + (i % 5) * 3);
+  }
+  g.fillStyle = '#e8e8f0';
+  g.fillRect(Math.round(t * 180) + 20, 46, 110, 108);
+  g.restore();
+};
+let playing = true;
+window.stopPlayback = function () { playing = false; };
+window.addEventListener('resize', function () { fit(); window.seekTo(lastT); });
+function loop() {
+  if (playing) window.seekTo((performance.now() / 1000) % window.DURATION);
+  requestAnimationFrame(loop);
+}
+fit();
+window.seekTo(0);
+loop();
+window.sceneReady = true;
+</script></body></html>
+`;
+
 // Anchors are exact source text. A missed anchor is reported as a FAILED arm and
 // never as a pass -- if smoke.js drifts out from under this file, the honest
 // outcome is "this bracket no longer tests what it says", not a green board.
@@ -231,6 +299,87 @@ try {
     const mutantPath = path.join(dir, 'mutant-browser.js');
     fs.writeFileSync(mutantPath, body);
     const { out, code } = run(mutantPath, ['scene.html'], env);
+    report(label, code, expect, out);
+  }
+
+  // -------------------------------------------------------------------------
+  // THE REACHABILITY ARMS. What they close: R4.1's gate rested on two things --
+  // byte-identical verdicts across the checkScene extraction (reproducible, and
+  // independently reproduced) and a forced-assertion run proving the determinism
+  // trio's assertions still REACH the verdict. The second was a one-off manual
+  // mutation in a scratch directory that no longer exists. Since the argument
+  // was "equality alone is a weak oracle for these three", the load-bearing half
+  // was the half nobody could re-run. These arms are that half, as a control.
+  //
+  // Equality is weak here for a specific reason: all three assertions are
+  // silent on a healthy corpus, so a version with any of them disconnected from
+  // `ctx.fails` emits byte-identical output on every scene. The extraction moved
+  // each check into its own function taking ctx -- exactly the edit that could
+  // leave a check pushing to an array the verdict never reads.
+  //
+  // Each arm forces ONE condition true and requires that check's own message.
+  // The control arm is not optional: it establishes that the fixture is silent
+  // on all three, which is what makes a forced message attributable to the
+  // mutation rather than to the scene.
+  const REACH_ARMS = [
+    ['clean fixture, unmutated (all three silent)', s => s,
+      { code: 'zero', says: /all scenes pass/ }],
+
+    ['checkDeterminism assertion forced', s => s.replace(
+      'if (sha256(x) !== sha256(y)) {', 'if (true) {'),
+      { code: 'nonzero', says: /not deterministic — scene carries state across frames/ }],
+
+    // The one the `!fails.length` guard can silently skip. If that guard ever
+    // starts firing on this fixture, this arm goes MISSED rather than quietly
+    // passing -- which is the alarm Phase R wants before it touches the guard.
+    ['checkReloadDeterminism assertion forced', s => s.replace(
+      'if (sha256(reloaded) !== sha256(frames[0])) {', 'if (true) {'),
+      { code: 'nonzero', says: /differs ACROSS a page reload/ }],
+
+    ['checkBlankFrame assertion forced', s => s.replace(
+      'if (frames[i].length < blankFloor) {', 'if (true) {'),
+      { code: 'nonzero', says: /looks blank at t=/ }],
+
+    // THE ARM THAT GIVES THE THREE ABOVE THEIR TEETH, and the reason it is an
+    // arm rather than a sentence: it reproduces the defect they exist to catch.
+    // The assertion is forced AND its push is routed into a local sink, while
+    // `fails` stays destructured so the requires guard is still satisfied --
+    // that guard catches the cruder shape (dropping `fails` from the
+    // destructure) at module load, so this is the disconnection that survives
+    // it. smoke.js then reports `all scenes pass` at exit 0 with the message
+    // absent, which is exactly what the three arms above would go red on.
+    //
+    // Read it as the negative control: without it, "the assertions reach the
+    // verdict" rests on three arms that have never been shown capable of
+    // noticing that they do not. If smoke.js is ever hardened so a push cannot
+    // be disconnected, this arm goes red and should be retired deliberately.
+    ['a disconnected push is invisible (negative control)', s => s
+      .replace('if (sha256(x) !== sha256(y)) {', 'if (true) {')
+      .replace('const { page, dur, PLAN, fails } = ctx;',
+               'const { page, dur, PLAN, fails } = ctx; const sink = []; void fails;')
+      .replace('      fails.push(`seekTo(${ts}) not deterministic',
+               '      sink.push(`seekTo(${ts}) not deterministic'),
+      { code: 'zero', says: /all scenes pass/ }],
+  ];
+
+  for (const [label, mutate, expect] of REACH_ARMS) {
+    if (!browserReady) {
+      console.log(`${label.padEnd(46)} SKIPPED — playwright-core not resolvable from this cwd`);
+      skipped++;
+      continue;
+    }
+    const body = mutate(SRC);
+    if (body === SRC && !label.startsWith('clean fixture')) {
+      console.log(`${label.padEnd(46)} SKIPPED — anchor not found (smoke.js drifted)`);
+      wrong++;
+      continue;
+    }
+    fs.copyFileSync(path.join(HERE, 'backend.js'), path.join(dir, 'backend.js'));
+    fs.copyFileSync(path.join(HERE, 'build.js'), path.join(dir, 'build.js'));
+    fs.writeFileSync(path.join(dir, 'clean.html'), CLEAN);
+    const mutantPath = path.join(dir, 'mutant-reach.js');
+    fs.writeFileSync(mutantPath, body);
+    const { out, code } = run(mutantPath, ['clean.html'], env);
     report(label, code, expect, out);
   }
 } finally {

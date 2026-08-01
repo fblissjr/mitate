@@ -7,6 +7,50 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.58
+
+### added
+
+**`bracket-driver.js` gains the reachability arms — R4.1's unreproducible half
+becomes a control.** That gate rested on two things: byte-identical verdicts
+across the `checkScene` extraction (reproducible, and independently reproduced)
+and a forced-assertion run proving the determinism trio's assertions still reach
+the verdict. The second was a one-off manual mutation in a scratch directory
+that no longer exists. Since the argument was "equality alone is a weak oracle
+for these three", the load-bearing half was the half nobody could re-run.
+
+Three arms force one condition each — `checkDeterminism`,
+`checkReloadDeterminism`, `checkBlankFrame` — and require that check's own
+message. A fourth is the negative control that gives them teeth: the assertion
+forced AND its push routed into a local sink, which makes smoke report `all
+scenes pass` at exit 0 with the message absent. That is exactly what the three
+would go red on, and without it "the assertions reach the verdict" would rest on
+arms never shown capable of noticing that they do not.
+
+**A second disconnection shape is already covered elsewhere, found by trying
+it:** dropping `fails` from the destructure is caught at module load by the
+requires guard, so the sink is the shape that survives it.
+
+### changed
+
+**The arms needed a fixture that passes smoke outright**, and `SCENE` could not
+be it. `checkReloadDeterminism` is guarded by `!fails.length`, and `SCENE` fails
+live playback by construction — so forcing the reload assertion against it would
+have produced nothing and read as a broken arm rather than as the guard doing
+this. The new `CLEAN` fixture reports `all scenes pass` at exit 0, which is what
+makes the trio reachable and each message attributable.
+
+Two of its properties were arrived at by running it, not by design. It draws its
+own letterbox rather than using CSS, because `framingReader` maps window
+coordinates into the canvas buffer via `canvas.width / innerWidth` — a
+fixed-size buffer letterboxed in CSS makes the check read a different region at
+every window shape (measured: MAD 30.3 narrow, 34.6 wide, against a threshold of
+8). And it draws ~240 deterministic cells, because a flat two-rect frame
+compressed to 1555 bytes against a 5760-byte floor, failing the very
+blank-frame check the third arm exists to force.
+
+Bracket cost: 15 arms, 0 skipped, ~40s with a browser available.
+
 ## 0.16.57
 
 ### added

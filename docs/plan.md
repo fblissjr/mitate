@@ -823,12 +823,28 @@ about 100 lines in `smoke.js`, sharing one captured `ctx.frames`.
 
 **Why this one, and why now.** Phase R's binding constraint is not defining
 sameness, it is *which oracles can actually fail*. For this unit that oracle now
-exists and was exercised on 2026-08-01: `bracket-driver.js` covers the driver the
-trio runs under, the nine-scene corpus covers verdicts, and the trio's three
-assertions were each **forced true in turn and observed firing on all 9 scenes
-with the exit code flipping**. That last technique is the reusable part — it is
-how a check that emits nothing on a green corpus is shown to still be wired to
-the verdict, and it is what R4.1's own gate could not do by equality alone.
+exists **as a control rather than as a memory**: `bracket-driver.js` covers the
+driver the trio runs under, the nine-scene corpus covers verdicts, and the trio's
+three assertions are each **forced true in turn by a standing arm** that requires
+that check's own message. That last technique is the reusable part — it is how a
+check emitting nothing on a green corpus is shown to still be wired to the
+verdict, and it is what R4.1's own gate could not do by equality alone.
+
+**It was a memory until 0.16.58, and that is the part worth keeping.** The
+original run was a manual mutation in a scratch directory that no longer exists,
+so the load-bearing half of R4.1's argument was the half nobody could re-run. Two
+things came out of turning it into arms. A **negative control** was needed before
+the three meant anything — assertion forced *and* its push routed to a local
+sink, which makes smoke report `all scenes pass` at exit 0; without it, "the
+assertions reach the verdict" rested on arms never shown capable of noticing that
+they do not. And the arms needed a fixture that passes smoke **outright**,
+because `checkReloadDeterminism` is guarded by `!fails.length`: against a fixture
+that fails anything earlier, forcing the reload assertion produces nothing.
+
+**That guard is this unit's first tripwire, and it now has an alarm.** With the
+fixture's playback disabled so the guard skips the check, the reload arm goes
+BRACKET FAILED rather than quietly passing — so a change to the guard cannot
+silently un-cover the check it protects.
 
 **What the redesign has to decide, stated so it is not rediscovered.** The trio
 bundles two decisions that are currently one:

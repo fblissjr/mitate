@@ -2337,7 +2337,36 @@ reasoning, and it outlives the PR.
    content changed *without* a bump. It printed `ok — version cascade coherent at
    0.16.51` on every commit that broke the rule. **Invariant 2 is prose with no
    mechanical enforcement** — the exact Phase R shape, found inside Phase R's own
-   PR. The durable fix is bucket E; the immediate fix is a bump and an entry.
+   PR.
+
+   **The fix is a check, built RED FIRST, and it moved out of bucket E for a
+   reason worth keeping.** The repo is currently in the failed state the check
+   exists to catch — a free red arm on a real defect. Bump first and that
+   evidence is gone; the check would then need a synthesised fixture, which is
+   the weaker instrument. So: write the check, watch it fail on the live
+   violation, then bump and watch it pass.
+
+   > **Rejected: anchoring on `merge-base(origin/main, HEAD)`.** First design,
+   > **wrong in two independent ways, both measured** (verification 2026-08-01,
+   > prototype in scratch, not committed).
+   >
+   > **It goes GREEN on the live violation — exit 0.** That anchor asks "did the
+   > version move anywhere across the branch," and `a95226b` bumped 0.16.50 →
+   > 0.16.51 early, permanently satisfying it for every later unversioned plugin
+   > change. **A control that cannot go red on the instance that motivated it is
+   > decorative** — proposed in the same breath as the rule against decorative
+   > controls, which is the part worth remembering.
+   >
+   > **`origin/main` is not reliably fetched.** Reproduced against a clone
+   > mimicking `actions/checkout`: `git rev-parse origin/main` → `fatal: unknown
+   > revision`, exit 2. It would crash on every push and PR — exactly the
+   > population the invariant gates.
+   >
+   > **Corrected anchor: the last commit that touched
+   > `plugin/.claude-plugin/plugin.json`** (`git log -1 -- <path>`). Verified red
+   > on the live violation, green after a simulated bump. Needs no remote ref,
+   > which dissolves the second failure for free; needs full history, so it lives
+   > in `static.yml` (`fetch-depth: 0`), not `gate.yml`.
 2. **Gate green on the extraction is unconfirmed** at the time of writing. Not a
    formality: the R4.1 baseline was captured on WebGPU-Metal and CI runs the
    WebGL2 fallback, and **invariant 5 says byte comparison is valid only within
@@ -2362,6 +2391,36 @@ reasoning, and it outlives the PR.
    behaviour change. Nothing enforces it; alphabetise `ADVISORY_CHECKS` and
    caption-overflow's viewport restore stops preceding exposure.
 
+   **Fix: assert the order. Do NOT derive it.**
+
+   > **Rejected: deriving order from a `requires`/`provides` declaration table.**
+   > The idea was one structure solving three problems — validate ctx keys,
+   > derive ordering from data dependencies, and declare `onError` instead of
+   > encoding it as the presence of a `try` block. **Measured 2026-08-01: the
+   > middle clause has nothing to stand on.**
+   >
+   > **None of the six checks writes to `ctx`.** Zero `ctx.` assignments, all six
+   > return `undefined`. So `provides` is empty for every one of them, a
+   > topological sort has **zero edges**, and every permutation is equally valid
+   > under the scheme while exactly one is correct — strictly worse than the
+   > hardcoded array it would replace.
+   >
+   > **The real constraints are page state, and `page` is one constant ctx key
+   > regardless of what state it holds:** browser coldness (temporal, stored
+   > nowhere), viewport at entry, whether the page was actually re-seeked versus
+   > `ctx.t` merely existing, direct `#cap.textContent` mutation bypassing
+   > `seekTo`, `beats`'s hard-fail fetch semantics living outside all six, and
+   > the two loops' placement relative to `checkScene`'s inline body.
+   >
+   > **Clauses (i) and (iii) survive** — `requires` validation in the driver, and
+   > a declared `onError` that maps cleanly onto reality (4 advisory, 2 hard,
+   > exactly the current array split).
+   >
+   > **The lesson generalises past this instance:** "derive it from the data
+   > dependencies" sounded more principled than an asserted list and had no data
+   > dependencies to derive from. An assertion is sometimes the right answer
+   > rather than the compromise.
+
 ### D — pre-existing, carried, not worsened here
 
 6. Most defect-corpus defects UNVERIFIED (both re-measured ones moved) ·
@@ -2378,10 +2437,59 @@ reasoning, and it outlives the PR.
    `plugin/` changes without the cascade** — item 1 is the evidence that the rule
    needs teeth, and it would have caught it the same day.
 
-**Order to work them:** A1 (an invariant violation should not sit in a PR), then
-C (small, and it is debt this branch created), then B3, then merge with D and E
-filed. D and E are explicitly NOT merge blockers — carrying them knowingly is
-different from carrying them silently, and the PR body lists them for that reason.
+### The stopping rule (owner-accepted 2026-08-01)
+
+**The risk on this branch was never bandaids. It was that going holistic has no
+natural terminus.** Three times in one session the work went up a level — R4.1 →
+the guard → Track F → Phase R → the bucketing → the cascade violation → an
+automation architecture — and every step was justified and produced something
+real, while the gate-blocking work did not move and the commit ratio ran about
+8 doc/plan to 2 code. Each holistic layer reveals the next one needing a holistic
+solution. That regress does not terminate on its own, so it gets a rule:
+
+> **A discovery is RECORDED but does not extend the current PR unless it is
+> (a) an invariant violation inside this diff, or (b) debt this diff created.**
+
+Everything from that session sorts cleanly: B3 is the PR's purpose; A1 is (a);
+C4/C5 are (b); Track F, Phase R, the log-policy amendment, the automation
+architecture and the `!fails.length` guard are all discovery and all out.
+
+**The criterion's hardest test was passing it on good news.** The automation
+research came back positive — the thing is buildable and valuable — which is
+exactly when the pull to expand scope is strongest. Filed anyway.
+
+**Order to work them:** A1's check (red first, while the violation is live) →
+A1's bump (green) → C4/C5 → B3 → merge, with D and E filed. D and E are
+explicitly NOT merge blockers; carrying them knowingly differs from carrying them
+silently, which is what the PR body's debt list is for.
+
+### Filed, not built: the reasoning-capture architecture (2026-08-01)
+
+Researched against the Claude Code docs, recorded here because re-deriving it
+costs more than reading it.
+
+- **`PreCompact` is the right primary mechanism** — it fires immediately before
+  context compaction, is deterministic (runs outside the model), costs ~0 tokens,
+  and fires rarely. It sits exactly in the gap the owner named: not per-commit,
+  not end-of-session, but *before this reasoning stops being recoverable*.
+- **The sharp line is deterministic vs model-dependent.** Hooks and dispatched
+  subagents always run. Skills, `CLAUDE.md` and auto-memory only work if the
+  model cooperates — and after compaction it may not.
+- **It would NOT have caught the guard, and that is the finding.** A hook
+  captures what is *in the transcript*. The guard's reason was never articulated
+  — the 0.16.9 CHANGELOG is forensic about every other decision in that commit,
+  which is strong evidence it was never a discussed decision at all. **So there
+  are two problems, not one:** reasoning *discussed then lost to compaction*
+  (the hook solves it) and reasoning *never articulated* (only a forcing function
+  like `Rejected:` or `Unexplained:` reaches it). Building only the hook would
+  feel like a fix and leave the motivating gap open.
+- **Auto-memory drift is documented, not incidental:** only the first 200 lines
+  / 25 KB load at session start, and there is **no invalidation mechanism**. The
+  supersession gap is real in the platform, not an oversight in this plan.
+
+**Trigger:** after gate R4 closes. **Verify before building** — the event names
+and the `PreCompact` payload shape came from a research pass, not from a handler
+anyone has run.
 
 ---
 

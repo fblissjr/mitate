@@ -924,6 +924,71 @@ const toolJs = new Map([
   }
 }
 
+/* ---- 11. plugin content may not change without the cascade ----------------
+ * Invariant 2 says a change to ANYTHING under `plugin/` requires a version
+ * bump in plugin.json + marketplace.json + a CHANGELOG entry. Check 1 verifies
+ * those three AGREE; nothing verified that a change TRIGGERED them. So the
+ * rule was prose, and this branch broke it undetected: R4.1 stages 1 and 2 both
+ * edited plugin/skills/mitate/templates/smoke.js while the version sat at
+ * 0.16.51, and check 1 printed "version cascade coherent" on every one of them.
+ *
+ * THE ANCHOR IS THE LAST COMMIT THAT TOUCHED plugin.json, and picking it was
+ * the whole difficulty. The obvious anchor — merge-base with origin/main — was
+ * built, run, and MEASURED WRONG in two independent ways (2026-08-01):
+ *
+ *   - It exits 0 on the live violation. It asks "did the version move anywhere
+ *     across the branch", and one early bump permanently satisfies that for
+ *     every later unversioned change. A control that cannot go red on the case
+ *     that motivated it is decorative.
+ *   - `origin/main` is not reliably fetched. Reproduced against a clone
+ *     mimicking actions/checkout: `git rev-parse origin/main` fails outright,
+ *     so the check would crash on exactly the pushes and PRs it exists to gate.
+ *
+ * Anchoring on the last bump fixes both: it goes red on the real violation, and
+ * it needs no remote ref at all. It DOES need real history, so this belongs in
+ * static.yml (fetch-depth: 0) and not gate.yml.
+ *
+ * NOT A RATCHET, unlike checks 5 and 10 — there is no budget to lower. The
+ * answer is binary: either the version moved with the content or it did not. */
+{
+  const sh = (cmd) => { try { return require('child_process').execSync(cmd, { encoding: 'utf8' }).trim(); } catch (e) { return null; } };
+  const PLUGIN_JSON = 'plugin/.claude-plugin/plugin.json';
+  // The last commit that touched the manifest IS the anchor. If it has never
+  // been touched (a fresh repo, or a shallow clone deep enough to lose it),
+  // skip loudly rather than inventing a comparison — a check that silently
+  // no-ops is the shape this whole file exists to catch.
+  const anchor = sh(`git log -1 --format=%H -- ${PLUGIN_JSON}`);
+  if (!anchor) {
+    notes.push('cascade trigger: SKIPPED — no commit in history touches ' + PLUGIN_JSON
+             + ' (shallow clone?). This check needs full history; static.yml supplies it');
+  } else {
+    const changed = (sh(`git diff --name-only ${anchor}..HEAD -- plugin/`) || '')
+      .split('\n').filter(Boolean);
+    // Compare the VERSION STRING against the anchor's, not the commit dates.
+    // The first cut compared history alone and could never go green in the
+    // commit that fixes it: the pre-commit hook blocks until the bump is
+    // committed, and committing is what the hook is blocking. Found by running
+    // it, one minute after it earned its red. Reading the working tree makes a
+    // staged-but-uncommitted bump count, which is exactly the state a
+    // pre-commit hook inspects.
+    const verAt = (() => {
+      const raw = sh(`git show ${anchor}:${PLUGIN_JSON}`);
+      const m = raw && raw.match(/"version"\s*:\s*"([^"]+)"/);
+      return m ? m[1] : null;
+    })();
+    const verNow = (JSON.parse(R(PLUGIN_JSON)) || {}).version;
+    if (!changed.length) {
+      notes.push(`cascade trigger: no plugin/ content has changed since the last version bump (${anchor.slice(0, 7)})`);
+    } else if (verAt && verNow && verAt !== verNow) {
+      notes.push(`cascade trigger: ${changed.length} plugin/ file(s) changed and the version moved ${verAt} → ${verNow}`);
+    } else {
+      fail(`plugin/ content changed since the last version bump (${anchor.slice(0, 7)}) but the version did not move: `
+         + `${changed.join(', ')}. Invariant 2 — bump ${PLUGIN_JSON} and .claude-plugin/marketplace.json, `
+         + `and add a CHANGELOG entry, or marketplace update never reaches installed users`);
+    }
+  }
+}
+
 for (const n of notes) console.log('  ok   ' + n);
 if (fails.length) {
   console.log('');

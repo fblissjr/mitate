@@ -7,6 +7,57 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.52
+
+### changed
+
+**R4.1, stages 1 and 2 — `checkScene` goes from 594 lines to 267.** Six checks
+move to module scope, each taking one `ctx`: the four advisory ones (caption
+speed, caption overflow, framing invariance, exposure) and the two hard
+pre-record ones (shipped frame, live playback). Driven from `ADVISORY_CHECKS`
+and `PRE_RECORD_CHECKS`, whose order is load-bearing and said so in both.
+
+Every stage was gated on byte-unchanged smoke verdicts over 9 scenes — the three
+templates, five examples, and the defect-corpus fixture, which is the one that
+exercises failure paths. Baseline: all pass, 4 advisory warnings.
+
+**A green diff was not treated as sufficient, because for these checks it is not
+sufficient.** All nine scenes pass, so the hard checks emit nothing, and an
+extraction that silently orphaned one would produce byte-identical output — the
+silent-coverage-loss shape, invisible to equality. So stage 1's comparison was
+mutation-tested until it went red (neutralising the crushed-exposure threshold
+dropped three warnings, tally 4 → 1), and stage 2 proved **reachability**
+instead: each extracted check was forced to push a marker, and both markers
+appeared on all nine scenes with the exit code flipping.
+
+**A premise in the restructure plan turned out false and is corrected in the
+code.** It described these as "each already has its own try/catch and its own
+name — a list wearing a function costume." Six do; the determinism trio does not.
+Extracting them as one uniform list would have converted three hard fails into
+warnings while every verdict on the corpus stayed green.
+
+### added
+
+**`selfcheck.js` check 11 — plugin content may not change without the cascade.**
+Invariant 2 was prose with no enforcement: check 1 verifies the three version
+sources *agree*, and nothing verified that a change *triggered* them. This branch
+broke the rule undetected — two commits edited a shipped template while the
+version sat still, and check 1 printed "version cascade coherent" on both.
+
+**It was built red, against the live violation, before the bump that fixes it** —
+the state that made the red possible would have been destroyed by fixing first.
+
+The anchor is the last commit that touched `plugin.json`, and choosing it was the
+whole difficulty. The obvious anchor — merge-base with `origin/main` — was built,
+run, and measured wrong twice: it **exits 0 on the live violation** (an early
+bump permanently satisfies a whole-branch version delta), and `origin/main` is
+not reliably fetched by the CI checkout, so it would crash on exactly the pushes
+and PRs it gates. Anchoring on the last bump fixes both and needs no remote ref.
+It does need real history, so it belongs in `static.yml`.
+
+Not a ratchet, unlike checks 5 and 10: there is no budget to lower, only whether
+the version moved with the content.
+
 ## unreleased
 
 ### added

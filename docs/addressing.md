@@ -1,4 +1,4 @@
-last updated: 2026-07-30
+last updated: 2026-08-01
 
 # Addressing: what `t` is, and what the position-encoding literature does and does not lend us
 
@@ -109,8 +109,8 @@ header makes it a prohibition: "NOTHING else in this file may contain a literal
 timestamp"
 (`plugin/skills/mitate/templates/scene.template.html:85`).
 
-**This is enforced in practice, not just asserted.** Across all five shipped
-examples, no `ss(t, <literal>, <literal>)` or `bump(t, <literal>, <literal>)`
+**This is enforced in practice, not just asserted.** Across every shipped
+example, no `ss(t, <literal>, <literal>)` or `bump(t, <literal>, <literal>)`
 call exists in scene code. Every temporal anchor routes through the beat table.
 The one apparent exception, `ss(t, e0+di, e0+di+.15)` at
 `plugin/skills/mitate/examples/bear-and-bees.html:1591`, derives `e0` from
@@ -709,7 +709,7 @@ follows within two phases, which would mean it bought only the interactive fork.
 
 **R6 (speculative, lowest confidence). A mixed-encoding lint is worth prototyping
 but not shipping yet.** Section 4.2 measured its precision at one in three on the
-only film with a known defect. Prototype it, run it across all five examples,
+only film with a known defect. Prototype it, run it across every shipped example,
 and count. Ship it only if the false-positive rate on beats that turn out to be
 genuinely independent is low enough that authors will not learn to ignore it.
 `CLAUDE.md` invariant 6 requires a bracket regardless: the red arm is
@@ -721,8 +721,8 @@ already did, at the kernel's founding, before the analogy was available. The
 prediction I would make instead is narrower and I think more likely: *the next
 addressing improvement will not add a more relative primitive; it will make the
 frame of an existing expression legible to a tool.* Five relative operators
-already exist and two of them (`warp`, `quant`) have zero uses across all five
-shipped examples, which is the strongest available evidence that the shortage is
+already exist and two of them (`warp`, `quant`) have zero uses across every
+shipped example, which is the strongest available evidence that the shortage is
 not of primitives. This is falsified the moment someone ships a seventh frame
 and it earns its place.
 
@@ -735,8 +735,8 @@ Recorded because the corrections are the useful output.
 **"The same may occur here over time" understates the repo.** mitate did not
 start absolute. `plugin/skills/mitate/templates/scene.template.html:85` forbids
 literal timestamps and `:178` says "use these, never raw timestamps". The
-migration the analogy predicts is the kernel's founding design, and all five
-shipped examples comply. The prediction is retrospectively correct rather than
+migration the analogy predicts is the kernel's founding design, and every
+shipped example complies. The prediction is retrospectively correct rather than
 forward-looking.
 
 **"Three natural coordinate frames" undercounts.** There are six (section 2), and

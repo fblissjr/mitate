@@ -1,4 +1,4 @@
-last updated: 2026-07-30
+last updated: 2026-08-01
 
 # Where truth lives
 
@@ -22,7 +22,7 @@ other surface points at the home. Nothing restates.
 | **why determinism comes first**, and what it is first for | `VISION.md` | `site/` is DOWNSTREAM of this, one-directionally — see below |
 | history — what happened and why | CHANGELOG.md and git | docs speak present tense only |
 | **a check's pass criterion** | the code that implements the check, beside the flag or constant it governs | CI config and session logs POINT; they never restate it |
-| **what a session did** | `internal/` session logs, one per day | a finding worth keeping is promoted to a postmortem; the log is narration and is not cited by tracked content |
+| **what a session did** | `internal/log/`, one file per working day — **tracked as of 2026-08-01** | a finding worth keeping is still promoted to a postmortem. Tracking made the log citable; it did NOT make it doctrine. Cite it for what happened, never for what is true — where a log and a postmortem disagree, the postmortem wins |
 
 
 **Render, delivery and recording are separate domains and must not share a
@@ -123,6 +123,59 @@ rather than a series of accidents. Deleting the copy is O(0) and cannot misfire.
 
 Prose still carries rules, rationale and design arguments. Those are not
 derivable, and they do not rot the way a count does.
+
+**2026-08-01 — the rule got a check anyway, and the paragraph above is why that
+needs explaining.** `selfcheck` check 12 fails when a bracket states its own arm
+count in prose. That is exactly the O(n) guard this section says is outranked by
+deletion, and it was added because **deletion alone did not hold**: the rule was
+written here, and then broken four separate times — `gate.yml`'s "all three"
+against four globbed brackets, `CLAUDE.md`'s "9 references", `bracket-parity.js`
+saying "five ways" while running 22 rows, and `bracket-driver.js` saying "nine
+ways" two lines above its own printed count of ten. A rule written down and
+violated four times is not being followed, so the choice was not
+*delete-versus-check*, it was *check-or-keep-losing*.
+
+**Two things keep it consistent with the rule rather than an exception to it.**
+The check does not guard a copy; it forbids the copy existing, and the same
+change made every bracket print its count so the derived number is on screen —
+which is the deletion this section asks for, with the check only preventing
+reintroduction. And the second: **check 12 immediately demonstrated this
+section's own warning.** Its first cut flagged `bracket-selfcheck.js`, whose
+fixture is a string literal *containing* the forbidden header — a guard failing
+to tell carrying a fact from describing one, for the sixth time. Fixed by
+requiring a line to BEGIN with a comment marker rather than contain one. Read
+that as evidence for the warning, not against it: the guard was written by
+someone who had just read this paragraph, and it still happened.
+
+**2026-08-01 — check 13 closes the class, and the design lesson is that a
+scanner cannot.** Check 12 covered one shape; the rule kept losing everywhere
+else. The first design was a scanner over prose, and it is wrong for a reason
+worth keeping: the forms a count takes are unbounded — "9 references",
+"`references/` (9)", "all three", "five ways", "two of twelve" — so three greps
+written specifically to find the `CLAUDE.md` violation came back **empty on a
+violation already written down two paragraphs above**, because it was a
+parenthetical. A line-based scan then missed a second class outright: these files
+wrap at ~80 columns, so `docs/addressing.md`'s "all five shipped\nexamples"
+straddles a newline and is invisible to anything matching one line at a time.
+
+So the instrument is a **generator**. `scripts/derived-counts.js` holds a
+REGISTRY of countables and fills a marker it placed itself; check 13 recomputes
+and fails on disagreement. It cannot miss and cannot false-positive, because it
+never has to recognise anything. Adding a countable is a data edit.
+
+**What it found on its first run is the argument for it**: `instruments.md`
+asserted six registered fences and listed six, omitting `CONTRACT`, stale since
+0.16.44 — in a file that SHIPS, so it had disagreed with `smoke.js` for eleven
+versions for every installed user. The same stale six sat in `docs/plan.md` and
+in `.claude/skills/`, which nothing mechanical had ever covered.
+
+**The bare-count half is best-effort by admission**, scoped by measurement:
+scanning every tracked file surfaced 71 hits, essentially all legitimate history;
+the front-door files surfaced five. `CHANGELOG.md`, the logs, the postmortems and
+the two planning documents are excluded as dated records. What remains uncovered
+is a noun outside the REGISTRY and anything inside an excluded record — a handoff
+listing four cached plugin versions where five exist is outside every guard here.
+**There the answer is not a check: cite the command, not its output.**
 
 ## The rules
 

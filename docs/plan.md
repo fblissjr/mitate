@@ -1,4 +1,4 @@
-last updated: 2026-07-30
+last updated: 2026-08-01
 
 # mitate: founding plan
 
@@ -255,17 +255,81 @@ Diversity is the point: each case exists to break a different assumption, and
 each phase gate names the cases it must pass. These are specs, not committed
 films; build them as they gate.
 
-| Case | Register | What it stress-tests |
-|---|---|---|
-| `gearbox` | technical explainer | Regression baseline against frozen explainer-video: same beats, node stack, must not be worse on any instrument |
-| `market-crash` | data/abstract explainer | No characters at all — proves character work taxed nothing; charts and glyphs as sets |
-| `bear-and-bees` | character short / comedy | Quadruped scaffold, fur shells, comedic timing (pause-then-fast) |
-| `boss-intro` | game cutscene | A creature invented from a text description on the generic scaffold; dramatic node lighting; title card; cut language |
-| `the-briefing` | human two-shot | THE hard one: face rig, expressions readable in the nocap pass, SSS skin in closeup, rack focus between speakers |
-| `crowd-cross` | scale | ~100 figures from one scaffold via instancing, individual gait phase offsets, LOD shading |
-| `rube-goldberg` | physics | Build-time Rapier bake to sampled trajectories; byte-determinism preserved through the bake |
-| `meme-remix` | meme | Speed of authoring is the metric: joke format, fast cuts, text overlays, made start-to-shipped in one session |
-| `museum-walk` | interactive spike | Same kernel, input driver instead of timeline driver; walk the camera through a built set |
+| Case | Register | Reach | What it stress-tests |
+|---|---|---|---|
+| `gearbox` | technical explainer | **BUILT** | Regression baseline against frozen explainer-video: same beats, node stack, must not be worse on any instrument |
+| `market-crash` | data/abstract explainer | **in reach** | No characters at all — proves character work taxed nothing; charts and glyphs as sets |
+| `bear-and-bees` | character short / comedy | **BUILT** | Quadruped scaffold, fur shells, comedic timing (pause-then-fast) |
+| `boss-intro` | game cutscene | **in reach** | A creature invented from a text description on the generic scaffold; dramatic node lighting; title card; cut language |
+| `the-briefing` | human two-shot | **beyond** | THE hard one: face rig, expressions readable in the nocap pass, SSS skin in closeup, rack focus between speakers |
+| `crowd-cross` | scale | **near** | ~100 figures from one scaffold via instancing, individual gait phase offsets, LOD shading |
+| `rube-goldberg` | physics | **beyond** | Build-time Rapier bake to sampled trajectories; byte-determinism preserved through the bake |
+| `meme-remix` | meme | **in reach** | Speed of authoring is the metric: joke format, fast cuts, text overlays, made start-to-shipped in one session |
+| `museum-walk` | interactive spike | **beyond** | Same kernel, input driver instead of timeline driver; walk the camera through a built set |
+
+**Reach grades, first pass 2026-07-31, graded against the tree rather than
+against memory.** *in reach* = every named element already exists and ships;
+*near* = one identified primitive away; *beyond* = gated by a phase that has not
+started. **Expect these to move, and treat a stuck grade as a finding:** a case
+that stays *beyond* for three phases is either mis-scoped or is naming a missing
+primitive, and both are worth knowing.
+
+What blocks each unbuilt case, one line, with what was checked:
+
+- **`market-crash`** — nothing. `gearbox` proves the explainer register and the
+  SHOTS solver, `noise-chart` proves a grid of cells, `setOverlay` proves text.
+  **The most in-reach case in the table, and the cheapest evidence available.**
+- **`boss-intro`** — nothing. Every element it names is shipped: the
+  text-invented creature is `menagerie`'s strider, cuts are `hard`/`blend`/`whip`
+  with match-cut validation, and the title card is the HTML fence's overlay.
+  Its register (Phase 5) is where cutscene *dialogue* lands; this spec asks for
+  none.
+- **`meme-remix`** — nothing in the engine. Its metric is authoring speed, so it
+  tests the harness and the skill, not a primitive. That makes it the one case
+  whose grade cannot be read off the code.
+- **`crowd-cross`** — two steps, and the first is a design question rather than a
+  port. `InstancedMesh` is shipped, but for **fur shell layers** (one geometry ×
+  L offsets), which is not the same problem as 100 independently *posed* rigs;
+  per-instance bone matrices need a decision. Per-figure phase is already
+  expressible — `gaitPose`'s `opts.start` shifts the plant grid, and the gait is
+  distance-driven. **LOD has no implementation and no reference.**
+- **`the-briefing`** — the face, and only the face. **Two of its four named
+  requirements already ship:** SSS (`materials.html`) and rack focus (`STYLE.dof`
+  + `SHOTS[].focus` + `cut:'blend'`, which the solver lerps across the cut). The
+  scaffold's head is a sphere plus an optional muzzle box; there is no blink,
+  brow, jaw or mouth anywhere. So it is narrower than "THE hard one" suggests —
+  it is Phase 3's morph basis, landing into shot language that already works.
+- **`rube-goldberg`** — Phase 4, which is next by owner priority, and its
+  constraints are already written in [`physics-bake-proposal.md`](physics-bake-proposal.md).
+- **`museum-walk`** — Phase 6, whose gate this document already calls unreachable.
+  There is no input handling anywhere in the repo (the only `addEventListener` in
+  any scene is `resize`). It is also the one case that argues with the prime
+  directive rather than extending it, which is why it stays last.
+
+### Variations between the rungs
+
+Nine cases is a coarse ladder and the intermediate variants are what does not
+exist. Each of these isolates ONE new variable, which is Phase 1's lesson
+applied to the portfolio itself.
+
+- **A 2D film — and this is a hole, not a nicety.** `scene2d.template.html`
+  ships to every installed user and **no example exercises it**: every
+  example carries the `RIG` fence, and the 2D template carries only `CONTRACT` and
+  `KERNEL`. Its `drawOn`/`alongPath` phase-locked draw-on and in-canvas text have
+  no worked demonstration anywhere. A 2D data explainer would close that and is a
+  natural rung below `market-crash`.
+- **`small-crowd` (6–12 figures, no instancing, no LOD)** — sits below
+  `crowd-cross` and answers the question that actually matters first: does
+  per-figure gait phase read as a crowd? `menagerie` already draws three
+  characters; this needs no new primitive. Only then instancing, then LOD, as
+  three rungs instead of one leap.
+- **A single-speaker closeup** — sits below `the-briefing` and uses what already
+  ships: SSS skin, rack focus, existing head. It proves the closeup framing and
+  focus language *before* the morph basis exists, so Phase 3's face lands into a
+  shot that is already known to work rather than into two unknowns at once.
+- **A title card and dramatic lighting on an EXISTING creature** — sits below
+  `boss-intro` and separates the register work from the creature-invention work,
+  which `menagerie` has already proven independently.
 
 Formats (vertical 9:16, square) are exercised inside these via `FRAME`, not as
 separate cases — that contract carries over and already works.
@@ -322,8 +386,10 @@ recording because they are findings, not moves. **0.14.0 shipped
 `build.js` had cited since 0.1.0 without either file ever existing here** — a
 dangling pointer every installed user has followed for the plugin's whole life,
 found only once the tree sat in one place. Porting them was an audit, not a
-copy, and it corrected four claims that had gone stale against this stack (six
-parity fences, not two; the shipped-frame spread
+copy, and it corrected four claims that had gone stale against this stack (six <!--count-mention-->
+parity fences, not two — six was right at that audit and `CONTRACT` has since
+made it seven, which is why this sentence is marked as a record of what the
+audit said rather than a live count; the shipped-frame spread
 floor and `build.js poster` undocumented entirely; the predecessor's
 cross-backend PSNR figure relabelled inherited). And **the predecessor's measured
 record now lives here**, consolidated verbatim into
@@ -378,7 +444,7 @@ variable.
    39/40) with two refinements — the trigger is a REVISITED state after a
    depth-order change (object motion suffices; camera cuts are the common
    case), and it is 100% deterministic on revisit, not flaky. An
-   independent film review then found two HIGH semantic defects in gearbox
+   independent film review then found two HIGH semantic defects in gearbox <!--count-mention-->
    (ring parked off the interlock; ratio trails asserting 1:1 against a
    3:1 caption) plus an uncovered loop seam — all fixed in 0.2.1, with the
    loop made seamless BY CONSTRUCTION (SPIN derived from TOTAL so both
@@ -524,7 +590,7 @@ identical unfenced copies; now HTML-comment-fenced in all five 3D scenes and
 in smoke's parity loop (a second regex arm, since the block lives outside
 `<script>`). Plus four small cleanups; ledger in
 [`predecessor-record.md`](predecessor-record.md), not this CHANGELOG. The
-standing cross-directory parity rule now covers six fences.
+standing cross-directory parity rule now covers <!--derived:fences-->7<!--/derived--> fences.
 
 *Phase 2 GATE MET 2026-07-23 (mitate 0.11.0):*
 `examples/bear-and-bees.html` — the comedy short, carrying the
@@ -646,13 +712,197 @@ driver still owns `t` is a delivery feature and is admitted; an input driver tha
 never arms either, so neither can reach a shipped frame. Without this amendment
 Track C is correctly blocked; with it, the fence still holds where it matters.
 
+**Phase R — Restructuring under a proven oracle (owner-directed 2026-08-01).**
+Remove inherited and unexamined code while what it does stays fixed. Numbered
+out of band because it is **not sequenced behind Phase 6** — it is available
+whenever a unit is about to be rewritten, and it gets more expensive the longer
+the tree grows around what it would remove.
+
+**The premise, stated because it is unusual and load-bearing:** most codebases
+attempting this are blocked on defining "functionally the same." This one is
+not. Sameness is already mechanical at four levels — byte-identical frames on
+one backend, byte-unchanged `smoke.js` verdicts over the corpus, fence parity
+across the nine carriers, and the harness tier's tallied rows. The expensive
+prerequisite exists. So the binding constraint is not *can we define sameness*
+but **which oracles can actually fail.**
+
+**The rule.** Not new doctrine — invariant 6 (*red before green, on
+modifications too*) extended from checks to restructuring:
+
+> **Before refactoring a unit, prove that unit's oracle can go red. Mutation-test
+> the oracle, not just the code.**
+
+R4.1's stage 1 is the worked example and the reason this is written as a rule.
+Byte-identical verdicts across the extraction said nothing until the
+crushed-exposure threshold was neutralised inside the extracted function and the
+diff caught it — three warnings gone, the tally 4 → 1. Without that step, "the
+verdicts did not change" is indistinguishable from a comparison that cannot
+change.
+
+**The trap it exists to catch, found live 2026-08-01:** `bracket-determinism.js`
+proves across-reload nondeterminism is *detectable*, but it reimplements the
+comparison with its own Playwright calls and never invokes `smoke.js`.
+Refactoring `smoke.js` under it would be refactoring under an oracle
+structurally incapable of seeing the code being changed. Generalised: **a control
+that rebuilds its subject verifies a reimplementation.** Check that before
+trusting any oracle, not after.
+
+**Triage, five buckets — because a sweep is the wrong instrument.** A sweep
+rewrites the reasoned code alongside the rest, and here the reasoned code is the
+majority:
+
+| | reason recorded | control exists | action | covered today by |
+|---|---|---|---|---|
+| a | yes | yes | leave it alone | — |
+| b | yes | no | build the control, keep the code | **`selfcheck.js` check 5**, ratcheted at 51 |
+| c | no | yes | recover intent from the control's arms — they are a spec nobody wrote as prose | nothing |
+| d | no | no | archaeology, then decide | **nothing** — `working-plan.md` Track F |
+| e | duplicated by construction | — | the <!--derived:fences-->7<!--/derived--> fences | `--parity-fix` + cross-directory parity |
+
+**Two of the five are already instrumented, and that is the model to copy.**
+Check 5 counts comment lines asserting a measurement without naming a runnable
+control, seeded at an honest baseline and permitted to fall but never rise.
+Bucket (d) needs the same instrument and does not have one — and (d) is the
+harder class precisely because its members **make no claim at all**, so there is
+nothing for a claim auditor to grade.
+
+**Inventory, counted 2026-08-01 rather than estimated.** Uncontrolled
+measurement claims, by file, and the silent-swallow count beside them:
+
+| file | lines | uncontrolled claims | silent swallows |
+|---|---|---|---|
+| `smoke.js` | 1331 | 21 | 11 |
+| `build.js` | 1070 | 12 | 0 |
+| `shoot.js` | 327 | 3 | 0 |
+| `backend.js` | 182 | 1 | 1 |
+
+**The debt is concentrated, which is good news and should shape the order of
+work.** `build.js` and `shoot.js` carry zero silent swallows across 1,397 lines.
+Every one of `smoke.js`'s eleven behaviour-defining thresholds
+(`SHIPPED_SPREAD_FLOOR`, `FRAMING_INVARIANCE_MAD`, the four `EXPOSURE_*`, …) is
+named by **no bracket at all** — several carry a `Bracketed:` claim in the
+comment beside them, with the measured figures, and those claims are counted as
+debt by check 5 exactly because they name no runnable control. So the gate
+instrument is where both the risk and the payoff sit.
+
+**The premise got three independent confirmations in one afternoon
+(2026-08-01), by accident, and they are the best argument for this phase.**
+Three designs were proposed, each looked obviously right, each was run against
+the actual repo, and **none survived**:
+
+1. **A `selfcheck` arm for the version cascade**, anchored on
+   `merge-base(origin/main, HEAD)` — **exited 0 on the live violation.** An
+   earlier bump on the branch permanently satisfied a whole-branch version delta.
+   A control that cannot go red on the instance that motivated it, proposed in
+   the same breath as the rule against decorative controls.
+2. **Deriving check order from a `requires`/`provides` table** — **zero edges to
+   derive from.** None of the six checks writes to `ctx`, so every permutation
+   was equally valid while exactly one was correct. The real constraints were
+   page state: coldness, viewport at entry, whether the page was actually
+   re-seeked.
+3. **Mandatory `Rejected:` fields in commit messages** — **the motivating
+   commit already had one.** `2c5742f` recorded two rejected alternatives
+   voluntarily, in the comment and the CHANGELOG. The field would have been
+   satisfied and the guard would still be unexplained.
+
+Each was refuted by running it, not by arguing about it, and each would have
+shipped as an improvement. **That is the whole phase in miniature:** the
+dangerous artifact is not the obviously-broken one, it is the one that looks
+correct and has never been executed against the case it exists for. Extend the
+suspicion to the *fix* as readily as to the code — all three of these were
+fixes.
+
+### Phase R's first unit: the determinism trio (owner-directed 2026-08-01)
+
+**Named here rather than left to whoever picks the phase up**, because "available
+whenever a unit is about to be rewritten" is a rule that selects no unit, and a
+phase with no first move is a phase that does not start.
+
+**The unit:** `checkDeterminism`, `checkReloadDeterminism`, `checkBlankFrame` —
+about 100 lines in `smoke.js`, sharing one captured `ctx.frames`.
+
+**Why this one, and why now.** Phase R's binding constraint is not defining
+sameness, it is *which oracles can actually fail*. For this unit that oracle now
+exists **as a control rather than as a memory**: `bracket-driver.js` covers the
+driver the trio runs under, the nine-scene corpus covers verdicts, and the trio's
+three assertions are each **forced true in turn by a standing arm** that requires
+that check's own message. That last technique is the reusable part — it is how a
+check emitting nothing on a green corpus is shown to still be wired to the
+verdict, and it is what R4.1's own gate could not do by equality alone.
+
+**It was a memory until 0.16.58, and that is the part worth keeping.** The
+original run was a manual mutation in a scratch directory that no longer exists,
+so the load-bearing half of R4.1's argument was the half nobody could re-run. Two
+things came out of turning it into arms. A **negative control** was needed before
+the three meant anything — assertion forced *and* its push routed to a local
+sink, which makes smoke report `all scenes pass` at exit 0; without it, "the
+assertions reach the verdict" rested on arms never shown capable of noticing that
+they do not. And the arms needed a fixture that passes smoke **outright**,
+because `checkReloadDeterminism` is guarded by `!fails.length`: against a fixture
+that fails anything earlier, forcing the reload assertion produces nothing.
+
+**That guard is this unit's first tripwire, and it now has an alarm.** With the
+fixture's playback disabled so the guard skips the check, the reload arm goes
+BRACKET FAILED rather than quietly passing — so a change to the guard cannot
+silently un-cover the check it protects.
+
+**What the redesign has to decide, stated so it is not rediscovered.** The trio
+bundles two decisions that are currently one:
+
+1. **Fail rather than warn** on an unexpected throw. Deliberate, argued in the
+   file, and correct — an advisory check crashing must never flip the exit code,
+   a determinism check crashing must.
+2. **Abandon every remaining check.** Inherited, never argued. It is what a throw
+   inside a `try` block does to the statements after it, and the trio was inline
+   inside one `try` before R4.1. The extraction preserved it because the gate was
+   byte-unchanged verdicts; preserving a behaviour is not the same as it having a
+   reason.
+
+**These are independent axes, and this file already proves it:**
+`checkShippedFrame` and `checkLivePlayback` are HARD checks that push to `fails`,
+and both catch internally and let execution continue. So "it is a hard check"
+does not imply "abandon". There are three tiers in the code and the module
+comment describes two.
+
+**The strongest argument FOR abandonment is unstated and covers only part of the
+trio**, which is the finding: a throw inside `checkDeterminism` leaves the page
+seeked somewhere arbitrary, and two of the four advisory checks that follow carry
+hard-fail branches (framing invariance; exposure's >=99% near-black). Running
+them on a broken page can manufacture a hard fail that blames the SCENE for a
+HARNESS crash — the exact misattribution this repo already ate once, when a
+capture race was reported as a scene defect. That reasoning holds for
+`checkDeterminism`, holds more weakly for `checkReloadDeterminism` (mid-reload),
+and **does not hold at all for `checkBlankFrame`**, which destructures
+`{ PLAN, frames, fails }`, touches no page state, and is array indexing.
+
+**So the unit is a genuine Phase R case rather than a tidy-up:** the reasoned code
+and the inherited code are in the same control-flow decision. The triage table's
+premise — that a sweep is wrong because reasoned code is the majority — is sound
+for `smoke.js` as a whole and is *weakest here*, because separating the two means
+separating statements, not files.
+
+**Gate for this unit** is Gate R's second clause applied to it: the oracle
+recorded red before the change and green after, both runs cited. The `!fails.length`
+guard (Track F's opening instance) is inside this same unit and is the natural
+thing to settle in the same pass — but only if a fixture that can go red exists
+first, which today it does not.
+
+**Gate R:** a ratchet exists for bucket (d) — behaviour-affecting code with no
+recorded reason and no control — seeded at a counted baseline, failing when the
+count rises, on the same escape hatch as `ASSERT_BUDGET` (edit the literal, in a
+diff, with a reason); at least one unit restructured under an oracle **recorded
+red before the change and green after**, with both runs cited rather than
+asserted; and `bracket-determinism.js` driving the shipped `smoke.js` path rather
+than its own copy of it. The last clause is the cheapest of the three and the one
+that makes the others trustworthy.
+
 ## Examples policy (decided 2026-07-23, measured on a live install)
 
 Examples stay in the plugin dirs. The mechanics, verified on this machine:
 `/plugin marketplace add` shallow-clones the ENTIRE repo regardless of which
 plugin the user wants; `/plugin install` then copies just that plugin's
 subtree — examples included — into a per-version cache. (Re-measured 2026-07-25 by byte-summing `git ls-files`: **7.9 MB tracked in
-total, a 5.8 MB plugin subtree of which 5.5 MB is examples** — the method matters,
+total, a 5.8 MB plugin subtree of which 5.5 MB is examples** — the method matters, <!--count-mention-->
 since `du` block-sums differ at this precision. The earlier figures, 9.6/5.9/5.5,
 were taken right after the repo split and carried neither date nor method. The original measurement was taken in the predecessor's
 multi-plugin marketplace at ~18 MB; the ratio is what carried, not the figure.) So yes, examples ship; and no, it does not matter

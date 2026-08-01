@@ -20,8 +20,10 @@ description: >
 
 # mitate
 
-> **Provenance.** Canonical for routing and workflow order. Verified 2026-07-30
-> against `templates/` and `references/`.
+> **Provenance.** Canonical for routing and workflow order. Verified 2026-07-31
+> against `templates/` and `references/` — including the Environment section,
+> re-checked against `build.js`'s encoder call sites after Track E1 moved the
+> review verbs off ffmpeg.
 
 **What it makes:** one self-contained HTML file that plays an animated scene in
 any browser, and renders frame-exact to MP4, AVIF or WebP. No player, no build
@@ -223,12 +225,18 @@ Not style — each was measured, and each fails quietly rather than loudly.
 
 ## Environment
 
-Pinned: `three@0.185.1`, `playwright-core@1.61.1`, ffmpeg on PATH, bun.
+Pinned: `three@0.185.1`, `playwright-core@1.61.1`, bun. **No encoder is needed to
+build or review a scene** — `bundle`, `frames`, `probe`, `poster`, `sheet`,
+`aspect` and `strip` all run on bun and a browser alone.
 
 `playwright-core` ships **no browser** — run `bunx playwright install chromium`
-before the first render, or set `CHROMIUM_PATH`. `loop` and `avif` each need an
-external encoder; both probe for theirs and print the install command before
-shooting a frame.
+before the first render, or set `CHROMIUM_PATH`.
+
+**Export needs encoders, and only export does:** `video`/`all` need ffmpeg on
+PATH, `avif` needs avifenc, `loop` needs img2webp. Each probes for its own and
+prints the install command before shooting a frame. (`motion` still needs
+ffmpeg; it is a measurement whose scale has to be re-established before it can
+move.)
 
 **Backend:** with no env vars you get the WebGL2 fallback, which is universal and
 CI-safe. `WEBGPU=metal` opts into macOS hardware and is measurably faster.

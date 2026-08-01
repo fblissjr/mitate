@@ -1,4 +1,4 @@
-/* Bracket for the console-noise classifier in smoke.js, four ways.
+/* Bracket for the console-noise classifier in smoke.js.
  *
  * Builds its own fixtures from a shipped example in a temp dir and drives the
  * REAL smoke.js as a subprocess, so what is under test is the shipped gate
@@ -126,4 +126,4 @@ if (wrong) {
             + ` what this bracket claims. Do not trust a green smoke run until this is 0.`);
   process.exit(1);
 }
-console.log('\nall arms as specified');
+console.log(`\nall ${CASES.length} arms as specified`);

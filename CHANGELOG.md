@@ -7,6 +7,840 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.59
+
+### added
+
+**A sixteenth arm makes the `CLEAN` fixture's framing HEADROOM a controlled
+claim, not a comment.** A green arm says the fixture is under the threshold; it
+says nothing about by how much, and a control resting on an unmeasured margin is
+one renderer change away from failing for a reason nothing on hand explains. The
+arm halves `FRAMING_INVARIANCE_MAD` to 4 and requires the fixture to still pass,
+so the margin is asserted by a run on every platform the bracket reaches, and it
+reds with slack left rather than at the moment coverage is lost. Verified both
+ways: green at 4, and BRACKET FAILED at 0.4.
+
+Observed on macOS, recorded as an observation and nothing more: 0.473 narrow /
+0.422 wide. Those figures are not re-derived by anything and are explicitly not
+cross-platform — 0.16.58's gate run establishes only that the fixture is under
+the threshold on CI's WebGL2-fallback path.
+
+**The first draft of that comment asserted the numbers held on both platforms,
+from a single-platform measurement, and then tried to dodge the
+measurement-assertion ratchet by rewording.** Both were caught before commit.
+The ratchet was right: an unsourced number is debt whether or not the sentence
+containing it uses the word "measured", and the fix is a control, not a
+synonym.
+
+### removed
+
+**`.claude/rules/model-delegation.md` is gone, by owner call** — the standing
+tiering rule was costing more than it bought in practice. `working-plan.md` had
+already filed the same conclusion from a different direction ("inline the intent
+or drop it, since that rule does not ship"), so this closes that step rather
+than opening a question.
+
+**Two live pointers were rewritten with it**, which is the part a deletion
+usually leaves behind: `CLAUDE.md`'s Map cited the file, and
+`.claude/agents/control-builder.md` cited it to justify inheriting the session
+model. The agent now states that criterion inline, where the decision is
+actually made. Nothing mechanical would have caught either — `.claude/agents/*`
+carry no freshness marker by design, and `CLAUDE.md`'s Map is checked in the
+entry-to-Map direction only, so a Map line pointing at a deleted file is exactly
+the gap. Remaining mentions are in the CHANGELOG, a postmortem and
+`working-plan.md`, all dated records that stay true.
+
+### fixed
+
+**Check 13 crashed instead of reporting when a tracked file was absent from the
+working tree.** `git ls-files` lists the index, so a file deleted but not staged
+is still in it, and reading every entry blindly threw ENOENT and took the whole
+self-check down — reporting nothing about the counts while blaming the wrong
+file. Missing entries are now skipped and named in the check's own line, in both
+the passing and failing branches, so a run cannot quietly read less than it
+claims. Found on a live instance in a shared checkout.
+
+## 0.16.58
+
+### added
+
+**`bracket-driver.js` gains the reachability arms — R4.1's unreproducible half
+becomes a control.** That gate rested on two things: byte-identical verdicts
+across the `checkScene` extraction (reproducible, and independently reproduced)
+and a forced-assertion run proving the determinism trio's assertions still reach
+the verdict. The second was a one-off manual mutation in a scratch directory
+that no longer exists. Since the argument was "equality alone is a weak oracle
+for these three", the load-bearing half was the half nobody could re-run.
+
+Three arms force one condition each — `checkDeterminism`,
+`checkReloadDeterminism`, `checkBlankFrame` — and require that check's own
+message. A fourth is the negative control that gives them teeth: the assertion
+forced AND its push routed into a local sink, which makes smoke report `all
+scenes pass` at exit 0 with the message absent. That is exactly what the three
+would go red on, and without it "the assertions reach the verdict" would rest on
+arms never shown capable of noticing that they do not.
+
+**A second disconnection shape is already covered elsewhere, found by trying
+it:** dropping `fails` from the destructure is caught at module load by the
+requires guard, so the sink is the shape that survives it.
+
+### changed
+
+**The arms needed a fixture that passes smoke outright**, and `SCENE` could not
+be it. `checkReloadDeterminism` is guarded by `!fails.length`, and `SCENE` fails
+live playback by construction — so forcing the reload assertion against it would
+have produced nothing and read as a broken arm rather than as the guard doing
+this. The new `CLEAN` fixture reports `all scenes pass` at exit 0, which is what
+makes the trio reachable and each message attributable.
+
+Two of its properties were arrived at by running it, not by design. It draws its
+own letterbox rather than using CSS, because `framingReader` maps window
+coordinates into the canvas buffer via `canvas.width / innerWidth` — a
+fixed-size buffer letterboxed in CSS makes the check read a different region at
+every window shape (measured: MAD 30.3 narrow, 34.6 wide, against a threshold of
+8). And it draws ~240 deterministic cells, because a flat two-rect frame
+compressed to 1555 bytes against a 5760-byte floor, failing the very
+blank-frame check the third arm exists to force.
+
+Bracket cost: 15 arms, 0 skipped, ~40s with a browser available.
+
+## 0.16.57
+
+### added
+
+**`selfcheck` check 13 — a derived count may not drift from the thing it
+counts.** Check 12 closed one shape of the no-hand-written-counts rule; this
+closes the class. The instrument is a **generator, not a scanner**, and the
+reason is measured: the forms a count takes in prose are unbounded, and the
+`CLAUDE.md` violation the rule was written for was a parenthetical —
+`` `references/` (9) `` — so three greps written specifically to find it came
+back empty on a violation this repo had already documented. A scanner has to
+recognise a count in arbitrary prose and cannot. A generator fills a marker it
+placed itself, so it can neither miss nor false-positive.
+
+`scripts/derived-counts.js` owns a REGISTRY of countables — data, so adding one
+is an entry rather than a new check — and a `--write` path that refills every
+`<!--derived:key-->` marker. Check 13 recomputes them and fails on disagreement,
+the same shape check 8 already uses against the installed pre-commit hook.
+
+**Found immediately, which is the argument for it.** `instruments.md` asserted
+"Six fences are registered" and listed six, omitting `CONTRACT` — stale since
+0.16.44 made it the seventh, in a file that **ships to every installed user**, so
+the count and the list had disagreed with `smoke.js` for eleven versions. The
+same stale six appeared in `docs/plan.md` and in `.claude/skills/extract-patterns/`,
+the last of which nothing mechanical had ever covered. The corpus README said
+"twelve characterized defects" while carrying fourteen table rows, three of the
+twelve having been split into sub-lettered rows with the sentence never
+revisited. Four more counts were correct but latent — "the five shipped
+examples", "Three companion references" — each certain to rot on the next
+addition.
+
+### changed
+
+The bare-count half is **best-effort by admission** and scoped by data: registry
+nouns only, live-claim files only. Scanning every tracked file surfaced 71 hits,
+essentially all legitimate history; scanning the front-door files surfaced five.
+Both figures were measured before the check was written. `CHANGELOG.md`, the
+session logs, the postmortems and the two planning documents are excluded as
+dated records, and a genuine mention carries `<!--count-mention-->` on its line —
+the use-versus-mention seam this repo has now failed six times, made explicit
+rather than inferred.
+
+What it does not cover is stated in the check: a noun outside the REGISTRY, and
+anything in an excluded record. A handoff listing four cached plugin versions
+where five are installed is outside every guard here; the answer there is to
+cite the command, not its output.
+
+## 0.16.56
+
+### added
+
+**`selfcheck` check 12 — a bracket may not state its own arm count in prose.**
+Built red against **eight live violations in five bracket files**, which is the
+argument for it: `source-of-truth.md` has said "never hand-write what a command
+produces" for weeks, and the rule has now been broken four separate times —
+`gate.yml` read "all three" while four brackets were globbed; `CLAUDE.md`
+asserted "9 references" while selfcheck derived the number every run;
+`bracket-parity.js` said "five ways" while running 22 rows; `bracket-driver.js`
+said "nine ways" while printing `10 arm(s) exercised` two lines below it. A rule
+written down and violated four times is not a rule, it is a wish.
+
+**Narrow on purpose.** A first cut flagged any number near "arm" and matched 28
+lines, nearly all legitimate — "one arm each", "the two arms that matter",
+"four arms that could not tell each other's failure apart". Those are narrative
+and history, and history does not rot. The dangerous ones describe the file's
+OWN CURRENT structure and take three forms; the check matches those and nothing
+else, and a bracket arm pins the distinction by injecting a narrative count and
+requiring it to stay green.
+
+### changed
+
+**Every bracket now prints a derived count, so the number exists without anyone
+writing it.** Five of six previously ended on "all rows as specified" with no
+figure — the count was only obtainable by counting rows by eye, which is why the
+prose copies survived. `bracket-parity.js` now reports `all 22 arms as
+specified`, against a header that claimed five. `bracket-commands.js` already
+derived its own `ran` and simply was not printing it.
+
+## 0.16.55
+
+### fixed
+
+**Four false or stale claims, three of them inside shipped files.** Found by an
+independent audit of what 0.16.53 and 0.16.54 recorded against what the tree
+actually does — the claims were written in the same sitting as the code they
+describe, and every one of them read as correct.
+
+- **`bracket-driver.js` said "nine ways" and "Arms 1-7 / 8-9" after 0.16.54 added
+  a tenth arm** (`SHOT_CHECKS reordered`). Five stale spots in the header of a
+  file that ships to every installed user, and the commit that added the arm
+  mentioned it nowhere. The count is derived and printed at runtime
+  (`10 arm(s) exercised`), so the prose was the only wrong copy.
+- **`bracket-driver.js` claimed it keeps the ctx defect reachable. It does not** —
+  no arm moves the setup assignment after the advisory loop. That is a claim of
+  measurement naming no control that reproduces it, in the file whose whole job
+  is controls. The claim is removed rather than weakened; the observation is a
+  dated record and lives in 0.16.53's entry above.
+- **`smoke.js` said `setupScene` was the only writer to `ctx` besides
+  `checkDeterminism`.** There are three: `checkScene` writes `ctx.beats`.
+- **`smoke.js`'s "zero edges" premise had expired.** It was true of the six checks
+  that existed when the derivation was refuted; B3 then gave the trio real edges
+  (`checkDeterminism` provides `frames`, two others require it). The CONCLUSION
+  is unchanged and now rests on the right reason: a sort would derive that one
+  constraint and still admit wrong orders, because what actually orders this file
+  is page state, which is not a ctx key. Deriving a fraction is worse than
+  deriving nothing — it looks principled and still needs the hand-written rows.
+
+No behaviour changed. Verdicts are unaffected: every edit is a comment.
+
+## 0.16.54
+
+### changed
+
+**R4.1 stage 3 — the setup block and the determinism trio leave `checkScene`,
+which finishes at 155 lines from 594.** The last stage of the extraction, and
+the coupled one: three hard checks sharing one captured frame array, none with
+its own `try/catch`.
+
+`setupScene` takes the `?record=1` load, the contract assertions and everything
+derived from them (`dur`, the sample `PLAN`, `t`, `backend`). It is called
+directly rather than driven from a list, because a list models a choice of order
+and there is none — nothing can precede the load that produces the page. It is
+also the only thing besides `checkDeterminism` that writes to `ctx`.
+
+`checkDeterminism`, `checkReloadDeterminism` and `checkBlankFrame` become
+`SHOT_CHECKS`, driven through the same validating driver as the other two lists
+and asserted in the same `CHECK_ORDER`. **The error semantics are preserved
+exactly**: none carries a `try/catch`, so a throw reaches `checkScene`'s outer
+catch, becomes a FAIL, and abandons the remaining checks — unlike the four
+advisory checks, which degrade to a warning. Wrapping these the same way would
+have converted three hard fails into warnings while every corpus verdict stayed
+green.
+
+The captured array is `ctx.frames`, not `ctx.shots`: `window.SHOTS` is the
+scene's shot list, an unrelated contract name that the inline version shadowed
+one block apart.
+
+**The `!fails.length` guard on the across-reload check is carried unchanged and
+is known debt.** It reads `fails` globally, so any unrelated failure silently
+disables the only check covering load-time nondeterminism. Preserved
+deliberately: this stage's gate is byte-unchanged verdicts on an all-green
+corpus, where a fix could not be validated by the same run that makes it
+visible.
+
+**Verdicts are byte-unchanged across all nine scenes — and that was not treated
+as sufficient.** These checks emit nothing on a green corpus, so an extraction
+that orphaned one would produce identical output. Each of the three assertions
+was forced true in turn: every one fired on all 9 scenes and flipped the exit
+code, which is what says they are still wired to the verdict.
+
+`Function.prototype.toString()` under Bun also merges adjacent `const`
+declarations into one declarator list, which false-redded the new destructuring
+cross-check the moment `checkDeterminism` was written. The anchor accepts `,` as
+well as `;`; `ctx.inner` still refuses.
+
+## 0.16.53
+
+### added
+
+**The check driver validates `ctx`, and the check order is asserted** — the two
+pieces of debt R4.1's extraction created, both in `smoke.js`, both now under
+`bracket-driver.js` (nine arms, seven of them browser-free).
+
+Before the extraction, `dur` and `t` were block-scoped `const`s, so reading one
+early threw a TDZ `ReferenceError`. `ctx.dur` read before the setup block
+assigns it is `undefined`, silently. That trade was measured rather than
+assumed, by moving the setup assignment after the advisory loop: one correct
+scene drew a hard `render is 100.0% near-black` (every sample time became NaN),
+while framing invariance went **silently all-clear** on the same run, because
+every window shape sampled at NaN is identical and a check comparing a frame to
+itself cannot fail. Confidently wrong on one arm and quietly powerless on the
+other, from a single missing key.
+
+Each check now declares the ctx keys it reads, and one driver — `runChecks`,
+not the checks themselves — asserts them on entry. Validation is by **presence**
+(`k in ctx`), never definedness: `beats` is legitimately `undefined` for a scene
+exporting no `window.BEATS`, and both caption checks handle that themselves. All
+nine corpus scenes export it, so the two readings are indistinguishable here and
+the wrong one would have shipped green — measured against a BEATS-stripped
+scene, where presence passes with the intended `skipped` warnings and
+definedness fails the scene outright.
+
+The declaration is **cross-checked against the pattern each check destructures**,
+so `requires` cannot drift from the code beside it. That guard rests on an
+engine behaviour worth naming: `Function.prototype.toString()` under Bun returns
+a re-print of the parsed AST, not source text, so `const p = ctx.page` comes
+back as a destructuring pattern that was never typed. The first mutant written
+to prove this arm red came back **green** for that reason — the mutation was
+normalised into the shape being looked for. An arm now pins the behaviour.
+
+**Order is asserted, not derived.** Deriving it from a `requires`/`provides`
+table was designed and refuted by measurement: no check writes to `ctx`, so
+`provides` is empty for every one of them and the topological sort has zero
+edges — every permutation equally valid under the scheme while exactly one is
+correct. `CHECK_ORDER` records the constraint that puts each check at its index,
+so a reorder argues with a reason rather than with a list.
+
+Verdicts are byte-unchanged across all nine scenes.
+
+## 0.16.52
+
+### changed
+
+**R4.1, stages 1 and 2 — `checkScene` goes from 594 lines to 267.** Six checks
+move to module scope, each taking one `ctx`: the four advisory ones (caption
+speed, caption overflow, framing invariance, exposure) and the two hard
+pre-record ones (shipped frame, live playback). Driven from `ADVISORY_CHECKS`
+and `PRE_RECORD_CHECKS`, whose order is load-bearing and said so in both.
+
+Every stage was gated on byte-unchanged smoke verdicts over 9 scenes — the three
+templates, five examples, and the defect-corpus fixture, which is the one that
+exercises failure paths. Baseline: all pass, 4 advisory warnings.
+
+**A green diff was not treated as sufficient, because for these checks it is not
+sufficient.** All nine scenes pass, so the hard checks emit nothing, and an
+extraction that silently orphaned one would produce byte-identical output — the
+silent-coverage-loss shape, invisible to equality. So stage 1's comparison was
+mutation-tested until it went red (neutralising the crushed-exposure threshold
+dropped three warnings, tally 4 → 1), and stage 2 proved **reachability**
+instead: each extracted check was forced to push a marker, and both markers
+appeared on all nine scenes with the exit code flipping.
+
+**A premise in the restructure plan turned out false and is corrected in the
+code.** It described these as "each already has its own try/catch and its own
+name — a list wearing a function costume." Six do; the determinism trio does not.
+Extracting them as one uniform list would have converted three hard fails into
+warnings while every verdict on the corpus stayed green.
+
+### added
+
+**`selfcheck.js` check 11 — plugin content may not change without the cascade.**
+Invariant 2 was prose with no enforcement: check 1 verifies the three version
+sources *agree*, and nothing verified that a change *triggered* them. This branch
+broke the rule undetected — two commits edited a shipped template while the
+version sat still, and check 1 printed "version cascade coherent" on both.
+
+**It was built red, against the live violation, before the bump that fixes it** —
+the state that made the red possible would have been destroyed by fixing first.
+
+The anchor is the last commit that touched `plugin.json`, and choosing it was the
+whole difficulty. The obvious anchor — merge-base with `origin/main` — was built,
+run, and measured wrong twice: it **exits 0 on the live violation** (an early
+bump permanently satisfies a whole-branch version delta), and `origin/main` is
+not reliably fetched by the CI checkout, so it would crash on exactly the pushes
+and PRs it gates. Anchoring on the last bump fixes both and needs no remote ref.
+It does need real history, so it belongs in `static.yml`.
+
+Not a ratchet, unlike checks 5 and 10: there is no budget to lower, only whether
+the version moved with the content.
+
+## unreleased
+
+### added
+
+**Track E0 — the encoder boundary is pinned and may only shrink.**
+`selfcheck.js` check 10 records which functions may shell out to
+`ffmpeg`/`avifenc`/`img2webp`, per function, seeded at the honest baseline of
+**ten call sites across nine functions** rather than at a target.
+
+This comes *before* the migration it serves, which is the plan's own ordering and
+worth restating: Track E's claim is that an agent should be able to build and
+review a scene with bun and a browser and nothing else, so "what is export?" has
+to stop being a judgment call. Once the list has ratcheted down, export is
+whatever is still inside it, and each migration is a deleted line here rather
+than an assertion in prose.
+
+It fails in **three** directions, one arm each in `bracket-selfcheck.js`: an
+encoder in a function that is not pinned (drift in), an extra call inside one
+that is (drift within), and — the direction a ratchet exists for — a pinned site
+that no longer exists, meaning a migration landed and the budget was not
+tightened behind it. The escape hatch is deliberately the same one
+`ASSERT_BUDGET` uses rather than a second mechanism: a legitimate new export verb
+edits the literal, in a diff, with a reason.
+
+**The check's first run failed on its own bracket.** A comment there named the
+call pattern in full, and the scanner read it as a call site — the
+"a control must not contain the defect it injects" rule, violated by the comment
+explaining that rule. Check 10 now skips comment-only lines, which is scoping
+rather than relaxation since the subject is what executes; the fixtures stay
+assembled at runtime regardless, because leaning on a scanner's blind spot to
+keep a control honest is the wrong direction.
+
+**`/extract-patterns` — the flywheel's extraction half.** `VISION.md` has argued
+that capturing a pattern should be a side effect of making a film rather than an
+act of discipline afterwards; `docs/pattern-ledger.md` counts the rebuilds and
+says plainly it *"has no way to extract one"*. This is that half.
+
+Reads a scene, a session log, a postmortem or a directory of them, and proposes
+which techniques belong in the references — each with evidence, a destination
+from `source-of-truth.md`'s homes table, and a `pattern-ledger` row. **It writes
+nothing**, because an extractor that writes becomes the fifth place a fact can
+live, which the one-home rule forbids.
+
+**Built to run on work the runner did not do**, which is the property that makes
+it worth having: the author felt the necessity behind every choice and is
+therefore the worst-placed reader of which ones were general. Its primary filter
+is `VISION.md`'s own — does this leave the ENGINE better equipped for the next
+film, or did it only make THIS film better — made decidable by six tests, and it
+is deliberately not a code filter, since staging, pacing and legibility are what
+the references were mostly built from.
+
+Known gaps, recorded rather than hidden: **it has no bracket**, so nothing yet
+proves its criteria can reject a plausible local pattern or accept a subtle
+general one; its destination-check step is the expensive one and the easiest to
+fake; and **it has never been run**.
+
+*Record correction: this landed in commit `7f0732e`, whose message describes only
+a downscale measurement. The commit was already pushed, so it was left alone
+rather than rewritten — this entry is where the addition is actually findable,
+which is what `source-of-truth.md` assigns the CHANGELOG.*
+
+## 0.16.51
+
+### changed
+
+**Track E1 — `poster`, `sheet`, `aspect` and `strip` no longer need an encoder.**
+The review tier runs on bun and a browser alone. That is the point of the track,
+not dependency hygiene: `VISION.md`'s subject is the build-review loop, and every
+external dependency on that loop is a tax on what the project is for.
+
+All four did the same thing through ffmpeg — read already-rasterized stills,
+scale each, lay them out on a background — so they collapse into one in-page
+tiler (`build.js` `tileStills`) that replaces **five** call sites. `aspect`'s
+hardest constraint disappears with it: its cells have different pixel dimensions,
+which ruled out ffmpeg's tile filter *and* the image2 demuxer, and a `contain`
+fit into a square box expresses it directly.
+
+**Measured, both directions.** With no encoder on PATH the harness tier goes from
+`review 0 exercised / 5 skipped` to **`4 exercised / 1`** — the one remaining is
+`motion`, which is deferred rather than blocked. With encoders present all 17
+rows still pass. Output geometry was checked against the layout arithmetic rather
+than assumed: `sheet` 966×546 (2 cols × 480 + 6 padding), `squint` 276×51
+(3 cells × 90 + 3), `aspect` 960×240 (4 shapes × a 240 square box).
+
+**The downscale did NOT change, and that is the load-bearing part.** The squint
+strip's 480→90 reduction is 5.3× supersampling and that supersampling *is* the
+antialiasing; a native 90px render scores 44.8% intermediate tones on edges
+against canvas's 59.9%. Only the scaler moved. The reasoning is recorded in
+`build.js` beside the code, labelled as a recorded finding rather than a control
+— nothing in the repo re-runs those numbers, and the comment says so.
+
+**The encoder ratchet tightened 10 → 5** in the same commit, which is what proves
+the migration happened rather than asserting it. `selfcheck.js`'s check 10 fails
+if a pinned site disappears without the pin being lowered.
+
+**Docs corrected in the same edit, not after:** `SKILL.md`'s Environment section
+and `build.js`'s header both listed ffmpeg as a flat prerequisite. Both now say
+what actually needs one. `bracket-commands.js`'s header said "nine rows need an
+encoder"; it says five, with the note that this number has been wrong before.
+
+## 0.16.50
+
+### fixed
+
+**The last four review findings, 12-15 — the controls that did not control.**
+Each was demonstrated by breaking `build.js` and watching the bracket stay green
+before the fix, then go red after.
+
+- **`bracket-commands.js` ran `build.js` against the tracked
+  `scene.template.html` in place.** Neutralising the embed guard and running the
+  bracket **changed that tracked file's hash** — the ~1 MB inflation that
+  "reached `git add` once", rebuilt inside the control meant to prevent it. It
+  now runs against a copy in the temp workspace, keeping the basename so the
+  guard still fires. Re-measured after the fix: the tracked file's hash is
+  unchanged even with the guard removed.
+- **The `all` row was satisfied by the `video` row's leftover mp4.** Removing
+  the `video()` call from `all` left the row reporting `ok, tiny.mp4 written`.
+  Every artifact expectation is now cleared before its row runs, so each proves
+  its own work rather than inheriting a neighbour's.
+- **`expect.stdout: ''` was never evaluated** — a truthiness test where its
+  sibling correctly used `!== undefined`, so the `vendor` row had asserted exit
+  0 and nothing else for its whole life while looking like it asserted output.
+  Fixed both ways: the guard now tests presence, and an empty expectation is
+  rejected outright so the vacuous form cannot come back quietly.
+- **The `bash -e` bracket loop is one file, `scripts/run-brackets.sh`**, called
+  by both workflows instead of copy-pasted into each with ~10 lines of matching
+  prose. Fixing that trap at two call sites instead of once underneath is how
+  the `!cancelled()` defect reappeared one level down.
+
+### added
+
+**`scripts/bracket-run-brackets.js`** — the loop both workflows now depend on is
+the largest single point of failure here, since a defect in it disables every
+other control at once while CI stays green. Four arms: a red bracket does not
+hide its siblings, every red is reported rather than the first, a fully green set
+says how many ran, and **a glob matching nothing fails** rather than reporting
+green having run nothing.
+
+**One honest correction found by mutation-testing it.** The script's comment
+claimed `set -e`'s absence was what kept the loop going past a red bracket.
+Restoring `set -euo pipefail` changed nothing and no arm noticed: the
+load-bearing part is the `if ! bun run` construction, since a command inside a
+condition is exempt from `-e` regardless. The comment now says which one holds
+the property and which one is depth.
+
+## 0.16.49
+
+### fixed
+
+**Three false claims — findings 7, 8 and 9 of the 2026-07-31 review.** Each was
+verified against the tree before being rewritten, and two turned out worse than
+the review said.
+
+- **`bracket-commands.js` asserted a CI ffmpeg install that does not exist.** It
+  read "the workflow installs ffmpeg precisely so those nine rows run",
+  contradicting `444a649` on this same branch — the commit that *declined* the
+  encoder job. No workflow installs ffmpeg and nothing sets `REQUIRE_ENCODERS`,
+  so those nine rows skip in CI every time. The comment now says so and points at
+  the tiered tally that reports it as a HOLE.
+- **`fixtures/defect-corpus/README.md` claimed `gate.yml` coverage it does not
+  have**, then explained five lines later why `gate.yml` cannot see the
+  directory. A reader who believed the first sentence would have read the second
+  as describing something else.
+- **`CLAUDE.md`'s Map omitted the two directories this branch added, and
+  invariant 2 still printed the two-glob verify command** after a ninth carrier
+  joined — so two tracked files prescribed different commands for the same check.
+  Both fixed; the command is now a fenced block naming all three globs.
+
+### added
+
+**`selfcheck.js` check 9: the Map's completeness claim is now checked.** The Map
+says it covers "everything outside `docs/`" on the argument that anything absent
+from a map is unreachable. Auditing that claim after fixing finding 9 found
+**five more entries it had never named** — seven misses in one file. That is not
+carelessness, it is the wrong instrument: a completeness claim maintained by
+remembering to update it drifts exactly when someone adds a directory, which is
+when nobody is thinking about `CLAUDE.md`.
+
+**No exemption list, deliberately** — that would be the same prose problem one
+level down, growing a line per failure until it exempts the thing that mattered.
+An entry too minor for its own bullet shares one with its neighbours. Bracketed
+in `bracket-selfcheck.js` by an intent-to-add fixture, because the check reads
+`git ls-files` and an untracked file would have passed while proving nothing.
+
+## 0.16.48
+
+### fixed
+
+**The silent-coverage-loss group — findings 5 and 6 of the 2026-07-31 review.**
+Both have the same shape and it is the worst one a gate has: the verdict on what
+was scanned stays correct while the scan itself quietly shrinks, and the exit
+code is 0 forever.
+
+- **An argument `smoke.js` cannot read is now a hard refusal.** It was
+  `catch (e) {}`. Under bash an unmatched glob arrives as a literal string, so
+  renaming `fixtures/defect-corpus/` would have left CI and every installed hook
+  checking one directory less and reporting `parity/integrity: ok`. A directory
+  argument (EISDIR) went into the same swallow. All bad arguments are collected
+  and named at once rather than thrown on the first.
+- **`--parity-only` now states its scope: `ok — 9 file(s) scanned`.** This is not
+  decoration. The refusal above cannot catch the other half of the same failure:
+  under `nullglob` the unmatched argument is removed from argv *before* smoke
+  runs, so nothing inside it can know a directory was intended. A green line
+  that says how much it covered is the only thing that makes that visible.
+- **`selfcheck.js` detects a stale installed pre-commit hook.**
+  `install-hooks.sh` refuses to overwrite a differing hook without `--force`,
+  which is correct — but the consequence was that a hook installed before a
+  command changed ran the old command forever and nothing said so. The check
+  **fired on the machine that wrote it**: the installed hook was still the
+  two-glob version from before `fixtures/defect-corpus/` became the ninth
+  carrier, so commits were being gated on one directory less than the hook
+  claimed. Skipped when no hook is installed, since CI has none. The expected
+  body is extracted from `install-hooks.sh` rather than restated, so there is
+  still one home for it.
+
+Each fix was watched red first and then mutation-tested. One branch is labelled
+rather than controlled: the no-heredoc fallback in the hook check is fail-closed
+(it can only produce a red), and an arm for it would have to mutate the tracked
+`install-hooks.sh` in place — the shipped-artifact hazard this repo removed from
+another bracket. The comment says which of the two the mutation test kills.
+
+## 0.16.47
+
+### fixed
+
+**`--parity-fix`'s write path — the four defects that blocked the merge.** The
+command shipped in 0.16.43 and was already pushed, so these were a live hazard
+rather than a design note. A `/code-review high` reproduced all four against
+fixtures; each now has a bracket arm that was watched going red before the fix
+landed, and each fix was mutation-tested afterwards by neutralising it and
+confirming its own arm goes red again.
+
+- **Writability is now part of validation.** Readability and fence
+  well-formedness were checked and writability never was, so a read-only target
+  threw out of an unguarded write loop and left the corpus **half-propagated** —
+  precisely the state the design comment above that loop claimed to prevent. The
+  arm puts the read-only file *after* a good target, so a write-as-you-go
+  implementation is caught rewriting the good one.
+- **The malformed-target guard inspects all seven fences, not the ones the
+  source happens to carry.** A target broken in a fence the source lacks was
+  rewritten anyway, exit 0. Live instance: `scene2d.template.html` carries 2 of
+  7, so propagating from it validated two fences while writing nine carriers.
+- **`--parity-only` and `--parity-fix` are now mutually exclusive.** `parityOnly`
+  was computed and never consulted, so the read-only invocation that
+  `static.yml` and the installed pre-commit hook run became a writer whenever
+  `--parity-fix` sat beside it.
+- **`--from` is refused without `--parity-fix`.** It was consumed regardless,
+  swallowing the next filename out of a read-only scan — two genuinely drifted
+  files scanned as one and reported green.
+
+A residue remains and is labelled in the code as residue: `accessSync` answers a
+permission question only, so a full disk or a lock can still throw at write time.
+No arm reaches that path. It is now *loud* rather than silent — the run names the
+carriers that landed — but it is depth, not a control.
+
+### changed
+
+**Every `--parity-fix` bracket arm asserts the refusal MESSAGE, not just a
+non-zero exit.** The refusal text was captured and discarded, so *any* non-zero
+exit satisfied *every* refusal arm and a crash satisfied all of them — four arms
+that could not tell each other's failures apart. This is the same weakness
+mutation testing had already caught once in this file, rebuilt one level up.
+Refusal arms also now assert that **every** file in the fixture is byte-unchanged
+rather than only the one they name, which is what made the half-propagated write
+visible at all.
+
+**Two arms for propagation paths nothing exercised:** multi-fence propagation in
+one run, and the `HTML` fence — the only structurally different regex in the
+check, and one production had already used on the defect corpus.
+
+## 0.16.46
+
+### changed
+
+**The harness tier reports by tier — Track E's E5.** `8 verb path(s) exercised,
+9 skipped` read as nine missing tests. It was telling two opposite stories with
+one number: the four export rows are **deliberately** not gated, and the five
+review rows are encoder-blocked **accidentally**, which is a real hole. One
+figure cannot say both.
+
+It now prints `core 4/0`, `review 0 exercised / 5 skipped`, `export 0/4` and
+`red 4/0`, each with what its state means — and the review line says `HOLE`
+outright when it is skipped, naming Track E1 as what closes it.
+
+**This makes a coverage gap visible that the flat count hid: CI exercises none
+of the review instruments.** Those are the tools the build-review loop actually
+runs on, and the number that concealed it was green.
+
+## 0.16.45
+
+### added
+
+**The defect corpus — R4.5.** `fixtures/defect-corpus/after-hours.html`, a scene
+kept **because it is broken**, with characterized defects at known timestamps. A
+new instrument gets a positive control the day it is written, and a regression
+control the day someone changes it.
+
+`working-plan.md` predicted its own failure here — *"`circus.html` is currently
+the third such fixture about to evaporate"* — and was right: the prototype lives
+on one machine, gitignored and unbacked-up. This is the fix.
+
+**Outside `plugin/`, deliberately.** Everything under the plugin subtree ships
+into the install cache, and a deliberately defective scene must not reach a user
+as though it were an example.
+
+**It JOINS the parity set**, and that decision is recorded beside the file. The
+reason is not tidiness: **a regression control running a stale kernel is not
+measuring the engine the instruments gate.** On import, 5 of its 7 fences had
+drifted — `CONTRACT` absent entirely, `KERNEL`/`SOLVER`/`DRIVER`/`HTML` months
+behind. It was brought current with `--parity-fix`, which is what makes a ninth
+carrier affordable, and is wired into `static.yml` and the pre-commit hook.
+
+Re-skinned from the prototype: theme, palette, title words and setting changed;
+beat names, durations, captions, `SHOTS` and the rig unchanged, because what the
+fixture is for is mechanical and none of it lives in the theme. Title words were
+length-matched (11 and 6 characters) so the glyph metrics did not move.
+
+**Measured constraint found the hard way:** the procedural alphabet defines
+thirteen letters (`T H E A M N Z I G C R U S`). A first pass matched the
+character count with `AFTER HOURS` and crashed in `buildWord` on the missing `F`.
+Character count is not glyph coverage.
+
+**Two of twelve defects re-measured against this build, and both numbers moved** —
+which is exactly why the plan forbade assuming they carry over. `endcap` dead air:
+`motion` 0.94 against peak 5.75 becomes **1.05 against peak 6.79**. The walker's
+declared `w:2.8`: the prototype's measured 3.62 does **not** reproduce, giving
+**3.12 @ t=5 and 3.30 @ t=20**. The remaining ten are listed in the corpus README
+as carried-over and **UNVERIFIED against this build**, not as properties of it.
+
+## 0.16.44
+
+### fixed
+
+**A false claim in the CONTRACT block of all eight shipped scenes.** Every
+carrier said, of `t` purity, *"That is what makes the HTML loop and the MP4
+render provably identical."* Nothing proves that: frames are not byte-identical
+across backends (repo invariant 5), the default record path is the WebGL2
+fallback while a viewer may be on hardware WebGPU, and an export is a lossy copy.
+It now says what purity actually buys — that a frame can be re-rendered at any
+`t`, in any order, and compared against itself — and says explicitly what it does
+*not* mean.
+
+This is the sentence that taught the inversion. It sat in the first block of
+every scene file, which is the first thing an author or an agent reads.
+
+### added
+
+**`CONTRACT` is now a fence, the seventh.** It was byte-identical across all
+eight carriers and fenced by nothing, so `--parity-only` could not see it and
+`--parity-fix` could not propagate it — which is exactly why a wrong sentence
+survived in eight places. Found by looking for what `--parity-fix` could not
+reach.
+
+The correction was made in one carrier and propagated by command, which is the
+first real use of `--parity-fix` outside its own fixtures: parity green after
+fencing, **red** on the one-file edit naming all eight carriers, green again
+after the propagation, and `smoke.js` passing every scene afterwards.
+
+## 0.16.43
+
+### added
+
+**`smoke.js --parity-fix --from <canonical.html>` — R4.4.** `--parity-only`
+reports that the fenced copies disagree; this makes them agree, from a source you
+name. 4,611 lines are held byte-identical by hand across the carriers, and
+hand-propagation is the tax that measurement made visible.
+
+Two guarantees from the plan, both bracketed:
+
+- **The source is named, never inferred.** No majority vote, no "most common
+  block wins" — a majority is precisely how a block that drifted into three
+  carriers rewrites the two that were still right, and reports success doing it.
+  No `--from`, no write.
+- **A malformed source is refused**, and so is a malformed target. `-START`
+  without a well-formed block is the mangled-marker shape that made this check go
+  quiet once already.
+
+**And one property that outranks both: every file and every fence validates
+before the first byte is written.** A refusal that has already rewritten three of
+eight carriers leaves the corpus in a state no check describes — worse than
+either finishing or declining cleanly.
+
+A file that does not carry a fence is left alone, never given one: removing your
+markers is how a scene legitimately leaves the parity set.
+
+### fixed
+
+**Two holes in `bracket-parity.js`'s own new arms, both found by mutation testing
+rather than by review.** The bracket now runs twelve arms.
+
+The partial-write property had no arm that could see it: every fix arm had a
+single target, where "refused" and "wrote as it went, then hit the bad file" are
+indistinguishable. The arm added for it uses three files, and mutating the
+implementation to write-as-you-go turns it red — the only arm that catches that.
+
+And `refuses malformed source` passed with the guard neutralised, because a
+wholly-mangled source extracts zero blocks and gets refused by the no-blocks
+fallback instead. It asserted the outcome and proved nothing about the guard.
+The hole behind it is real: a source with a good `KERNEL` and a mangled `SOLVER`
+has a non-empty block set, so the fallback never fires, and without the guard the
+run propagates one fence while silently skipping the broken one. That case now
+has its own arm, and it is the only arm that fails when the guard is removed.
+
+## 0.16.42
+
+### fixed
+
+**The harness tier's encoder table named ffmpeg for two rows when nine need it.**
+`bracket-commands.js` recorded `needs: 'ffmpeg'` on `video` and `all` only, while
+`poster`, `sheet`, `aspect`, `strip` and `motion` shell out to it as well
+(`build.js` 476, 530, 569, 642, 675). On a runner without ffmpeg those five did
+not skip — they reported FAIL. That is how the first unattended run of this
+bracket failed on five rows that were never broken. Reproduced exactly by running
+the file with the encoders stripped from `PATH`; the fix is the table, not the
+verbs. A skip of a *named* binary can now be made a failure with
+`REQUIRE_ENCODERS=ffmpeg,avifenc`, so a CI install that silently stops working
+goes red instead of quietly covering less.
+
+**Both workflow bracket loops hid every bracket after the first red.** The loops
+ran `bun run "$b"` bare under `bash -e`, so the first failing bracket aborted the
+step and its siblings never ran: the 0.16.41 gate ran `bracket-commands`, failed,
+and never reached determinism, liveplay, noise or parity. This is the same defect
+as the `!cancelled()` one that `gate.yml`'s own comment already documents — a
+failing step skipping the next — reproduced one level down, four lines below its
+own postmortem. The history had been recorded; the rule was never generalised
+past the instance it came from. Fixed in `gate.yml` and `static.yml` with a
+runtime-assembled fixture proving the old form hides a sibling and the new form
+does not, both still exiting non-zero.
+
+**The bracket's failure tail printed the interpreter banner, not the error.** It
+took the last two lines of output, which on any Bun crash are a blank line and
+`Bun v… (Linux x64)`. The CI log said exactly that, five times, and the cause had
+to be re-derived locally. It now prefers the line that names the failure.
+
+### changed
+
+**`gate.yml` and `static.yml` report which brackets failed** rather than stopping
+at the first, and say so with `::error::`.
+
+## 0.16.41
+
+### added
+
+**The harness tier: `templates/bracket-commands.js` runs every `build.js` verb
+once and asserts the path executes.** R4's cheapest item, and the gap it closes
+was the widest in the repo — `build.js` and `shoot.js` carried **zero** brackets
+between them, which is how `build.js aspect` came to throw a `ReferenceError` in
+two skills at once, undetected, because nothing invoked it.
+
+Thirteen verbs (`vendor`, `bundle`, `poster`, `sheet`, `aspect`, `strip`,
+`motion`, `probe`, `frames`, `video`, `all`, `avif`, `loop`) plus **four red
+arms**: an unknown verb, `probe` without an expression, a missing scene, and
+`bundle` against a shipped `*.template.html` — the last a real guard with real
+history, since running any command on a template used to inflate it with 0.77 MB
+of inlined three, idempotently, and it reached `git add` once.
+
+**Scope is the design, and it is stated in the file:** this does not check that
+output is *correct*. It checks that the path executes and names the artifact it
+promised. Correctness is what the instruments are for; this closes the other
+shape entirely — a command nobody has run since the feature landed.
+
+**Cheap by construction.** Every full-film verb takes an fps argument, so they
+run at 1fps (~17 frames instead of ~500) at small widths. 38 seconds locally.
+
+**Skips are reported, never silent.** `avifenc` and `img2webp` are not on a stock
+CI runner; those rows print SKIP with the missing binary named and are excluded
+from the tally rather than counted green. A harness that quietly covers less than
+it claims is the thing this file exists to prevent.
+
+**No CI edit was needed** — `gate.yml` already globs
+`templates/bracket-*.js`, so naming it `bracket-commands.js` covers it the day it
+is written. R4.3 as specified had prescribed adding a step; the glob is better,
+because a future harness is covered without anyone remembering to wire it.
+
+### fixed
+
+**Its first run failed, and found a real constraint rather than a bug.** The
+fixture was built in `os.tmpdir()`, and `vendor` failed there even with three
+installed: `vendor` shells out to `bun build`, which resolves `three` from the
+**entry file's** directory, and the entry is written beside the scene. A tmpdir
+has no `node_modules` to walk up to. `require.resolve` inside `build.js` falls
+back to `process.cwd()` and is satisfied; the bundler is not. That is CLAUDE.md's
+*"three resolves from the workspace where a scene is being built"* being
+literally true of the bundler — the kind of constraint no amount of reading
+finds. The fixture now lives inside the invoking workspace, and the reason is
+recorded at the line that depends on it.
+
 ## 0.16.40
 
 ### fixed

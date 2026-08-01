@@ -16,8 +16,13 @@
 #                            stamps, subtree link resolution, provenance headers
 #                            and `Not here` edges, the assertion ratchet, and
 #                            freshness markers. Milliseconds.
-#   smoke.js --parity-only — cross-directory fence parity over all nine
-#                            carriers. ~0.2s, no browser. SKILL.md has
+#   smoke.js --parity-only — cross-directory fence parity over every carrier,
+#                            INCLUDING the defect corpus outside `plugin/`,
+#                            which joins the set deliberately: a regression
+#                            fixture running a stale kernel is not measuring the
+#                            engine the instruments gate. The count is not
+#                            written here — it grows with the corpus and the
+#                            command reports it. ~0.2s, no browser. SKILL.md has
 #                            recommended exactly this for a pre-commit hook
 #                            since it was written, and nothing ever wired it.
 #
@@ -53,7 +58,8 @@ bun run scripts/selfcheck.js
 
 bun run plugin/skills/mitate/templates/smoke.js --parity-only \
   plugin/skills/mitate/templates/*.html \
-  plugin/skills/mitate/examples/*.html
+  plugin/skills/mitate/examples/*.html \
+  fixtures/defect-corpus/*.html
 HOOK_BODY
 
 if [ -e "$HOOK" ] && [ "$FORCE" != "--force" ]; then

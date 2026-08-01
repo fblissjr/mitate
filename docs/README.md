@@ -1,4 +1,4 @@
-last updated: 2026-07-30
+last updated: 2026-07-31
 
 # Which doc answers which question
 
@@ -19,6 +19,7 @@ reference that needs to reach an installed user goes in
 | what is the architecture, and what gates each phase | [`plan.md`](plan.md) | before starting anything phase-shaped |
 | **what should I work on next** | **[`restructure-2026-07.md`](restructure-2026-07.md)** while that migration is open — it carries a current-position block | at the start of a work session |
 | the standing backlog the migration executes against | [`working-plan.md`](working-plan.md) | when the migration closes, or for an item it does not cover. **Parts of it are superseded**; the restructure plan wins on anything they both name |
+| **is this already decided, or is it still open** | grep `docs/` for **`Open question`** — every unresolved design question is filed under that exact phrase, deliberately | before re-deriving a decision or re-raising one. **This row exists because a cold-start test found the routing gap it closes:** two zero-context agents were asked about two recorded design questions, both reached correct answers, and *both* got there by guessing a topic keyword after finding no row here — one won on "declarative", the other only after its topic words missed and it searched the repo's *epistemic* vocabulary instead |
 | where does this fact belong | [`source-of-truth.md`](source-of-truth.md) | before writing the same thing twice |
 | has this shape been built before | [`pattern-ledger.md`](pattern-ledger.md) | before proposing a primitive or a fence |
 | what may a Phase 4 bake do, and what may it never do | [`physics-bake-proposal.md`](physics-bake-proposal.md) | before any bake code |

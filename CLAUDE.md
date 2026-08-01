@@ -1,4 +1,4 @@
-last updated: 2026-07-30
+last updated: 2026-08-01
 
 # mitate
 
@@ -27,10 +27,15 @@ copy of a router is the exact failure this file keeps catching.
   knew them), `templates/`, `examples/`, and `plugin/agents/film-reviewer.md`
 - **What happened and why** — `CHANGELOG.md`
 - **Repo tools** — `scripts/selfcheck.js`, `install-hooks.sh`,
-  `stage-films.sh`, `diagnose-determinism.js`, `sample-determinism.js`.
-  `scripts/bracket-*.js` are their controls, and **cover two of the five** —
-  `selfcheck.js` and `stage-films.sh`. The other three are uncontrolled, which
-  invariant 6 wants visible rather than glossed
+  `stage-films.sh`, `derived-counts.js`, `diagnose-determinism.js`,
+  `sample-determinism.js`. `scripts/bracket-*.js` are their controls, and cover
+  `selfcheck.js`, `stage-films.sh` and `derived-counts.js` (through
+  `bracket-selfcheck.js`'s check 13 arms). **`diagnose-determinism.js`,
+  `sample-determinism.js` and `install-hooks.sh` are uncontrolled**, which
+  invariant 6 wants visible rather than glossed. Named rather than counted, on
+  purpose: this line read "cover two of the five" and adding one tool made both
+  numbers wrong at once. A list of names goes stale loudly; a count goes stale
+  silently
 - **The website** — `site/` (`index.html`, `app.js`, `posters/`; films are staged
   in, never tracked). A glorified `README.md` with example scenes: how the vision
   and the plan get communicated outward. **Strictly downstream** — `VISION.md`,
@@ -41,10 +46,40 @@ copy of a router is the exact failure this file keeps catching.
   `templates/`), `static.yml` (cheap checks, every push; brackets under
   `scripts/`), `sample.yml` (manual only). **Brackets live in two directories and
   each workflow globs one** — put one in the wrong directory and it runs nowhere.
-  The pre-commit hook runs neither, by design.
-- **Repo-development agents** — `.claude/agents/control-builder.md`,
+  The pre-commit hook runs neither, by design. Both workflows call one loop,
+  `scripts/run-brackets.sh <glob>` (controlled by `bracket-run-brackets.js`):
+  it runs every bracket even when one is red, and **fails when its glob matches
+  nothing**, because a green step that ran zero controls is indistinguishable
+  from one that ran five.
+- **The defect corpus** — `fixtures/defect-corpus/`, scenes kept BROKEN on
+  purpose so a check that stops catching something is noticed. It is a parity
+  carrier (the ninth), wired into `static.yml` and the pre-commit hook and
+  **deliberately not into `gate.yml`**: a general pass/fail gate that goes red
+  for a correct reason is one people learn to route around. Read its `README.md`
+  before adding a defect — most of the twelve are still labelled UNVERIFIED
+- **Repo-development agents and skills** — `.claude/agents/control-builder.md`,
   `doc-claim-auditor.md`, `.claude/skills/audit-claims/`,
-  `.claude/rules/model-delegation.md`
+  `.claude/skills/extract-patterns/`. **No standing model-delegation rule**, by
+  owner call 2026-08-01: the always-loaded tiering rule cost more than it bought,
+  and `working-plan.md` had already filed "inline the intent or drop it, since
+  that rule does not ship". Each agent states its own model reasoning in its own
+  file, where the decision is actually made
+- **Manifests, config and legal** — `.claude-plugin/marketplace.json` (the
+  marketplace half of the version cascade; the plugin half is under `plugin/`),
+  `.postmortem.json` (pins where postmortems live), `.oxlintrc.json`,
+  `.gitignore`, `LICENSE`, and
+  [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md) (required, because
+  three.js ships inside every scene — see invariant 1). One bullet on purpose:
+  they are here so the map is total, not because each earns a paragraph
+- **Session narration** — `internal/log/`, one file per working day. **This is
+  the only tracked thing under `internal/`**; the directory is otherwise local
+  and stays that way. Narration, not doctrine — read it for what a day actually
+  did and why, and read `docs/postmortems/` for what was concluded. Tracked as of
+  2026-08-01, so a log is now citable; that changed its reach, not its standing
+- **This file** — `CLAUDE.md`, the front door. `scripts/selfcheck.js` check 9
+  asserts every tracked top-level entry appears in this Map, because the claim
+  below it is a completeness claim and prose could not hold it: a review found
+  two directories missing, and auditing the rest of the claim found five more
 
 ## The prime directive
 
@@ -95,13 +130,32 @@ for its red lines.
    Its dating lives in a **provenance header** in the body, which `selfcheck.js`
    check 4 verifies.
 
-   A **fenced** block (`KERNEL`, `SOLVER`, `RIG`, `DRIVER`, `CHARACTER`, `HTML`)
+   A **fenced** block (`CONTRACT`, `KERNEL`, `SOLVER`, `RIG`, `DRIVER`,
+   `CHARACTER`, `HTML`)
    is carried by both 3D templates and every example — more files than it looks,
    and the count grows with the corpus, so `--parity-only` reports it rather than
-   this file stating it. Edit every carrier together, then verify with `smoke.js
-   --parity-only templates/*.html examples/*.html` **cross-directory**: a
-   per-directory green does not cover the template↔example boundary, and drift
-   there is silent.
+   this file stating it. **Editing them by hand is no longer the only option:**
+   `smoke.js --parity-fix --from <canonical>` propagates a block from a source
+   you NAME (never a majority — that is how a drifted block rewrites the two
+   carriers that were right), refuses a malformed source or target, and writes
+   nothing until every file has validated. Edit every carrier together, then
+   verify **cross-directory** — a per-directory green does not cover the
+   template↔example boundary, and drift there is silent:
+
+   ```
+   bun run plugin/skills/mitate/templates/smoke.js --parity-only \
+     plugin/skills/mitate/templates/*.html \
+     plugin/skills/mitate/examples/*.html \
+     fixtures/defect-corpus/*.html
+   ```
+
+   **Three globs, not two.** `fixtures/defect-corpus/` is the ninth carrier as of
+   0.16.45, and this line printed the two-glob command after it joined — so two
+   tracked files prescribed different commands for the same check. The
+   authoritative copy is `scripts/install-hooks.sh`'s `HOOK_BODY`, which
+   `selfcheck.js` check 8 compares the installed hook against; this is a reading
+   copy and the run now states its own scope (`ok — 9 file(s) scanned`), so a
+   command that covers less says so.
 
 3. **The plugin lives under `plugin/`, not at the repo root.** `marketplace add`
    shallow-clones the whole repo, but `plugin install` copies *the plugin
@@ -182,12 +236,21 @@ the check.
 
 ## Conventions
 
-- Session logs and scratch renders go under `internal/` (gitignored).
+- **Session logs are TRACKED, in `internal/log/`, as of 2026-08-01** (owner's
+  call). Everything else under `internal/` stays local — the circus fixture, the
+  prior-artifacts tree, `outside_comms/`, scratch renders. `.gitignore` excludes
+  `internal/*` and re-includes only `internal/log/`, which is the form that
+  works: git does not descend into an excluded *directory*, so ignoring
+  `internal/` and negating the subdirectory re-includes nothing and fails
+  silently. Widening that negation publishes the rest.
 - **Postmortems are TRACKED, in [`docs/postmortems/`](docs/postmortems/), named
   `YYYY-MM-DD_<mode>_<slug>.md`** so the listing sorts chronologically and a slug
-  grep finds a topic; `.postmortem.json` pins that location. **Session logs stay
-  local**: the log is narration, the postmortem is the distilled finding, and
-  only the second is citable. A tracked postmortem MAY cite a local-only
+  grep finds a topic; `.postmortem.json` pins that location. **The log and the
+  postmortem still differ in KIND, and tracking did not merge them**: the log is
+  narration, the postmortem is the distilled finding, and only the second is
+  doctrine. A log being citable now is a change in reach, not in authority —
+  where the two disagree the postmortem wins, and a claim resting on narration is
+  still resting on narration. A postmortem MAY cite a local-only
   artifact, but must label it `(local)` and must not rest a claim on it.
   Deliberately no hand-written index — `/postmortem:postmortem-index` generates
   one from frontmatter. Read the newest first: a postmortem carries dated

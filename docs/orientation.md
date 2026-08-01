@@ -1,4 +1,4 @@
-last updated: 2026-07-30
+last updated: 2026-07-31
 
 # Zero-context orientation
 
@@ -22,9 +22,10 @@ play back pure) or not had.
 - **Editing under `plugin/` without the version cascade.** `plugin.json` +
   `marketplace.json` + a `CHANGELOG.md` entry, or the change never reaches an
   installed user.
-- **Editing one carrier of a fenced block.** `KERNEL`/`SOLVER`/`RIG`/`DRIVER`/
-  `CHARACTER`/`HTML` are byte-identical across every scene that carries them.
-  Edit all of them, then run `--parity-only` **cross-directory**.
+- **Editing one carrier of a fenced block.** `CONTRACT`/`KERNEL`/`SOLVER`/`RIG`/
+  `DRIVER`/`CHARACTER`/`HTML` are byte-identical across every scene that carries
+  them. Edit one, then propagate with `smoke.js --parity-fix --from <that file>`,
+  then run `--parity-only` **cross-directory** to confirm.
 - **Citing a path from inside `plugin/` that lives outside it.** Everything under
   `plugin/` ships to a cache that has no `docs/`, no `CLAUDE.md`, no `scripts/`.
   Such a pointer dangles for every installed user.

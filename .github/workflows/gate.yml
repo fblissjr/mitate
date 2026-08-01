@@ -137,11 +137,22 @@ jobs:
         if: '!cancelled()'
         # Globbed, not listed: a hardcoded set means a NEW bracket silently
         # never runs here, which is how a control goes decorative.
+        #
+        # EVERY BRACKET RUNS EVEN WHEN ONE FAILS, and that rule now lives in ONE
+        # place — scripts/run-brackets.sh, called by static.yml too. It was
+        # duplicated here, so 0.16.41's `bash -e` defect (bracket-commands
+        # failed, and determinism, liveplay, noise and parity never ran) had to
+        # be fixed at two call sites instead of once underneath. That is the
+        # same shape as the `!cancelled()` defect directly above, one level
+        # down, and fixing it in two places is how it came back at all.
+        #
+        # NODE_PATH is exported rather than passed: the workspace's node_modules
+        # is this job's environment, not part of the loop's logic, which is why
+        # extracting the loop did not have to carry it.
         run: |
-          cd ws && for b in ../plugin/skills/mitate/templates/bracket-*.js; do
-            echo "--- $(basename "$b") ---"
-            NODE_PATH="$PWD/node_modules" bun run "$b"
-          done
+          cd ws
+          export NODE_PATH="$PWD/node_modules"
+          ../scripts/run-brackets.sh '../plugin/skills/mitate/templates/bracket-*.js'
 
       # Only on failure, so the green path pays nothing. Turns "seekTo(5.36) not
       # deterministic" into which grid cells moved and whether it is localized to

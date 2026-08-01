@@ -1,4 +1,4 @@
-last updated: 2026-07-25
+last updated: 2026-08-01
 
 # Should scenes live in `examples/` or `internal/`?
 
@@ -111,7 +111,7 @@ gitignored, so the corpus stops being shared, reviewable, or reachable by a
 second person or a fresh clone.
 
 **4. A film in `examples/` gets the parity check, smoke, and the version cascade.**
-A film in `internal/` gets none of them by default. The five shipped examples are
+A film in `internal/` gets none of them by default. The shipped examples are
 byte-verified carriers of six fenced blocks; today's floor-guard correction
 propagated to all of them and was verified. Move them out and that verification
 surface has to be rebuilt or lost.

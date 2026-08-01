@@ -113,6 +113,231 @@ const ARMS = [
     return () => fs.rmSync(f, { force: true });
   }, 'call site'],
 
+  // install-hooks.sh refuses to overwrite a DIFFERING hook without --force,
+  // which is correct — it must not clobber a hand-edited one. The consequence
+  // is that a hook installed before a command changed runs the old command
+  // forever and nothing says so. Not hypothetical: every machine that installed
+  // before 0.16.45 was still running the two-glob parity command after a NINTH
+  // carrier joined, so the hook gated commits on one directory less than it
+  // claimed — including on the machine where this arm was written.
+  ['a stale installed pre-commit hook', () => {
+    const hook = path.join(ROOT, '.git', 'hooks', 'pre-commit.local');
+    const had = fs.existsSync(hook) ? fs.readFileSync(hook, 'utf8') : null;
+    // DERIVED from the generator, never written literally: a fixture that
+    // restates the hook body would drift away from the thing it imitates and
+    // start testing a shape that no longer exists. This reproduces the actual
+    // historical staleness — drop the third glob, and the line-continuation
+    // backslash that preceded it, which is byte-for-byte the old hook.
+    const gen = fs.readFileSync(path.join(__dirname, 'install-hooks.sh'), 'utf8');
+    // [^\n]* because the heredoc line carries `|| true` after the delimiter.
+    const body = (gen.match(/<<'HOOK_BODY'[^\n]*\n([\s\S]*?)\nHOOK_BODY/) || [])[1];
+    const stale = body.split('\n')
+      .filter(l => !l.includes('fixtures/defect-corpus'))
+      .join('\n').replace(/ \\\n$/, '\n').replace(/ \\$/, '');
+    fs.mkdirSync(path.dirname(hook), { recursive: true });
+    fs.writeFileSync(hook, stale + '\n');
+    fs.chmodSync(hook, 0o755);
+    return () => {
+      if (had === null) fs.rmSync(hook, { force: true });
+      else { fs.writeFileSync(hook, had); fs.chmodSync(hook, 0o755); }
+    };
+  }, 'STALE copy'],
+
+  // The Map's completeness claim, which prose could not hold: a review found two
+  // directories missing and auditing the rest found five more. This arm adds a
+  // top-level entry and asserts the Map notices it is unlisted.
+  //
+  // `git add -N` (intent-to-add), because check 9 reads `git ls-files` — an
+  // untracked file is invisible to it, so a plain writeFileSync fixture would
+  // pass while proving nothing. Intent-to-add records a path with no content and
+  // touches no other staged work, and the undo removes exactly that path.
+  ['a top-level entry the Map does not name', () => {
+    const name = '_bracket_fixture_unmapped';
+    const f = path.join(ROOT, name);
+    fs.writeFileSync(f, 'fixture\n');
+    execFileSync('git', ['add', '-N', '--', name], { cwd: ROOT });
+    return () => {
+      try { execFileSync('git', ['rm', '--cached', '--force', '--quiet', '--', name], { cwd: ROOT }); }
+      catch (e) {}
+      fs.rmSync(f, { force: true });
+    };
+  }, 'never names'],
+
+  // Check 11 — invariant 2's teeth. Two directions, and the second is the one
+  // that matters: a check whose only arm is "does it fire" cannot tell you it
+  // fires for the RIGHT reason. So one arm changes plugin content without a
+  // bump (must go red), and one changes it WITH a bump (must stay green),
+  // because a check that reddens on any plugin edit whatsoever would be
+  // unusable and would look identical on the first arm alone.
+  //
+  // Touching a real shipped file rather than a fixture: the check diffs the
+  // anchor against the working tree over `plugin/`, so a new untracked file
+  // would not appear in `git diff` at all. Appending a comment to a template is
+  // the smallest true instance of the thing being gated.
+  // Check 12 — a bracket may not state its own arm count in prose. Both arms
+  // mutate a bracket under scripts/ and NOT one under plugin/, which is not
+  // cosmetic: check 11 fires on any plugin edit without a version bump, so a
+  // green-expectation arm touching plugin/ can never be green and a red one
+  // would go red for the wrong check. Isolating on a non-shipped bracket makes
+  // each arm test check 12 and nothing else. Found by running it.
+  //
+  // The negative arm carries as much weight as the positive one: narrative
+  // counts ("one arm each", "the two arms that matter") are everywhere in these
+  // files and are NOT the defect, because they describe history rather than
+  // current structure. A check that reddened on them would be unusable, and on
+  // the positive arm alone the two are indistinguishable.
+  ['a bracket header states its own arm count', () => {
+    const f = path.join(ROOT, 'scripts', 'bracket-run-brackets.js');
+    const before = fs.readFileSync(f, 'utf8');
+    fs.writeFileSync(f, before.replace('/* Bracket for scripts/run-brackets.sh',
+                                       '/* Three ways. Bracket for scripts/run-brackets.sh'));
+    return () => fs.writeFileSync(f, before);
+  }, 'arm count in prose'],
+
+  ['a bracket counts arms NARRATIVELY (must stay green)', () => {
+    const f = path.join(ROOT, 'scripts', 'bracket-run-brackets.js');
+    const before = fs.readFileSync(f, 'utf8');
+    fs.writeFileSync(f, before.replace('/* Bracket for scripts/run-brackets.sh',
+                                       '/* Two guarantees, one arm each; the four arms below came later.\n * Bracket for scripts/run-brackets.sh'));
+    return () => fs.writeFileSync(f, before);
+  }, null],
+
+  // Check 13 — a derived count may not drift from what it counts. Both halves
+  // are load-bearing and for different reasons. The DRIFT arm proves the marker
+  // is actually compared rather than merely parsed; the AGREES arm proves the
+  // comparison can still return true, which a check that failed unconditionally
+  // would also satisfy. The BARE pair is the use-versus-mention seam this repo
+  // has now failed six times: a check that reddened on "the prototype's twelve
+  // defects" would be turned off within a week, so the exemption is tested as
+  // deliberately as the catch.
+  //
+  // docs/README.md is the fixture because it is a live-claim file that is NOT
+  // under plugin/ — the same isolation the check 12 arms above needed, and for
+  // the same reason: an edit under plugin/ trips check 11 and the arm would go
+  // red for a check it is not testing.
+  ['a derived count marker drifts from its source', () => {
+    const f = path.join(ROOT, 'docs', 'README.md');
+    const before = fs.readFileSync(f, 'utf8');
+    // DERIVED, never written down — a control that hard-codes the number it is
+    // policing is the defect it exists to catch, one file over.
+    const wrong = require('./derived-counts.js').REGISTRY.references.derive() + 1;
+    fs.writeFileSync(f, before + `\n<!--derived:references-->${wrong}<!--/derived-->\n`);
+    return () => fs.writeFileSync(f, before);
+  }, 'derived'],
+
+  ['a derived count marker that AGREES (must stay green)', () => {
+    const f = path.join(ROOT, 'docs', 'README.md');
+    const before = fs.readFileSync(f, 'utf8');
+    const right = require('./derived-counts.js').REGISTRY.references.derive();
+    fs.writeFileSync(f, before + `\n<!--derived:references-->${right}<!--/derived-->\n`);
+    return () => fs.writeFileSync(f, before);
+  }, null],
+
+  ['a bare count of a registered noun in a live-claim doc', () => {
+    const f = path.join(ROOT, 'docs', 'README.md');
+    const before = fs.readFileSync(f, 'utf8');
+    // ASSEMBLED, so this control's own source does not carry the string it is
+    // injecting. bracket-selfcheck.js has been bitten by exactly that before.
+    const claim = ['fifteen', 'references'].join(' ');
+    fs.writeFileSync(f, before + `\nThe subtree carries ${claim} today.\n`);
+    return () => fs.writeFileSync(f, before);
+    // Asserts selfcheck's wording, not derived-counts.js's. The first cut
+    // expected the CLI's "BARE" prefix, which selfcheck never prints -- the arm
+    // went red for the right reason and reported the wrong one, which is the
+    // failure mode this bracket exists to make visible in other checks.
+  }, 'hand-written count'],
+
+  ['a historical mention carrying its exemption (must stay green)', () => {
+    const f = path.join(ROOT, 'docs', 'README.md');
+    const before = fs.readFileSync(f, 'utf8');
+    const claim = ['fifteen', 'references'].join(' ');
+    const { EXEMPT } = require('./derived-counts.js');
+    fs.writeFileSync(f, before + `\nThe prototype had ${claim}. ${EXEMPT}\n`);
+    return () => fs.writeFileSync(f, before);
+  }, null],
+
+  // PRECONDITION: the working tree carries no pending version bump. Check 11
+  // compares the anchor commit's version against the WORKING TREE's, so while an
+  // uncommitted bump sits in plugin.json it reports "the version moved" whatever
+  // this arm does to plugin/, and the arm reads MISSED. That is check 11 behaving
+  // correctly, not a regression — commit the cascade, then re-run. Observed
+  // while adding check 13, and written down because the symptom (a long-green
+  // arm suddenly red) invites exactly the wrong diagnosis.
+  ['plugin content changed without a version bump', () => {
+    const f = path.join(ROOT, 'plugin', 'skills', 'mitate', 'templates', 'smoke.js');
+    const before = fs.readFileSync(f, 'utf8');
+    fs.writeFileSync(f, before + '\n// bracket fixture, removed by teardown\n');
+    return () => fs.writeFileSync(f, before);
+  }, 'did not move'],
+
+  ['plugin content changed WITH a version bump', () => {
+    const f = path.join(ROOT, 'plugin', 'skills', 'mitate', 'templates', 'smoke.js');
+    const pj = path.join(ROOT, 'plugin', '.claude-plugin', 'plugin.json');
+    const mkt = path.join(ROOT, '.claude-plugin', 'marketplace.json');
+    const chg = path.join(ROOT, 'CHANGELOG.md');
+    const had = { f: fs.readFileSync(f, 'utf8'), pj: fs.readFileSync(pj, 'utf8'),
+                  mkt: fs.readFileSync(mkt, 'utf8'), chg: fs.readFileSync(chg, 'utf8') };
+    const cur = JSON.parse(had.pj).version;
+    // Bump the patch component so check 1 (cascade coherence) stays satisfied
+    // too — otherwise this arm would go red for a DIFFERENT reason and quietly
+    // prove nothing about check 11.
+    const next = cur.replace(/(\d+)$/, (n) => String(Number(n) + 1));
+    fs.writeFileSync(f, had.f + '\n// bracket fixture, removed by teardown\n');
+    fs.writeFileSync(pj, had.pj.split(cur).join(next));
+    fs.writeFileSync(mkt, had.mkt.split(cur).join(next));
+    fs.writeFileSync(chg, had.chg.replace(/^## /m, `## ${next}\n\n### changed\n\nbracket fixture.\n\n## `));
+    return () => {
+      fs.writeFileSync(f, had.f); fs.writeFileSync(pj, had.pj);
+      fs.writeFileSync(mkt, had.mkt); fs.writeFileSync(chg, had.chg);
+    };
+  }, null],
+
+  // Track E0's ratchet, three directions. It has to fail on a NEW encoder call
+  // outside the boundary (drift in), on an extra call inside an allowed
+  // function (drift within), and on a migration that removed one without
+  // tightening the pin (ground given back silently). The third is the one a
+  // ratchet exists for and the easiest to leave out.
+  //
+  // ASSEMBLED, like the citation arms above: an encoder invocation written
+  // plainly in this file's source is exactly what the check scans for, and
+  // scripts/*.js is in scope — so the control would fail on itself.
+  //
+  // It DID, on the first run, from the comment that used to sit here naming the
+  // pattern in full. Check 10 now skips comment-only lines (a commented-out
+  // call is not a call site), but the fixtures stay assembled: relying on the
+  // scanner's blind spot to keep the control honest is the wrong direction.
+  ['an encoder call outside the pinned boundary', () => {
+    const f = path.join(__dirname, '_bracket_fixture_encoder.js');
+    const call = 'run' + `('${'ff' + 'mpeg'}', ['-y'])`;
+    fs.writeFileSync(f, `function _fixtureVerb() {\n  ${call};\n}\n`);
+    return () => fs.rmSync(f, { force: true });
+  }, 'outside the pinned boundary'],
+
+  ['a second encoder call inside an allowed function', () => {
+    const f = path.join(__dirname, '_bracket_fixture_encoder2.js');
+    // `video` is pinned at 1 and is an EXPORT verb, so it stays pinned as the
+    // boundary shrinks. This arm first named `poster`, which Track E1 then
+    // migrated out of the budget — and the arm went red for the wrong reason,
+    // tripping the outside-the-boundary case instead of the over-budget one.
+    // Pick a function the ratchet is not aimed at, or the control decays with
+    // the very progress it is measuring.
+    const call = 'run' + `('${'ff' + 'mpeg'}', ['-y'])`;
+    fs.writeFileSync(f, `function video() {\n  ${call};\n  ${call};\n}\n`);
+    return () => fs.rmSync(f, { force: true });
+  }, 'more encoder calls than pinned'],
+
+  // The ratchet's own direction: a migration that deletes a call site but
+  // leaves the budget high. Nothing else in the repo would notice, and the next
+  // person could reintroduce the call and stay green.
+  ['a pinned encoder site that no longer exists', () => {
+    const sc = path.join(__dirname, 'selfcheck.js');
+    const had = fs.readFileSync(sc, 'utf8');
+    // Pin a function name that invokes no encoder — the same state a completed
+    // migration leaves behind when the budget line is not deleted with it.
+    fs.writeFileSync(sc, had.replace('motion: 1,', 'motion: 1, _fixtureGone: 1,'));
+    return () => fs.writeFileSync(sc, had);
+  }, 'budget is now too generous'],
+
   ['postmortem an index cannot read', () => {
     const dir = path.join(ROOT, 'docs', 'postmortems');
     const f = path.join(dir, '2026-01-01_session_bracket-fixture.md');

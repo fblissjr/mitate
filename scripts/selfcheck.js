@@ -746,6 +746,365 @@ const toolJs = new Map([
   }
 }
 
+/* ---- 8. the installed pre-commit hook still matches its generator ----------
+ * install-hooks.sh REFUSES to overwrite a differing hook without --force, which
+ * is right: it must not clobber one someone edited on purpose. The consequence
+ * is that a hook installed before a command changed keeps running the OLD
+ * command forever, and nothing said so — the installer only speaks when you run
+ * it, and the whole point of a hook is that you never run it again.
+ *
+ * Live instance, and the reason this check exists: `fixtures/defect-corpus/`
+ * became a ninth parity carrier in 0.16.45 and the generator gained a third
+ * glob. Every machine that had installed before that kept gating commits on the
+ * two-glob command — checking one directory less than the message it printed
+ * claimed. It was found by reading the hook, not by any check.
+ *
+ * SKIPPED when no hook is installed. CI has none and that is not a defect; the
+ * note says so out loud rather than leaving a silent pass. `.git/hooks` is also
+ * absent-by-indirection in a linked worktree, which lands in the same branch.
+ *
+ * The expected body is EXTRACTED from install-hooks.sh, never restated here. A
+ * second copy of the hook body in this file is precisely the duplicate this
+ * file exists to catch, and it would rot the same way. Compared trimmed: the
+ * generator writes with `printf '%s\n'`, so trailing-newline count is an
+ * artifact of the writer, not a difference in what the hook runs.
+ *
+ * The no-heredoc branch is NOT bracketed, and deliberately so: an arm for it
+ * would have to mutate the tracked install-hooks.sh in place, which is the
+ * shipped-artifact hazard this repo just removed from another bracket. It is
+ * fail-CLOSED — it can only produce a red, never a false green — so what it
+ * risks is a nuisance, not a silent hole. Mutation-tested: neutralising the
+ * comparison above kills the arm in bracket-selfcheck.js; neutralising this
+ * branch does not, which is the honest reading of its coverage. */
+{
+  const hookPath = path.join(ROOT, '.git', 'hooks', 'pre-commit.local');
+  let installed = null;
+  try { installed = R(hookPath); } catch (e) {}
+  if (installed === null) {
+    notes.push('no pre-commit.local installed — nothing to compare (CI has none; run '
+             + './scripts/install-hooks.sh to get one)');
+  } else {
+    const gen = R(path.join(__dirname, 'install-hooks.sh'));
+    // [^\n]* because the heredoc line carries `|| true` after the delimiter.
+    const m = gen.match(/<<'HOOK_BODY'[^\n]*\n([\s\S]*?)\nHOOK_BODY/);
+    if (!m) {
+      fail('scripts/install-hooks.sh has no readable HOOK_BODY heredoc, so the installed hook '
+         + 'cannot be checked against it — the generator changed shape and this check went blind');
+    } else if (installed.trim() !== m[1].trim()) {
+      fail('.git/hooks/pre-commit.local is a STALE copy — it differs from what '
+         + 'scripts/install-hooks.sh generates, so every commit it gates is checked against an '
+         + 'older command than the one in the tree. Diff it, then run '
+         + './scripts/install-hooks.sh --force');
+    } else {
+      notes.push('installed pre-commit.local matches its generator');
+    }
+  }
+}
+
+/* ---- 9. CLAUDE.md's Map covers every tracked top-level entry --------------
+ * The Map states that it covers "everything outside `docs/`", on the stated
+ * reasoning that anything absent from a map is unreachable in practice. That is
+ * a completeness claim, and nothing checked it.
+ *
+ * It was wrong. A review caught two directories a branch had added; auditing the
+ * rest of the claim found five more entries never listed at all. Seven misses in
+ * one file is not carelessness, it is the wrong instrument — a claim of
+ * completeness maintained by remembering to update it will drift every time
+ * someone adds a directory, which is precisely when nobody is thinking about
+ * this file.
+ *
+ * NO EXEMPTION LIST, deliberately. An exemption list is the same prose problem
+ * one level down: it grows a line each time this fails and eventually exempts
+ * the thing that mattered. If an entry is too minor to name, it can share a
+ * bullet with its neighbours — that costs one clause and keeps the rule total.
+ *
+ * Substring match, because the Map names things in prose (`site/`, `README.md`,
+ * `.claude/agents/...`) rather than in a list. That accepts a bit less than it
+ * could: naming `.claude/agents/` satisfies `.claude`. Deliberate — the check is
+ * "is there a way in from here", not "is the description good". */
+{
+  const mapSection = (R(path.join(ROOT, 'CLAUDE.md'))
+    .match(/^## Map$([\s\S]*?)^## /m) || [])[1];
+  if (!mapSection) {
+    fail('CLAUDE.md has no "## Map" section — the front door lost its map, and this check '
+       + 'cannot verify a claim that is no longer there');
+  } else {
+    const top = new Set(execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' })
+      .split('\n').filter(Boolean).map(f => f.split('/')[0]));
+    const missing = [...top].filter(e => !mapSection.includes(e)).sort();
+    if (missing.length) {
+      fail(`CLAUDE.md's Map claims to cover everything outside docs/ but never names: `
+         + `${missing.join(', ')}. Add a bullet, or share one with a neighbour — an entry `
+         + `absent from the map is unreachable in practice, which is the Map's own argument`);
+    } else {
+      notes.push(`${top.size} tracked top-level entries, each named in CLAUDE.md's Map`);
+    }
+  }
+}
+
+/* ---- 10. the encoder boundary only shrinks (Track E0) ---------------------
+ * Which functions may shell out to ffmpeg/avifenc/img2webp, pinned per function
+ * and allowed to fall but never rise. Same idiom as the measurement-assertion
+ * ratchet above and the probe single-call-site rule: a number the repo drives
+ * toward zero, with the current value stated rather than a target asserted.
+ *
+ * WHY IT COMES BEFORE THE MIGRATION IT SERVES. Track E's whole claim is that an
+ * agent should be able to build and review a scene with bun and a browser and
+ * nothing else — so "what is export?" has to stop being a judgment call. Once
+ * this list has ratcheted down, export is whatever is still inside it, and each
+ * migration is a line deleted here rather than an assertion in prose.
+ *
+ * Seeded at the honest baseline (ten sites, eight functions), NOT at a target.
+ * `motion` is in the list and stays for now: it is a measurement rather than an
+ * export, but migrating it needs a recalibration that this check does not.
+ *
+ * THE ESCAPE HATCH IS THE SAME ONE ASSERT_BUDGET USES, deliberately, rather
+ * than a second mechanism: a legitimate new export verb edits this literal, in a
+ * diff, with a reason. The budget above moved up exactly once in its life and
+ * only because the measurement changed definition. That is the bar.
+ *
+ * LIMIT, stated because a check whose blind spot is undocumented gets trusted
+ * past it: this matches a LITERAL binary name in a call expression. An encoder
+ * reached through a variable would not be seen. That is not a hole worth
+ * closing with a parser — indirection to dodge a boundary check is visible in
+ * review in a way a forgotten call site is not. */
+{
+  const ENCODER_BUDGET = {
+    video: 1, shootAndScale: 1, avif: 1, loop: 1,          // export — the four that stay
+    motion: 1,                                             // measurement — needs recalibration
+    // RATCHETED 10 -> 6 by Track E1: poster, aspectSheet, sheet (x2) and strip
+    // moved to build.js's in-page tiler. Those five lines are deleted rather
+    // than zeroed, so re-adding an encoder to any of them trips the
+    // outside-the-boundary arm instead of quietly fitting under a stale budget.
+  };
+  const ENCODERS = /\b(?:run|execFileSync|spawnSync|spawn)\(\s*['"](?:ffmpeg|avifenc|img2webp)['"]/;
+  const DECL = /^(?:async\s+)?function\s+([A-Za-z0-9_]+)|^const\s+([A-Za-z0-9_]+)\s*=\s*(?:async\s*)?\(/;
+  const found = {};
+  for (const [rel, text] of toolJs) {
+    const lines = text.split('\n');
+    lines.forEach((line, i) => {
+      // Comment-only lines are not call sites, and this is scoping rather than
+      // relaxation: the subject is what EXECUTES. It is also not theoretical —
+      // the first run of this check was tripped by a comment in its own bracket
+      // describing the pattern it scans for. A trailing comment after real code
+      // still matches, because that line does execute. Residual limit: a line
+      // inside a block comment that starts with neither marker is not skipped.
+      const t = line.trim();
+      if (t.startsWith('//') || t.startsWith('*') || t.startsWith('/*')) return;
+      if (!ENCODERS.test(line)) return;
+      let fn = `${rel}:top-level`;
+      for (let j = i; j >= 0; j--) {
+        const m = lines[j].match(DECL);
+        if (m) { fn = m[1] || m[2]; break; }
+      }
+      found[fn] = (found[fn] || 0) + 1;
+    });
+  }
+  const outside = Object.keys(found).filter(f => !(f in ENCODER_BUDGET)).sort();
+  const over = Object.keys(found).filter(f => f in ENCODER_BUDGET && found[f] > ENCODER_BUDGET[f]);
+  const under = Object.keys(ENCODER_BUDGET).filter(f => (found[f] || 0) < ENCODER_BUDGET[f]);
+  if (outside.length) {
+    fail(`encoder call outside the pinned boundary, in: ${outside.join(', ')}. Track E exists to `
+       + `SHRINK this set — an encoder in a new function is the review loop growing a dependency `
+       + `it is supposed to be losing. If this is a deliberate new export verb, add it to `
+       + `ENCODER_BUDGET with a reason, the way ASSERT_BUDGET is moved`);
+  }
+  if (over.length) {
+    fail(`more encoder calls than pinned in: ${over.map(f => `${f} (${found[f]} > ${ENCODER_BUDGET[f]})`).join(', ')}`);
+  }
+  if (under.length) {
+    fail(`encoder budget is now too generous for: ${under.map(f => `${f} (${found[f] || 0} < ${ENCODER_BUDGET[f]})`).join(', ')}. `
+       + `A migration landed and the ratchet was not tightened — lower it in selfcheck.js so the `
+       + `ground that was won cannot be given back silently`);
+  }
+  if (!outside.length && !over.length && !under.length) {
+    const total = Object.values(ENCODER_BUDGET).reduce((a, b) => a + b, 0);
+    notes.push(`${total} encoder call site(s) across ${Object.keys(ENCODER_BUDGET).length} pinned `
+             + `function(s) — the boundary may shrink, never grow`);
+  }
+}
+
+/* ---- 11. plugin content may not change without the cascade ----------------
+ * Invariant 2 says a change to ANYTHING under `plugin/` requires a version
+ * bump in plugin.json + marketplace.json + a CHANGELOG entry. Check 1 verifies
+ * those three AGREE; nothing verified that a change TRIGGERED them. So the
+ * rule was prose, and this branch broke it undetected: R4.1 stages 1 and 2 both
+ * edited plugin/skills/mitate/templates/smoke.js while the version sat at
+ * 0.16.51, and check 1 printed "version cascade coherent" on every one of them.
+ *
+ * THE ANCHOR IS THE LAST COMMIT THAT TOUCHED plugin.json, and picking it was
+ * the whole difficulty. The obvious anchor — merge-base with origin/main — was
+ * built, run, and MEASURED WRONG in two independent ways (2026-08-01):
+ *
+ *   - It exits 0 on the live violation. It asks "did the version move anywhere
+ *     across the branch", and one early bump permanently satisfies that for
+ *     every later unversioned change. A control that cannot go red on the case
+ *     that motivated it is decorative.
+ *   - `origin/main` is not reliably fetched. Reproduced against a clone
+ *     mimicking actions/checkout: `git rev-parse origin/main` fails outright,
+ *     so the check would crash on exactly the pushes and PRs it exists to gate.
+ *
+ * Anchoring on the last bump fixes both: it goes red on the real violation, and
+ * it needs no remote ref at all. It DOES need real history, so this belongs in
+ * static.yml (fetch-depth: 0) and not gate.yml.
+ *
+ * NOT A RATCHET, unlike checks 5 and 10 — there is no budget to lower. The
+ * answer is binary: either the version moved with the content or it did not. */
+{
+  const sh = (cmd) => { try { return require('child_process').execSync(cmd, { encoding: 'utf8' }).trim(); } catch (e) { return null; } };
+  const PLUGIN_JSON = 'plugin/.claude-plugin/plugin.json';
+  // The last commit that touched the manifest IS the anchor. If it has never
+  // been touched (a fresh repo, or a shallow clone deep enough to lose it),
+  // skip loudly rather than inventing a comparison — a check that silently
+  // no-ops is the shape this whole file exists to catch.
+  const anchor = sh(`git log -1 --format=%H -- ${PLUGIN_JSON}`);
+  if (!anchor) {
+    notes.push('cascade trigger: SKIPPED — no commit in history touches ' + PLUGIN_JSON
+             + ' (shallow clone?). This check needs full history; static.yml supplies it');
+  } else {
+    // `${anchor}` and not `${anchor}..HEAD`: diff the anchor against the WORKING
+    // TREE, so an uncommitted or staged edit to plugin/ counts. Comparing
+    // commits only would fire one commit AFTER the violation, which is too late
+    // for a pre-commit hook — the whole point is to stop the unversioned change
+    // from landing, not to report it afterwards.
+    const changed = (sh(`git diff --name-only ${anchor} -- plugin/`) || '')
+      .split('\n').filter(Boolean);
+    // Compare the VERSION STRING against the anchor's, not the commit dates.
+    // The first cut compared history alone and could never go green in the
+    // commit that fixes it: the pre-commit hook blocks until the bump is
+    // committed, and committing is what the hook is blocking. Found by running
+    // it, one minute after it earned its red. Reading the working tree makes a
+    // staged-but-uncommitted bump count, which is exactly the state a
+    // pre-commit hook inspects.
+    const verAt = (() => {
+      const raw = sh(`git show ${anchor}:${PLUGIN_JSON}`);
+      const m = raw && raw.match(/"version"\s*:\s*"([^"]+)"/);
+      return m ? m[1] : null;
+    })();
+    const verNow = (JSON.parse(R(PLUGIN_JSON)) || {}).version;
+    if (!changed.length) {
+      notes.push(`cascade trigger: no plugin/ content has changed since the last version bump (${anchor.slice(0, 7)})`);
+    } else if (verAt && verNow && verAt !== verNow) {
+      notes.push(`cascade trigger: ${changed.length} plugin/ file(s) changed and the version moved ${verAt} → ${verNow}`);
+    } else {
+      fail(`plugin/ content changed since the last version bump (${anchor.slice(0, 7)}) but the version did not move: `
+         + `${changed.join(', ')}. Invariant 2 — bump ${PLUGIN_JSON} and .claude-plugin/marketplace.json, `
+         + `and add a CHANGELOG entry, or marketplace update never reaches installed users`);
+    }
+  }
+}
+
+/* ---- 12. a bracket may not state its own arm count in prose ---------------
+ * `source-of-truth.md` already says "never hand-write what a command produces".
+ * The rule did not hold, and the instructive part is WHERE it failed:
+ * `bracket-driver.js` opened with "nine ways" while printing `10 arm(s)
+ * exercised` at runtime two lines below. The correct number was derived, on
+ * screen, every run — and the prose beside it was still wrong, because adding an
+ * arm updates the array and nothing updates the sentence.
+ *
+ * THREE PRIOR INSTANCES OF THE SAME SHAPE, which is why this became a check
+ * rather than a fourth reminder: `gate.yml` read "all three" while four brackets
+ * were globbed; `CLAUDE.md` asserted "9 references" while selfcheck derived the
+ * same number every run; `bracket-parity.js` said "five ways" while running 22
+ * rows across three blocks. A rule that has been written down and violated four
+ * times is not a rule, it is a wish.
+ *
+ * NARROW ON PURPOSE, because the obvious wide version is unusable. A first cut
+ * flagged any number near "arm" and matched 28 lines, nearly all legitimate:
+ * "one arm each", "the two arms that matter", "four arms that could not tell
+ * each other's failure apart" — narrative and history, which do not rot. The
+ * distinguishing property of the dangerous ones is that they describe the file's
+ * OWN CURRENT structure, and those take three forms. Anything else is prose
+ * about the past and is left alone.
+ *
+ * The escape hatch is to say it structurally instead — "one arm per property",
+ * "the static half and the browser half" — and let the run print the number. */
+{
+  const SELF_COUNT = [
+    /\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+)\s+ways\b/i,
+    /\ball\s+(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+)\s+arms?\b/i,
+    /\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+)\s+of\s+(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d+|these|those|the|its)\s+arms?\b/i,
+  ];
+  const hits = [];
+  for (const [f, text] of toolJs) {
+    if (!/^bracket-.*\.js$/.test(path.posix.basename(f))) continue;
+    text.split('\n').forEach((line, i) => {
+      // BEGINS with a comment marker, never merely CONTAINS one. The first cut
+      // used /(^\s*\*|\/\/|\/\*)/ and immediately flagged bracket-selfcheck.js's
+      // own fixture — a STRING LITERAL holding the bad header it injects. That
+      // is this repo's oldest check-authoring failure (five specs shipped wrong
+      // the same way, each unable to separate carrying a thing from describing
+      // it), reproduced by the check written to stop counts drifting. A line of
+      // prose starts with its marker; a mention inside code does not.
+      if (!/^\s*(\/\/|\*|\/\*)/.test(line)) return;
+      if (SELF_COUNT.some(re => re.test(line))) hits.push(`${f}:${i + 1}`);
+    });
+  }
+  if (hits.length) {
+    fail(`${hits.length} bracket comment(s) state an arm count in prose: ${hits.join(', ')}. `
+       + `Every bracket prints its own tally at runtime — say it structurally ("one arm per `
+       + `property", "the static half") and let the run produce the number. A count in a comment `
+       + `goes stale the next time an arm lands, and this one has four times.`);
+  } else {
+    notes.push('no bracket states its own arm count in prose (the count is derived at runtime)');
+  }
+}
+
+/* ---- 13. a derived count may not drift from the thing it counts -----------
+ * Check 12 closed ONE shape of the rule `source-of-truth.md` states -- a
+ * bracket naming its own arm count. The rule kept losing everywhere else,
+ * because the dangerous forms are unbounded: "9 references", "`references/`
+ * (9)", "all three", "five ways", "two of twelve". A scanner has to RECOGNISE a
+ * count in arbitrary prose and cannot; the CLAUDE.md instance was a
+ * parenthetical, and three greps written specifically to find it came back
+ * empty on a violation the repo had already documented.
+ *
+ * So the instrument is a GENERATOR, not a scanner. `derived-counts.js` owns a
+ * REGISTRY of countables and fills a marker it placed itself, which can neither
+ * miss nor false-positive. This check is the drift half: it recomputes every
+ * marker and fails when one disagrees. Same shape as check 8, which compares
+ * the installed hook against its generator -- a pattern already proven here.
+ *
+ * The second half (bare counts) is best-effort BY ADMISSION and scoped by data:
+ * registry nouns only, live-claim files only. Scanning everything surfaced 71
+ * hits, essentially all legitimate history; scanning the front-door files
+ * surfaced five. Both numbers were measured before this was written. A
+ * legitimate mention carries `<!--count-mention-->` on its line, which is the
+ * use-versus-mention seam this repo has now failed six times and is therefore
+ * explicit rather than inferred.
+ *
+ * WHAT IT DOES NOT COVER, said plainly: a count in a noun not in the REGISTRY,
+ * and any count in CHANGELOG.md, the logs, the postmortems or the two planning
+ * documents. Those are dated records. A handoff that lists four cached plugin
+ * versions where five exist is outside every guard here -- the answer there is
+ * to cite the command, not its output. */
+{
+  const { scan, REGISTRY } = require('./derived-counts.js');
+  const { drift, bare, missing } = scan();
+  // A tracked .md absent from the working tree is not this check's business to
+  // fix, but reading less than claimed without saying so IS. Reported in both
+  // branches rather than only the green one, so it cannot hide behind a failure.
+  const scope = missing.length
+    ? ` (${missing.length} tracked file(s) not in the working tree, unread: ${missing.join(', ')})`
+    : '';
+  if (drift.length) {
+    fail(`${drift.length} derived count(s) drifted from what they count: ${drift.join('; ')}. `
+       + `Run 'bun run scripts/derived-counts.js --write' — the marker is refilled from the `
+       + `REGISTRY, never by hand.`);
+  }
+  if (bare.length) {
+    fail(`${bare.length} hand-written count(s) in live-claim prose: ${bare.join('; ')}. `
+       + `Replace with a <!--derived:key--> marker, drop the number (it usually carries nothing), `
+       + `or mark a genuine historical mention with <!--count-mention--> on its line.`);
+  }
+  if (!drift.length && !bare.length) {
+    notes.push(`${Object.keys(REGISTRY).length} registered countables, every marker matching its `
+             + `source and no bare count in live-claim prose${scope}`);
+  } else if (scope) {
+    fail(`derived-count scan read an incomplete file set${scope}`);
+  }
+}
+
 for (const n of notes) console.log('  ok   ' + n);
 if (fails.length) {
   console.log('');

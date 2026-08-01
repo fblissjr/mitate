@@ -10,7 +10,7 @@ you are deciding whether a green result means anything.
 > **Provenance.** Canonical for what each check can and cannot see, and for its
 > measured brackets. **Still not audited end to end** — the honest state, and the
 > earlier "Verification date: UNKNOWN" said so rather than pretending. What is
-> now dated is narrower and real: on **2026-07-29** the three shipped brackets
+> now dated is narrower and real: on **2026-07-29** the three shipped brackets <!--count-mention-->
 > were each run and each made capable of failing (0.16.16-0.16.17), and the
 > console-noise check was found broken on the default path and fixed. Most other
 > brackets here were measured on the predecessor skill and
@@ -63,7 +63,7 @@ observation on both sides, or explicitly labelled unbracketed.
 | blank frame | **all** of 4 planned points, +up to 2 transition midpoints | a pipeline shooting empty frames | a frame that is dark but not empty |
 | shipped-frame spread | **max** over its own 4-point plan | a backend that ships nothing (half-dead adapter) | a register that is legitimately flat *and* correct |
 | live playback | 3+ `seekTo` calls, 2+ distinct `t`, on the one load without `?record=1` | a film that records perfectly and never moves for a viewer | whether the motion *reads*; a driver calling a captured reference instead of `window.seekTo` |
-| marker parity | file set × 6 fences | two scenes carrying different kits | drift inside a scene |
+| marker parity | file set × <!--derived:fences-->7<!--/derived--> fences | two scenes carrying different kits | drift inside a scene |
 | framing invariance | 3 shapes × 3 fixed fractions | a scene that crops instead of containing | composition quality at any single shape |
 | caption speed / overflow | per beat | a caption too fast or too wide **for the frame** | canvas text; vertical collision; **text that fits but is too small to read** |
 | exposure | 3 fixed fractions, worst | washed out or crushed | whether the register intended it |
@@ -110,8 +110,12 @@ from the same pattern. The general rule, which is the third instance of it in
 this file: **when a guard and the thing it guards ask different questions, the
 gap between the two questions is where defects live.**
 
-**Six fences are registered**, not two: `KERNEL`, `SOLVER`, `RIG`, `DRIVER`,
-`CHARACTER`, `HTML`. The `HTML` block uses HTML-comment markers rather than
+**<!--derived:fences-->7<!--/derived--> fences are registered**, not two:
+`CONTRACT`, `KERNEL`, `SOLVER`, `RIG`, `DRIVER`, `CHARACTER`, `HTML`. This line
+said "Six" and omitted `CONTRACT` for every version after 0.16.44 made it the
+seventh — in a file that ships, so the count and the list disagreed with
+`smoke.js` for every installed user. The number is now derived from that array.
+The `HTML` block uses HTML-comment markers rather than
 JS-comment ones, because it lives outside `<script>` — smoke's parity loop
 carries a second regex arm for it. A new shared block gets a fence at the third
 consumer, and the fence goes in this list or it is not enforced.
@@ -185,7 +189,7 @@ Bracketed three ways on `gearbox`, all three firing with the right message: the
 rAF chain never started (0 calls), the first frame threw and killed the chain
 (0 calls, plus the page error) — which is the shape the real defect took — and a
 frozen clock driving `seekTo(0)` forever (3+ calls, 1 distinct `t`, caught only
-by the distinctness arm). Quiet on all five shipped examples and on the 2D
+by the distinctness arm). Quiet on every shipped example and on the 2D
 template. Cost is one extra page load per scene: **+0.14 s on hardware WebGPU, +1.05 s on the
 software-GL default** — measured 2026-07-25 on `gearbox` at the 640x360 check
 viewport, one machine, wall-clock over a full `smoke.js` run; the gap is boot,

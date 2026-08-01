@@ -1,4 +1,4 @@
-last updated: 2026-07-30
+last updated: 2026-08-01
 
 # Working plan: instruments, routing, and the viewer
 
@@ -35,6 +35,7 @@ trigger this document can write for itself.**
 | Track D (kit) | no phase, but `STYLE.palette` discharges a 0.9.1 carry-forward |
 | type primitive (deferred) | the **chart tier** — chart before showcase before film |
 | paths-nothing-exercises sweep (below) | no phase — see [Evidence](#evidence-calibration) |
+| Track F (unexamined originals) | **Phase R** (restructuring under a proven oracle), added 2026-08-01 |
 
 So: **let the gates rank what maps, and the spine rank what doesn't.** Read
 [the spine](#the-spine) first — it is one criterion, and without it the
@@ -354,6 +355,50 @@ thing directly.
 which needs to read the tables and is the first consumer that would pay for the
 fences.
 
+### The naming question is a different one, and it gates Phase 4 (2026-07-31)
+
+Everything above answers *what shape* the declarative layer should take. It does
+not answer what the layer **is called or contains**, and
+[`VISION.md`](../VISION.md) names that as the blocker on the physics bake: the
+existing layer is *"substantial, it works, and it is **unnamed, unspecified, and
+unvalidated as a whole**"*, and adding another layer on top of tables nobody has
+enumerated *"buys a capability with no foundation. **Enumerate first.**"*
+
+So there are **two vocabulary questions and they are not the same work**:
+
+| | what it names | where | gates |
+|---|---|---|---|
+| tooling vocabulary | what the tools *do* — `build.js`'s verbs | Track E, E2 | nothing; it is CLI ergonomics |
+| authoring vocabulary | what a scene *declares* — `BEATS`, `SHOTS`, `SUBJECTS`, `STYLE`, `CONFIG`, `SIZES`, `LENS` | here | **Phase 4** |
+
+**Run them independently — owner's call, 2026-07-31, and the reasoning is that
+one blocks a phase and the other does not.** E2 waits on E0's allowlist because
+that is what draws the export line for it. This enumeration waits on nothing: it
+has no encoder dependency, no relationship to the boundary work, and sequencing a
+Phase-4 prerequisite behind a verb rename would be backwards. Renaming `all`
+changes nothing about how a film is written; enumerating `SUBJECTS` changes what
+the engine can validate and what a bake is allowed to rest on.
+
+**Do not start the enumeration from a blank slate.** `SUBJECTS` "straddling" the
+boundary — extents are data, `pos` is a trajectory — is not a hypothetical shape:
+it is the tracked defect class in
+[`pattern-ledger.md`](pattern-ledger.md), **"declared extents rot; measured ones
+do not"**, standing at 6 instances with `subjectFromObject` already promoted as
+its fix. That row bears directly on the question the enumeration has to answer —
+whether `SUBJECTS`'s extents need to become functions of `t` rather than declared
+constants — and it is empirical evidence that already exists. Further instances
+were observed in externally-built scenes `(local)`; read them as corroboration
+and **do not add them to the ledger's count**, which gates promotion triggers and
+is defined over this repo's own corpus.
+
+**The risk of running them separately is that two naming passes disagree**, and
+the mitigation is that neither pass invents its own rule. The principle is one
+line — *group by the question an author is asking, not by what the implementation
+happens to touch* — and it gets planted once in `method.md` (Track E, E3) so both
+passes cite the same sentence rather than each deriving a taste. Whatever either
+concludes lands in [`references/glossary.md`](../plugin/skills/mitate/references/glossary.md),
+which exists for exactly this and is 96 lines today.
+
 ## Salvaged from the ancestors, and what was deliberately left behind (2026-07-30)
 
 `internal/legacy/` is being archived off this machine. An audit checked every
@@ -544,6 +589,11 @@ re-checked this pass and should be treated as unknown, not as pending.
 | 7 | the batched kit release | D | **yes** | — | — |
 | 8 | viewer overlay + capture | C | no | 7 | — |
 | 9 | camera bake + the fork | C | no | 8 | — |
+
+**Track E is not in this table.** It was added 2026-07-31, after the status
+column was verified, and adding rows dated differently would silently corrupt a
+column whose whole value is that one date covers every row. Track E carries its
+own ordering, and its E0 gates its own E1 and E2.
 
 **What is actually left of Track A, after the status column:** items 2 and 3.
 They are independent of each other and of everything else, so they can run in
@@ -1431,6 +1481,1277 @@ Notes on two of these:
   three times. Measure the mechanical part, leave the judgement to `pad` and to
   naming sub-subjects — `film-language.md` is right that `h` is "the extent that
   must stay in frame," which is a judgement layered on a measurement.
+
+---
+
+## Track E — the review loop should need nothing but bun and a browser (2026-07-31)
+
+**Why this track exists, stated before the mechanism, because the mechanism is
+not the point.** [`VISION.md`](../VISION.md) names the goal as an engine and
+"the **harness** that proves all of it — enough that an agent can turn **any
+context** into a scene, reliably", and measures success partly by whether "a
+session arriving with no context can find what it needs and act correctly". The
+build-review-fix loop is how an agent learns to make a scene land. **Every
+external dependency on that loop is a tax on the thing this project is for.**
+
+Export is not on that loop. Owner, 2026-07-31: *"The export path is seriously
+secondary and not important in any core sense. The HTML scene itself is the real
+artifact… If ffmpeg is genuinely only used for export, it doesn't belong in
+GitHub Actions or as a core test in any way."*
+
+Two consequences, and the second reverses an earlier draft of this track:
+
+- **The review verbs are worth freeing** because an agent should be able to build
+  and verify a scene with bun and a browser and nothing else. That is the payoff,
+  not dependency hygiene for its own sake.
+- **The export verbs are deliberately NOT gated, and that is a decision rather
+  than a gap.** An earlier version of this track — and both independent analyses
+  — flagged "after decoupling, export verbs are exercised nowhere unattended" as
+  a problem wanting an encoder-equipped CI job. It is not a problem. A rotted
+  export verb costs one annoyed moment at export time; a rotted review instrument
+  silently corrupts the loop the project exists to teach. No encoder-equipped CI
+  job for **export**.
+
+  > **CORRECTED 2026-07-31, same day, and the error is instructive.** This bullet
+  > first read *"Do not add an encoder to CI… stop proposing an addition"* —
+  > stated flatly, about ffmpeg in general. The owner's directive was
+  > **conditional**: *"**If ffmpeg is genuinely only used for export**, it doesn't
+  > belong in GitHub Actions or as a core test in any way."* It is **not** only
+  > used for export — five review verbs still call it — so the condition is not
+  > yet earned, and the conclusion was recorded as though it were.
+  >
+  > The asymmetry argument makes the same point in reverse: it says a rotted
+  > review instrument is the expensive one. **Review tooling therefore has the
+  > strongest possible claim on unattended coverage**, and today CI exercises
+  > none of it (`bracket-commands` prints `review 0 exercised, 5 skipped`). The
+  > directive was about export. It was never about the review tier, and applying
+  > it there would have used the owner's words to protect the exact hole those
+  > words were worried about.
+
+**The finding, measured, not argued.** `smoke.js` — the validation instrument —
+has no encoder dependency: the gate ran with no ffmpeg on PATH and reported `all
+scenes pass`. ffmpeg never receives HTML, never runs JS, never drives the
+browser; all 10 encoder call sites read raster files already written to disk by
+Playwright. They split **4 / 5 / 1**:
+
+- **4 serve export** — `video`→mp4 (282), `avifenc` (427), `img2webp` (452), and
+  the frame scaler at 354. **The scaler is not a migration target**, and a first
+  pass of this analysis wrongly grouped it with the review tilers because it
+  writes stills: it is reached only through `inlineExport`, whose only callers
+  are `avif` and `loop`. It feeds encoders that stay encoder-gated regardless, so
+  moving it buys nothing. Corrected 2026-07-31 against a second analysis.
+- **5 are review stills** — `poster` (476), `aspect` (530), `sheet` (569), the
+  squint strip (575), `strip` (642). Scaling one PNG to a JPEG, tiling stills
+  into grids.
+- **1 is measurement** — `motion` (675), which differences frames and prints
+  numbers, writing no file at all.
+
+**So the migration target is 6, and only 4 call sites are load-bearing for
+export.**
+
+**So the boundary the docs already describe is not implemented.** SKILL.md
+separates step 6 ("the HTML file IS the deliverable") from step 7 ("Export, only
+if the destination cannot run a page"); `delivery.md` and `recordings.md` are
+separate references with explicit "Not here" edges; `VISION.md` does not mention
+export at all. `build.js` presents 13 flat peer verbs where `bundle`, `strip` and
+`avif` look like the same kind of thing. **The CLI surface teaches the wrong
+model, and that is where the confusion actually comes from** — nothing ever
+claimed ffmpeg was core; it is simply everywhere, and ubiquity reads as
+infrastructure.
+
+Ordering note that is easy to get backwards: **E0 makes E1 and E2 safe**, because
+once the allowlist has ratcheted down, "what is export?" stops being a judgment
+call and becomes whatever is left inside it.
+
+> **E0 DONE (0.16.51-adjacent, unreleased) and E1's still-tilers DONE (0.16.51).**
+> The ratchet is `selfcheck.js` check 10, seeded at ten sites across nine
+> functions and now standing at **five across five** — `video`, `shootAndScale`,
+> `avif`, `loop`, `motion`. `poster`, `aspectSheet`, `sheet` (×2) and `strip` run
+> through `build.js`'s `tileStills` and need no binary.
+>
+> **The finish line this section names is met early.** It said "today 9 of 17
+> bracket rows skip without an encoder; the target is 4." Measured on a PATH with
+> no encoder at all: **5 skip**, and the review tier reports `4 exercised / 1`.
+> The 5th is `motion`, which this same section defers — so the target is reached
+> for everything except the item that was never in this batch.
+>
+> **The open question E0 raised is answered by reuse, as instructed:** the escape
+> hatch is the one `ASSERT_BUDGET` already uses. A legitimate new export verb
+> edits the literal, in a diff, with a reason. No second mechanism was invented.
+>
+> **Still open in E1: `motion`.** Everything below about its calibration stands
+> unchanged, including that its scale corresponds to no documented luma
+> computation and must be re-established rather than ported.
+
+### E0. An encoder-boundary ratchet in `selfcheck.js`
+
+Pin the exact set of functions permitted to invoke `ffmpeg`/`avifenc`/`img2webp`,
+and **let that set only shrink** — the idiom this repo already runs twice (the
+measurement-assertion budget, and "1 probe instrument, read-only and
+single-call-site"). Seed it at today's ten sites: that is the honest baseline,
+not a target. Ships with its red arm in `scripts/bracket-selfcheck.js` proving it
+goes red when an encoder call appears outside the allowlist — invariant 6, and
+`static.yml` already runs `selfcheck.js`, so no CI edit is needed.
+
+**Resolve one question before writing the check**, raised by the second analysis
+and a real gap in the proposal as first stated: "may only shrink, never rise"
+handles drift-back cleanly but has no answer for a *deliberate, legitimate*
+addition later — a genuinely new export format verb. Check whether the
+measurement-assertion ratchet this is modelled on already has an escape hatch for
+"deliberate addition, not drift", and reuse it rather than inventing a second one
+for this case.
+
+Each later migration then deletes one function from the allowlist and one
+`needs: 'ffmpeg'` from `bracket-commands.js`, and both checks prove it. **Today
+9 of 17 bracket rows skip without an encoder; the target is 4.** That is a
+measurable finish line, and it exists only because the encoder table was made
+honest first (0.16.42).
+
+### E1. Migrate the non-export verbs off encoders
+
+Cheapest-risk first. **Do not batch these**; each has a different control.
+
+- **`motion` — best candidate, and the one deferred by the first analysis.** It
+  writes no artifact, so there is no visual-quality risk; the output is a number.
+  The refactor is one this function has *already performed once*: the beats
+  manifest rides along as a side product of the shoot via `MANIFEST_OUT`, and the
+  per-frame delta should ride along the same way, leaving `motion` as bookkeeping
+  over a series. Two things must be got right: the metric is the luma-weighted
+  mean of per-channel `|diff|`, **not** `|diff of luma|` (they diverge when
+  channels move oppositely), and ffmpeg's RGB→YUV range and coefficients set the
+  absolute scale that `DEAD_FLOOR = 0.05` lives in.
+
+  **Measured 2026-07-31, and it is worse than "the scale might shift".** The
+  invocation pins nothing colour-related — no `-colorspace`, `-color_range`,
+  `-pix_fmt`, no `format=` term. PNG decodes as RGB; `signalstats` requires YUV;
+  so ffmpeg silently auto-negotiates a conversion nothing in the command
+  specifies. On two solid frames (red → green, 64×64, macOS ffmpeg 7.x static
+  build): **the shipped chain reports `YAVG=1`, the same chain with an explicit
+  BT.601 conversion reports `YAVG=145`** — and a hand-computed BT.601 luma of the
+  difference image is ~150, so the *pinned* path is the one that matches theory
+  and the shipped path is the one that does not. A second control: two
+  byte-identical grey frames give 0 on the shipped path and **16** if the
+  conversion resolves to limited range, which would put every frame above
+  `DEAD_FLOOR` and silence dead-air detection entirely.
+
+  So `motion`'s absolute scale corresponds to no documented luma computation and
+  is set by an unspecified negotiation. **The calibration job is therefore not
+  "port the metric" — it is "establish what the current numbers mean," because
+  nobody can currently derive them.** That reframes the risk: the in-page
+  reimplementation would be *defined*, where the incumbent is *accidental*.
+  **The negotiation is nonetheless STABLE across builds, measured 2026-07-31 —
+  and this refutes a hypothesis two independent analyses both advanced.** Both
+  argued that because the conversion is unpinned, `motion` scores may *already*
+  vary machine to machine, which would make this a live defect rather than a
+  migration risk. Run on Ubuntu x86_64 with the distro's **ffmpeg 8.0.1**, the
+  same three cases return exactly what macOS arm64 with a static **ffmpeg 7.x**
+  returns: 1, 145, 0. Different OS, architecture, major version and build origin;
+  identical numbers.
+
+  So the accurate statement is **accidental but reproducible**, not unstable.
+  Two consequences, and they pull in opposite directions from what was assumed:
+  the incumbent is *not* already broken, so this migration is a deliberate
+  improvement rather than a bug fix and carries no urgency of its own — **and**
+  the existing fixtures (0.16, 3.90) and any published `motion` score remain
+  reproducible, so they are usable as verdict anchors even though they are not
+  interpretable as luma. Do not cite the "already varies across machines"
+  argument; it was tested and did not hold.
+
+  **A replacement owes ffmpeg no fidelity** (second analysis, and it is right):
+  ffmpeg was reached for as a convenient batch calculator, never chosen as ground
+  truth, so the new implementation needs only to be well-defined and
+  self-consistent, with `DEAD_FLOOR` re-established fresh by bracketing a
+  known-clean scene against a known dead-air one — the same method used for the
+  aspect-framing MAD threshold. Old and new numbers land on permanently
+  different, non-comparable scales, which is a **labeling** problem, not a
+  tolerance-band one. Hence:
+
+  - **Stamp the implementation in `motion`'s own output** — `motion
+    (ffmpeg-tblend/signalstats): median frame-diff 1.11` versus `motion
+    (in-page-delta v1): …`. Then any postmortem citing a score inherits the stamp
+    as part of the citation, and a future reader can tell without external
+    context whether two numbers are even the same unit. This is a control rather
+    than a comment asserting one: a number that cannot be traced to what produced
+    it is unauditable. Cheap, and it closes the comparability question
+    permanently instead of relying on anyone remembering.
+  - **Widen the calibration corpus past the two documented fixtures** before
+    setting any threshold — two observations is thin by this repo's own standard.
+    Run the full example corpus. A real external before/after pair exists (an
+    LFP-battery explainer, 8 beats, scores independently re-derived rather than
+    taken from a self-report) and is offered as additional data. It sits in
+    `internal/sonnet_and_gemini_scenes/` **`(local)`** — inside this tree and
+    directly runnable (`bun run build.js motion lfp-explainer.html`), but
+    `internal/` is gitignored, so it is present on one machine and absent from
+    any clone. **The reason not to rest a threshold on it is sample size, not
+    reachability** — it is one external scene, the same thinness argument that
+    applies to the two documented fixtures. An earlier draft of this line said it
+    was held outside the repo, which was wrong and was caught by checking.
+  - **A `motion` score is sensitive to changes well outside the beat it scores.**
+    Measured on that scene: a revision targeting three beats moved *every* beat
+    up, because it touched shared geometry. That matters for anyone attributing a
+    score delta to a specific edit, and `instruments.md` does not currently list
+    it among the instrument's documented limits. Add it there when this lands.
+  - **The side-emission must be strictly read-only against the canvas** and run
+    *after* the frame is captured, never interleaved — a pure side-read, exactly
+    like `MANIFEST_OUT`. `seekTo`'s purity should make this safe; check it as an
+    explicit invariant rather than assuming the architecture guarantees it.
+  - **The worker lead-in needs its own test case**, not coverage by the general
+    parallel-workers byte-identity guarantee — that guarantee was established for
+    the current design, where ffmpeg's separate pass over finished PNGs does not
+    care which worker wrote which file. Force a chunk boundary onto a known beat
+    transition and confirm the delta there matches the single-worker value.
+    Otherwise the metric is wrong exactly at the seams, in a way that looks fine
+    in any single worker's own output.
+  - **A parallel-run transition window is proposed and DECLINED on the owner's
+    priority call.** Running both implementations against every scene in CI for
+    some releases would need an encoder-equipped job, and export tooling does not
+    earn one — see this track's opening. If a transition window is wanted, run it
+    locally against the example corpus, which is where the calibration lives
+    anyway. `full` mode can shoot chunks
+  across parallel workers, so frame N-1 may sit on another page — each worker
+  needs a lead-in frame or the deltas break at chunk boundaries. **Deliverable is
+  a calibration control, not a rewrite**: both implementations over the corpus,
+  against the documented fixtures (median 0.16 held-camera, 3.90 moving-camera)
+  and the dead-air verdicts. A `control-builder` job.
+  **Do not propose a self-normalising threshold** — `DEAD_FLOOR` is absolute
+  deliberately, and the reasoning is recorded beside it.
+  **Two things were learned from an incidental attempt, and neither is a design
+  to adopt.** A separate scene-building session on another machine happened to
+  cut `build.js` from 10 encoder call sites to 4 as a side effect of its own
+  work. Owner's framing, and the right one: not a source of truth, not an E1
+  design pass, and its code is not the plan. Inspected read-only, purely for
+  what it demonstrates:
+
+  1. **The capture-time side-emission works** — an existence proof, which is
+     genuinely useful because it is the part of E1 that was unproven. In-page
+     `page.evaluate` + canvas `getImageData`, deltas accumulated during the
+     existing shoot rather than a second pass. It also got the subtle part right:
+     per-channel diff **then** luma weight, in that order. So the design E1
+     prescribes is implementable; that question is closed.
+  2. **Carrying `DEAD_FLOOR = 0.05` across is a silent ~150x miscalibration**,
+     and this is the finding worth keeping. Measured on one frame pair: the old
+     shipped chain reports 1 where the in-page formula's quantity is 150 (hand
+     arithmetic: 151.4). The equivalent floor on the new scale is ~7.5. Left at
+     0.05 it is ~150x too low, no frame falls below it, and dead-air detection
+     never fires — `motion` would report "0 dead-air stretches" on every film,
+     which `build.js`'s own comment already calls worse than no check at all.
+     **Derived, not run end to end:** the scale factor is measured, the
+     consequence is arithmetic.
+
+  That second point is the concrete evidence that the calibration step here is
+  load-bearing rather than ceremony — it is the exact failure this item exists to
+  prevent, produced for free by someone not trying to implement this item.
+
+- **`poster` — small, not free.** Playwright screenshots JPEG natively. The
+  interesting option is rendering at the target width rather than downscaling a
+  larger render, since the geometry is resolution-independent — but scenes *do*
+  respond to viewport (`aspect` exists to show exactly that), so a native render
+  at a different size is a different image, not just a cheaper one. One
+  comparison settles it. Note `poster` is a **delivery** command, not a review
+  one (`instruments.md`: "a delivery command that happens to be frame-exact").
+- **`sheet` / `squint` / `strip` / `aspect` — measured 2026-07-31, and the
+  answer is "probably fine, not yet proven".** The squint strip is a 480→90
+  downscale where filter choice is load-bearing for the instrument's whole job.
+
+  **Conditions:** ONE frame — `gearbox.html` at `t=6.0`, scaled to 480 wide —
+  each downscale compared against a lanczos reference. macOS, ffmpeg 7.x static.
+
+  | downscale | PSNR vs ref | SSIM |
+  |---|---|---|
+  | ffmpeg default (ships today) | **49.94 dB** | 0.9992 |
+  | canvas `drawImage`, smoothing `high` | **40.45 dB** | 0.9920 |
+  | canvas `drawImage`, smoothing `low` | **40.45 dB** | 0.9920 |
+  | point-sampled (known-bad control) | 30.00 dB | 0.9592 |
+
+  Three things follow. **Canvas is 9.5 dB worse than what ships**, so this is not
+  a free swap. **It is 10.4 dB better than the known-bad control**, so it is
+  nowhere near point-sampling territory and SSIM stays at 0.992. And
+  **`imageSmoothingQuality` makes no difference at all** — `high` and `low` are
+  bit-identical here, so the obvious mitigation does not exist and there is no
+  quality knob to turn if the eye check goes against it.
+
+  **This does NOT clear the swap on its own.** `method.md`'s own PSNR rule is
+  that byte-identical or >70 dB is imperceptible rounding and anything lower gets
+  a difference-image look before it is trusted; 40 dB is well under. The
+  difference image was generated and handed to the owner `(local)`; that judgment
+  is not made here.
+
+  **Widened to the whole example corpus, same day, because one frame from one
+  scene is thin by this repo's own standard.** One frame at `t=6.0` from each of
+  the five examples, PSNR against a lanczos reference:
+
+  | scene | ffmpeg | canvas | point-sampled | canvas penalty |
+  |---|---|---|---|---|
+  | gearbox | 50.10 | 40.48 | 30.00 | −9.6 dB |
+  | bear-and-bees | 48.18 | 38.39 | 29.29 | −9.8 |
+  | menagerie | 47.12 | 36.58 | 28.13 | −10.5 |
+  | materials | 48.83 | 39.03 | 29.13 | −9.8 |
+  | noise-chart | 39.69 | 28.90 | 21.72 | −10.8 |
+
+  **The consistency is the result, not the magnitude.** The original worry was
+  aliasing at a 5.3x reduction, and aliasing is content-dependent — it would
+  spike on `noise-chart`, which is high-frequency by construction. It does not:
+  that gap is 1.2 dB wider than `gearbox`'s, against content that is far harder.
+  A penalty this flat across this much variation is a **systematically softer
+  filter, not an aliasing failure**, and softness costs a silhouette far less
+  than aliasing does. Canvas also never drops below the point-sampled control on
+  matched content, and both methods fall together on `noise-chart` — that is the
+  content being hard, not canvas failing on it.
+
+  **PSNR was the wrong metric, and an independent review is what exposed it.**
+  An outside read of the corrected difference image found the variance
+  **concentrated on edges and outlines**, with flat regions dark — canvas
+  feathers boundaries where ffmpeg holds them. That is the same physical fact as
+  the flat ~10 dB penalty above, but it inverts the conclusion drawn from it:
+  softness is benign for general image quality and **hostile to this instrument
+  specifically**, because at 90px there is no detail left to protect and the
+  outline is the entire signal. The reasoning error was applying a general
+  image-quality heuristic to an edge-critical measurement.
+
+  **So measure edge energy, not fidelity.** Sobel mean over the 90px image —
+  directly, how much edge contrast survived:
+
+  | 90px image | edge energy |
+  |---|---|
+  | **rendered natively at 90px** | **47.04** |
+  | lanczos reference | 46.44 |
+  | ffmpeg default (ships today) | 46.36 |
+  | canvas `drawImage` | 45.47 |
+
+  Two results. **Canvas loses 1.9% of edge energy against ffmpeg** — real,
+  matching the outside read's "subtly crisper", and far smaller than the 10 dB
+  PSNR gap implied. PSNR overstated the functional difference because it measures
+  fidelity to a reference rather than the property in use.
+
+  **And native rendering beats every downscale**, because it antialiases at
+  render time with the full scene rather than resampling an already-rasterized
+  image. It also needs no encoder, which dissolves the ffmpeg-versus-canvas
+  question for the riskiest verb instead of settling it.
+
+  **Sobel was ALSO the wrong metric, and native rendering is REJECTED on
+  measurement.** Sobel cannot tell a crisp edge from a jagged one — both are high
+  gradient — so native's top score was ambiguous. The distinction has a direct
+  signature: an antialiased edge carries **intermediate tones**, an aliased one
+  jumps between two values. Fraction of edge pixels sitting strictly between
+  their neighbours' extremes:
+
+  | 90px image | intermediate on edges | edge energy |
+  |---|---|---|
+  | lanczos reference | 57.9% | 46.44 |
+  | ffmpeg default (ships today) | 57.4% | 46.36 |
+  | canvas `drawImage` | **59.9%** | 45.47 |
+  | native 90px render | **44.8%** | 47.04 |
+
+  **Native's edge-energy win was aliasing.** A 480→90 downscale is 5.3x
+  supersampling — excellent antialiasing by construction. A native 90px render
+  gets only the renderer's MSAA, which is not enough at that size. The
+  supersampling *is* the feature, so do not remove the downscale.
+
+  **And canvas is fine — better antialiased than ffmpeg, not worse.** Its 59.9%
+  is the highest of the three real candidates; the feathering an outside review
+  saw is extra antialiasing, not lost edge. Combined with a 1.9% edge-energy
+  difference, the tilers can move to canvas.
+
+  **Three metrics, and the sequence is the lesson.** PSNR measured fidelity to a
+  reference rather than the property in use. Sobel measured edge magnitude and
+  could not separate sharp from jagged. Only intermediate-tone fraction measures
+  the thing that distinguishes the two failure modes this instrument actually
+  has. **A metric that cannot separate your two failure modes will confidently
+  rank them.** Both wrong metrics produced clean, plausible tables.
+
+  Also confirmed while testing: at a 90px viewport the caption overlay reflows —
+  two independent reads noticed it, one as a doubled banner and one as clipping.
+  Scenes respond to viewport, which is the caveat `poster` carries too, and it is
+  a second reason the native path costs more than it looks.
+
+### E2. The verb taxonomy, after E0
+
+**This is the *tooling* vocabulary only.** The authoring vocabulary — what a
+scene declares — is a separate, larger question that gates Phase 4 and runs
+independently of this track; see "The naming question is a different one" above.
+Both cite the same grouping principle; neither derives its own.
+
+`build.js:2` declares the pipeline's terminus to be an mp4, and the verb set
+fossilised around it: **`all` = `bundle` + `frames` + `video`** (it means "the
+full path to an mp4", not "all artifacts"); **`video` takes `<name>`, not a
+scene**, so a pipeline stage leaks into the CLI as a peer verb; **`frames` exists
+largely because `video` needs a predecessor**; and `video`/`avif`/`loop`/`all`
+are four naming schemes for what SKILL.md calls "four peer formats… chosen at
+spec time, not encode time" — i.e. the docs treat format as a parameter of one
+decision while the code makes it three verbs.
+
+**The review verbs are not fossils and should not be collapsed.**
+`instruments.md` documents distinct measured blind spots for each — sheet's fixed
+fraction, strip bracketed both ways, motion's four limits. Each answers a
+question the others cannot.
+
+Likely surface: core (`vendor`, `bundle`) · authoring measurement (`probe`) ·
+review (`sheet`, `strip`, `aspect`, `motion`) · delivery (`poster`, the scene) ·
+**one** encoder-gated export operation taking a format, with `frames` internal.
+**This is a breaking CLI change** — `build.js all` appears in SKILL.md and ships
+to every install cache — so it needs a version bump, a changelog entry and
+probably a deprecation window, not a silent rename.
+
+Three caveats before any of it is treated as settled, two of them from the second
+analysis and both fair:
+
+- **`video`'s `<name>` asymmetry has a fix, not just a flag.** Have `video`
+  accept `<scene.html>` like every other verb and call `frames()` internally when
+  the directory does not exist — removes the interface leak without losing the
+  one-command convenience.
+- **Do not demote `frames` on the fossil argument alone.** Check first whether
+  anyone consumes the raw PNG sequence outside this tool — a different encoder, a
+  custom pipeline. If nobody does it is a fossil; if somebody does it is a
+  legitimate export-adjacent verb that simply is not on the direct path to mp4.
+- **Collapsing `video`/`avif`/`loop` into one format-argument verb has a real
+  ergonomic cost**: `video` takes `fps` only while `avif` and `loop` take `fps`
+  *and* `width`, so unification needs format-conditional arguments or a flag
+  interface. Weigh it rather than assuming three-into-one is a pure win.
+
+**And "review" is operationally mixed, which is the proof the grouping is
+right rather than a problem with it**: `probe` never shells out at all,
+`sheet`/`strip`/`aspect` use ffmpeg to tile images, `motion` uses it for
+arithmetic and produces no image. Three implementations under one label, because
+the label tracks the question an author is asking — not what happens to touch an
+encoder today. Group by intent; that is the same lesson this whole track is
+about, applied to the act of designing the taxonomy.
+
+### E3. Framing remediation, split by whether the code has earned it
+
+**`VISION.md` is deliberately NOT edited, and the decision has a dependency worth
+stating.** It never mentions MP4, AVIF, WebP or GitHub, and that silence is the
+strongest available statement that export is not core — adding a paragraph saying
+so would make export a topic the file discusses, which elevates it. The file also
+carries its own instruction: *"It is short on purpose. If it grows into a summary
+of the plan, delete the summary."*
+
+**But silence-as-signal is fragile alone.** A reader who lands on the tooling
+question directly could read that silence as "does not cover export, so infer it
+from `build.js`'s comments" — which is precisely the path that produced this
+whole track. The decision holds **only because the explicit statement lands
+elsewhere**: `method.md`'s corrected headers and the verb taxonomy are what a
+reader arriving at the tooling question actually finds. If those slip, the
+silence stops being sufficient and this decision should be revisited rather than
+inherited.
+
+Three parallel sweeps, 2026-07-31, over shipped prose, code comments, and the
+repo-dev surface. **Clean, zero findings:** `bibles.md`, `characters.md`,
+`materials.md`, `glossary.md`, `instruments.md`, `plugin/agents/film-reviewer.md`,
+`backend.js`, `smoke.js`, every bracket but `commands`, all of `scripts/`, all
+three workflows, `.claude/agents/*`, `.claude/rules/*`, `audit-claims`.
+`examples/README.md`, `install-hooks.sh` and `stage-films.sh` state the framing
+*correctly* and are the language to reuse. **Not a repo-wide infection** — it
+concentrates in `build.js` (7 of 9 code findings), `plugin/README.md`,
+`method.md`, and SKILL.md's opener.
+
+**Fix now — wrong regardless of what the code does:**
+
+| where | what |
+|---|---|
+| 8 scene files, CONTRACT block | *"what makes the HTML loop and the MP4 render provably identical"* — false twice; see R4.4's fence note |
+| `method.md:51-52, 849, 962` | determinism justified by "video/HTML parity", **twice as section headers**, in the file read before building. When correcting these, **plant the positive principle rather than only deleting the wrong one**: group by the question an author is asking, not by what happens to touch an encoder today. Stated there, it is the reason the taxonomy looks the way it does; left implicit, a future author reverse-engineers it from a verb list |
+| `CLAUDE.md:56-58` + `docs/orientation.md:13-14` | same inversion; orientation.md is the literal text pasted to every context-free subagent |
+| `physics-bake-proposal.md:20-23` | *"HTML/MP4 parity holds"* listed as a surviving property — **asserts a check that does not exist**, in the doc governing the next phase |
+| `docs/addressing.md:38-40` | quotes the scene-template claim as the foundational definition of `t` |
+| `plugin/README.md:5-8, 15-17` | *"then renders that same file to video"* — the front door |
+| `SKILL.md:26-28` | opener contradicts its own steps 6 and 7 |
+| `build.js:2, 41-42, 288-291, 318, 479-482`; `shoot.js:190` | mp4 terminus; "deliverables (frames/all)"; "the pipeline's own output"; "Sizing is the whole game"; poster's README-only guidance |
+| `recordings.md:3-6` | scope named too narrowly — GitHub is one instance of "a README, a chat, a slide" |
+| `delivery.md:29-31` | "co-equal delivery option" now reads as a ceiling against its own opening |
+| `docs/plan.md:210-212` | "delivery forensics" bucketed with the determinism kit as equal-weight inheritance |
+| `docs/plan.md:358-361` | lists "`motion`'s frame-difference metric, `strip`, the delivery encoders" as one set of "instruments smoke does not cover" — the first two are real review-coverage gaps, the third is export tooling smoke was never meant to cover. Separate them |
+| `build.js` USAGE + header | group the verbs core/review/export — true *today*, independent of E1 |
+| `SKILL.md` step 4 (review block) | **omits `motion` entirely** — it lists `sheet`, `strip`, `aspect`, `probe`. The instrument is real and correctly documented in `film-reviewer.md` and `method.md`; the quick-reference an agent skims first does not mention it. Same shape as the rest of this table, and unrelated to ffmpeg |
+
+**Wait for the code — TRUE today, and editing them first would make the docs lie
+and delete the only signal the structure is wrong:** `CLAUDE.md:167`,
+`build.js:19`, `plugin/README.md:40-42`, `SKILL.md:226`. All four state ffmpeg as
+a baseline dependency, which is accurate while `sheet`/`strip`/`aspect`/`motion`/
+`poster` still call it. They change when E1 lands. Note `CLAUDE.md:167` already
+scopes `avifenc` "for AVIF loops" and `img2webp` "for WebP" in the same sentence —
+the pattern exists, it just was not applied to the one with seven call sites.
+
+**Unread, and the gap is deliberate rather than silent:**
+`docs/predecessor-record.md` was read at ~2100 of 2770 lines. It is explicitly
+bounded as history ("Read this as history, not as current spec"), so its findings
+are origin evidence rather than live drift — but that origin is the point: it
+carries the predecessor's marquee claim four times, and near-identical phrasing
+is live and unqualified in this repo today.
+
+### E4. `audit-claims` does not cover either README
+
+Its scope is reference docs, `CLAUDE.md`, load-bearing comments in
+`templates/*.js`, `site/index.html`, and — verified — `.claude/agents/*` and
+`.claude/rules/*`. **`plugin/README.md` and the root `README.md` are in none of
+it**, and `plugin/README.md` is where the worst drift found on 2026-07-31 lives.
+The asymmetry is the argument: `site/index.html` was *deliberately added* at
+0.16.30 because "the site is a claim surface". `plugin/README.md` is a claim
+surface too **and it ships into every install cache** — wider distribution,
+no coverage. One line in the skill's scope. Probably the cheapest item on this
+track. Open question worth settling in the same edit: `plugin/agents/` is not
+`.claude/agents/`, and whether the routing covers it should be explicit rather
+than inferred, for a file that ships.
+
+### E5. The harness tier's output reads as a coverage hole when it is a scope line
+
+`bracket-commands.js` currently prints `8 verb path(s) exercised, 9 skipped for a
+missing encoder`. Under this track's opening that phrasing is wrong in a way that
+matters: it reads as nine missing tests when nine are **deliberately out of
+scope** for an unattended gate. Tier the tally so the harness reports core and
+review fully exercised, and export explicitly not gated — making the priority
+visible in the instrument rather than leaving it as a number a reader has to
+interpret. Plugin content, so it carries the cascade. Small, and it is the
+difference between a gate that looks 47% covered and one that says what it
+covers and why.
+
+## BLOCKING MERGE: the 2026-07-31 review of `--parity-fix` and the fixture path
+
+A `/code-review high` over `main...HEAD` returned 15 findings, most reproduced
+against live fixtures rather than argued. **Do not merge this branch until the
+write-path group is fixed.** Several contradict claims written into comments on
+this same branch, which is the class invariant 6 exists for.
+
+> **UPDATE 0.16.50 — 12-15 are FIXED. ALL 15 FINDINGS ARE CLOSED and this
+> section no longer blocks the merge.** Finding 12 was demonstrated rather than
+> argued: neutralising the embed guard and running `bracket-commands.js` changed
+> the tracked `scene.template.html`'s hash. 13 and 14 were shown by breaking
+> `build.js` and watching the bracket stay green. 15's extraction produced its
+> own control, `bracket-run-brackets.js`, whose mutation test then falsified a
+> comment I had just written (see below).
+>
+> **What is still open is NOT a review finding:** ten of the corpus's twelve
+> defects are unmeasured, `bracket-corpus.js` does not exist, `bracket-noise.js`
+> false-reds on macOS, and `/extract-patterns` has never been run.
+>
+> **UPDATE 0.16.49 — findings 7, 8 and 9 are FIXED. Open: 12-15 only.**
+> Two were worse than the review said. Finding 7's comment contradicted a commit
+> on this branch AND overstated a second control (`REQUIRE_ENCODERS` is set by
+> nothing). Finding 9's Map was missing **five more** top-level entries beyond
+> the two the review caught — so the completeness claim is now enforced by
+> `selfcheck.js` check 9 rather than by remembering, with no exemption list.
+>
+> **UPDATE 0.16.48 — findings 5 and 6 are FIXED too. Open: 7-9 and 12-15.**
+> An unreadable argument is a hard refusal, `--parity-only` states how many
+> files it scanned, and `selfcheck.js` now detects a stale installed hook — it
+> **fired immediately on the machine that wrote it**, which had been gating
+> commits on the pre-0.16.45 two-glob command. Finding 6's real content was
+> never "the installer should overwrite"; it was "nothing detects the stale
+> copy", so the fix is a check, not a flag.
+>
+> **UPDATE 0.16.47 — findings 1, 2, 3, 4, 10 and 11 are FIXED.** The write-path
+> group no longer blocks; **5-9 and 12-15 remain open** and the merge is still
+> blocked on them. Each fix carries a `bracket-parity.js` arm that was watched
+> going **red first**, and each was then **mutation-tested** — the guard
+> neutralised, the arm confirmed red again, all four caught. That second step is
+> the one this branch keeps skipping: 10 exists precisely because arms were
+> written that passed while proving nothing.
+>
+> **One residue is labelled rather than closed.** `accessSync` answers a
+> permission question only, so a full disk or a lock can still throw at write
+> time; no arm reaches that path. It is now loud (the run names the carriers that
+> landed) but it is depth, not a control, and the comment says so.
+>
+> **Finding 11's HTML arm found nothing wrong** — propagation through the one
+> structurally different regex was already correct. The arm is worth keeping
+> anyway: it was in production use on the corpus with no control at all.
+
+**The write-path group — `--parity-fix` can corrupt a corpus today.** It is
+committed and pushed, so this is a live hazard, not a design note.
+**All four fixed in 0.16.47; kept below as the record of what was wrong.**
+
+1. **The final write loop is neither guarded nor atomic** (`smoke.js:983`).
+   Validation checks readability and fence well-formedness and **never
+   writability**, so a target that is read-only, full, or locked throws mid-loop
+   and leaves the corpus half-propagated — *the exact state the design comment
+   above it claims to prevent*. Reproduced with `chmod 444`. My bracket arm
+   tested validation ORDERING and never write FAILURE.
+2. **The malformed-target guard only inspects fences the SOURCE carries**
+   (`smoke.js:965`), so a target broken in a fence the source lacks is written
+   anyway, exit 0. **Live:** `scene2d.template.html` carries only CONTRACT and
+   KERNEL, so `--parity-fix --from` it validates 2 of 7 fences while writing to
+   all nine carriers. Directly contradicts the stated non-negotiable.
+3. **`--parity-fix` silently overrides `--parity-only`** (`smoke.js:929`) —
+   `parityOnly` is computed and never consulted, so a read-only invocation that
+   also carries `--parity-fix` writes and exits 0 without running the check.
+   `--parity-only` is what `static.yml` and the installed pre-commit hook run.
+4. **`--from` is consumed even without `--parity-fix`** (`smoke.js:893`), so it
+   swallows the next filename out of a read-only scan. Reproduced: two genuinely
+   drifted files scanned as one, reported green.
+
+**The silent-coverage-loss group, newly reachable because of my own change:**
+
+5. **Unreadable scene arguments are swallowed** (`smoke.js:1023`, `catch (e) {}`).
+   An unmatched glob passes through as a literal, scans nothing, prints
+   `parity/integrity: ok`. I added a **third** glob (`fixtures/defect-corpus/*.html`)
+   to `static.yml` and the hook today — rename or move that directory and CI and
+   every installed hook check one directory less and stay green forever.
+6. **`install-hooks.sh` will not overwrite a differing hook without `--force`**,
+   so every machine that installed the hook before today still runs the
+   8-carrier command and nothing detects the stale copy.
+
+**Claims I wrote that are false:**
+
+7. **`bracket-commands.js:34-39` asserts a CI ffmpeg install that does not
+   exist** and contradicts commit `444a649` on this branch, which declined it. A
+   load-bearing comment asserting a control that is not there.
+8. **`fixtures/defect-corpus/README.md:59` claims `gate.yml` coverage the corpus
+   does not have** — and contradicts itself five lines later at :65.
+9. **`CLAUDE.md`'s Map omits both directories this branch adds**
+   (`fixtures/defect-corpus/`, `.claude/skills/extract-patterns/`) despite
+   stating it covers everything outside `docs/`; and invariant 2's verify command
+   still omits the ninth carrier, so two tracked docs prescribe different
+   commands for the same check.
+
+**Bracket weaknesses — the controls do not control what they claim:**
+
+10. **Every `FIX_ARM` asserts an exit code only** (`bracket-parity.js:159`); the
+    refusal message is captured and discarded, so *any* non-zero exit satisfies
+    all four refusal arms. The read-half arms do check stdout. This is the same
+    failure mutation testing already caught once in this file.
+11. **No arm exercises multi-fence propagation or the HTML fence**
+    (`bracket-parity.js:108`). The `<!-- ==== HTML-START ==== -->` branch is the
+    only structurally different regex and is **never run by the bracket**, while
+    being in production use — the corpus's HTML fence was brought current by it.
+12. **`bracket-commands.js:114` runs `build.js` against the tracked
+    `scene.template.html` in place.** If the guard it tests regresses, the
+    bracket inflates a shipped source by ~1 MB — the documented damage that
+    "reached `git add` once", and the identical hazard `static.yml:73-75` records
+    being removed from another bracket. Copy it into the temp workspace.
+13. **The `all` row's artifact assertion is satisfied by the `video` row's
+    leftover mp4** (`bracket-commands.js:102`), so it cannot detect `all`
+    producing nothing.
+14. **`expect.stdout: ''` is never evaluated** (`bracket-commands.js:92`) — a
+    truthiness test where its sibling correctly uses `!== undefined`.
+
+**Design duplication:** 15. the `bash -e` loop fix is copy-pasted verbatim into
+both workflows with ~10 lines of duplicated prose, rather than extracted to one
+`scripts/run-brackets.sh <glob>` both call — fixed at two call sites instead of
+once underneath, which is how the `!cancelled()` defect reappeared one level down.
+
+**Order to fix:** 1-4 first (they are one interacting group in the write path,
+and the tool is already pushed), then 10-11 so the bracket can actually hold
+them, then 5-6, then the false claims 7-9, then the rest. **Do not fix these at
+the end of a long session** — the review found them precisely because that is
+when they were written.
+
+**Done in 0.16.47: 1-4, and 10-11 with them rather than after.** Splitting them
+was not possible in the stated order — writing new arms for 1-4 under 10's
+weakness would have meant knowingly building four more arms that any non-zero
+exit satisfies.
+
+**Done in 0.16.48: 5-6.** Finding 6 turned out to have a live instance rather
+than a hypothetical one, and the check found it on the first run.
+
+**Done in 0.16.49: 7-9.** Verified against the tree before rewriting, which is
+how two of the three turned out worse than reported.
+
+**Done in 0.16.50: 12-15. The review is fully dispositioned — 15 of 15 fixed,
+none deferred, none argued away.**
+
+**The pattern across all fifteen, worth more than any individual fix.** Nine of
+them were controls or claims about controls, not product defects: brackets that
+could not fail, assertions never evaluated, comments asserting guards that were
+not there. Three separate times a fix's own mutation test falsified something
+written minutes earlier — the `says` regex that could not cross a newline, the
+`set -e` comment naming the wrong guard, the Map audit that found five more
+misses than the review did. **Writing the check is not the measurement; running
+the check against a deliberately broken version is.** That step caught something
+in three of the five sessions' worth of work here, and it costs minutes.
+
+## The defect corpus is in parity but nothing runs it (2026-07-31)
+
+Opened by R4.5 and recorded the same day rather than left as a known-unknown.
+`gate.yml`'s workspace step copies `templates/` and `examples/` and not
+`fixtures/`, so `fixtures/defect-corpus/after-hours.html` is fence-checked by
+`static.yml` and **executed by nothing**. A `KERNEL` change it cannot survive
+would be discovered by whoever next tried to use the corpus — which is exactly
+the shape the harness tier exists to close, reintroduced by a directory that did
+not exist when that step was written.
+
+**Do not fix this by adding it to the gate's scene list.** The file is
+deliberately defective. The day a defect lands that trips exposure or framing,
+a general pass/fail gate goes red for a correct reason, and a gate that fails
+correctly on purpose is one people learn to route around.
+
+Write `bracket-corpus.js` instead, in `templates/` so the existing glob picks it
+up: run smoke over the corpus and assert the **expected verdict**, the same shape
+`bracket-parity.js` and `bracket-commands.js` already use. It fails when the
+verdict changes in either direction — a scene that starts failing, and equally a
+defect that quietly stops being detected. Cheap, and it is the only thing that
+would notice either.
+
+## `bracket-noise.js` reports a false red on macOS (2026-07-31)
+
+Found while verifying R4.4, and confirmed pre-existing by stashing the change and
+re-running against a clean `HEAD`: the **`claims webgpu while falling back`** arm
+fails on this machine and passes in CI. It is not a smoke defect. The arm needs a
+scene that *claims* WebGPU and then *falls back*, and on a Mac with a real WebGPU
+adapter no fallback happens — so smoke correctly passes the fixture and the arm,
+which expects a failure, calls that wrong. On the Linux gate there is no adapter
+(`No available adapters` → WebGL2), the fallback is real, and the arm passes.
+
+So the fixture's premise is environment-dependent and the bracket does not say
+so. **The cost is the one this repo cares about most: a control that cries wolf
+on the developer's own machine is a control people learn to skip**, and this one
+sits in the same directory as four that are honest. Fix by forcing the fallback
+rather than assuming it (or by skipping the arm, loudly, where an adapter
+exists) — a silent skip would be the worse of the two and is the failure
+`bracket-commands` already had.
+
+---
+
+## Track F — unexamined originals (2026-08-01, owner-directed)
+
+> **This track maps to Phase R in [`plan.md`](plan.md) and inherits its gate**,
+> which is the stronger commitment — see this document's own mapping rule above.
+> Phase R carries the method (prove the oracle red before refactoring under it),
+> the five-bucket triage, and the counted inventory across all four harness
+> files. **What lives HERE is bucket (d) alone**: the absences, and the
+> archaeology on the instance that opened the track. Do not restate the rest.
+
+**The class:** code that changes what the gate reports, carries no recorded
+reason, and is covered by no control. Nobody changes it because nobody knows why
+it is there, so it survives every review by looking deliberate.
+
+**This is NOT what `selfcheck.js` check 6 covers, and the difference is why the
+class is invisible.** Check 6 finds comments that *assert* a measurement without
+naming the control behind them — a false claim, which is auditable because there
+is a claim to audit. Track F's members make **no claim at all**. There is nothing
+for a doc auditor or a claim checker to catch, which is precisely why they
+accumulate. An absence cannot be graded against its source.
+
+**The instance that opened the track**, and the shape to generalise from:
+`smoke.js`'s across-reload determinism check is guarded by
+`if (!fails.length && shots.length)`. The `shots.length` half is a data
+dependency and must stay. The `!fails.length` half reads `fails` **globally**, so
+a failure in the shipped-frame check, live playback, or the contract check
+silently disables the one check covering load-time nondeterminism — the class its
+own comment says nothing else can reach, and which shipped green once while
+producing three different films across three loads.
+
+What the archaeology found, recorded so it is not repeated:
+
+- **One commit, `2c5742f` (0.16.9, 2026-07-25).** The guard entered in the same
+  hunk as the check. There is no later patch and no "we added this because X"
+  story to recover.
+- **No rationale anywhere.** The nine-line comment above it documents the check
+  in forensic detail and never mentions the guard. The CHANGELOG entry is equally
+  thorough and equally silent. Nothing in `docs/`, `references/`, the postmortems
+  or the session logs discusses it. (`internal/log/` starts 2026-07-29; the guard
+  predates the first log by four days. Those logs were local when this was
+  searched and are tracked as of 2026-08-01, so the search is now reproducible by
+  anyone with the repo — it was not at the time.)
+- **It is NOT inherited from the predecessor**, which is the natural guess and is
+  wrong. `internal/circus_prototype/smoke.js` (local) has no across-reload check
+  at all. The rename is 0.13.0 and this is 0.16.9, so it was written in this repo,
+  after the rename. The other local copies carrying it are downstream snapshots,
+  which is why it looks older and more widespread than it is.
+- **It has never been executed by a control.** The CHANGELOG says "Bracketed: the
+  load-seeded mutant fails" — but `bracket-determinism.js` reimplements the reload
+  comparison with its own Playwright calls and never invokes `smoke.js`. It proves
+  the *property* is detectable; it says nothing about whether the shipped code
+  path runs. **That is the trap to generalise: a control that rebuilds the thing
+  it is testing verifies a reimplementation.**
+
+**Seeded at the honest baseline, 2026-08-01, counted rather than estimated** —
+these are candidates, not defects, and the work is triage:
+
+| shape | count | where |
+|---|---|---|
+| silent swallow (`catch (e) {}`, `.catch(() => {})`) | 12 | `smoke.js` 11, `backend.js` 1 |
+| a conditional gating whether a check runs at all | 1 | `smoke.js` reload guard |
+| control flow that skips checks on a throw | 3 | `smoke.js` determinism trio |
+| a cap on how much gets checked (`.slice(0, N)`) | 3 | `smoke.js` |
+
+**The silent-swallow counts are UNCHANGED by R4.1** — 11 in `smoke.js` and 1 in
+`backend.js` at both `918b062` (where this was seeded) and after 0.16.54. The
+extraction moved them; it neither added nor removed one. Checked rather than
+assumed, because a baseline that drifts under the work it is measuring is worth
+nothing.
+
+**The third row is new (2026-08-01) and is this track's second instance.** The
+determinism trio carries no `try/catch`, so a throw in any of the three reaches
+`checkScene`'s outer catch, becomes a FAIL, and abandons every remaining check.
+The FAIL half is argued in the file and correct. The **abandon** half is
+inherited: it is what a throw does to the rest of a `try` block, and the trio was
+inline inside one `try` before R4.1. Preserving it through the extraction was
+required by that stage's gate; it is not a reason.
+
+Archaeology, so it is not repeated:
+
+- **`grep -rn "abandon"` across all four session logs and all three postmortems
+  returns nothing.** Every occurrence in the tree is a code comment describing
+  the mechanism. No log, plan, postmortem or CHANGELOG entry argues for it.
+- **The nearest prior discussion got it wrong.**
+  `internal/log/log_2026-07-30.md:54` reads *"Each check already has its own
+  try/catch and its own name"* — false for three of them, and the premise that
+  would have converted three hard fails into warnings during R4.1 stage 1. The
+  same error survives today as a `smoke.js` module comment claiming six checks
+  "degrade to a warning" when two of the six degrade to a FAIL.
+- **Severity and abandonment are independent axes, demonstrated in the same
+  file:** `checkShippedFrame` and `checkLivePlayback` are hard checks that catch
+  internally and let execution continue.
+- **It is defensible for one of the three and indefensible for another.** A throw
+  in `checkDeterminism` leaves the page seeked arbitrarily, and two following
+  advisory checks carry hard-fail branches — so continuing could blame the scene
+  for a harness crash. `checkBlankFrame` touches no page state at all.
+
+**This is not scheduled here.** The unit, its rationale and its gate are Phase R's
+first unit in [`plan.md`](plan.md) — this row is the inventory entry, and
+restating the plan would be the duplication this track exists to stop.
+
+**Some of these are correct and documented** — `smoke.js:785`'s `.slice(0, 2)` on
+blend-window midpoints states its reason in the comment beside it. The job is not
+to remove them; it is that **nothing distinguishes the reasoned ones from the
+unexamined ones**, so every reader re-does the archaeology or, more often,
+assumes intent that was never there.
+
+**Feed the track from logs, with one greppable marker: `Unexplained:`.** Proposed
+2026-08-01, owner-raised, and recorded here rather than left in a transcript —
+which is the failure this whole track is about. A session log line reading
+`Unexplained: <file:line> — <what looks deliberate and has no stated reason>` is
+how a bucket (d) candidate gets captured **by whoever trips over it**, mid-task,
+without stopping to do the archaeology. Today's instance was found only because
+someone happened to refactor the function containing it; that is not a discovery
+mechanism.
+
+The form is deliberately copied from **`Open question`**, which is the only
+retention convention in this repo with a measurement behind it: one exact phrase,
+greppable, and R4.6's cold-start test showed two zero-context agents reaching
+recorded questions through it. A fixed phrase inside prose beat structure there,
+so this does not schematise the logs further. **`Decision:`** is the natural
+sibling — a call made *and the alternative rejected* — and the reload guard is
+the argument for it, having recorded neither.
+
+**Not proposed: a log database.** A derived, regenerable index (the shape
+`/postmortem:postmortem-index` already uses, with a hand-written index
+deliberately refused) stays consistent with the one-home rule and is worth
+building when the log count justifies it — three does not. An authoritative store
+is the fifth-home failure `source-of-truth.md` forbids and `/extract-patterns`
+was built to avoid. Raw transcripts hold the reasoning that evaporates, which is
+real, but importing them raises volume without raising the odds anyone reads
+them; the scarce act is distillation at the moment, not storage afterwards.
+
+**Method, per instance:** recover intent from history first (`git log -S` on the
+line, the CHANGELOG entry for that version, `internal/log/` for the same date —
+tracked since 2026-08-01, so this step is now reproducible from a clone); then
+either document it with the reason and a control, or fix it with a control that
+would have caught it. **Not a sweep** — a sweep would rewrite the reasoned ones
+alongside the rest, and the reasoned ones are the majority.
+
+**Sequencing:** after R4.1 lands. The extraction is what makes the controls
+cheap — once a check is a function taking `ctx`, a bracket can drive it directly
+with an earlier failure present, instead of rebuilding the page setup and
+accidentally testing its own copy.
+
+**Trigger:** R4.1 green. Its first instance is the reload guard, whose fix is
+already specified: narrow it to the failures that genuinely make the comparison
+meaningless, give the block its own `try/catch` so a `missing contract:` throw
+degrades rather than stacking a raw `TypeError`, and **report the skip** when it
+skips. Note that narrowing is invisible on today's corpus — all nine scenes pass,
+so the guard never fires — which means the R4.1 gate cannot validate it and the
+bracket arm is not optional.
+
+---
+
+## PR #3 readiness, bucketed (2026-08-01)
+
+**"Not ready to merge" was one phrase covering five different kinds of thing**,
+which is how a merge decision turns into a mood. Split so each bucket can be
+argued and closed separately. Live state is in the PR body; this is the
+reasoning, and it outlives the PR.
+
+### A — merge-blocking, mechanical
+
+1. **The version cascade is violated in this branch right now.**
+   `plugin/skills/mitate/templates/smoke.js` is plugin content — invariant 2 says
+   templates count, not only SKILL.md prose — and R4.1 stages 1 and 2 both edited
+   it. `plugin.json` and `marketplace.json` still read 0.16.51 and the CHANGELOG
+   has no R4.1 entry. Without the cascade, `marketplace update` never reaches
+   installed users.
+
+   **Nothing caught it, and that is the more useful half.** `selfcheck`'s cascade
+   check verifies the three sources *agree*; it does not detect that plugin
+   content changed *without* a bump. It printed `ok — version cascade coherent at
+   0.16.51` on every commit that broke the rule. **Invariant 2 is prose with no
+   mechanical enforcement** — the exact Phase R shape, found inside Phase R's own
+   PR.
+
+   **The fix is a check, built RED FIRST, and it moved out of bucket E for a
+   reason worth keeping.** The repo is currently in the failed state the check
+   exists to catch — a free red arm on a real defect. Bump first and that
+   evidence is gone; the check would then need a synthesised fixture, which is
+   the weaker instrument. So: write the check, watch it fail on the live
+   violation, then bump and watch it pass.
+
+   > **Rejected: anchoring on `merge-base(origin/main, HEAD)`.** First design,
+   > **wrong in two independent ways, both measured** (verification 2026-08-01,
+   > prototype in scratch, not committed).
+   >
+   > **It goes GREEN on the live violation — exit 0.** That anchor asks "did the
+   > version move anywhere across the branch," and `a95226b` bumped 0.16.50 →
+   > 0.16.51 early, permanently satisfying it for every later unversioned plugin
+   > change. **A control that cannot go red on the instance that motivated it is
+   > decorative** — proposed in the same breath as the rule against decorative
+   > controls, which is the part worth remembering.
+   >
+   > **`origin/main` is not reliably fetched.** Reproduced against a clone
+   > mimicking `actions/checkout`: `git rev-parse origin/main` → `fatal: unknown
+   > revision`, exit 2. It would crash on every push and PR — exactly the
+   > population the invariant gates.
+   >
+   > **Corrected anchor: the last commit that touched
+   > `plugin/.claude-plugin/plugin.json`** (`git log -1 -- <path>`). Verified red
+   > on the live violation, green after a simulated bump. Needs no remote ref,
+   > which dissolves the second failure for free; needs full history, so it lives
+   > in `static.yml` (`fetch-depth: 0`), not `gate.yml`.
+2. **Gate green on the extraction is unconfirmed** at the time of writing. Not a
+   formality: the R4.1 baseline was captured on WebGPU-Metal and CI runs the
+   WebGL2 fallback, and **invariant 5 says byte comparison is valid only within
+   one backend**. CI is an independent signal here, not a rubber stamp.
+
+### B — closes gate R4
+
+3. ~~**R4.1 stage 3** — the setup block and the determinism trio.~~ **DONE
+   (0.16.54).** `checkScene` finishes at **155 lines**, from 594. `setupScene`
+   is called directly rather than driven from a list (a list models a choice of
+   order, and nothing can precede the load that makes the page); the trio
+   becomes `SHOT_CHECKS`, through the same validating driver and the same
+   `CHECK_ORDER` as the other two lists. The array is `ctx.frames`, not
+   `ctx.shots` — `window.SHOTS` is the scene's shot list, a second meaning for
+   one word that the inline version shadowed one block apart.
+
+   **Error semantics preserved exactly**: none of the three carries a
+   `try/catch`, so a throw reaches the outer catch, becomes a FAIL, and abandons
+   the rest. The `!fails.length` guard is carried unchanged and stays item 6's
+   debt, for the reason that put it there — it is invisible on an all-green
+   corpus, so the run that makes it visible cannot validate a fix.
+
+   **Gated twice.** Verdicts byte-unchanged over the 9 scenes, and — because
+   these checks emit nothing when the corpus is green, so an orphaned one is
+   indistinguishable from a working one — each of the three assertions was
+   forced true in turn. All three fired on all 9 scenes with the exit code
+   flipping, which is what says they are still wired to the verdict.
+
+### C — debt this branch INTRODUCED (named, because it is ours)
+
+4. ~~**The `ctx` refactor traded a loud failure for a silent one.**~~ **DONE
+   (0.16.53).** `dur` and `t` were block-scoped `const`s, so reading one before
+   its declaration threw a TDZ `ReferenceError`. `ctx.dur` read early is
+   `undefined`, silently. Each check now declares the keys it reads and one
+   driver — `runChecks`, not the checks themselves — asserts them on entry.
+
+   **"Something plausible" understated it, and the measurement is the useful
+   part.** Moving the setup assignment after the advisory loop produced BOTH
+   failure modes at once on a correct scene: `checkExposure` drew a hard
+   `render is 100.0% near-black` (every sample time became NaN), while
+   `checkFramingInvariance` went **silently all-clear** on the same run, because
+   every window shape sampled at NaN is identical and a check comparing a frame
+   against itself cannot fail. Confidently wrong on one arm, quietly powerless
+   on the other, from one missing key.
+
+   **Presence (`k in ctx`), never definedness** — `beats` is legitimately
+   `undefined` for a scene exporting no `window.BEATS`, and both caption checks
+   handle that themselves. All nine corpus scenes export it, so the two readings
+   are indistinguishable here and the wrong one would have shipped green.
+   Measured against a BEATS-stripped scene: presence passes with the intended
+   `skipped` warnings, definedness fails the scene outright and blames smoke.js.
+
+   The declaration is cross-checked against the pattern each check destructures,
+   so `requires` cannot drift from the code beside it. Two engine facts came out
+   of building that, both in `bracket-driver.js`: `Function.prototype.toString()`
+   under Bun returns a re-print of the parsed AST rather than source text (so the
+   first mutant written to red that arm came back **green** — Bun had normalised
+   the mutation into the shape being looked for), and it **merges adjacent
+   `const` declarations**, which false-redded the guard the moment
+   `checkDeterminism` was written.
+5. ~~**Check order is load-bearing, documented, and unasserted.**~~ **DONE
+   (0.16.53).** Both lists carried comments saying a reorder is a behaviour
+   change and nothing enforced it. `CHECK_ORDER` now asserts all three lists
+   (`SHOT_CHECKS` joined at 0.16.54) at module load, before argv is read, so a
+   mis-ordered list stops every invocation including `--parity-only` — neither
+   condition is a property of a scene, so no scene's verdict should absorb it.
+
+   Each row carries the constraint that puts its check at that index, so a
+   reorder argues with a reason rather than with a list. **Fix: assert the
+   order. Do NOT derive it.**
+
+   > **Rejected: deriving order from a `requires`/`provides` declaration table.**
+   > The idea was one structure solving three problems — validate ctx keys,
+   > derive ordering from data dependencies, and declare `onError` instead of
+   > encoding it as the presence of a `try` block. **Measured 2026-08-01: the
+   > middle clause has nothing to stand on.**
+   >
+   > **None of the six checks writes to `ctx`.** Zero `ctx.` assignments, all six
+   > return `undefined`. So `provides` is empty for every one of them, a
+   > topological sort has **zero edges**, and every permutation is equally valid
+   > under the scheme while exactly one is correct — strictly worse than the
+   > hardcoded array it would replace.
+   >
+   > **The real constraints are page state, and `page` is one constant ctx key
+   > regardless of what state it holds:** browser coldness (temporal, stored
+   > nowhere), viewport at entry, whether the page was actually re-seeked versus
+   > `ctx.t` merely existing, direct `#cap.textContent` mutation bypassing
+   > `seekTo`, `beats`'s hard-fail fetch semantics living outside all six, and
+   > the two loops' placement relative to `checkScene`'s inline body.
+   >
+   > **Clauses (i) and (iii) survive** — `requires` validation in the driver, and
+   > a declared `onError` that maps cleanly onto reality (4 advisory, 2 hard,
+   > exactly the current array split).
+   >
+   > **The lesson generalises past this instance:** "derive it from the data
+   > dependencies" sounded more principled than an asserted list and had no data
+   > dependencies to derive from. An assertion is sometimes the right answer
+   > rather than the compromise.
+
+### D — pre-existing, carried, not worsened here
+
+6. Most defect-corpus defects UNVERIFIED (both re-measured ones moved) ·
+   `bracket-corpus.js` absent · `bracket-noise.js` false-reds on macOS ·
+   `/extract-patterns` has no bracket and has never run · the `!fails.length`
+   guard (Track F's first instance).
+
+7. **`after-hours.html` failed determinism once, 2026-08-01, and it is NOT
+   attributed.** Observed during a stage-3 reachability run: `seekTo(2.128) not
+   deterministic — scene carries state across frames (checked 12, 24, 36, 48,
+   2.128, 3.88)`, on the `[source, webgpu]` path.
+
+   **REVISED after an audit, and the first write-up was wrong in two ways.**
+
+   **(1) It pooled two different experiments.** "One event in ~19 opportunities"
+   mixed isolated single-scene runs with full-corpus runs. Split, the data has a
+   shape: **2 of 2 observed events came from FULL-CORPUS runs, and 0 of 17
+   isolated runs have ever produced one.** A second event was then seen by an
+   independent audit, also under full corpus. Load — or simply running eight
+   other scenes first — is the only variable the data distinguishes, and pooling
+   hid it.
+
+   **(2) `[source, webgpu]` was offered as evidence for a `WEBGPU=metal` reading,
+   and it cannot carry that.** `window.BACKEND` is set from
+   `renderer.backend.isWebGPUBackend` — it reports which three.js backend ran,
+   not which launch flags were used. `backend.js` defaults `WEBGPU=off`, and
+   macOS Chromium exposes a WebGPU adapter anyway, so every default-path run on
+   this machine prints `[source, webgpu]`. Separately,
+   `fixtures/defect-corpus/README.md` attributes the 1-in-6 reproducer role to
+   the **prototype**; `after-hours.html` is a re-skin that preserves the
+   mechanics, and its own determinism behaviour has never been measured.
+
+   **Current tally, pinned deps, full-corpus runs:** ~9 on the PRE-extraction
+   `smoke.js` with 0 failures, ~9 on the post-extraction one with 1. Both
+   observed events on this machine were post-extraction copies. **That is not
+   attribution and must not be read as one** — 1-of-9 against 0-of-9 is far from
+   distinguishable, the extraction touches no part of the seek/settle/screenshot
+   sequence, and two independent whole-extraction verdict comparisons came back
+   byte-identical. It is recorded at this strength because the earlier write-up
+   claimed less and implied more.
+
+   **It has a consequence beyond itself:** every byte-unchanged gate on this
+   branch is an equality comparison over a corpus containing a flaky scene, so a
+   single green run is weaker evidence than it reads, and a single red one would
+   not have been proof either. Any future stage gate should run the comparison
+   more than once or exclude the known-flaky scene by name.
+
+### Filed: move session logs out of `internal/` (2026-08-01, owner-agreed)
+
+**Not started, not scheduled, and deliberately not part of PR #3.** Recorded with
+its reasoning so the decision is not re-derived.
+
+**Why the current location is wrong.** The logs are in `internal/` because
+`internal/` meant "local, gitignored". Tracking them (2026-08-01, owner's call)
+falsified that premise for exactly one child. `git ls-files internal/` returns
+one directory — `internal/log` — so `internal/` is a tracked top-level entry
+solely because of a directory whose whole point is that it is not internal. The
+location was inherited, never re-chosen.
+
+**The cost is a privacy hazard, not an aesthetic one.** `.gitignore` must read
+`internal/*` + `!internal/log/`, never `internal/` + a negation, because git does
+not descend into an excluded directory. `CLAUDE.md` spends ten lines on that and
+warns that widening the negation publishes the rest — and the rest is
+`internal/outside_comms/` (third-party correspondence) and the circus fixture. A
+public repo sits one careless `.gitignore` edit from publishing private
+correspondence, and that exposure exists ONLY because a tracked directory lives
+inside a private tree.
+
+**Proposed destination: `docs/log/`.** It puts narration beside its counterpart —
+`CLAUDE.md` already pairs them ("the log is narration, the postmortem is the
+finding") and `docs/postmortems/` is right there, so siblings make the pairing
+structural instead of stated. `docs/` already has the property logs need: tracked,
+and ships nowhere. `internal/` then reverts to a plain `internal/` ignore, which
+is the robust form, and the documented footgun disappears rather than being
+managed.
+
+**What it would break, checked rather than assumed:**
+
+| thing | says | impact |
+|---|---|---|
+| `dev-conventions` directive, **auto-loaded every session** | "Internal docs in ./internal/ (gitignored). Session logs in ./internal/log/…" | becomes a false always-loaded claim |
+| `skill-maintainer:session-log-drafter` | drafts at `internal/log/log_YYYY-MM-DD.md` | writes to the wrong place |
+| `dev-conventions` session-start hook | gated on `-d internal/log` **or** `-d internal` | safe — `internal/` stays for local artifacts |
+| 3 citations in this file (incl. `log_2026-07-30.md:54`) | file:line into logs | **silently dangle** — `selfcheck` check 8 covers tool and scene comments only, not docs |
+
+**Trigger:** do it when the `dev-conventions` plugin is next edited for any
+reason, so the convention and the repo move together — a repo diverging from an
+always-loaded global rule is the two-copies-disagree failure in its worst
+possible position. Do it sooner if `internal/` gains a second tracked child, or
+if anything is ever added to `outside_comms/` that would be costly to publish.
+
+**Checklist when it happens:** `git mv` (history survives) · rewrite `.gitignore`
+to plain `internal/` · update `CLAUDE.md` (3 spots), `source-of-truth.md`,
+`restructure-2026-07.md`'s homes table · `grep -rn "internal/log"` over tracked
+files and fix every citation, because nothing mechanical will catch them ·
+update the plugin directive and the drafter agent in the same change.
+
+### E — long-term, Phase R
+
+8. The ratchet for undocumented-and-uncontrolled code · `bracket-determinism.js`
+   driving the shipped path instead of its own copy · 11 `smoke.js` thresholds
+   named by zero brackets · 12 silent swallows · 21 uncontrolled measurement
+   claims. **Add to this list: a `selfcheck` arm that fails when anything under
+   `plugin/` changes without the cascade** — item 1 is the evidence that the rule
+   needs teeth, and it would have caught it the same day.
+
+### The stopping rule (owner-accepted 2026-08-01)
+
+**The risk on this branch was never bandaids. It was that going holistic has no
+natural terminus.** Three times in one session the work went up a level — R4.1 →
+the guard → Track F → Phase R → the bucketing → the cascade violation → an
+automation architecture — and every step was justified and produced something
+real, while the gate-blocking work did not move and the commit ratio ran about
+8 doc/plan to 2 code. Each holistic layer reveals the next one needing a holistic
+solution. That regress does not terminate on its own, so it gets a rule:
+
+> **A discovery is RECORDED but does not extend the current PR unless it is
+> (a) an invariant violation inside this diff, or (b) debt this diff created.**
+
+Everything from that session sorts cleanly: B3 is the PR's purpose; A1 is (a);
+C4/C5 are (b); Track F, Phase R, the log-policy amendment, the automation
+architecture and the `!fails.length` guard are all discovery and all out.
+
+**The criterion's hardest test was passing it on good news.** The automation
+research came back positive — the thing is buildable and valuable — which is
+exactly when the pull to expand scope is strongest. Filed anyway.
+
+**Order to work them:** A1's check (red first, while the violation is live) →
+A1's bump (green) → C4/C5 → B3 → merge, with D and E filed. D and E are
+explicitly NOT merge blockers; carrying them knowingly differs from carrying them
+silently, which is what the PR body's debt list is for.
+
+**All of A, B and C are now closed** (0.16.52, 0.16.53, 0.16.54) and the order
+above was followed as written. **The stopping rule held under load**: stage 3
+turned up two Bun engine behaviours and one unexplained determinism event, and
+all three were recorded without any becoming work.
+
+**One correction to how that was first written.** It said "both were defects in
+the guard being built in this diff, which is (b)". Only ONE was. Bun merging
+adjacent `const`s false-redded a semicolon-anchored regex — a real guard defect,
+fixed. The `toString()` re-print produced a **correct** verdict: the mutation was
+semantically identical, so accepting it was right, and the defect was in the
+MUTANT, not the guard. That fact changed the code by ADDING an arm, not by
+fixing anything. It was also found by `smoke.js`'s own module-load guard going
+red, not by a bracket arm. The stopping-rule conclusion survives; the stated
+reason for it did not, which is the whole point of writing reasons down.
+
+### Filed, not built: the reasoning-capture architecture (2026-08-01)
+
+Researched against the Claude Code docs, recorded here because re-deriving it
+costs more than reading it.
+
+- **`PreCompact` is the right primary mechanism** — it fires immediately before
+  context compaction, is deterministic (runs outside the model), costs ~0 tokens,
+  and fires rarely. It sits exactly in the gap the owner named: not per-commit,
+  not end-of-session, but *before this reasoning stops being recoverable*.
+- **The sharp line is deterministic vs model-dependent.** Hooks and dispatched
+  subagents always run. Skills, `CLAUDE.md` and auto-memory only work if the
+  model cooperates — and after compaction it may not.
+- **It would NOT have caught the guard, and that is the finding.** A hook
+  captures what is *in the transcript*. The guard's reason was never articulated
+  — the 0.16.9 CHANGELOG is forensic about every other decision in that commit,
+  which is strong evidence it was never a discussed decision at all. **So there
+  are two problems, not one:** reasoning *discussed then lost to compaction*
+  (the hook solves it) and reasoning *never articulated* (nothing above reaches
+  it).
+
+  > **Superseded by the retrospective below, same day.** This paragraph
+  > originally ended "*only a forcing function like `Rejected:` or `Unexplained:`
+  > reaches it*." **The `Rejected:` half is false, and the counter-evidence sits
+  > inside the guard's own commit.** `2c5742f` already carries a rejected
+  > alternative, written voluntarily and at length — *"Two closes were tried and
+  > rejected. Filtering on the message's ORIGIN fails because three.js is inlined
+  > in every scene... Requiring a bounded tail is unmaintainable against driver
+  > text nobody controls"* — in the code comment AND in the CHANGELOG. A
+  > mandatory `Rejected:` field would have been **satisfied by that content**,
+  > passed, and left the guard exactly as unexplained as it is.
+  >
+  > **The mismatch is granularity.** The guard is a fifteen-character
+  > sub-expression inside one of five fixes in a 94-line hunk. The author
+  > recorded every decision they were conscious of; the guard was never one.
+  > **Commits are the wrong unit.** `Unexplained: <file:line>` survives because
+  > it operates per line; a per-commit `Rejected:` does not.
+- **Auto-memory drift is documented, not incidental:** only the first 200 lines
+  / 25 KB load at session start, and there is **no invalidation mechanism**. The
+  supersession gap is real in the platform, not an oversight in this plan.
+
+**Trigger:** after gate R4 closes. **Verify before building** — the event names
+and the `PreCompact` payload shape came from a research pass, not from a handler
+anyone has run.
+
+### DECLINED: mandatory capture fields in commit messages (2026-08-01)
+
+Proposed `Why:` / `Rejected:` / `Verified:` / `Unexplained:` / `Supersedes:` as
+mandated commit fields. **Assessed against the real corpus — 213 commits, the
+CHANGELOG, all three postmortems and all three session logs — and declined.**
+Recorded at length because it is a good idea that this repo's own evidence
+refutes, and the next person to have it deserves the measurement rather than the
+argument.
+
+**1. It misidentifies the failure it is named after.** See the supersession box
+above: the guard's commit already contained a voluntary rejected-alternative
+passage. The field would have been filled and the guard would still be
+unexplained.
+
+**2. The prose already carries the content.** Median commit body **206 words**;
+**61** commits carry rejection language, **140** carry verification language, and
+`Verified:` already appears in **10** commits as an unmandated habit. The
+strongest passages contain things no field prompt elicits — an admission that an
+oracle is blind, a metric that nearly shipped a wrong decision — and a field
+format would flatten exactly those.
+
+**3. A mandated `Verified:` manufactures the artifact check 5 exists to
+eliminate.** `ASSERT_BUDGET` may only fall, and its exemption is "does it name a
+control a reader can run." `2c5742f`'s own verification claim was **unrunnable
+within an hour** (its controls were heredocs deleted in the same command) and
+**false within four days** (the gate it claimed to have measured was broken for
+seven releases). In a code comment that gets corrected; the 2026-07-30
+postmortem measured a rationale rotting in **ten minutes** and fixed it. **In a
+commit message it is immutable** — this repo does not rewrite pushed history.
+
+**4. It taxes the channel that passed its test.** The cold-start run put two
+zero-context agents on two evaporated questions and both reached correct
+answers; the failure was *routing*, fixed with one router row. A fixed phrase
+inside prose beat structure there.
+
+**On mandatory-everywhere vs behaviour-changing-only:** the distinction does not
+rescue it. Behaviour-changing commits have the strongest prose already, so the
+mandate targets the population with least to gain; restricting it to trivial
+commits produces pure filler. There is no slice of this history where it pays.
+
+**ADOPTED INSTEAD — both already on this plan, which is itself a finding:**
+
+- **The per-line ratchet** (Phase R's top item): count bucket (d) shapes carrying
+  no reason on the line, seed at today's counted **16**, allow only to fall.
+  Line granularity is the one instrument at the guard's granularity, and it
+  **would have counted the guard from the day it shipped.**
+- **A closed list of four greppable phrases** — `Open question`, `Unexplained:`,
+  `Decision:`, `Superseded by:` — advisory, in **docs and logs only**, with
+  router rows in `docs/README.md`. Extends the convention with a measurement
+  behind it, in mutable artifacts where a rotted marker can be corrected. It also
+  consolidates real sprawl: the session logs already carry eight distinct ad-hoc
+  bold labels with zero reuse.
+
+**Caveat kept deliberately:** the corpus is 213 commits, nine days, **one
+author**. A fixed-vocabulary mandate has a much stronger case in a
+multi-contributor repo, and nothing here speaks to that. Revisit on a second
+contributor, or if a verification claim omits its environment twice more.
 
 ---
 

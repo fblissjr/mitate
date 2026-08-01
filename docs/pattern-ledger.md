@@ -1,4 +1,4 @@
-last updated: 2026-07-30
+last updated: 2026-08-01
 
 # Pattern ledger: how many times have we built this
 
@@ -104,6 +104,35 @@ Two shapes it could take, and they are not exclusive:
   finished film, surface the things that look like generalised technique rather
   than this film's own solution, and propose which reference each belongs in.
 
+**A third property, owner's direction 2026-07-31, and it is the one that makes
+the other two work: it must be RUNNABLE ON WORK YOU DID NOT DO.** A command
+taking a scene *or a session*, handed to a different agent than the one that
+produced either — my work given to another session, that session's work given to
+me, a third harness's scenes given to both.
+
+Both shapes above quietly assume the party who built the thing also runs the
+extraction. That is the assumption to break, and this file already contains the
+reason: *"Today that depends on an author being reflective at the end of a long
+build, which is exactly when nobody is."* The author is not merely tired — they
+are the **worst-positioned observer**, because they felt the necessity that
+produced each choice and therefore cannot easily see which choices were general.
+A session with no investment in them can.
+
+The corpus evidence is unambiguous and was gathered independently of this idea:
+
+- The prototype's twelve defects came from a **single** independent <!--count-mention-->
+  `film-reviewer` pass on a film its author had already reviewed over eight
+  look-and-edit rounds and shipped. It found almost nothing the author had
+  considered and dismissed, and nearly everything they had never looked at.
+- On 2026-07-31 a session had an independent no-context pass review *its own
+  postmortem*, which found that postmortem's flagship claim false.
+
+**One constraint that falls out immediately: it PROPOSES, it never writes.**
+Extraction that writes is how this becomes the fifth place a fact can live, which
+`source-of-truth.md`'s one-home rule forbids. Proposing also settles part of "who
+decides where it lands" — the command surfaces candidates and names a destination;
+the session or owner holding the one-home rule disposes.
+
 Why it matters more than it sounds: the predecessor's procedural cookbook —
 eight worked shape recipes — was written once, cited from two tracked files as
 though it had been carried over, and was **not carried over**. It survived only
@@ -121,3 +150,36 @@ move. The flywheel is making that move cheap enough that it happens by default.
 who decides where it lands, and how it avoids becoming a fifth place a fact can
 live. `source-of-truth.md`'s one-home rule is the constraint it must satisfy, not
 an obstacle to route around.
+
+### The flywheel ran manually on 2026-07-31, and its output is already at risk
+
+A parallel session did the whole loop by hand: built a scene end to end, reviewed
+it with `film-reviewer` and found six defects, wrote a postmortem, had an <!--count-mention-->
+independent no-context pass review *that postmortem* (which found its own
+flagship claim false — a `probe` measurement projecting a hand-declared constant
+rather than the live geometry it claimed to measure), then investigated a
+different AI harness's scenes against source and produced a consolidated
+patterns / anti-patterns list.
+
+**That list is this flywheel's output, produced by discipline rather than by
+mechanism** — at the end of a long build, which is the condition named above as
+exactly when nobody is reflective. It is an existence proof that the loop yields
+something real, and the strongest argument yet for not leaving it to willingness.
+
+**And it lives in `internal/`, which is gitignored.** So a set of extracted,
+reviewed, cross-checked patterns is one directory deletion from gone — *the
+identical failure this section cites as its own motivation*, re-enacted the same
+week it was written down, with a fresh instance. The predecessor's cookbook
+survived only because an audit went looking; nothing is currently looking for
+this one.
+
+Two consequences for the design pass, both empirical rather than speculative now:
+
+- **"What counts as a pattern" has a worked example.** That list is real material
+  to design against instead of a hypothetical, and it was produced without any of
+  the tooling proposed above — which bounds how much tooling the answer needs.
+- **The promotion path is the missing half, not the noticing.** The session
+  noticed fine. What no mechanism did was move the result anywhere durable, and
+  the count in this file must not absorb those instances either: they come from
+  scenes outside this corpus, so folding them in would break what the number
+  means (see the entry conditions above).

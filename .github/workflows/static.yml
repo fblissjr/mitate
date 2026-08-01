@@ -61,7 +61,8 @@ jobs:
         run: |
           bun run plugin/skills/mitate/templates/smoke.js --parity-only \
             plugin/skills/mitate/templates/*.html \
-            plugin/skills/mitate/examples/*.html
+            plugin/skills/mitate/examples/*.html \
+            fixtures/defect-corpus/*.html
 
       # The controls, globbed so a new one is covered the day it is written. They
       # ran nowhere until 0.16.37: gate.yml globs templates/ only, so the bracket
@@ -71,9 +72,13 @@ jobs:
       # stage-films.sh at a throwaway fixture via MITATE_EXAMPLES/MITATE_FILMS.
       # It used to rewrite the real 1.14 MB gearbox.html and restore it, which
       # risked a shipped artifact to control a script that only serves the site.
+      # The loop lives in scripts/run-brackets.sh, called by BOTH workflows. It
+      # was copy-pasted here and in gate.yml along with ~10 lines of the same
+      # prose, so the `bash -e` trap had to be fixed twice -- which is how the
+      # `!cancelled()` defect reappeared one level down. Its own control is
+      # scripts/bracket-run-brackets.js, and it runs in the glob below.
+      #
+      # QUOTE THE GLOB: the script expands it, so an unmatched pattern is caught
+      # there and fails loudly rather than being expanded away by this shell.
       - name: brackets
-        run: |
-          for b in scripts/bracket-*.js; do
-            echo "--- $b"
-            bun run "$b"
-          done
+        run: ./scripts/run-brackets.sh 'scripts/bracket-*.js'

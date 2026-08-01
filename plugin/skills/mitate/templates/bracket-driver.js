@@ -78,6 +78,7 @@ const REQ_EXPOSURE = "checkExposure.requires = ['page', 'dur', 't', 'fails', 'wa
 const DESTR_EXPOSURE = "async function checkExposure(ctx) {\n  const { page, dur, t, fails, warnings } = ctx;";
 const ADV = "const ADVISORY_CHECKS = [\n  checkCaptionSpeed,\n  checkCaptionOverflow,\n  checkFramingInvariance,\n  checkExposure,\n];";
 const PRE = "const PRE_RECORD_CHECKS = [\n  checkShippedFrame,\n  checkLivePlayback,\n];";
+const SHOT = "const SHOT_CHECKS = [\n  checkDeterminism,\n  checkReloadDeterminism,\n  checkBlankFrame,\n];";
 
 // [label, mutate, expect] — expect.code is 'zero' or 'nonzero', expect.says is a
 // pattern the run MUST print. Asserting the MESSAGE and not only the exit code
@@ -96,6 +97,16 @@ const STATIC_ARMS = [
   ['PRE_RECORD_CHECKS reordered', s => s.replace(PRE,
     "const PRE_RECORD_CHECKS = [\n  checkLivePlayback,\n  checkShippedFrame,\n];"),
     { code: 'nonzero', says: /PRE_RECORD_CHECKS is out of order/ }],
+
+  // The coupled list, and the one where a reorder does real damage rather than
+  // merely being wrong: checkDeterminism is what assigns ctx.frames, so hoisting
+  // either reader above it leaves both reading a key nothing has written. The
+  // ORDER guard is what catches it, at module load, before a scene is opened --
+  // the runtime presence guard would catch it too, but one scene later and once
+  // per scene.
+  ['SHOT_CHECKS reordered', s => s.replace(SHOT,
+    "const SHOT_CHECKS = [\n  checkBlankFrame,\n  checkDeterminism,\n  checkReloadDeterminism,\n];"),
+    { code: 'nonzero', says: /SHOT_CHECKS is out of order/ }],
 
   ['requires undeclared', s => s.replace(REQ_EXPOSURE + '\n', ''),
     { code: 'nonzero', says: /no ctx requirements declared/ }],

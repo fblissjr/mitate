@@ -670,6 +670,196 @@ async function checkLivePlayback(ctx) {
 }
 checkLivePlayback.requires = ['page', 'file', 'fails', 'warnings'];
 
+// SETUP, not a check. It opens the scene with ?record=1 and establishes the
+// state every check after it reads: dur, the sample PLAN, t, and the backend.
+// It is called directly rather than driven from a list, because a list models a
+// choice of order and there is none to make here — nothing can precede the load
+// that produces the page the rest of the file measures.
+//
+// It is the ONLY thing in this file that writes to ctx besides checkDeterminism,
+// and that asymmetry is the reason the requires/provides derivation in
+// CHECK_ORDER stays refuted rather than merely rejected.
+//
+// The contract assertions live here and NOT in the trio, exactly as they did
+// inline: a missing hard name pushes a fail and execution continues, so the
+// determinism checks still run and a scene missing `stopPlayback` reports both
+// facts rather than only the first.
+async function setupScene(ctx) {
+  const { page, file, fails, warnings } = ctx;
+  await page.goto('file://' + path.resolve(file) + '?record=1');
+  // Order matters and is a compromise, not an ideal. `sceneReady` MUST be
+  // waited on first — it is assigned at the end of the async boot, so a check
+  // before the wait reads a document where it legitimately does not exist yet
+  // (measured: doing that failed every 3D example with `missing contract:
+  // sceneReady`). So sceneReady stays shadowed by its own wait, and that is
+  // unavoidable: a scene that never sets it produces a 20s timeout rather
+  // than this message.
+  // What IS recoverable is the other two. This check now runs BEFORE
+  // stopPlayback() is called, so a missing `stopPlayback` prints the intended
+  // `missing contract:` line instead of a raw TypeError. `seekTo` is consumed
+  // earlier still by the live-playback wrapper, on a different document.
+  await page.waitForFunction('window.sceneReady === true', { timeout: 20000 });
+  const missing = await page.evaluate(
+    `(${JSON.stringify(CONTRACT)}).filter(k => window[k] === undefined)`);
+  // Which backend actually rendered (3D scenes export it; 2D scenes have none).
+  // Printed on the result line: a green run should say what it verified.
+  ctx.backend = await page.evaluate('window.BACKEND || null');
+  if (missing.length) fails.push('missing contract: ' + missing.join(', '));
+  // Absent soft names degrade checks instead of failing them: a renamed
+  // FLASHES leaves the sample plan unable to avoid flashes, and the
+  // blank-frame check then fires on a perfectly clean film. Say which are
+  // gone rather than making the reader infer it from a weaker result.
+  const softNames = SOFT_CONTRACT.concat(ctx.backend ? ['SHOTS'] : []);
+  const soft = await page.evaluate(
+    `(${JSON.stringify(softNames)}).filter(k => window[k] === undefined)`);
+  if (soft.length) warnings.push('degraded — absent, read via fallback: ' + soft.join(', '));
+  await page.evaluate('window.stopPlayback()');
+  // Deliberately NOT asserting window.THREE. The contract is the product here;
+  // three.js is one backend. Any scene exposing these four globals — a 2D
+  // canvas, an SVG/CSS timeline, a D3 diagram — gets frame-exact MP4s from the
+  // same pipeline, and this check must not lock that out.
+
+  const dur = await page.evaluate('window.DURATION');
+  const flashes = await flashTimes(page);
+  // ALL-quantified over a plan, not a spot check at one arbitrary second.
+  const PLAN = samplePlan(dur, flashes, 4);
+  // Sample INSIDE shot transitions too: scenes exporting window.SHOTS get up
+  // to two blend-window midpoints appended, because fixed fractions of
+  // DURATION were measured missing every blend window on a shipped film —
+  // a transition-confined determinism bug would have passed every check.
+  try {
+    const shotList = await page.evaluate('window.SHOTS');
+    if (Array.isArray(shotList)) {
+      for (const sh of shotList.filter(x => x && x.cutEnd > x.t).slice(0, 2)) {
+        const m = Number(((sh.t + sh.cutEnd) / 2).toFixed(4));
+        if (m > 0.05 && m < dur - 0.05 && !PLAN.includes(m)) PLAN.push(m);
+      }
+    }
+  } catch (e) {}
+  Object.assign(ctx, { dur, PLAN, t: PLAN[0] });
+}
+
+// CHECK (hard): determinism. Same t twice must be byte-identical, at EVERY
+// sampled point. Catches accumulated state, Math.random(), and wall-clock
+// leaking into the scene — each of which silently desyncs the MP4 from the HTML
+// loop. Quantified ALL: one clean timestamp proves nothing, and a scene whose
+// title card is static is clean at exactly the moment the old check looked.
+// settle (backend.js) between seekTo and screenshot is LOAD-BEARING here:
+// the capture race it closes was measured as a flaky determinism FAIL whose
+// in-page canvas pixels were byte-identical — a capture race reported as a
+// scene bug, which is the one thing this check must never do.
+//
+// NO try/catch, and that is the design, not an omission. A throw here reaches
+// checkScene's outer catch, becomes a FAIL, and abandons every check after it.
+// The four advisory checks degrade to a warning instead; wrapping this one the
+// same way would convert a hard fail into a warning while the corpus stayed
+// green — which is exactly the silent conversion the stage-1 extraction nearly
+// made across all three of these.
+//
+// `ctx.frames` and not `ctx.shots`: window.SHOTS is the scene's SHOT LIST, an
+// unrelated contract name that the inline version shadowed one block apart.
+// Two meanings for one word inside 30 lines is a rename worth making while the
+// code is being moved anyway.
+async function checkDeterminism(ctx) {
+  const { page, dur, PLAN, fails } = ctx;
+  // Assigned before the loop so a mid-loop `break` still leaves the frames
+  // captured so far visible to the two checks below — same as the inline
+  // `let frames = []`, and the blank-frame backstop depends on it.
+  const frames = [];
+  ctx.frames = frames;
+  for (const ts of PLAN) {
+    // seekSynced, not a bare seek: this arm reported a capture race as a scene
+    // defect on a slow GL stack (40%/30%/20% on three cells; 0 of 200 once the
+    // seek and a readback shared a task). backend.js owns the why.
+    await seekSynced(page, ts);
+    await settle(page);
+    const x = await page.screenshot();
+    await seekSynced(page, dur);                         // move away...
+    await seekSynced(page, ts);                          // ...and back
+    await settle(page);
+    const y = await page.screenshot();
+    frames.push(x);
+    if (sha256(x) !== sha256(y)) {
+      fails.push(`seekTo(${ts}) not deterministic — scene carries state across frames `
+               + `(checked ${PLAN.join(', ')})`);
+      break;
+    }
+  }
+}
+checkDeterminism.requires = ['page', 'dur', 'PLAN', 'fails'];
+
+// CHECK (hard): determinism ACROSS a page reload, not just within one session.
+// The loop above proves seekTo is pure *inside* a load; it says nothing about a
+// scene that seeds Math.random() ONCE at init. Such a scene is perfectly
+// self-consistent per session and produced three different films over three
+// loads, measured — while smoke reported `all scenes pass`. That is the prime
+// directive broken (the HTML a viewer loads and the MP4 the recorder shoots are
+// different films) and the whole suite was blind to it. One reload, one sampled
+// t: the cheapest possible cover for a load-time-nondeterminism class that no
+// in-session check can reach.
+//
+// THE `!fails.length` GUARD IS CARRIED UNCHANGED, and it is known debt. It reads
+// `fails` globally, so ANY unrelated failure earlier in the scene silently
+// disables the only check covering load-time nondeterminism. Written at 0.16.9
+// with no recorded reason and never exercised by any control. It is preserved
+// here deliberately: this extraction's gate is byte-unchanged verdicts, and the
+// whole corpus is green, so a fix would be unvalidatable in the same breath as
+// the move that makes it visible. Filed as Phase R's first instance — changing
+// it is a separate change with its own red.
+async function checkReloadDeterminism(ctx) {
+  const { page, file, PLAN, frames, fails } = ctx;
+  if (!fails.length && frames.length) {
+    await page.goto('file://' + path.resolve(file) + '?record=1');
+    await page.waitForFunction('window.sceneReady === true', { timeout: 20000 });
+    await page.evaluate('window.stopPlayback()');
+    // seekSynced, and here the SYMMETRY is the point: frames[0] below is
+    // captured through seekSynced, so a bare seek on this side would diff a
+    // race-hardened capture against a race-vulnerable one and manufacture the
+    // spurious "differs ACROSS a page reload" this check exists to rule out.
+    // Shipped that way briefly in 0.16.28's first draft; caught in review.
+    await seekSynced(page, PLAN[0]);
+    await settle(page);
+    const reloaded = await page.screenshot();
+    if (sha256(reloaded) !== sha256(frames[0])) {
+      fails.push(`seekTo(${PLAN[0]}) differs ACROSS a page reload — the scene is `
+               + `deterministic within a session but not between them, so the live `
+               + `HTML and the recorded MP4 are different films. Usual cause: a seeded `
+               + `or unseeded random drawn once at load rather than derived from t`);
+    }
+  }
+}
+checkReloadDeterminism.requires = ['page', 'file', 'PLAN', 'frames', 'fails'];
+
+// CHECK (hard): BACKSTOP ONLY — the shipped-frame spread check strictly
+// dominates this one, and an audit found no mutation that fires here without
+// firing there first (including a fully black render, where this stayed silent
+// because the caption pill kept the PNG above the floor). It earns its place for
+// exactly one case: a scene with no ?strip=text support, where the shipped-frame
+// check keeps its captions and loses power. Do not read a green here as
+// blankness coverage.
+// Measured on the screenshot rather than the canvas, so this works
+// for any backend (WebGL, 2D canvas, SVG/CSS, plain DOM). PNG compresses a
+// uniform frame to almost nothing: at 640x360 a flat fill lands around 1-3KB,
+// while anything with real content is far larger. A heuristic, but it catches
+// the failure that matters — a pipeline happily shooting 600 empty frames.
+// Threshold scales with the viewport instead of being a magic constant: a
+// uniform PNG costs roughly a byte per 40 pixels, so anything below that is
+// flat fill. Hardcoding 6000 silently mis-calibrated the moment VIEWPORT
+// changed, which is exactly the kind of coupling nobody notices.
+async function checkBlankFrame(ctx) {
+  const { PLAN, frames, fails } = ctx;
+  const blankFloor = Math.round((VIEWPORT.width * VIEWPORT.height) / 40);
+  // ALL-quantified: the old single sample failed a legitimate film on a 1.6%
+  // margin at one arbitrary second, and passed a broken one by 9 bytes.
+  for (let i = 0; i < frames.length; i++) {
+    if (frames[i].length < blankFloor) {
+      fails.push(`frame looks blank at t=${PLAN[i]} (${frames[i].length} bytes compressed, floor ${blankFloor})`);
+      break;
+    }
+  }
+}
+checkBlankFrame.requires = ['PLAN', 'frames', 'fails'];
+
 // The two hard checks that precede the ?record=1 load. Ordered, and the order is
 // the one they ran in inline: the shipped-frame check needs the COLD browser --
 // its failure is warmth-dependent, see its own comment -- so live playback,
@@ -677,6 +867,15 @@ checkLivePlayback.requires = ['page', 'file', 'fails', 'warnings'];
 const PRE_RECORD_CHECKS = [
   checkShippedFrame,
   checkLivePlayback,
+];
+
+// The three hard checks that share one captured `ctx.frames`, in the order they
+// ran inline. This is the COUPLED list: unlike the advisory four, these pass
+// state between them, and none carries its own try/catch — see each body.
+const SHOT_CHECKS = [
+  checkDeterminism,
+  checkReloadDeterminism,
+  checkBlankFrame,
 ];
 
 // The order these run in is the order they ran in when they were inline, and it
@@ -715,6 +914,11 @@ const CHECK_ORDER = [
     ['checkShippedFrame', 'needs the COLD browser — its failure is warmth-dependent'],
     ['checkLivePlayback', 'navigates `page` and warms the GPU process; never before the cold check'],
   ]],
+  ['SHOT_CHECKS', SHOT_CHECKS, [
+    ['checkDeterminism',       'captures ctx.frames; the other two read it and cannot precede it'],
+    ['checkReloadDeterminism', 'reloads the page, discarding the state the first capture ran against'],
+    ['checkBlankFrame',        'reads ctx.frames only; last because it is a backstop, not a diagnosis'],
+  ]],
   ['ADVISORY_CHECKS', ADVISORY_CHECKS, [
     ['checkCaptionSpeed',      'reads beats only, touches no page state'],
     ['checkCaptionOverflow',   'mutates #cap.textContent directly, so it must follow the frame capture; restores VIEWPORT and seeks back to t'],
@@ -745,7 +949,14 @@ const CHECK_ORDER = [
 // into the very shape being looked for. The arm is reachable; that mutant was
 // not a mutation. `ctx.page` used inline with no bindings at all, or a pattern
 // destructured from `ctx.inner`, both go red.
-const CTX_DESTRUCTURE = /const\s*\{([^}]*)\}\s*=\s*ctx\s*;/;
+//
+// `[;,]` and not `;`, for the same reason: Bun MERGES adjacent const
+// declarations into one declarator list, so `const {...} = ctx;` followed by
+// `const frames = [];` comes back as `const {...} = ctx, frames = [];`. Anchoring
+// on the semicolon false-redded checkDeterminism the moment it was written —
+// the guard was right that it could not read the pattern, and wrong about why.
+// `ctx.inner` still fails to match, because a `.` is neither.
+const CTX_DESTRUCTURE = /const\s*\{([^}]*)\}\s*=\s*ctx\s*[;,]/;
 for (const [listName, list, expected] of CHECK_ORDER) {
   const actual = list.map(f => f.name);
   const want = expected.map(([n]) => n);
@@ -820,7 +1031,6 @@ async function checkScene(browser, file) {
   // three's WebGL2-fallback announcement, held for classification against
   // window.BACKEND after the page has booted; see the FALLBACK_NOTICE comment.
   const fallbackNotices = [];
-  let backend = null;
   const page = await browser.newPage({ viewport: VIEWPORT, deviceScaleFactor: 1 });
   page.on('pageerror', e => noise.push('page error: ' + e.message));
   // Driver performance chatter from the software GL path (our own readPixels
@@ -877,12 +1087,20 @@ async function checkScene(browser, file) {
     noise.push(`console ${m.type()}: ${text}`);
   };
   page.on('console', classify);
-  // ONE ctx for the whole scene, built here and extended by the setup block below
-  // (dur, t, beats). The pre-record checks need browser/file/classify; the
-  // advisory ones need dur/t. Building it once means a check reads whatever the
-  // checks before it established, which is exactly the coupling that was implicit
-  // in the shared locals this function used to carry.
-  const ctx = { browser, file, page, fails, warnings, noise, classify };
+  // ONE ctx for the whole scene, built here and extended by setupScene (dur,
+  // PLAN, t, backend), by checkDeterminism (frames) and by the beats read below.
+  // The pre-record checks need browser/file/classify; the trio needs dur/PLAN;
+  // the advisory ones need dur/t. Building it once means a check reads whatever
+  // the checks before it established, which is exactly the coupling that was
+  // implicit in the shared locals this function used to carry.
+  //
+  // `backend` starts as null and not absent, on purpose: the tail of this
+  // function reads it whether or not setupScene ever ran, and the result line
+  // renders a null as `[source]`. Leaving the key off until setupScene assigns
+  // it would make a scene that throws during boot report `undefined` instead —
+  // a verdict change smuggled in by a refactor, which is the one thing this
+  // stage's gate exists to catch.
+  const ctx = { browser, file, page, fails, warnings, noise, classify, backend: null };
 
   try {
     // The two hard checks that run BEFORE the scene is opened with ?record=1.
@@ -891,141 +1109,16 @@ async function checkScene(browser, file) {
     // which reloads the page, runs after it and never before.
     await runChecks(PRE_RECORD_CHECKS, ctx);
 
-    await page.goto('file://' + path.resolve(file) + '?record=1');
-    // Order matters and is a compromise, not an ideal. `sceneReady` MUST be
-    // waited on first — it is assigned at the end of the async boot, so a check
-    // before the wait reads a document where it legitimately does not exist yet
-    // (measured: doing that failed every 3D example with `missing contract:
-    // sceneReady`). So sceneReady stays shadowed by its own wait, and that is
-    // unavoidable: a scene that never sets it produces a 20s timeout rather
-    // than this message.
-    // What IS recoverable is the other two. This check now runs BEFORE
-    // stopPlayback() is called, so a missing `stopPlayback` prints the intended
-    // `missing contract:` line instead of a raw TypeError. `seekTo` is consumed
-    // earlier still by the live-playback wrapper, on a different document.
-    await page.waitForFunction('window.sceneReady === true', { timeout: 20000 });
-    const missing = await page.evaluate(
-      `(${JSON.stringify(CONTRACT)}).filter(k => window[k] === undefined)`);
-    // Which backend actually rendered (3D scenes export it; 2D scenes have none).
-    // Printed on the result line: a green run should say what it verified.
-    backend = await page.evaluate('window.BACKEND || null');
-    if (missing.length) fails.push('missing contract: ' + missing.join(', '));
-    // Absent soft names degrade checks instead of failing them: a renamed
-    // FLASHES leaves the sample plan unable to avoid flashes, and the
-    // blank-frame check then fires on a perfectly clean film. Say which are
-    // gone rather than making the reader infer it from a weaker result.
-    const softNames = SOFT_CONTRACT.concat(backend ? ['SHOTS'] : []);
-    const soft = await page.evaluate(
-      `(${JSON.stringify(softNames)}).filter(k => window[k] === undefined)`);
-    if (soft.length) warnings.push('degraded — absent, read via fallback: ' + soft.join(', '));
-    await page.evaluate('window.stopPlayback()');
-    // Deliberately NOT asserting window.THREE. The contract is the product here;
-    // three.js is one backend. Any scene exposing these four globals — a 2D
-    // canvas, an SVG/CSS timeline, a D3 diagram — gets frame-exact MP4s from the
-    // same pipeline, and this check must not lock that out.
+    // Setup: the ?record=1 load and everything derived from it (dur, PLAN, t,
+    // backend). Called directly, not driven from a list — see setupScene for why
+    // a list would model a choice that does not exist here.
+    await setupScene(ctx);
 
-    const dur = await page.evaluate('window.DURATION');
-    const flashes = await flashTimes(page);
-    // ALL-quantified over a plan, not a spot check at one arbitrary second.
-    const PLAN = samplePlan(dur, flashes, 4);
-    // Sample INSIDE shot transitions too: scenes exporting window.SHOTS get up
-    // to two blend-window midpoints appended, because fixed fractions of
-    // DURATION were measured missing every blend window on a shipped film —
-    // a transition-confined determinism bug would have passed every check.
-    try {
-      const shots = await page.evaluate('window.SHOTS');
-      if (Array.isArray(shots)) {
-        for (const sh of shots.filter(x => x && x.cutEnd > x.t).slice(0, 2)) {
-          const m = Number(((sh.t + sh.cutEnd) / 2).toFixed(4));
-          if (m > 0.05 && m < dur - 0.05 && !PLAN.includes(m)) PLAN.push(m);
-        }
-      }
-    } catch (e) {}
-    const t = PLAN[0];
-
-    // Determinism: same t twice must be byte-identical, at EVERY sampled point.
-    // Catches accumulated state, Math.random(), and wall-clock leaking into the
-    // scene — each of which silently desyncs the MP4 from the HTML loop.
-    // Quantified ALL: one clean timestamp proves nothing, and a scene whose
-    // title card is static is clean at exactly the moment the old check looked.
-    // settle (backend.js) between seekTo and screenshot is LOAD-BEARING here:
-    // the capture race it closes was measured as a flaky determinism FAIL whose
-    // in-page canvas pixels were byte-identical — a capture race reported as a
-    // scene bug, which is the one thing this check must never do.
-    let shots = [];
-    for (const ts of PLAN) {
-      // seekSynced, not a bare seek: this arm reported a capture race as a scene
-      // defect on a slow GL stack (40%/30%/20% on three cells; 0 of 200 once the
-      // seek and a readback shared a task). backend.js owns the why.
-      await seekSynced(page, ts);
-      await settle(page);
-      const x = await page.screenshot();
-      await seekSynced(page, dur);                         // move away...
-      await seekSynced(page, ts);                          // ...and back
-      await settle(page);
-      const y = await page.screenshot();
-      shots.push(x);
-      if (sha256(x) !== sha256(y)) {
-        fails.push(`seekTo(${ts}) not deterministic — scene carries state across frames `
-                 + `(checked ${PLAN.join(', ')})`);
-        break;
-      }
-    }
-
-    // ACROSS a page reload, not just within one session. The loop above proves
-    // seekTo is pure *inside* a load; it says nothing about a scene that seeds
-    // Math.random() ONCE at init. Such a scene is perfectly self-consistent per
-    // session and produced three different films over three loads, measured —
-    // while smoke reported `all scenes pass`. That is the prime directive
-    // broken (the HTML a viewer loads and the MP4 the recorder shoots are
-    // different films) and the whole suite was blind to it. One reload, one
-    // sampled t: the cheapest possible cover for a load-time-nondeterminism
-    // class that no in-session check can reach.
-    if (!fails.length && shots.length) {
-      await page.goto('file://' + path.resolve(file) + '?record=1');
-      await page.waitForFunction('window.sceneReady === true', { timeout: 20000 });
-      await page.evaluate('window.stopPlayback()');
-      // seekSynced, and here the SYMMETRY is the point: shots[0] below is
-      // captured through seekSynced, so a bare seek on this side would diff a
-      // race-hardened capture against a race-vulnerable one and manufacture the
-      // spurious "differs ACROSS a page reload" this check exists to rule out.
-      // Shipped that way briefly in 0.16.28's first draft; caught in review.
-      await seekSynced(page, PLAN[0]);
-      await settle(page);
-      const reloaded = await page.screenshot();
-      if (sha256(reloaded) !== sha256(shots[0])) {
-        fails.push(`seekTo(${PLAN[0]}) differs ACROSS a page reload — the scene is `
-                 + `deterministic within a session but not between them, so the live `
-                 + `HTML and the recorded MP4 are different films. Usual cause: a seeded `
-                 + `or unseeded random drawn once at load rather than derived from t`);
-      }
-    }
-
-    // BACKSTOP ONLY — the shipped-frame spread check strictly dominates this
-    // one, and an audit found no mutation that fires here without firing there
-    // first (including a fully black render, where this stayed silent because
-    // the caption pill kept the PNG above the floor). It earns its place for
-    // exactly one case: a scene with no ?strip=text support, where the
-    // shipped-frame check keeps its captions and loses power. Do not read a
-    // green here as blankness coverage.
-    // Measured on the screenshot rather than the canvas, so this works
-    // for any backend (WebGL, 2D canvas, SVG/CSS, plain DOM). PNG compresses a
-    // uniform frame to almost nothing: at 640x360 a flat fill lands around 1-3KB,
-    // while anything with real content is far larger. A heuristic, but it catches
-    // the failure that matters — a pipeline happily shooting 600 empty frames.
-    // Threshold scales with the viewport instead of being a magic constant: a
-    // uniform PNG costs roughly a byte per 40 pixels, so anything below that is
-    // flat fill. Hardcoding 6000 silently mis-calibrated the moment VIEWPORT
-    // changed, which is exactly the kind of coupling nobody notices.
-    const blankFloor = Math.round((VIEWPORT.width * VIEWPORT.height) / 40);
-    // ALL-quantified: the old single sample failed a legitimate film on a 1.6%
-    // margin at one arbitrary second, and passed a broken one by 9 bytes.
-    for (let i = 0; i < shots.length; i++) {
-      if (shots[i].length < blankFloor) {
-        fails.push(`frame looks blank at t=${PLAN[i]} (${shots[i].length} bytes compressed, floor ${blankFloor})`);
-        break;
-      }
-    }
+    // The three hard checks over the captured frames. Driven through runChecks
+    // like the others, so `dur`/`PLAN` being present is asserted rather than
+    // assumed — and a throw from any of them still reaches the outer catch and
+    // abandons the rest, which is the error semantics they had inline.
+    await runChecks(SHOT_CHECKS, ctx);
 
     // --- MOSTLY advisory below: caption speed and caption overflow only warn.
     // Framing invariance and the >=99% near-black branch of exposure are HARD
@@ -1039,8 +1132,12 @@ async function checkScene(browser, file) {
     // itself, instead of rebuilding this whole function to reach one check.
     // `beats` is read HERE and not inside them, unguarded, exactly as before —
     // a scene whose window.BEATS getter throws still reaches the outer catch
-    // and fails, rather than being downgraded to four separate warnings.
-    Object.assign(ctx, { dur, t, beats: await page.evaluate('window.BEATS') });
+    // and fails, rather than being downgraded to four separate warnings. It is
+    // also read HERE and not in setupScene: moving it earlier would fire that
+    // throw before the determinism trio instead of after it, which is a
+    // behaviour change on a scene no corpus file exercises — the kind that
+    // ships green.
+    ctx.beats = await page.evaluate('window.BEATS');
     // Driven from an array because the ORDER is load-bearing, not incidental:
     // caption overflow mutates #cap and must follow the determinism capture,
     // and three of the four resize the viewport and restore it for the next.
@@ -1061,7 +1158,7 @@ async function checkScene(browser, file) {
   // fell back (or is 2D and reports nothing); a contradiction when the scene
   // claims the hardware path anyway.
   if (fallbackNotices.length) {
-    if (backend === 'webgpu') {
+    if (ctx.backend === 'webgpu') {
       noise.push(`console warning: the renderer announced a WebGL2 fallback while the scene `
                + `reports BACKEND='webgpu' — one of the two is wrong. `
                + fallbackNotices[0].slice(0, 90));
@@ -1077,7 +1174,7 @@ async function checkScene(browser, file) {
                 + uniq.slice(0, 4).map(t => t.slice(0, 90)).join(' | ')
                 + (uniq.length > 4 ? ` (+${uniq.length - 4} more)` : ''));
   }
-  return { fails: fails.concat([...new Set(noise)]), warnings, backend };
+  return { fails: fails.concat([...new Set(noise)]), warnings, backend: ctx.backend };
 }
 
 (async () => {

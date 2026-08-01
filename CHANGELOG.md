@@ -7,6 +7,52 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.54
+
+### changed
+
+**R4.1 stage 3 — the setup block and the determinism trio leave `checkScene`,
+which finishes at 155 lines from 594.** The last stage of the extraction, and
+the coupled one: three hard checks sharing one captured frame array, none with
+its own `try/catch`.
+
+`setupScene` takes the `?record=1` load, the contract assertions and everything
+derived from them (`dur`, the sample `PLAN`, `t`, `backend`). It is called
+directly rather than driven from a list, because a list models a choice of order
+and there is none — nothing can precede the load that produces the page. It is
+also the only thing besides `checkDeterminism` that writes to `ctx`.
+
+`checkDeterminism`, `checkReloadDeterminism` and `checkBlankFrame` become
+`SHOT_CHECKS`, driven through the same validating driver as the other two lists
+and asserted in the same `CHECK_ORDER`. **The error semantics are preserved
+exactly**: none carries a `try/catch`, so a throw reaches `checkScene`'s outer
+catch, becomes a FAIL, and abandons the remaining checks — unlike the four
+advisory checks, which degrade to a warning. Wrapping these the same way would
+have converted three hard fails into warnings while every corpus verdict stayed
+green.
+
+The captured array is `ctx.frames`, not `ctx.shots`: `window.SHOTS` is the
+scene's shot list, an unrelated contract name that the inline version shadowed
+one block apart.
+
+**The `!fails.length` guard on the across-reload check is carried unchanged and
+is known debt.** It reads `fails` globally, so any unrelated failure silently
+disables the only check covering load-time nondeterminism. Preserved
+deliberately: this stage's gate is byte-unchanged verdicts on an all-green
+corpus, where a fix could not be validated by the same run that makes it
+visible.
+
+**Verdicts are byte-unchanged across all nine scenes — and that was not treated
+as sufficient.** These checks emit nothing on a green corpus, so an extraction
+that orphaned one would produce identical output. Each of the three assertions
+was forced true in turn: every one fired on all 9 scenes and flipped the exit
+code, which is what says they are still wired to the verdict.
+
+`Function.prototype.toString()` under Bun also merges adjacent `const`
+declarations into one declarator list, which false-redded the new destructuring
+cross-check the moment `checkDeterminism` was written. The anchor accepts `,` as
+well as `;`; `ctx.inner` still refuses.
+
 ## 0.16.53
 
 ### added

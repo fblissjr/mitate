@@ -1,4 +1,4 @@
-last updated: 2026-07-31
+last updated: 2026-08-01
 
 # Restructure plan, 2026-07
 
@@ -71,8 +71,8 @@ last updated: 2026-07-31
 > found five more misses than the review reported. Writing a check is not the
 > measurement; running it against a deliberately broken version is.
 >
-> **Next: Gate R4's four remaining items, listed below unchanged.** Finding
-> dispositions in `working-plan.md`, first section.
+> **Next: R4.1, the only gate clause still open.** Finding dispositions in
+> `working-plan.md`, first section.
 >
 > **Shipped:** 0.16.42 (three harness defects) · 0.16.43 (**R4.4**,
 > `--parity-fix`) · 0.16.44 (`CONTRACT` becomes the seventh fence, carrying a
@@ -93,6 +93,25 @@ last updated: 2026-07-31
 > 2026-07-31 and the old one was wrong — four advisory warnings, not one. Start
 > it fresh, and re-capture the baseline on the machine and backend you will
 > compare against.
+>
+> ### 2026-08-01 — re-verified, and the PR opens BEFORE R4.1
+>
+> The four clause verdicts above were checked against their evidence rather than
+> re-read: run 30672205795 fetched and its tally compared line-by-line against
+> the block quoted below (matches), `bracket-parity.js`'s refusal arms
+> enumerated, `plan.md`'s nine rows counted, and `checkScene` re-measured at 594
+> lines. **All four hold.** Four smaller claims around them did not, and are
+> corrected in place: the parity arm count (twelve → eighteen), the corpus's
+> ten-vs-twelve, `BUILT` missing from the reach legend, and "all identical" for
+> the `Open question` convention.
+>
+> **Owner call: open the PR now, and land R4.1 inside it.** `gate.yml` fires on
+> `pull_request` and on every push to an open PR, while `push` is filtered to
+> `main` — so this branch has had exactly **one** gate run in its life, by hand
+> dispatch. R4.1 refactors the gate instrument itself, which is the change that
+> least deserves to run unwatched. Opening the PR first is what puts it under the
+> gate, and that is this branch's own lesson (see R4.3's amendment) applied
+> before rather than after the fact.
 >
 > **What is left for Gate R4, in the order to do it:**
 >
@@ -137,12 +156,27 @@ last updated: 2026-07-31
 >    "it would run" is precisely the inference item 1's own correction above says
 >    to stop making. It was made again anyway, one screen below where it is
 >    written down. The dispatch cost five minutes.
-> 2. **R4.7 — reach grades** on `plan.md`'s nine portfolio cases. Unstarted, no
->    dependencies, pure judgment work.
-> 3. **R4.6's cold-start test** — the cheapest gate clause left. Today produced
->    exactly the artifact it tests for; ask a zero-context agent about the
->    export-framing finding or the origin-story question and see if `docs/` gets
->    them there.
+> 2. ~~**R4.7 — reach grades** on `plan.md`'s nine portfolio cases.~~ **DONE
+>    (`70051bf`).** All nine carry a grade, read off the tree rather than off
+>    memory, each unbuilt case with one line on what blocks it and what was
+>    checked.
+>
+>    **The legend defines `in reach`, `near` and `beyond` — and not `BUILT`,
+>    which two rows carry.** That is coherent (a built case has no reach left)
+>    and undefined, so define it the next time that table is touched rather than
+>    leaving a reader to infer a fourth grade from two instances.
+> 3. ~~**R4.6's cold-start test.**~~ **RUN 2026-07-31, clause MET (`a9b5d7d`).**
+>    Two zero-context agents, two recorded design questions, both reached without
+>    being told where to look. The box at the end of this section carries the
+>    detail, including the routing gap both hit and the `docs/README.md` row that
+>    closes it.
+>
+>    **This is the only gate clause with no re-runnable artifact.** It rests on
+>    the report of the session that ran it, and a re-run is a fresh experiment
+>    rather than a verification of that one — the agents cannot be un-told what
+>    the second run would tell them. Weigh it as a passed experiment, not as a
+>    standing check. The half that *is* checkable holds: the router row exists,
+>    and `Open question` is a real convention.
 > 4. **R4.1 — extract `checkScene`.** Deliberately not started; its gate is
 >    byte-unchanged smoke verdicts. `checkScene` measures **594 lines**
 >    (`smoke.js:278-871`).
@@ -1110,47 +1144,66 @@ property, not the proxy.
 > 2. ~~**R4.4 — `--parity-fix`.**~~ **DONE 0.16.43.** `smoke.js --parity-fix
 >    --from <canonical>`: source named and never inferred, malformed source or
 >    target refuses, and every file validates before the first byte is written.
->    Twelve arms in `bracket-parity.js`. **Two of those arms were holes mutation
+>    Twelve arms in `bracket-parity.js` at the time — **eighteen as of 0.16.47**,
+>    when the write-path findings added six; do not cite either number, count
+>    them. **Two of the original twelve were holes mutation
 >    testing found** — the partial-write property had no arm that could see it,
 >    and `refuses malformed source` passed with the guard removed. Both fixed.
 >    Exercised twice on real corpora since (0.16.44, 0.16.45).
-> 3. **R4.5 — the defect corpus. PARTIAL, 0.16.45. This is where to start.**
+> 3. **R4.5 — the defect corpus. PARTIAL, 0.16.45. Not gate-blocking** — no R4
+>    clause names the corpus, so its remainder is standing debt rather than a
+>    thing between here and the gate. It was "where to start" while R4.1 was
+>    deliberately deferred; R4.1 is no longer deferred.
 >    `fixtures/defect-corpus/after-hours.html` is tracked, re-skinned, brought to
 >    the current engine with `--parity-fix` (5 of its 7 fences had drifted), and
 >    joined to the parity set with the decision recorded beside it. The decay
 >    risk is closed — the fixture no longer lives only on one machine.
 >
 >    **Three things remain, in this order:**
->    - **Ten of the twelve defects are not re-measured**, and the corpus README
->      lists them as carried-over and UNVERIFIED rather than as properties of
->      this build. That labelling is doing real work: the **two** that were
->      re-measured **both moved** (`endcap` 0.94/peak 5.75 → 1.05/peak 6.79; the
->      walker's 3.62 does not reproduce, giving 3.12 and 3.30). Do not cite the
->      other ten until each is re-run.
+>    - **The un-re-measured defects**, which the corpus README lists as
+>      carried-over and UNVERIFIED rather than as properties of this build. That
+>      labelling is doing real work: the **two** that were re-measured **both
+>      moved** (`endcap` 0.94/peak 5.75 → 1.05/peak 6.79; the walker's 3.62 does
+>      not reproduce, giving 3.12 and 3.30). Do not cite any of the rest until it
+>      is re-run.
+>
+>      **This line said "ten of the twelve" and the two numbers count different
+>      things.** The README's UNVERIFIED table has **twelve rows**
+>      (`1, 2, 2b, 3, 4, 5, 5b, 6, 7, 9, 10, 10b`) because sub-lettered defects
+>      stand alone there, while "twelve defects" folds each into its parent. Both
+>      counts are defensible and neither is stated with its rule, so the corpus
+>      README is the place to settle it — count the rows there rather than citing
+>      a figure from here.
 >    - **`bracket-corpus.js`** — nothing executes the corpus today. Parity checks
 >      its fences; no check runs it. Do NOT solve this by adding it to the gate's
 >      scene list; the reasoning is in `working-plan.md` and in the corpus README.
 >    - **`bracket-noise.js` false-reds on macOS** (pre-existing, confirmed by
 >      stashing against clean `HEAD`; passes on the Linux gate). A control that
 >      cries wolf locally is one people learn to skip.
-> 4. **R4.1 — extract `checkScene`.** Last of the sequential items, and
->    deliberately not started on 2026-07-31: its gate is byte-unchanged
->    `smoke.js` verdicts, and refactoring the gate instrument at the end of a
->    long session is how a regression enters the thing that catches regressions.
->    Start it fresh.
+> 4. **R4.1 — extract `checkScene`. THE ONLY GATE-BLOCKING ITEM LEFT**, and the
+>    reason it was deferred has expired: it was held back on 2026-07-31 because
+>    refactoring the gate instrument at the end of a long session is how a
+>    regression enters the thing that catches regressions. Start it fresh, which
+>    is now.
+>
+>    `checkScene` measures **594 lines** (`smoke.js:278-871`, re-counted
+>    2026-08-01). Its gate is byte-unchanged `smoke.js` verdicts on the same
+>    corpus — **same machine, same backend, before vs after** — so capture the
+>    baseline immediately before starting rather than citing the block above it.
 >
 > **R4.6 (retention) and R4.7 (portfolio grading) are continuous, not
 > sequential.** Do them alongside: record a design question the day it is raised,
 > grade a portfolio case the day its reach changes. Neither has a start date and
-> both are gate clauses. **R4.6's gate clause is now cheap to close** — it asks
-> that a design question raised in a session be findable from `docs/` afterwards,
-> tested by a cold-start agent, and 2026-07-31 produced exactly that artifact
-> (the export-framing finding and the origin-story question, both recorded
-> below). Running that test builds nothing and closes a gate clause.
+> both are gate clauses, and **both are now MET** — R4.6 by the cold-start run of
+> 2026-07-31 (`a9b5d7d`, box at the end of this section), R4.7 by the grading
+> pass in `plan.md` (`70051bf`). Their continuous half does not end with the
+> gate: keep recording a design question the day it is raised and re-grading a
+> case the day its reach changes, or the clauses pass once and rot.
 >
-> **If you only do one thing:** the ten unmeasured defects. The corpus is
-> tracked but half-characterised, and a fixture nobody has measured is a fixture
-> nobody can cite.
+> **If you only do one thing:** R4.1. It is the last thing between this branch
+> and gate R4, and everything else listed here is standing debt that outlives
+> this document. The un-re-measured defects are the best of that debt — a fixture
+> nobody has measured is a fixture nobody can cite.
 >
 > **Before trusting any of this, run:** `bun run scripts/selfcheck.js`, every
 > `scripts/bracket-*.js` and `templates/bracket-*.js`, and `smoke.js
@@ -1573,9 +1626,18 @@ asked about one and reaching it without being told where to look.
 > **Fixed the same day, in the cheapest place.** `docs/README.md` gains one row:
 > unresolved design questions are filed under the exact phrase `Open question`,
 > so grep the phrase rather than the topic. Verified as a real convention before
-> routing to it — four instances across three files, all identical. This is the
+> routing to it — four instances across three files. This is the
 > spine's first rule applied to itself: the correct move was already available
 > and cost more than the mistake, so it lost.
+>
+> **"All identical" was the wrong word, checked 2026-08-01.** Three of the four
+> are inline prose markers on a filed question
+> (`restructure-2026-07.md` ×2, `working-plan.md` ×1); the fourth
+> (`predecessor-record.md:1563`) is a **table column header**, which the grep
+> finds and a reader following it does not get a question from. The row still
+> routes correctly — the convention is real and the header is a near-miss, not a
+> false positive — but a convention described as uniform when it is three-plus-one
+> is the kind of claim this document exists to stop.
 >
 > **The clause is met as written** — they were not told where to look, and they
 > reached it from `docs/`. Recording the margin anyway, because it was luck: the

@@ -1,4 +1,7 @@
-# The cheap stage: no browser, ~8 seconds measured, runs on EVERY push.
+# The cheap stage: no browser, runs on EVERY push. Whole-job wall time 18-27s
+# across the four runs of 2026-08-02 (includes checkout and bun setup; an
+# earlier "~8 seconds" here was measured before the brackets and
+# cross-reference steps existed and sat unrevised while the job grew).
 #
 # Deliberately NOT path-filtered. It checks docs as much as code — the version
 # cascade, the "last updated" markers, subtree link resolution, the provenance
@@ -90,10 +93,11 @@ jobs:
       # whole run is milliseconds of string parsing, so it costs this job almost
       # nothing and runs on every push instead of on the filtered set.
       #
-      # THE CORPUS FIXTURE IS INCLUDED, and this is the first thing in CI that has
-      # ever read it -- gate.yml copies templates/ and examples/ into its
-      # workspace and not fixtures/, so `after-hours.html` has been executed by
-      # nothing since it landed. Be honest about what that buys: `check` exits 0
+      # THE CORPUS FIXTURE IS INCLUDED. The fence-parity step above has read it
+      # as text since its third glob arm landed (0.16.45); what THIS step is
+      # first at is evaluating its declarative tables -- gate.yml copies
+      # templates/ and examples/ into its workspace and not fixtures/, so
+      # `after-hours.html` is still executed in a browser by nothing. Be honest about what that buys: `check` exits 0
       # on a warning, and the corpus's one finding IS a warning, so this gives
       # visibility in the log and not a gate. `bracket-corpus.js` -- assert the
       # EXPECTED verdict, fail when it moves in either direction -- is still the

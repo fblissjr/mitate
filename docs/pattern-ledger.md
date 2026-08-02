@@ -142,7 +142,7 @@ A session with no investment in them can.
 
 The corpus evidence is unambiguous and was gathered independently of this idea:
 
-- The prototype's twelve defects came from a **single** independent <!--count-mention-->
+- The prototype's defects — the count is not restated here; `fixtures/defect-corpus/README.md` explains why it cannot be checked — came from a **single** independent <!--count-mention-->
   `film-reviewer` pass on a film its author had already reviewed over eight
   look-and-edit rounds and shipped. It found almost nothing the author had
   considered and dismissed, and nearly everything they had never looked at.

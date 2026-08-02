@@ -1081,10 +1081,23 @@ const toolJs = new Map([
    * the bracket is already red, and a count you see only on failure says nothing
    * about whether the green was earned. That line must interpolate.
    *
-   * LIMIT, stated because an unstated one gets trusted past it: this recognises
-   * the house idiom. A bracket wording its tally differently is not seen and
-   * would pass while printing nothing. The idiom is the contract; deviate and
-   * this check goes quiet rather than loud. */
+   * LIMIT, stated because an unstated one gets trusted past it -- and stated
+   * BACKWARDS until 2026-08-02, which is worse than leaving it unstated. The
+   * first version claimed a bracket wording its tally differently "is not seen
+   * and would pass while printing nothing", i.e. a silent miss. Tested: it is
+   * FLAGGED. A success line is recognised by the literal phrases "as specified"
+   * or "exercised", so a bracket with a perfectly good derived count under
+   * different wording has no recognised success line at all and trips the check.
+   *
+   * So the real hazard is the opposite one: a FALSE POSITIVE against a compliant
+   * bracket, not a false negative against a sloppy one. This check goes LOUD on
+   * a deviation, never quiet. The idiom is the contract; a bracket that wants
+   * different wording must add its phrase here rather than expect to be missed.
+   *
+   * Recorded at length because a wrong statement of a blind spot is worse than
+   * none: it points the next reader at a failure mode that does not exist while
+   * the real one goes unwatched. Found by an auditor told to test the sentence
+   * rather than read it. */
   const noTally = [];
   let brackets = 0;
   for (const [f, text] of toolJs) {

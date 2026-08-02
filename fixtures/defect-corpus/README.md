@@ -84,12 +84,24 @@ file and failing when that changes in either direction. Not yet written.
 
 ## The defects, and which have been re-measured
 
-The prototype carried twelve characterized defects, <!--count-mention--> and
-this build enumerates them as <!--derived:defect-rows-->14<!--/derived--> rows
-across the two tables below — three of the twelve are split into sub-lettered
-rows (`2b`, `5b`, `10b`), which is why the two numbers differ and why the
-sentence that used to state only the first one misled every reader who counted
-the second. **The defects are mechanical and most should survive a re-skin, but
+This build enumerates the prototype's defects as
+<!--derived:defect-rows-->14<!--/derived--> rows across the two tables below:
+**<!--derived:defect-bases-->11<!--/derived--> base defects, three of which are
+split into sub-lettered rows** (`2b`, `5b`, `10b`).
+
+**The prototype's own count is NOT stated here, because no tracked file can check
+it.** This sentence said "twelve" until 2026-08-02, with arithmetic that only
+balances at eleven — three splits over eleven bases gives the fourteen rows; over
+twelve it would give fifteen. Whether the prototype carried eleven, or carried
+twelve and one was never enumerated here, is unanswerable from the tree: the
+prototype is local-only. Per the rule that a claim may cite a local artifact but
+must not rest on one, this file now states what its own tables hold and stops
+asserting what only one machine could confirm.
+
+The figure was also **exempted from the count check by a `count-mention` marker**
+— the escape hatch for legitimate historical mentions, applied to a number that
+contradicted the table three lines below it, which is why the generator never
+caught it. **The defects are mechanical and most should survive a re-skin, but
 "should" is not a measurement** — and the engine changed underneath this build
 when the fences were brought current, which can move both framings and numbers.
 
@@ -139,7 +151,7 @@ to serve.
 
 ## The finding that justifies the whole directory
 
-The prototype's twelve defects were found by a **single** `film-reviewer` pass on <!--count-mention-->
+The prototype's defects — however many it carried; see above — were found by a **single** `film-reviewer` pass on
 a film its author had already reviewed over roughly eight look-and-edit rounds
 and delivered as an MP4. The review found almost nothing the author had
 considered and dismissed, and nearly everything the author had never looked at.

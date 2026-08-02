@@ -343,6 +343,14 @@ const ARMS = [
     s => s.replace('description: >\n', 'description: >\n  padding well under the cap.\n')),
     null],
 
+  // BLIND SPOT, and it is a property of check 11 rather than a defect here:
+  // this arm CANNOT go red while an uncommitted version bump sits in the tree.
+  // Check 11 diffs the working tree against the last commit touching
+  // plugin.json, so a staged-but-uncommitted bump already satisfies it and the
+  // injected violation has nothing to prove. Confirmed both ways on 2026-08-02:
+  // MISSED with a pending bump, green on a clean checkout and green again after
+  // committing. Run this bracket on a clean tree, or read a MISSED here as "ask
+  // what is uncommitted" before believing selfcheck has stopped working.
   ['plugin content changed without a version bump', () => {
     const f = path.join(ROOT, 'plugin', 'skills', 'mitate', 'templates', 'smoke.js');
     const before = fs.readFileSync(f, 'utf8');

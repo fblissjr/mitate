@@ -330,7 +330,7 @@ last updated: 2026-08-02
 >    is *same machine, same backend, before vs after* — capture it immediately
 >    before starting the extraction rather than reusing this block.
 >
-> **Not gate-blocking, but open:** ten of the corpus's twelve defects are
+> **Not gate-blocking, but open:** most of the corpus's defects are
 > unmeasured and labelled UNVERIFIED; `bracket-corpus.js` does not exist so
 > nothing runs the corpus; `bracket-noise.js` false-reds on macOS (passes on the
 > Linux gate); and `/extract-patterns` has no bracket and has never been run —
@@ -1471,7 +1471,7 @@ property, not the proxy.
      a file that silently leaves the parity set is the exact failure
      `bracket-parity.js` exists to catch.
 
-   **The twelve characterized defects must be re-measured against the new build,
+   **The characterized defects must be re-measured against the new build,
    not assumed to carry over.** They are mechanical and most should survive a
    re-skin, but "should" is not a measurement, and their timestamps will move if
    any beat duration does.

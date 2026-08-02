@@ -32,7 +32,7 @@ Not tiredness. The author **felt the necessity that produced each choice**, and
 therefore cannot easily see which choices were general — every one of them felt
 required at the time. A session with no investment in them can.
 
-The corpus says so twice: the prototype's twelve defects came from a *single* <!--count-mention-->
+The corpus says so twice: the prototype's defects (count unverifiable from tracked content — see the corpus README) came from a *single* <!--count-mention-->
 independent `film-reviewer` pass on a film its author had already reviewed over
 eight rounds and shipped, and on 2026-07-31 an independent no-context pass on a
 postmortem found that postmortem's flagship claim false. Both are recorded in

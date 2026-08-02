@@ -75,11 +75,19 @@ grew ~24% in three days and **grows with every example added**. Policing it cost
 a propagation tool, a bracket, a pre-commit hook and a three-glob discipline
 restated in several tracked files.
 
-**What is already data.** Roughly 4–8% of authored content per scene is literal
-tables — but that understates it, because those tables control the two most-edited
-axes (timing and camera) through an interpreter of about seventy lines. It also
-overstates it, because `SUBJECTS.pos` is a **function**, so the existing "data"
-is already data-with-embedded-code. That boundary is exactly question 1.
+**What is already data — and the ratio is the wrong instrument.** Two independent
+recounts of "how much of a scene is literal tables" landed at 3.4–5.5% and
+4.2–6.3%, differing only on whether blank lines count in the denominator. The
+figure originally written here, 4–8%, was carried out of an agent's report and
+never recomputed; nothing supports its upper bound. **Recompute it with a stated
+definition or do not cite it** — the audit that caught this is the reason the
+rule about numbers travelling with their provenance exists.
+
+What the ratio hides in both directions matters more than its value. It
+understates, because the tables control the two most-edited axes — timing and
+camera — through a small interpreter. It overstates, because `SUBJECTS.pos` is a
+**function**, so the existing "data" is already data-with-embedded-code. **That
+last fact is question 1 in miniature** and no percentage can express it.
 
 **What is code.** Authored top-level functions run 53–172 lines per shipped
 example, and 701 lines in the corpus fixture, whose `animate()` alone is 233.

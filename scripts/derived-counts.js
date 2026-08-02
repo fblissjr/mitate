@@ -69,6 +69,18 @@ const REGISTRY = {
     derive: () => ((R(path.join(ROOT, SUBTREE, 'templates', 'smoke.js'))
       .match(/const FENCES = \[([^\]]*)\]/) || [, ''])[1].match(/'/g) || []).length / 2,
   },
+  'defect-bases': {
+    what: 'distinct base defect numbers in the corpus README (sub-lettered rows folded into their parent)',
+    // The ROWS and the BASES are different questions and the README needs both:
+    // fourteen rows over eleven bases, because three defects are split. Stating
+    // either without the other is what made "twelve" survive -- it was neither,
+    // and its own explanatory sentence ("three of the twelve are split, which is
+    // why the two numbers differ") only balances at eleven. Registered rather
+    // than exempted, because the previous instance was exempted with
+    // count-mention and that is precisely why nothing caught it.
+    derive: () => new Set((R(path.join(ROOT, 'fixtures', 'defect-corpus', 'README.md'))
+      .match(/^\| [0-9]+[a-z]? \|/gm) || []).map(m => m.match(/[0-9]+/)[0])).size,
+  },
   'defect-rows': {
     what: 'defect rows in the corpus README, both tables',
     // The rows ARE the corpus's inventory, so they are what a reader is owed.

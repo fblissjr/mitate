@@ -53,8 +53,9 @@ const ARMS = [
     { code: 'nonzero', says: /matched no bracket/, ran: [] }],
 ];
 
-let wrong = 0;
+let wrong = 0, ran = 0;
 for (const [label, files, expect] of ARMS) {
+  ran++;
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mitate-runbrackets-'));
   try {
     for (const [name, body] of Object.entries(files)) fs.writeFileSync(path.join(dir, name), body);
@@ -89,4 +90,4 @@ if (wrong) {
     + ` Do not trust any bracket result until this is 0.`);
   process.exit(1);
 }
-console.log('\nall arms as specified');
+console.log(`\nall ${ran} arms as specified`);

@@ -114,8 +114,9 @@ const check = (label, ok, detail) => { results.push([label, ok, detail]); };
 // belt-and-braces rather than repair -- the fixture arm never touched it.
 run();
 
-let wrong = 0;
+let wrong = 0, ran = 0;
 for (const [label, ok, detail] of results) {
+  ran++;
   if (!ok) wrong++;
   console.log(`${label.padEnd(46)} ${detail}${ok ? '' : '   BRACKET FAILED'}`);
 }
@@ -124,4 +125,4 @@ if (wrong) {
     + ` header claims. A stale film looks exactly like a fresh one; do not trust a preview until this is 0.`);
   process.exit(1);
 }
-console.log('\nall arms as specified');
+console.log(`\nall ${ran} arms as specified`);

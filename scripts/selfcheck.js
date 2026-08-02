@@ -1056,8 +1056,54 @@ const toolJs = new Map([
        + `Every bracket prints its own tally at runtime — say it structurally ("one arm per `
        + `property", "the static half") and let the run produce the number. A count in a comment `
        + `goes stale the next time an arm lands, and this one has four times.`);
-  } else {
-    notes.push('no bracket states its own arm count in prose (the count is derived at runtime)');
+  }
+
+  /* SECOND HALF, 2026-08-02. Forbidding the STALE number never required a LIVE
+   * one, and three brackets satisfied the half above by printing no count at
+   * all: `all arms as specified`, a green line that cannot tell twenty-three
+   * arms from zero. That is the same shape `run-brackets.sh` already fails a
+   * zero-match glob over — "a green step that ran zero controls is
+   * indistinguishable from one that ran five" — reproduced one level down, in
+   * the controls themselves.
+   *
+   * The sharpest part is that this check's OWN success note asserted "the count
+   * is derived at runtime" while that was false for a third of them. The check
+   * built to stop stale claims about arm counts was emitting one.
+   *
+   * WHY THIS SHAPE RATHER THAN A LAYER ABOVE: the recorded failure class here is
+   * coverage decay — a control that was right when written and silently stops
+   * covering what it claims. A control that reports its own SCOPE cannot decay
+   * silently and needs nothing above it to notice. Adding a fourth recursion
+   * layer would decay the same way; this does not.
+   *
+   * THE TEST: a success line is a console.log saying "as specified" or
+   * "exercised" and NOT mentioning `wrong` — the `${wrong}` lines run only when
+   * the bracket is already red, and a count you see only on failure says nothing
+   * about whether the green was earned. That line must interpolate.
+   *
+   * LIMIT, stated because an unstated one gets trusted past it: this recognises
+   * the house idiom. A bracket wording its tally differently is not seen and
+   * would pass while printing nothing. The idiom is the contract; deviate and
+   * this check goes quiet rather than loud. */
+  const noTally = [];
+  let brackets = 0;
+  for (const [f, text] of toolJs) {
+    if (!/^bracket-.*\.js$/.test(path.posix.basename(f))) continue;
+    brackets++;
+    const success = text.split('\n').filter(l =>
+      /console\.log\(/.test(l) && /\b(?:as specified|exercised)\b/.test(l) && !/\bwrong\b/.test(l));
+    if (!success.length || !success.some(l => l.includes('${'))) noTally.push(f);
+  }
+  if (noTally.length) {
+    fail(`${noTally.length} bracket(s) print no derived count on the success path: `
+       + `${noTally.join(', ')}. "all arms as specified" cannot be told apart from a run that `
+       + `exercised nothing. Print the tally you already computed — the idiom is `
+       + `\`all \${ran} arms as specified\` — so the green states its own scope.`);
+  }
+
+  if (!hits.length && !noTally.length) {
+    notes.push(`no bracket states its own arm count in prose, and all ${brackets} `
+             + `print a derived count on success`);
   }
 }
 

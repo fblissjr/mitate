@@ -14,11 +14,30 @@ last updated: 2026-08-01
 > same reordering recorded below. The `CLAUDE.md` byte clause was retired by
 > owner call in favour of "no rule lost, no line unearned".
 >
-> **NEXT: R5, which is entirely unstarted — see the GATE R4 IS MET block below,
-> then jump to `## R5 — Capability`.** All of R4 is done: 4.1 (0.16.54), 4.2 +
-> 4.3 (0.16.41, corrected 0.16.42), 4.4 (0.16.43), 4.6, 4.7. Partial: 4.5
-> (0.16.45 — fixture tracked, 2 of 12 defects re-measured), which is not
-> gate-blocking.
+> **R4 MET and MERGED** (PR #3, `517a928`). All of R4 is done: 4.1 (0.16.54),
+> 4.2 + 4.3 (0.16.41, corrected 0.16.42), 4.4 (0.16.43), 4.6, 4.7. Partial: 4.5
+> (0.16.45 — fixture tracked, most rows still UNVERIFIED), not gate-blocking.
+>
+> **NEXT: the rest of R5. R5.1 is PARTLY DONE (0.16.62) and the reason it is only
+> partly is the useful part.** Its two verifiable items shipped: the
+> `setCamera(state)` seam across 8 carriers, and the `gaitPose` `rootX` hazard,
+> which was reading mutable scene-graph state in 5 of 7 call sites.
+>
+> **`hide(obj,u)` and `subjectFromObject` were deliberately NOT promoted**, and
+> the survey that stopped them is worth reading before anyone re-scopes this:
+> neither exists in the tracked tree at all, and the ledger evidence for both
+> lives in `internal/circus_prototype/circus.html` — gitignored, one machine.
+> The triggers do still fire (two spellings is drift), but the ledger's count for
+> the presence idiom was **×7 against an actual ×11**, and four of its rows cite
+> that same local-only film. All are now labelled `(local)`. Promote them as
+> separate changes with their own red, not as a bundle.
+>
+> Also still open in R5: `references/breakdown.md`, `build.js check`, and the
+> kinematic-body amendment to the bake proposal.
+>
+> **Phase R's first unit is also done** (0.16.61, separate PR) — the determinism
+> trio, including the `!fails.length` guard this plan had recorded as blocked on
+> a red-able fixture that did not exist. It exists now.
 >
 > **This paragraph said "Next: R4.5" and "Untouched: 4.1, 4.7" while the same
 > block reported all three done 100 lines below.** That is the second time this

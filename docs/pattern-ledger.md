@@ -8,7 +8,9 @@ instances, so none of those triggers could fire.** This file is the counter.
 
 It exists because of a specific failure the corpus already contains: the
 scale-gate presence idiom appears as `clamp(sc,.001,1)` in `bear-and-bees` and
-as `Math.max(1e-4, …)` in a later film, seven times in that one file. Two
+as `Math.max(1e-4, …)` in a later film — the count is in that shape's row below,
+not restated here, because this sentence carried "seven times" while the row now
+reads eleven and neither had been re-counted since it was written. Two
 spellings of one idea, in two scenes, neither aware of the other, and nothing
 recorded the collision. Left alone that produces individually good scenes that
 each paid full price for the same thing.
@@ -49,10 +51,10 @@ names where it went, or why it has not moved.
 
 | shape | count | where seen | disposition |
 |---|---|---|---|
-| **contact measured, not inferred** | **6** | 5 recorded in `instruments.md` as a recurring class, + the 2026-07-25 film | `build.js probe` — plan item A1. Trigger long past; earn-in blocked it because its bar was "a film was blocked" and this shape is *not blocked, reliably wrong* |
-| **declared extents rot; measured ones do not** | **6** | 3 predecessor films cropped their own payoff; 3 of 5 hand-computed extents wrong on the 2026-07-25 film | `subjectFromObject` — Track D, promoted. The predecessor *specified* the fix and it never shipped, while a code comment claimed it had |
-| **presence gating (scale gate)** | **2 spellings** | `bear-and-bees` (`clamp(sc,.001,1)` + a `visible` flip); 2026-07-25 film (`Math.max(1e-4,…)`, ×7) | `hide(obj, u)` kit helper — Track D. Two spellings is drift, not reuse; that is what justifies a helper, not the seven copies in one file |
-| **transition windows under-sampled** | **2** | 0.5.1 review (which shipped the `window.SHOTS` export for it); 2026-07-25 film, ~1% continuity coverage | `build.js transitions` — plan item A2. The export exists; the sweep does not |
+| **contact measured, not inferred** | **6** | 5 recorded in `instruments.md` as a recurring class, + the 2026-07-25 film `(local)` | `build.js probe` — plan item A1. Trigger long past; earn-in blocked it because its bar was "a film was blocked" and this shape is *not blocked, reliably wrong* |
+| **declared extents rot; measured ones do not** | **6** | 3 predecessor films cropped their own payoff; 3 of 5 hand-computed extents wrong on the 2026-07-25 film `(local)` | `subjectFromObject` — Track D, promoted. The predecessor *specified* the fix and it never shipped, while a code comment claimed it had |
+| **presence gating (scale gate)** | **2 spellings** | `bear-and-bees` (`clamp(sc,.001,1)` + a `visible` flip), ×1 tracked; 2026-07-25 film `(local)` (`Math.max(1e-4,…)`, **×11**, re-counted 2026-08-01 — this row said ×7) | `hide(obj, u)` kit helper — Track D. **The trigger stands**: two spellings is drift, not reuse, and that is what justifies a helper. But the second spelling lives ONLY in `internal/circus_prototype/circus.html`, gitignored and on one machine, so the drift is between one tracked file and one unbackupable one |
+| **transition windows under-sampled** | **2** | 0.5.1 review (which shipped the `window.SHOTS` export for it); 2026-07-25 film `(local)`, ~1% continuity coverage | `build.js transitions` — plan item A2. The export exists; the sweep does not |
 | **per-shot camera energy** | **1** | `bear-and-bees` wanted `locked` for the hush while the film wanted `steadicam`; went all-locked | Open carry-forward. Same shape as the viewer's camera-delta seam — design them together |
 | **built (non-DOM) text** | **1** | 2026-07-25 film: a stroke alphabet, 3 bugs, all "one letter on a wrong assumption" | Deferred. Enters at the **chart tier** when it lands — a grid of 36 glyphs exposes that bug class at a glance; a title card cannot |
 | **multi-station travel** | **1** | 2026-07-25 film: chained `lerp`s over a `LEGS` table | Deferred — register-specific to the presenter explainer, which is one commission, not a committed register |

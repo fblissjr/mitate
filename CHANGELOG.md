@@ -7,6 +7,61 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.62
+
+> **Ordering note.** This entry is numbered 0.16.62 because 0.16.61 is claimed by
+> the open determinism-trio PR, which is independent of this one and touches
+> different files. **That PR should merge first.** If this one lands first
+> instead, 0.16.61 must be re-bumped rather than merged behind a higher version.
+
+### changed
+
+**R5.1's state seam: `setCamera(t)` → `setCamera(state)`, where `state` holds
+only `{t}` today.** The indirection buys one structural thing — the DRIVER owns
+what goes in, and the kit never reads anything the timeline driver cannot
+produce. A bake, a viewer and an input driver all need to widen this exact
+argument, and widening a parameter is a local edit where changing a signature
+across every carrier is not. The plan's reason for doing it now holds: it gets
+several times more expensive after Phases 3 and 4, once face state and baked
+tracks are authored as functions of `t`.
+
+Propagated across all 8 carriers with `--parity-fix --from` the named canonical
+rather than eight hand edits: `SOLVER` carries the signature, `DRIVER` the
+`const state={t}` construction, and `scene2d` carries neither (it has no camera).
+Zero stale `setCamera(t)` call sites.
+
+### fixed
+
+**`gaitPose` no longer reads mutable scene-graph state.** `rootX` defaulted to
+`rig.root.position.x` and was correct only because every caller assigned
+`root.position.x` on the line above — an ordering dependence inside `animate`,
+not an argument, and exactly what a bake trips over since a baked track replays
+poses with no scene graph to read back from.
+
+`rootX` is now required, with a **loud throw** rather than a default: the silent
+failure is NaN foot targets, a film that renders and is subtly wrong. **5 of 7
+call sites were relying on the default**; all now pass the same
+pure-function-of-`t` value they already computed one line above. A green corpus
+run is therefore real evidence that no caller was missed.
+
+### docs
+
+**The pattern ledger's evidence was audited and it was wrong in two ways.** Four
+rows cite "the 2026-07-25 film"; that film is `internal/circus_prototype/circus.html`
+— gitignored, one machine, unbackupable. Every such citation is now labelled
+`(local)`, per the rule that a claim may cite a local artifact but must not rest
+on one.
+
+The presence-gating row claimed `Math.max(1e-4,…)` **×7**. Re-counted: **×11**.
+The ledger's own introduction restated "seven times" as well, so one stale figure
+lived in two places; the intro now points at the row instead of repeating it.
+
+**The trigger still stands** — two spellings is drift, so `hide(obj, u)` remains
+justified — but the drift is between one tracked file (`bear-and-bees`, ×1) and
+one unbackupable one. `hide(obj,u)` and `subjectFromObject` are therefore NOT
+promoted here: each is a separate change with its own red, and neither belongs
+bundled into a branch that has already made two behavioural changes.
+
 ## 0.16.60
 
 ### fixed

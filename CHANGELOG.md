@@ -7,6 +7,23 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.66
+
+### fixed
+
+**A duration in `smoke.js` that was never measured, off by roughly seventeen
+times, in shipped content.** The comment explaining the removed `!fails.length`
+guard said it *"survived four months."* It entered at 0.16.9 on 2026-07-25 and
+was removed on 2026-08-01: **seven days**, in a repository whose entire history
+is eight. The same figure has been repeated in several tracked files.
+
+It was written to convey "a long time" and read as a fact — which is the class
+this repo has spent two days closing, arriving here as an elapsed-time claim
+rather than a count. Corrected rather than deleted, because the point survives at
+the true figure and sharpens: a week was enough, because nothing was ever going
+to find this defect by elapsed time. What found it was building a fixture that
+could carry two defects at once.
+
 ## 0.16.65
 
 ### added

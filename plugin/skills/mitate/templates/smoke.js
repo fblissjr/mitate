@@ -836,7 +836,15 @@ checkDeterminism.onThrow = 'abandon';
 // GLOBALLY, so any unrelated
 // failure earlier in the scene silently disabled the only check covering
 // load-time nondeterminism. Written at 0.16.9 with no recorded reason and never
-// exercised by any control, which is why it survived four months.
+// exercised by any control, which is why it survived at all. It lived SEVEN DAYS
+// -- entered 2c5742f (0.16.9, 2026-07-25), removed 2026-08-01 -- and this line
+// said "four months" until 2026-08-02, in a repository whose entire history is
+// eight days. Nobody measured that duration -- bracket-driver.js is what found
+// the defect, and it did so by building a fixture carrying two defects at once,
+// not by anything noticing time pass. The figure was written to convey "a long
+// while" and then read as a fact. Corrected rather than deleted because the
+// point survives at the true number and sharpens: a week was plenty, because
+// elapsed time was never going to be what surfaced this.
 //
 // Its arm in bracket-driver.js builds a fixture carrying two defects at once —
 // a random drawn at load

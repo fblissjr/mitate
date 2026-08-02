@@ -147,10 +147,11 @@ Boxes marked "audit note" show where that audit changed a claim. Figures carry t
 definition that derives them; prefer re-running to citing.</p>
 
 <div class="status">
-  <b>Exploration, not doctrine.</b> This page argues one side of a design session that is still
-  open. It settles nothing. The decision, when reached, lands in
-  <a href="representation.md"><code>docs/representation.md</code></a>, and that file wins wherever
-  the two disagree. An empty decision section there remains a valid outcome.
+  <b>Exploration, not doctrine.</b> This page argues one side of the design session. It settles
+  nothing on its own — and the session has now run: the decision was recorded on 2026-08-02 in
+  <a href="representation.md"><code>docs/representation.md</code></a>, which wins wherever the two
+  disagree. The page stays as the argument that went in, with audit notes where checking changed
+  a claim.
 </div>
 
 <h2>The question, and the stakes</h2>
@@ -628,7 +629,9 @@ gate in the repo's own idiom; a phase without a red-first control does not ship.
     decision section in the owner's words: the boundary as drawn, the cases it cannot hold, what
     was rejected and why, what would make it wrong.</p>
     <p class="gate"><b>done if:</b> the decision section is non-empty, or the deferral is
-    recorded with its trigger. Owner's call throughout; this page is one input.</p>
+    recorded with its trigger. Owner's call throughout; this page is one input.
+    <b>met:</b> 2026-08-02 — the decision section is written; the seven points it records are
+    listed there, not restated here.</p>
   </div>
 </div>
 
@@ -660,9 +663,9 @@ gate in the repo's own idiom; a phase without a red-first control does not ship.
     anchor resolution from memory of them. The open findings close as a class. This is also the
     natural moment to decide TypeScript for the harness and the canonical source (D7): the seams
     are being written once anyway, and types there are cheap; types anywhere else wait.</p>
-    <p class="gate"><b>done if:</b> the divergence cases from the review (empty
-    <code>SHOTS</code>, <code>subject: []</code>, prototype-named beats, the two-way framing-key
-    mismatch) each resolve identically in <code>check</code> and in a driven page.
+    <p class="gate"><b>done if:</b> the divergence cases the review's postmortem names (a missing
+    <code>size</code>, empty <code>SHOTS</code>, <code>subject: []</code>, prototype-named beats)
+    each resolve identically in <code>check</code> and in a driven page.
     <b>trigger:</b> if R1 stalls for more than a working week, build the comparison bracket from
     forward item 5 instead. The class must not stay open on the strength of a plan.</p>
   </div>
@@ -777,8 +780,8 @@ gate in the repo's own idiom; a phase without a red-first control does not ship.
 
 <hr style="border:none;border-top:1px solid var(--line);margin:3rem 0 1rem">
 <p class="prov">Branch <code>representation-exploration</code> · drafted and audited 2026-08-02 ·
-settles nothing; <a href="representation.md"><code>docs/representation.md</code></a> owns the
-decision. Figures: parity tax from <code>smoke.js --parity-only</code> (three globs); fence
+the decision is recorded in
+<a href="representation.md"><code>docs/representation.md</code></a>, which owns it. Figures: parity tax from <code>smoke.js --parity-only</code> (three globs); fence
 composition classified over menagerie's seven fence regions (823 lines: 3 declaration literals,
 458 machinery, 341 comment-only, 21 blank); line ranges from the brief's measured-evidence
 section; finding counts from

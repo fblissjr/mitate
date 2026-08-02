@@ -203,7 +203,11 @@ record; the page is the argument.
    red-first on the corpus fixture.
 5. **The kit is emitted, not replicated** — direction adopted, gated on the
    emitter reproducing every carrier byte-identically before anything may
-   differ (the R1 spike). The measured basis: the replicated fenced surface is
+   differ (the R1 spike). The measured basis, method included because VISION
+   cites this file for it: menagerie's seven fence regions <!--count-mention-->
+   classified line-by-line (2026-08-02) — 823 lines, of which 3 are
+   declaration literals (the `SIZES` ladder and the cut table), 458 machinery
+   code, 341 comment-only, 21 blank. The replicated fenced surface is
    machinery and its comments, with declaration literals a rounding error, so
    the parity tax funds an emission program, not a schema program.
 6. **The harness stays in the JS family.** Every language boundary is a

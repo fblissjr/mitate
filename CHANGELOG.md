@@ -7,6 +7,24 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.69
+
+### fixed
+
+**The same unmeasured duration, in the second shipped file that carried it.**
+`bracket-driver.js` said the `!fails.length` guard went unexercised for "four
+months". It lived seven days — entered at 0.16.9 on 2026-07-25, removed
+2026-08-01 — in a repository whose entire history is eight.
+
+0.16.66 corrected the `smoke.js` copy of this figure and **grepped one file
+instead of the tree**, so it fixed the instance and left the class, in the commit
+whose message argued for fixing the class. Found by `/audit-claims` hours later.
+Both shipped; both are now right.
+
+The comment keeps its point at the true number, because the point survives and
+sharpens: elapsed time was never going to surface this defect. A fixture that
+could carry two defects at once was.
+
 ## 0.16.68
 
 ### fixed

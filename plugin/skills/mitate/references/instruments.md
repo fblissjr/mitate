@@ -232,10 +232,23 @@ does.
 declared `h`/`w`/`d` matches the geometry it claims to describe. Measuring that
 means naming scene objects, which is `build.js probe`'s admitted exception and
 not this command's to take. `check` says so on every run, green ones included.
-Two smaller blind spots: a table whose values are computed from geometry built at
-runtime reads as `NaN` here rather than as a number, and a scene that assembles
-`SHOTS` from a loop rather than a literal is reported as unreadable rather than
-checked — in both cases it says which table it could not cover.
+**A table this reader cannot slice is named, not skipped — and that was false
+until 0.16.68.** `check` reads table LITERALS out of the source text, so a table
+assembled by a loop or returned from a call is beyond it. Until 0.16.68 both
+shapes produced a clean green: the loop form evaluated the empty literal as a
+valid table and reported `0 shot(s)`, the call form fell into the same state as a
+2D scene that has no `SHOTS` at all. **A verdict that cannot tell "nothing to
+check" from "could not check" is the exact failure this file exists to track**,
+and it shipped inside the verb whose purpose is catching what a render would
+miss. Now: such a table draws a warning naming it, the header says `SHOTS unread`
+rather than asserting a scene kind, and the verdict line lists either the tables
+covered or the tables not covered.
+
+One blind spot remains and is quieter: a table whose values are computed from
+geometry built at runtime evaluates to `NaN` rather than to a number. The
+cross-references that compare it still fire — a `NaN` anchor fails the `0..1`
+range test, a `NaN` `dur` fails the positive test, both verified — but a `NaN`
+that no comparison reaches passes unremarked.
 
 **The threshold to know about is the repeated-framing warning.** Three is the
 floor, and it has an observation on each side: `gearbox` and `menagerie` each

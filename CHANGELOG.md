@@ -7,6 +7,56 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.68
+
+### fixed
+
+**`build.js check` reported `ok` on a table it could not read.** Shipped one
+version earlier, found the same day by `/audit-claims`. A scene whose `SHOTS` is
+built by a loop gave `0 shot(s)` and a clean green; one returned from a call fell
+into the same state as a 2D scene that has no `SHOTS` at all. Two legal shapes a
+film could plausibly write, both silently uncovered by the verb whose entire
+purpose is catching what a render would miss.
+
+**It is the same silent-scope class closed for the brackets earlier the same
+day** — a green indistinguishable from a run that checked nothing, which
+`--parity-only`'s file count and the bracket tallies already close one tier up.
+Fixing the instances did not prevent the next instance, which is the 2026-07-30
+postmortem's conclusion recurring on a tool written by someone who had read it.
+
+Now: `tableSource` distinguishes *declared but not a literal* from *not declared*
+rather than collapsing both to null; a literal that later lines push into or
+splice is reported rather than read stale; such a table draws a warning naming
+it; the header says `SHOTS unread` instead of asserting `no SHOTS (2D)` about a
+scene that declares one; and **the verdict line states its scope** — either the
+tables covered, or the tables not covered.
+
+Two arms, both watched red first against the live defect: a loop-built and a
+call-built `SHOTS`, each failing with `exit 0, stdout lacks` before the change.
+`bracket-commands.js` at 34 rows.
+
+### changed
+
+**Four claims that describe what `check` covers, corrected in the same commit,
+because each becomes wrong in a new way if the verb changes without them.**
+
+- `references/instruments.md` said such a table "is reported as unreadable rather
+  than checked — in both cases it says which table it could not cover." It said
+  nothing. Corrected in the file whose whole subject is what a check cannot see,
+  and the remaining quieter blind spot — a `NaN` no comparison reaches — is now
+  stated separately from the one that was fixed.
+- `VISION.md` listed pre-render validation among its currently-false criteria.
+  Now partly true, with the boundary drawn narrowly: true for the tables'
+  internal consistency, still false for a declared extent versus its geometry.
+  The determinism-magnitude criterion remains false and says so.
+- `SKILL.md` routed `breakdown.md` as "what nothing checks" — inverted by 0.16.67.
+- `references/breakdown.md`: `flashWidth` is read by all three templates, not
+  "2D and character"; `cameraFloor` by both 3D templates, not "character only".
+  Both errors came from a grep capped with `head -6` whose truncation was read as
+  completeness. And the 2D camera does not "interpolate linearly" — values are
+  lerped against a smoothstep-eased fraction, so motion eases rather than running
+  at constant velocity.
+
 ## 0.16.67
 
 ### added

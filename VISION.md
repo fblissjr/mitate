@@ -310,7 +310,23 @@ Not "are there more features." These:
   the gap is visible afterwards rather than silently absorbed.
 - A session arriving with no context can find what it needs and act correctly.
 
-The last one is measurable and gets measured. Two of the others are currently
-**false** — nothing validates a declaration ahead of rendering, and a determinism
-failure reports no magnitude. They are listed because a criterion you fail is
-worth more than one you have quietly dropped.
+The last one is measurable and gets measured. They are listed because a criterion
+you fail is worth more than one you have quietly dropped — and two of them were
+written on 2026-08-02 as outright false, which is worth recording because one of
+them stopped being so on the same day.
+
+**Pre-render validation: now partly true, and the honest boundary is narrow.**
+`build.js check` (0.16.67) cross-references the declarative tables against each
+other before anything renders — every name a shot uses, every anchor inside its
+beat, captions against the reading limit. What it does **not** do is compare a
+declared extent against the geometry it claims to describe; that needs the scene's
+own objects, which is `probe`'s admitted exception. So the criterion holds for the
+tables' internal consistency and fails for the one case that needs runtime
+geometry — and that case is the layer's most expensive gap, not a rounding error.
+The verb states which tables it covered on every run, because a validator whose
+green cannot be told from a run that read nothing was the first defect it shipped
+with.
+
+**Determinism magnitude: still false.** A determinism failure reports that it
+happened, not how large it was or where. Nothing has changed here, and the guard
+against dogma above is the argument for changing it.

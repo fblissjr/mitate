@@ -128,8 +128,8 @@ misspelled `exposure` renders at the default and looks like an authoring choice.
 
 | key | where | default |
 |---|---|---|
-| `flashWidth` | 2D and character templates | `.25` (per-flash `w` overrides) |
-| `cameraFloor` | character template only | off. Opt-in, world units — clamps the camera's `y` |
+| `flashWidth` | **all three** templates — it lives in the `DRIVER` fence | `.25` (per-flash `w` overrides) |
+| `cameraFloor` | **both 3D** templates — it lives in the `SOLVER` fence, which 2D has no copy of | off. Opt-in, world units — clamps the camera's `y` |
 
 **Validated: one key.** `build.js check` resolves each `flashes[].beat` against
 `BEATS` — the only exercise that resolver gets, since no shipped scene declares a
@@ -243,9 +243,13 @@ const KEYS = [{beat: 'two', at: .45, x: 0, y: -2, zoom: 1.55}];
 ```
 
 2D keeps explicit keyframes where 3D has a solver, on a stated argument: **a flat
-frame has no cinematography to solve.** Values interpolate linearly between
-adjacent keys, with `CONFIG.sway` noise added. World space is 90 units tall, `y`
-down, origin centre, contained on both axes against `FRAME.aspect`.
+frame has no cinematography to solve.** Values are lerped against a
+**smoothstep-eased** fraction of the span — `ss(t, a.t, b.t)`, not `t` itself —
+so motion between adjacent keys eases in and out rather than running at constant
+velocity, with `CONFIG.sway` noise added on top. This file said "interpolate
+linearly" until 2026-08-02; a reader acting on that would have predicted uniform
+motion and been wrong about every 2D camera move. World space is 90 units tall,
+`y` down, origin centre, contained on both axes against `FRAME.aspect`.
 
 **Validated:** the beat name, via `beatAt`, and again by `build.js check` before
 the page loads, along with `at` inside `0..1`. **Not validated:** anything else —

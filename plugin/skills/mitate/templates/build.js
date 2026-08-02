@@ -956,6 +956,24 @@ const FRAME_ASPECT_TOL = 0.005;
 // declare it — a 2D scene has no SHOTS — which the caller separates from the
 // case where it is declared and could not be read.
 const TABLE_OPEN = { '[': ']', '{': '}', '(': ')' };
+// Returned when a table IS declared but its value is not a literal this reader
+// can slice — assembled by a call, or a literal that later lines mutate. It is
+// deliberately NOT null: `null` means "this scene has no such table", which is
+// legitimate (a 2D scene has no SHOTS), and conflating the two let a loop-built
+// SHOTS report `0 shot(s)` under a green verdict until 0.16.68.
+const IMPERATIVE = Symbol('imperative');
+
+// A literal that later lines push into is a literal this reader captured BEFORE
+// the film finished writing it. Scanned rather than parsed, and narrow on
+// purpose: only mutations that change membership, only on the bare table name.
+// `.map()` is absent from this list because the templates all end their table
+// with one and it returns a new array the declaration binds — that is the house
+// idiom, not a mutation of the captured value.
+function mutatedAfterDeclaration(text, name) {
+  const re = new RegExp('(?:^|[^\\w.])' + name +
+    '(?:\\s*\\.\\s*(?:push|unshift|splice|pop|shift)\\s*\\(|\\s*\\[[^\\]]*\\]\\s*=[^=])', 'm');
+  return re.test(text);
+}
 function tableSource(text, name) {
   const m = new RegExp('^[ \\t]*(?:const|let|var)[ \\t]+' + name + '[ \\t]*=', 'm').exec(text);
   if (!m) return null;
@@ -969,7 +987,12 @@ function tableSource(text, name) {
     if (text[i] === '/' && text[i + 1] === '*') { const e = text.indexOf('*/', i + 2); if (e < 0) return null; i = e + 2; continue; }
     break;
   }
-  if (!TABLE_OPEN[text[i]]) return null;                 // `const STYLE = BIBLES.workshop;`
+  // DECLARED, but not as a literal — `const SHOTS = buildShots();`, or
+  // `const STYLE = BIBLES.workshop;`. Returning null here would make it
+  // indistinguishable from a scene that never declares the table, which is a
+  // silent miss rather than a coverage gap the reader can see. The caller
+  // separates the two.
+  if (!TABLE_OPEN[text[i]]) return IMPERATIVE;
   const stack = [];
   for (const from = i; i < text.length; i++) {
     const c = text[i];
@@ -1010,6 +1033,7 @@ const TABLE_GLOBALS = { Math, JSON, Number, String, Array, Object, Boolean, isNa
 function tableValue(text, name) {
   const src = tableSource(text, name);
   if (src === null) return { state: 'absent' };
+  if (src === IMPERATIVE) return { state: 'imperative', why: 'its initializer is not a literal' };
   const scope = new Proxy({}, {
     has: () => true,
     get(t, k) {
@@ -1018,7 +1042,11 @@ function tableValue(text, name) {
     },
   });
   try {
-    return { state: 'ok', value: new Function('__s', `with(__s){return (${src});}`)(scope) };
+    const value = new Function('__s', `with(__s){return (${src});}`)(scope);
+    if (mutatedAfterDeclaration(text, name)) {
+      return { state: 'imperative', why: 'later lines add to or remove from it, so the literal read here is not the table the scene runs' };
+    }
+    return { state: 'ok', value };
   } catch (e) {
     return { state: 'unreadable', why: String(e.message).split('\n')[0] };
   }
@@ -1047,15 +1075,21 @@ function smokeConst(name) {
 
 function check(scene) {
   const text = fs.readFileSync(scene, 'utf8');
-  const found = {}, out = [];
+  const found = {}, out = [], uncovered = [], covered = [];
   const add = (sev, msg) => out.push([sev, msg]);
   for (const name of ['BEATS', 'SHOTS', 'SUBJECTS', 'SIZES', 'CONFIG', 'FRAME', 'KEYS']) {
     const r = tableValue(text, name);
     found[name] = r.state === 'ok' ? r.value : null;
+    if (r.state === 'ok') covered.push(name);
     // Declared and unreadable is a hole in THIS tool, not a verdict on the
     // scene, and it is said out loud: an instrument that quietly checks less
     // than it reports is the failure references/instruments.md exists to track.
     if (r.state === 'unreadable') add(CHECK_WARN, `${name} is declared but could not be read here, so nothing below covers it — ${r.why}`);
+    if (r.state === 'imperative') {
+      add(CHECK_WARN, `${name} is declared but assembled at runtime, so nothing below covers it — ${r.why}. `
+                    + `This verb reads literals; a table built by a loop or a call is beyond it.`);
+      uncovered.push(name);
+    }
   }
   const beats = Array.isArray(found.BEATS) ? found.BEATS : null;
   if (!beats || !beats.length) {
@@ -1214,7 +1248,8 @@ function check(scene) {
   const errors = out.filter(([sev]) => sev === CHECK_ERR).length;
   const warns = out.length - errors;
   console.log(`check ${path.basename(scene)} — ${beats.length} beat(s) / ${TOTAL.toFixed(1)}s`
-    + (shots ? `, ${shots.length} shot(s)` : ', no SHOTS (2D)')
+    + (shots ? `, ${shots.length} shot(s)`
+             : uncovered.includes('SHOTS') ? ', SHOTS unread' : ', no SHOTS (2D)')
     + (subjects ? `, ${subjects.length} subject(s)` : '')
     + (Array.isArray(found.KEYS) ? `, ${found.KEYS.length} camera key(s)` : ''));
   for (const [sev, msg] of out) console.log(`  ${sev.padEnd(5)} ${msg}`);
@@ -1228,7 +1263,14 @@ function check(scene) {
     process.exitCode = 1;
     return;
   }
-  console.log(`\ncheck: ok — 0 errors, ${warns} warning(s)`);
+  // THE VERDICT STATES ITS SCOPE. `ok` on its own cannot be told apart from a
+  // run that read nothing, which is the shape --parity-only's file count and the
+  // brackets' arm tallies already close one tier up — and which this verb
+  // shipped with in 0.16.67: a loop-built SHOTS gave `0 shot(s)` and a green.
+  const scope = uncovered.length
+    ? ` — ${uncovered.length} table(s) NOT covered: ${uncovered.join(', ')}`
+    : ` over ${covered.join(', ')}`;
+  console.log(`\ncheck: ok — 0 errors, ${warns} warning(s)${scope}`);
 }
 
 /* probe — measure the scene's own geometry at one t, instead of inferring it.

@@ -108,6 +108,9 @@ const templateCopy = path.join(work, path.basename(TEMPLATE));
  * silently equals its original is a green arm testing the null change.
  */
 const SHOT = "  {at:['title',0], subject:'chart', size:'FS', angle:0, elev:0},";
+const LIT_SHOTS = "const SHOTS=[\n  {at:['title',0], subject:'chart', size:'FS', angle:0, elev:0},\n].map(sh=>({...sh,t:beatAt(sh.at[0],sh.at[1])}));";
+const IMP_SHOTS = "const SHOTS=[];\nfor (const q of [{at:['title',0], subject:'chart', size:'FS', angle:0, elev:0}])\n  SHOTS.push({...q,t:beatAt(q.at[0],q.at[1])});";
+const NONLIT_SHOTS = "function buildShots(){return [{at:['title',0], subject:'chart', size:'FS', angle:0, elev:0}]\n  .map(sh=>({...sh,t:beatAt(sh.at[0],sh.at[1])}));}\nconst SHOTS=buildShots();";
 const BAD = {};
 const badPath = tag => (BAD[tag] = path.join(work, `check-${tag}.html`));
 const mutate = (tag, pairs) => {
@@ -130,7 +133,8 @@ const mutate = (tag, pairs) => {
 const DRIFT = path.join(work, 'drift');
 const DRIFT_BUILD = path.join(DRIFT, 'build.js');
 for (const t of ['subject', 'focus', 'anchor', 'beat', 'rung', 'order', 'flash', 'frame',
-                 'union', 'anchored-union', 'caption', 'repeat', 'notascene']) badPath(t);
+                 'union', 'anchored-union', 'caption', 'repeat', 'notascene',
+                 'imperative', 'nonliteral']) badPath(t);
 
 const run = (args, cwd, build) => {
   try {
@@ -208,6 +212,8 @@ const ROWS = [
   // cannot tell the two apart would condemn a correct film.
   ['(warn) check union rung',    ['check', BAD.union],            { stdout: 'union of 2 subjects on rung MS' }],
   ['(warn) check union anchored',['check', BAD['anchored-union']], { absent: 'union of' }],
+  ['(red) check loop-built SHOTS',  ['check', BAD['imperative']], { stdout: 'SHOTS is declared but assembled' }],
+  ['(red) check call-built SHOTS',  ['check', BAD['nonliteral']], { stdout: 'SHOTS is declared but assembled' }],
   ['(warn) check caption cps',   ['check', BAD.caption],          { stdout: 'cps against a' }],
   ['(warn) check repeat framing',['check', BAD.repeat],           { stdout: 'share one framing' }],
 ];
@@ -231,6 +237,14 @@ try {
   mutate('anchored-union', shot("  {at:['title',0], subject:['chart','chart'], size:'MS', angle:0, elev:0, anchor:.45},"));
   mutate('repeat',  shot(SHOT + "\n  {at:['mxrow',.2], subject:'chart', size:'FS', angle:0, elev:0},"
                               + "\n  {at:['ports',.2], subject:'chart', size:'FS', angle:0, elev:0},"));
+  // A table the checker CANNOT read must say so. Both shapes below are legal
+  // JS that a film could plausibly write, and before 0.16.68 both produced a
+  // clean green: the loop form evaluated the empty literal as a valid table,
+  // the call form fell into the same 'absent' state as a 2D scene with no
+  // SHOTS at all. A verdict that cannot tell 'nothing to check' from 'could
+  // not check' is the failure this whole file exists to keep out.
+  mutate('imperative',  [[LIT_SHOTS, IMP_SHOTS]]);
+  mutate('nonliteral',  [[LIT_SHOTS, NONLIT_SHOTS]]);
   mutate('flash',   [['  flashes: [],', '  flashes: [{beat:"nosuchbeat", at:0}],']]);
   mutate('frame',   [['px: [1920, 1080]', 'px: [1080, 1920]']]);
   // Long enough to cross the threshold, not merely longer than the original —

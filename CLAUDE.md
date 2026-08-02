@@ -34,8 +34,10 @@ copy of a router is the exact failure this file keeps catching.
 - **Why, and in what order** — `VISION.md`. **The most important document in this
   repo**, and the one to read before deciding anything structural: determinism as
   the instrument rather than the point, `t` as a coordinate and `state` as the
-  intermediate layer, the declarative layers and the open question of where a
-  declaration lives, and the shape a primitive has to have. It carries success
+  intermediate layer, the declarative layers and why where-a-declaration-lives
+  mattered — **that question is DECIDED (2026-08-02); the decision is recorded
+  in `docs/representation.md`'s decision section**, which VISION points at —
+  and the shape a primitive has to have. It carries success
   criteria the project currently **fails**, on purpose
 - **The skill that ships** — `plugin/skills/mitate/SKILL.md`, plus
   `references/` (start with `glossary.md` — the words this project uses as if you

@@ -382,8 +382,17 @@ nothing and the chart re-runs free.
 Each phase ends at a gate a reviewer can check. No phase starts until the
 previous gate is green — except documentation, which trails every phase.
 
+**Three sequences, not one.** Phases 0–6 below are the **capability ladder**
+and are the only strictly sequenced track. **Phase R** (further down) is out of
+band: restructuring under a proven oracle, available whenever a unit is about
+to be rewritten. **The representation track (REP0–REP6, after Gate R)** is
+also out of band: adopted 2026-08-02, implementing the decision recorded in
+[`representation.md`](representation.md), and none of its gates blocks or is
+blocked by a capability gate. A gate on one track never blocks another.
+
 **Marking a gate met here obliges one more edit: `plugin/README.md`'s Status
-line.** That line summarizes which phases are done, and this file is its only
+line.** That obligation covers the capability ladder only — Phases 0–6, which
+is what that Status line summarizes — not Phase R and not the REP track. That line summarizes which phases are done, and this file is its only
 source. Nothing checks the two against each other, so the summary reads wrong
 from the moment a gate moves until someone notices — which is precisely the
 drift that got the README's longer status narrative deleted in 0.16.13. Write
@@ -537,12 +546,15 @@ load-bearing determinism guards, contract exports over internals probing
 per-run vendor cache, and the `motion` second-browser launch removed.
 Verified look-neutral: pre/post example frames byte-identical. Full ledger: the
 predecessor's, consolidated in [`predecessor-record.md`](predecessor-record.md)
-— the bare version number here pointed at the ancestor's numbering, not ours. **Standing maintenance rule from this pass:** the fenced
-blocks span `templates/` AND `examples/`, but a smoke run only checks the
-files it is pointed at — after editing any fenced block, run
-`bun run smoke.js --parity-only templates/*.html examples/*.html` (cross-
-directory) before committing; a per-directory green does not cover the
-template↔example boundary.
+— the bare version number here pointed at the ancestor's numbering, not ours. **Standing maintenance rule from this pass — standing until REP1's emitter
+lands:** the fenced blocks span every carrier directory, but a smoke run only
+checks the files it is pointed at — after editing any fenced block, run the
+cross-directory parity command whose authoritative copy is
+`scripts/install-hooks.sh`'s `HOOK_BODY` (`selfcheck.js` check 8 compares the
+installed hook against it, and the run states its own scope). A per-directory
+green does not cover the template↔example boundary — and an inlined copy of
+the command here once prescribed fewer globs than the check has carriers,
+which is why this line now points instead of restating.
 
 **Phase 2 — Character scaffold.** Skeleton family + proportion vectors +
 shells; IK ported and extended; gait on the new rig; fur-shell and fabric
@@ -782,7 +794,7 @@ majority:
 | b | yes | no | build the control, keep the code | **`selfcheck.js` check 5**, ratcheted at 51 |
 | c | no | yes | recover intent from the control's arms — they are a spec nobody wrote as prose | nothing |
 | d | no | no | archaeology, then decide | **nothing** — `working-plan.md` Track F |
-| e | duplicated by construction | — | the <!--derived:fences-->7<!--/derived--> fences | `--parity-fix` + cross-directory parity |
+| e | duplicated by construction | — | the <!--derived:fences-->7<!--/derived--> fences | `--parity-fix` + cross-directory parity, **until REP1's emitter retires this bucket** (direction decided 2026-08-02 — `representation.md` point 5) |
 
 **Two of the five are already instrumented, and that is the model to copy.**
 Check 5 counts comment lines asserting a measurement without naming a runnable
@@ -802,7 +814,10 @@ measurement claims, by file, and the silent-swallow count beside them:
 | `backend.js` | 182 | 1 | 1 |
 
 **The debt is concentrated, which is good news and should shape the order of
-work.** `build.js` and `shoot.js` carry zero silent swallows across 1,397 lines.
+work.** `build.js` and `shoot.js` carried zero silent swallows across the 1,397
+lines counted 2026-08-01 — `build.js` has since grown by roughly a third (the
+`check` verb, 0.16.67) and the swallow audit has not been re-run over the
+growth, so the conclusion is dated, not current.
 Every one of `smoke.js`'s eleven behaviour-defining thresholds
 (`SHIPPED_SPREAD_FLOOR`, `FRAMING_INVARIANCE_MAD`, the four `EXPOSURE_*`, …) is
 named by **no bracket at all** — several carry a `Bracketed:` claim in the
@@ -944,6 +959,73 @@ asserted; and `bracket-determinism.js` driving the shipped `smoke.js` path rathe
 than its own copy of it. The last clause is the cheapest of the three and the one
 that makes the others trustworthy.
 
+## The representation track (REP0–REP6, adopted 2026-08-02)
+
+Implements the decision recorded in
+[`representation.md`](representation.md)'s decision section. **The seven
+decision points are NOT restated here** — that file owns them, and this
+section owns only the phases and their gates; the argument and tradeoffs
+behind both live in `representation-exploration.html`, which is a draft
+arguing one side and settles nothing. Out of band like Phase R: not sequenced
+behind the capability ladder, available now, and REP1 grows more expensive
+with every example added, which is the argument for its position in the order.
+
+Placed after Phase R deliberately: the two share a premise (a control is only
+worth what its oracle can refuse), and REP1 is what resolves Phase R's triage
+bucket (e).
+
+- **REP0 — decide and record.** *Gate:* the decision section is non-empty, or
+  the deferral is recorded with its trigger. **MET 2026-08-02** (owner;
+  `representation.md`).
+- **REP1 — single-source the kit (the emitter).** The fenced blocks move to
+  one canonical home and a build step assembles carriers from it; the parity
+  check inverts from "all copies agree" to "every carrier matches emitter
+  output"; `--parity-fix`'s job shrinks to "regenerate". Feasibility is
+  proven: `scripts/emit-spike.js` reassembles every carrier byte-identically
+  from film skeleton plus canonical fence store. **The site's
+  source-equals-artifact wording ("the one scene file stays the source",
+  "diffs like source") changes in this same phase** — it stops being true the
+  day carriers become build products, and the site is downstream, so the
+  wording is part of the work. *Gate:* the emitter reproduces every carrier
+  byte-for-byte, behind a bracket recorded red before green. *Refuted if:*
+  carriers need per-film divergence inside fences — then the fences were never
+  kit and the track is miscarved. Until this gate is green, the parity
+  apparatus runs unchanged; no check relaxes in anticipation.
+- **REP2 — one source for semantics.** `build.js check` reads the canonical
+  definitions the kit is built from instead of reimplementing beat
+  accumulation and anchor resolution; the open reimplementation-divergence
+  findings close as a class; TypeScript-at-the-seams (decision point 6) is
+  decided here, where the seams are written anyway. *Gate:* the review's
+  divergence cases (a missing `size`, empty `SHOTS`, `subject: []`,
+  prototype-named beats) resolve identically in `check` and in a driven page.
+  *Standing trigger:* if REP1 stalls more than a working week, build the
+  model-comparison bracket (2026-08-02 postmortem, forward item 5) instead —
+  the class must not stay open on the strength of a plan.
+- **REP3 — close the open bags.** `STYLE`/`CONFIG` gain a key registry
+  **derived from the kit's actual reads** (the mechanical enumeration behind
+  `references/breakdown.md` becomes its source); `check` warns on unknown
+  keys; film-private keys get an explicit marker. *Gate:* a misspelled kit key
+  warns naming the near-miss; every shipped scene is warning-clean after
+  annotation; the registry is derived or controlled, never hand-held.
+  *Refuted if:* the registry cannot be derived from the reads — then it is
+  another copy of the code.
+- **REP4 — extents, derived with an intent channel.** Implements decision
+  point 4: the base extent derives from construction, hand adjustment
+  survives only as a named term. *Gate:* the corpus fixture gains a
+  deliberately wrong extent and the mechanism goes red on it, before any
+  shipped scene is touched.
+- **REP5 — instrument the movement triggers.** Makes the pattern-ledger's
+  counting cheap enough that the Promotion table's triggers actually fire —
+  this file declares them unfireable without a count. *Gate:* a migration
+  proposal arrives with its trigger evidence and named second consumer
+  attached, without a human going looking. *Refuted if:* two more films ship
+  and nothing recurs or blocks — then the residue is residue and the line
+  already sits right.
+- **REP6 — long term, VISION-gated.** The physics bake as the derived-data
+  tier's first large occupant (under the proposal's red lines);
+  presentation-time separation; `state` widening by named parameters. Not
+  scheduled — it is what the boundary was drawn to survive.
+
 ## Examples policy (decided 2026-07-23, measured on a live install)
 
 Examples stay in the plugin dirs. The mechanics, verified on this machine:
@@ -1030,8 +1112,8 @@ defect.
 |---|---|---|---|
 | **contract** | the `window.*` exports | a tool consumes it | a tool would otherwise parse scene internals |
 | **primitive** | pure functions of their arguments — `ramp`, `pulse`, noise, hashes, `solveLimb` | chart-first, byte-compared per backend | a second scene needs the same function |
-| **kit** | the six fenced blocks, material packs, the character scaffold | a showcase scene | **third consumer** — "at a third consumer, extract or marker-fence it" |
-| **vocabulary** | the declarative tables and their semantics — `BEATS`, `SHOTS`, `SIZES`, `STYLE`, `SUBJECTS` | a film that wants it | a film is blocked expressing something the tables cannot say |
+| **kit** | the fenced blocks, material packs, the character scaffold | a showcase scene | **third consumer** — "at a third consumer, extract or marker-fence it" |
+| **vocabulary** | the declarative tables and their semantics — `BEATS`, `SHOTS`, `SIZES`, `STYLE`, `SUBJECTS` | a film that wants it | a film is blocked expressing something the tables cannot say, **or is reliably wrong in a way the tables invite** — the earn-in escape below, generalised, because the declared-extents case (ledger row at 6) blocked no film and fired no trigger as this row was first written |
 | **craft** | `method.md`, `film-language.md`, `characters.md` — rules, failure modes, idioms | a worked instance with evidence | the **second** time a scene solves the same problem better |
 | **the film** | — | — | never promotes; see Anti-template below |
 
@@ -1041,9 +1123,9 @@ defect.
 |---|---|---|
 | a rule or named failure mode in a reference | one paragraph | second instance |
 | a worked example cited from a reference | nothing newly tracked | first instance worth citing |
-| a vocabulary entry | an edge in the dependency graph, plus a validator case | a film blocked without it |
+| a vocabulary entry | an edge in the dependency graph, plus a validator case | a film blocked without it, or reliably wrong without it |
 | a primitive in `KERNEL` | a chart, plus the parity surface | second consumer, chart-proven |
-| a new fenced block, or a new fence | 8-9 carriers + cross-directory parity + version cascade | third consumer |
+| a new fenced block, or a new fence | every carrier + cross-directory parity + version cascade — a cost that falls when REP1's emitter gate is green | third consumer |
 | an instrument | a bracket fired both ways, plus a row in `instruments.md` | earn-in: a film blocked, **or** a third recorded instance of the same wrong answer |
 
 ### Promotion is not code transfer
@@ -1065,6 +1147,11 @@ examples, all from the 2026-07-25 long film:
 - Hand-declared subject extents wrong three times out of five, while the one
   framed from measured `rig.height`/`centerX` was right first try → not code at
   all: **evidence for a vocabulary change**, measured extents replacing declared.
+  **Decided 2026-08-02** ([`representation.md`](representation.md) point 4), and
+  the adopted mechanism is narrower than this line's "replacing": the base
+  extent derives from construction, and hand adjustment survives — as a named
+  intent term, never a bare number. Implementation is REP4, red-first on the
+  corpus fixture.
 - Multi-station travel legs → **nothing yet**. Register-specific to the presenter
   explainer, which is one commission rather than a committed register. Deferred
   with its trigger recorded.
@@ -1101,6 +1188,7 @@ Two consequences:
 The ledger's two entries at **6** are the proof: contact-measurement and declared
 extents were both far past every trigger here, both had a fix specified, and both
 were still unbuilt — one with a shipped code comment claiming the check existed.
+(Declared extents: still unbuilt, no longer undecided — REP4 carries it.)
 
 ### Provenance is required
 

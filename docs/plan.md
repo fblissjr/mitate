@@ -993,12 +993,17 @@ bucket (e).
   **MET 2026-08-02** (0.17.0, `ae9a977`): the store is
   `plugin/skills/mitate/templates/fences/<NAME>.fence.txt`; the rewritten
   `bracket-parity.js` was recorded red against the pre-store check and green
-  on every arm after (runs cited in the 0.17.0 changelog entry); the store
+  on every arm after (the red run is recorded in `ae9a977`'s commit message
+  and the day's log, and was independently reproduced during post-stamp
+  verification); the store
   was extracted byte-identically from the carriers as they stood, and a full
   `--parity-fix` over all of them reported nothing to do. Parity now compares
   each carrier against the store, `--from` is removed with its reason, and
-  the wording obligations landed in the same release (site, SKILL.md,
-  glossary, instruments, invariant 2). Independently re-verified at stamp
+  the wording obligations landed with it — site, SKILL.md, glossary and
+  instruments in 0.17.0; CLAUDE.md invariant 2 minutes later in an
+  unversioned commit, since it is not plugin content; and a sixth surface,
+  `orientation.md`, was missed by that sweep entirely and caught by the
+  post-stamp verification pass. Independently re-verified at stamp
   time: selfcheck, parity-against-store, the full bracket, and the spike,
   each exit 0.
 - **REP2 — one source for semantics.** `build.js check` reads the canonical
@@ -1010,8 +1015,9 @@ bucket (e).
   prototype-named beats) resolve identically in `check` and in a driven page.
   *The stall trigger is retired unfired:* REP1 met the same day it was
   adopted, so the model-comparison bracket (2026-08-02 postmortem, forward
-  item 5) is permanently superseded by the structural path — recorded here
-  because that forward item points at this decision.
+  item 5) is permanently superseded by the structural path. Recorded here
+  and annotated on the forward item itself, so a reader arriving from
+  either side finds the disposition.
 - **REP3 — close the open bags.** `STYLE`/`CONFIG` gain a key registry
   **derived from the kit's actual reads** (the mechanical enumeration behind
   `references/breakdown.md` becomes its source); `check` warns on unknown
@@ -1020,9 +1026,9 @@ bucket (e).
   annotation; the registry is derived or controlled, never hand-held.
   *Refuted if:* the registry cannot be derived from the reads — then it is
   another copy of the code.
-- **REP4 — extents, derived with an intent channel.** Implements decision
-  point 4: the base extent derives from construction, hand adjustment
-  survives only as a named term. *Gate:* the corpus fixture gains a
+- **REP4 — extents.** Implements decision point 4, whose binding terms —
+  including what is forbidden — live in `representation.md` and are not
+  copied here. *Gate:* the corpus fixture gains a
   deliberately wrong extent and the mechanism goes red on it, before any
   shipped scene is touched.
 - **REP5 — instrument the movement triggers.** Makes the pattern-ledger's

@@ -22,10 +22,13 @@ play back pure) or not had.
 - **Editing under `plugin/` without the version cascade.** `plugin.json` +
   `marketplace.json` + a `CHANGELOG.md` entry, or the change never reaches an
   installed user.
-- **Editing one carrier of a fenced block.** `CONTRACT`/`KERNEL`/`SOLVER`/`RIG`/
-  `DRIVER`/`CHARACTER`/`HTML` are byte-identical across every scene that carries
-  them. Edit one, then propagate with `smoke.js --parity-fix --from <that file>`,
-  then run `--parity-only` **cross-directory** to confirm.
+- **Hand-editing a fenced block inside a carrier.** `CONTRACT`/`KERNEL`/
+  `SOLVER`/`RIG`/`DRIVER`/`CHARACTER`/`HTML` live once, in
+  `plugin/skills/mitate/templates/fences/<NAME>.fence.txt` (0.17.0). Edit the
+  store copy, then `smoke.js --parity-fix` regenerates every carrier; run
+  `--parity-only` **cross-directory** to confirm. Never edit a fence in a
+  scene — parity checks each carrier against the store, and there is no
+  `--from`.
 - **Citing a path from inside `plugin/` that lives outside it.** Everything under
   `plugin/` ships to a cache that has no `docs/`, no `CLAUDE.md`, no `scripts/`.
   Such a pointer dangles for every installed user.

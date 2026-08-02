@@ -227,8 +227,8 @@ several open questions stopped being open:</p>
   <tr><td>the site's strategic copy</td>
     <td>"bootstrap until models can do all of this on their own"; source and artifact one
       thing, forever</td>
-    <td>durable-foundation sentence landed; the source-equals-artifact wording is scheduled work
-      inside REP1, the phase that makes it untrue</td></tr>
+    <td>durable-foundation sentence landed; the source-equals-artifact wording was rewritten
+      inside REP1 (0.17.0), the phase that made it untrue</td></tr>
   <tr><td>invariant 2 and the version cascade</td>
     <td>unquestioned</td>
     <td>unchanged today — and explicitly held unchanged until REP1's gate is green; what the
@@ -611,9 +611,9 @@ in opposite directions:</p>
         <li>A compiler is a new load-bearing tool that needs its own controls, red first</li>
         <li><code>git diff</code> on an example stops showing the whole artifact, so
           reviewability of the emitted file must be deliberately preserved</li>
-        <li>The site's public bet says "the one scene file stays the source" and "diffs and
-          versions like source." Emission breaks source-equals-artifact as messaged, so this
-          decision includes site work, not just tooling work</li>
+        <li>The site's public bet said "the one scene file stays the source" and "diffs and
+          versions like source." Emission broke source-equals-artifact as messaged, so the
+          decision included site work — done in 0.17.0, inside REP1, as prescribed</li>
         <li>Migration touches every carrier; sequencing risk is real (gate REP1)</li>
       </ul></div>
     </div>
@@ -744,9 +744,9 @@ check relaxes in anticipation of a later phase.</p>
     current carriers byte-identically before anything may differ. Then carriers flip from
     hand-maintained to derived, and the parity check inverts, from "nine copies agree with each
     other" to "every carrier matches emitter output," before eventually becoming a bracket over
-    the emitter itself. This phase also owns the messaging change: the site currently says "the
-    one scene file stays the source," and REP1 is the point where that sentence stops being true as
-    written. Rewording the site is part of the phase, not an afterthought.</p>
+    the emitter itself. This phase also owned the messaging change: the site's "the one scene
+    file stays the source" stopped being true here, and 0.17.0 reworded it in the same release,
+    as prescribed — the wording rode inside the phase, not after it.</p>
     <p class="gate"><b>path in:</b> open now — the spike proved feasibility, so the work starts
     at the canonical layout (where the one copy of each fence lives, and how it keeps its
     comments), then the emitter, then its bracket proven red on a mutated fence before the first

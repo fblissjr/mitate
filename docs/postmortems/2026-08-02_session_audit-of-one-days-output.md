@@ -221,6 +221,11 @@ overtaken by the recorded decision's structural alternative.
    lookups equal the kit's for the same tables. *Refuted if:* the two cannot be
    compared without loading the page, which would make `check` and `smoke` the
    same instrument and this verb's static premise wrong.
+   *(Disposition, 2026-08-02 evening: superseded unfired. The representation
+   decision's structural path — `check` reading the same canonical fence store
+   the kit is built from — replaces the comparison; the record is `plan.md`'s
+   representation track, REP2, whose stall trigger existed to fall back to
+   this item and never fired.)*
 6. **Point a review at a control against the thing it reimplements**, on anything
    else that mirrors kit logic. It out-yielded every other instrument tried here
    and nothing had tried it.

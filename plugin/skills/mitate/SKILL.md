@@ -254,6 +254,7 @@ Cited above at the step that needs them. In full:
 |---|---|
 | `method.md` | **before building anything** — the failure axes and the discipline |
 | `glossary.md` | a term is doing more work than it looks like |
+| `breakdown.md` | what the declarative tables can say, and what nothing checks |
 | `film-language.md` | authoring `SUBJECTS` and `SHOTS` |
 | `bibles.md` | choosing the look, at spec time |
 | `materials.md` | authoring any surface beyond flat colour |

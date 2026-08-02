@@ -182,11 +182,19 @@ It must be **opt-in and per-object**, never a global mode. Wanting a character t
 clip through a wall as a joke, or gravity set to Mars, is a legitimate authoring
 decision — "cede control here, keep it there" is the interface.
 
-**And it is premature until the layer beneath it is named.** The declarative
-layer that already exists is, in this project's own words, *"substantial, it
-works, and it is unnamed, unspecified, and unvalidated as a whole."* Adding
-another layer on top of tables nobody has enumerated, validated by nothing, buys
-a capability with no foundation. Enumerate first.
+**And it was premature until the layer beneath it was named.** That layer was,
+in this project's own words, *"substantial, it works, and it is unnamed,
+unspecified, and unvalidated as a whole."* Adding another layer on top of tables
+nobody had enumerated, validated by nothing, buys a capability with no
+foundation.
+
+**The enumeration now exists** — `references/breakdown.md`, 2026-08-02. Two of
+its findings change what comes next rather than merely recording it: the layer is
+**uneven**, with real schemas that throw beside open bags that validate nothing;
+and validation clusters where a mistake is *unrepresentable* (an unknown name
+fails a lookup) rather than where it is *expensive* (an extent that does not
+match its geometry passes silently). The second is the gap a compile step closes
+and a runtime cannot.
 
 ### Where a declaration lives is not decided, and it is not a detail
 

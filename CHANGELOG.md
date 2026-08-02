@@ -7,6 +7,51 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.65
+
+### added
+
+**`references/breakdown.md` — the declarative layer, enumerated.** R5.2, and the
+prerequisite `VISION.md` and the open shape question both name: you cannot choose
+a representation for a set nobody has listed. Derived by reading the three
+templates and every shipped example rather than from the plan; the `STYLE` and
+`CONFIG` key surfaces were enumerated mechanically, which is why the
+kit-versus-film split is known rather than guessed.
+
+One section per table — `BEATS`, `STYLE`, `CONFIG`, `FRAME`, `SUBJECTS`, `SHOTS`,
+`SIZES`, `KEYS`, the character proportion vector — each with its fields, its
+consumers, and what validates it.
+
+**Four findings that change what comes next rather than merely recording it:**
+
+- **The layer is uneven.** The proportion vector is a real schema that throws on
+  violation; `STYLE` and `CONFIG` are open bags that validate nothing. A
+  misspelled `exposure` renders at the default and looks like an authoring choice.
+- **Validation clusters where a mistake is UNREPRESENTABLE, not where it is
+  expensive.** Unknown names throw because a lookup fails. The errors that are
+  representable — an extent that does not match its geometry, an anchor outside
+  its beat, a caption that will not fit — have no check, and every one is
+  decidable from the tables before a frame renders.
+- **`STYLE` has twelve kit-read keys and the template declares three.** An author
+  scaffolding from a template cannot discover the other nine except by reading an
+  example, which this project treats as a defect rather than a route. Seven more
+  keys are film-private, and nothing in the source distinguishes the two kinds —
+  so extending the kit risks colliding with a name a film already uses.
+- **Two kit-read `CONFIG` keys appear in no template**, `flashWidth` and
+  `cameraFloor`.
+
+The character vector is named as the model worth copying: a fixed schema with one
+typed hole (`matFor`), from which one constructor yields a bear, a human and an
+invented strider. Structure at the seam, arbitrary code in the leaf.
+
+Deliberately not enumerated: geometry construction and per-frame motion, which
+are authored code rather than declaration and are where most of a film's lines
+live. Naming that boundary is as far as an enumeration can go, and it is the
+question the enumeration existed to make answerable.
+
+`SKILL.md` routes to it. `VISION.md`'s "enumerate first" paragraph is updated,
+since it described a thing that had not been done and now has.
+
 ## 0.16.64
 
 ### changed

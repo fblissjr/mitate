@@ -32,8 +32,10 @@ last updated: 2026-08-02
 > that same local-only film. All are now labelled `(local)`. Promote them as
 > separate changes with their own red, not as a bundle.
 >
-> Also still open in R5: `references/breakdown.md`, `build.js check`, and the
-> kinematic-body amendment to the bake proposal.
+> **R5.2 is DONE (0.16.65, 2026-08-02)** — `references/breakdown.md`, the
+> enumeration `VISION.md` and the shape question both name as their prerequisite.
+> Also still open in R5: `build.js check`, whose work-list the enumeration just
+> named, and the kinematic-body amendment to the bake proposal.
 >
 > **Phase R's first unit is also done** (0.16.61, separate PR) — the determinism
 > trio, including the `!fails.length` guard this plan had recorded as blocked on
@@ -1790,12 +1792,28 @@ asked about one and reaching it without being told where to look.
    it is exactly what a bake refactor would trip over, so pass `rootX`
    explicitly as part of the same pass.
 
-2. **`references/breakdown.md`** — enumerate the declarative layer. It exists,
-   works, and is *"unnamed, unspecified, and unvalidated as a whole."* It was
-   the #1 recommendation in two internal documents, costed at one afternoon and
-   no code, and is a ranked item in none. `working-plan.md:1300` already cites
-   "after the enumeration exists" as a revival trigger for something else — a
-   trigger on a thing nobody scheduled.
+2. **`references/breakdown.md`** — enumerate the declarative layer. **DONE,
+   0.16.65 (2026-08-02).** It existed, worked, and was *"unnamed, unspecified,
+   and unvalidated as a whole"* — the #1 recommendation in two internal
+   documents, costed at one afternoon and no code, and a ranked item in none.
+   The revival trigger elsewhere that read "after the enumeration exists" was a
+   trigger on a thing nobody had scheduled; its enumeration half is now met and
+   its other half is not, which is recorded on the row rather than treated as a
+   fire.
+
+   **What it found, because the findings reorder what follows.** The layer is
+   **uneven** — the character proportion vector is a real schema that throws,
+   `STYLE` and `CONFIG` are open bags that validate nothing. Validation clusters
+   where a mistake is *unrepresentable* (an unknown name fails a lookup) rather
+   than where it is *expensive*: a declared extent that does not match its
+   geometry, an anchor outside its beat, and a caption that will not fit are all
+   decidable from the tables and none is checked. `STYLE` has twelve kit-read
+   keys against three declared in the template, plus seven film-private ones that
+   the source does not distinguish from kit keys.
+
+   **Consequence for item 3 below:** `build.js check` is no longer a list of
+   plausible validations — the enumeration named its work-list, and every item on
+   it is decidable before a frame renders.
 
 3. **`build.js check`** — cross-reference validator over the tables that already
    exist: shot anchors land inside their beat, subject and focus names resolve,

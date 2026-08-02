@@ -9,15 +9,23 @@ pointer or count written in the same sitting as the work.
 
 ## Position
 
+**This section was written twice on the same day, which is the point.** It first
+recorded two open PRs at 0.16.61 and 0.16.62 against a `main` at 0.16.60. Those
+landed within hours. What follows is the end-of-day state; the superseded
+paragraph is not preserved, because unlike a plan document this file has no
+readers who acted on the earlier version.
+
 | | |
 |---|---|
-| `main` | `3bb15b5`, version **0.16.60**, gate and static green |
-| working branch | `r5-state-seam`, clean |
-| open PRs | **#5** `phase-r-determinism-trio` (0.16.61) and **#6** `r5-state-seam` (0.16.62), both green, both `MERGEABLE`/`CLEAN` against main |
-| branch with no PR | `postmortem-what-caught-defects` — docs only, conflicts with nothing |
+| `main` | version **0.16.63**, both PRs merged |
+| open PRs | **none** |
+| deleted | `phase-r-determinism-trio` and `r5-state-seam`, local and on `origin`, both fully merged first |
+| branch with no PR | `postmortem-what-caught-defects` — docs only, still unmerged, conflicts with nothing |
+| local work not yet pushed | `drift-2026-08-02` (two corrections), `snapshot-2026-08-02` (this directory) |
 
-Both PRs report clean because that is measured **against main, not against each
-other**.
+**The `nas` remote was unreachable at cleanup time**, so its `r5-state-seam` ref
+is stale and its `main` is many commits behind. That second remote is easy to
+forget and has been forgotten before.
 
 ## The merge, and what it costs
 
@@ -62,9 +70,17 @@ goes green, but `%cs` becomes the squash date and the freshness check reds on si
 docs dated 2026-08-01. Either strategy leaves main red, and `static.yml` runs on
 every push.
 
-**Verified fix:** merge commits, then a **0.16.63 reconciliation bump** — the
-three cascade files, with a changelog entry recording that no plugin content
-differs from 0.16.62. Tested green: `selfcheck` exit 0, freshness still ok.
+**Fix applied:** merge commits, with the **0.16.63 reconciliation carried in the
+merge commit itself** rather than as a follow-up. Putting it in the merge makes
+that commit non-TREESAME to both parents, so it becomes the anchor and the check
+reads true. A follow-up commit would also have worked, but could not have been
+committed — the pre-commit hook runs `selfcheck`, so the intermediate state was
+unlandable without bypassing a hook.
+
+Verified on the merged tree before pushing: `selfcheck` exit 0 at nineteen
+checks, cascade trigger `0.16.61 → 0.16.63` over eight plugin files, parity ok
+over nine files, `smoke.js` exit 0 with all scenes passing, `bracket-driver.js`
+18 arms 0 skipped.
 
 **The check is not wrong about users.** #5's code does ship in 0.16.62; it is in
 the tree. Check 11 is blind to merge topology, which is a narrower defect than it
@@ -195,14 +211,43 @@ says a change upstream is work on the site or the two drift. The layer
 description directly above the excerpt already promises `camera(state)` and
 "State is a plain value," so updating it makes the page agree with itself.
 
-**3. Check 11's merge-topology blind spot**, above.
+**3. Check 11's merge-topology blind spot**, above. **Not fixed** — changing a
+check means running its bracket red-then-green first, which is its own change.
+
+**All three were acted on the same day.** (1) and (2) are corrected on
+`drift-2026-08-02`. Fixing (2) turned out to be wider than reported: the same
+excerpt was also in `README.md`, and grepping for the old signature found **six
+present-tense claims across four planning documents** asserting that
+`setCamera(t)` takes `t` and that Phase 6's gate is therefore unreachable. The
+most consequential is `plan.md`'s Phase 6 entry — the seam moved that gate from
+*unreachable as written* to *untested*, which is a different state and a better
+one, and the plan did not say so. Corrected without claiming the gate is met,
+because only a spike can measure that.
 
 ## Next work, in order
 
-1. Merge #5, then #6, then the 0.16.63 reconciliation bump in the same sitting.
-   Then `postmortem-what-caught-defects`.
+1. Land `drift-2026-08-02` and this snapshot, then
+   `postmortem-what-caught-defects` — which is where the day's distilled finding
+   lives and which `main` still cannot see.
 2. **R5.2, `references/breakdown.md`** — the prerequisite the NaN question turns
    on.
 3. The corpus debt: `bracket-corpus.js`.
 4. `hide(obj,u)` and `subjectFromObject` — triggers verified as still firing, but
    each is its own change with its own red. Explicitly **not** a bundle.
+
+## Housekeeping surfaced on 2026-08-02, none of it filed anywhere live
+
+Recorded in [`history.md`](history.md) with evidence; listed here because each is
+small, actionable and currently owned by nobody:
+
+- `CHANGELOG.md` carries an `## unreleased` heading stranded mid-file, above a
+  released version, describing shipped work. Nothing checks heading order.
+- Two of the six working days have no session log, and they are the first two.
+- A backticked pointer in the earliest log does not resolve; check 3 excludes
+  backticked prose by design.
+- The 2026-07-30 log's opening summary contradicts its own body.
+- A "four months" duration claim ships inside `smoke.js` in a repo eight days
+  old.
+- A postmortem forward item points at a threshold that has since moved the other
+  way for a good reason recorded only in the code.
+- Eight commits from 2026-08-01 are unsigned. Signing works again.

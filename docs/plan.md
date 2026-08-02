@@ -882,10 +882,33 @@ for `smoke.js` as a whole and is *weakest here*, because separating the two mean
 separating statements, not files.
 
 **Gate for this unit** is Gate R's second clause applied to it: the oracle
-recorded red before the change and green after, both runs cited. The `!fails.length`
-guard (Track F's opening instance) is inside this same unit and is the natural
-thing to settle in the same pass — but only if a fixture that can go red exists
-first, which today it does not.
+recorded red before the change and green after, both runs cited.
+
+> ### DONE (0.16.61). Both decisions separated, and the guard settled with it.
+>
+> `onThrow` is declared per check beside `requires`, with `abandon` / `continue`
+> / `warn` mapping onto the three tiers the code already had. **Undeclared is a
+> hard error, never a default** — a default is how the unargued behaviour arrived.
+> Only `checkBlankFrame` changed policy, `abandon` → `continue`, on the argument
+> recorded above. Red: forcing it to throw took a run from 3 advisory warnings to
+> 1. Green: `bracket-driver.js`, 18 arms, 0 skipped. Corpus verdicts
+> byte-identical across all 9 scenes.
+>
+> **The `!fails.length` guard is gone too.** This paragraph said settling it
+> needed "a fixture that can go red, which today it does not" — 0.16.58's `CLEAN`
+> fixture made one constructible, so the blocker was removed by the arms rather
+> than by argument. The fixture carries two defects at once: a random drawn at <!--count-mention-->
+> load, and a playback loop never started so an unrelated hard fail lands before
+> the trio. With the guard, smoke reported ONLY the playback failure; a scene
+> whose live HTML and recorded MP4 are different films shipped green.
+> `frames.length` stays and is a real precondition; `!fails.length` never was,
+> because the check reloads the page itself.
+>
+> **One correction worth carrying:** that arm's first cut was ~3% flaky (an
+> integer pixel offset with 32 reachable values), caught only because it failed
+> once and passed once with no code change. It now rotates by a raw double. A
+> control that is right 97% of the time teaches people to re-run it until it
+> agrees.
 
 **Gate R:** a ratchet exists for bucket (d) — behaviour-affecting code with no
 recorded reason and no control — seeded at a counted baseline, failing when the

@@ -352,6 +352,59 @@ try {
       'if (frames[i].length < blankFloor) {', 'if (true) {'),
       { code: 'nonzero', says: /looks blank at t=/ }],
 
+    // PHASE R's first unit, as a control rather than an argument. The trio
+    // bundled two decisions into one `try`: "fail rather than warn" (deliberate
+    // and correct) and "abandon every remaining check" (inherited from what a
+    // throw does inside a try block, never argued). The second is indefensible
+    // for checkBlankFrame, which destructures { PLAN, frames, fails }, touches
+    // no page state, and is array indexing -- a harness fault there says nothing
+    // about framing or exposure, so suppressing them loses information for no
+    // safety gain.
+    //
+    // What this bracket-driver.js arm recorded before the change: forcing
+    // checkBlankFrame to throw took the run
+    // from 3 advisory warnings to 1. The two caption results vanished and
+    // framing/exposure never ran. The surviving warning is emitted during setup,
+    // not by an advisory check, which is why this arm asserts a message only
+    // checkCaptionSpeed can print rather than counting warnings.
+    // THE `!fails.length` GUARD, which is the other half of this unit. The guard
+    // read `fails` GLOBALLY, so any unrelated earlier failure disabled the only
+    // check covering load-time nondeterminism -- and nothing exercised it for
+    // four months, because demonstrating it needs a fixture carrying TWO defects
+    // at once, which is why plan.md recorded the fix as blocked on a red-able
+    // fixture that did not exist.
+    //
+    // This arm builds one FROM `CLEAN` rather than storing a second scene: a
+    // random drawn once at load (pure within a session, different per load --
+    // exactly what the reload check exists to catch) plus a playback loop never
+    // started (an unrelated hard fail landing before the trio). With the guard,
+    // smoke reported only the playback failure and the scene shipped green on the
+    // prime directive. The arm requires BOTH messages, so it cannot pass on the
+    // unrelated one alone.
+    ['a load-time random behind an unrelated failure is still caught', s => s,
+      { code: 'nonzero', says: /differs ACROSS a page reload/ },
+      // The load-time value drives a CONTINUOUS rotation, not an integer pixel
+      // offset, and that is a correction rather than a preference. The first cut
+      // shifted a rect by `Math.round(loadSeed * 90)` -- 32 reachable values, so
+      // two loads collided about 3% of the time, the frames matched, and the arm
+      // read WRONG-MESSAGE. This bracket-driver.js arm failed once and passed once
+      // with no code
+      // change between. A control that is right 97% of the time teaches people to
+      // re-run it until it agrees, which is worse than not having it. A rotation
+      // by a raw double differs unless the two randoms are bitwise equal.
+      c => c
+        .replace('let lastT = 0;', 'let lastT = 0;\nconst loadSeed = Math.random() * 0.35;')
+        .replace('g.translate(fx, fy); g.scale(fw / 640, fh / 360);',
+                 'g.translate(fx, fy); g.scale(fw / 640, fh / 360);'
+                 + ' g.translate(320, 180); g.rotate(loadSeed); g.translate(-320, -180);')
+        .replace('\nloop();', '\n// loop() deliberately not called')],
+
+    ['checkBlankFrame throws — advisory checks must still run', s => s.replace(
+      '  const blankFloor = Math.round((VIEWPORT.width * VIEWPORT.height) / 40);',
+      '  const blankFloor = Math.round((VIEWPORT.width * VIEWPORT.height) / 40);\n'
+      + '  throw new Error("forced harness fault in checkBlankFrame");'),
+      { code: 'nonzero', says: /caption reading speed/ }],
+
     // THE ARM THAT GIVES THE THREE ABOVE THEIR TEETH, and the reason it is an
     // arm rather than a sentence: it reproduces the defect they exist to catch.
     // The assertion is forced AND its push is routed into a local sink, while
@@ -385,21 +438,31 @@ try {
       { code: 'zero', says: /all scenes pass/ }],
   ];
 
-  for (const [label, mutate, expect] of REACH_ARMS) {
+  // The optional fourth element transforms the FIXTURE rather than smoke.js.
+  // Deriving a defective scene from CLEAN beats storing a second one: the two
+  // would drift, and a control measuring a stale copy of the thing it guards is
+  // the failure this file exists to prevent.
+  for (const [label, mutate, expect, fixture] of REACH_ARMS) {
     if (!browserReady) {
       console.log(`${label.padEnd(46)} SKIPPED — playwright-core not resolvable from this cwd`);
       skipped++;
       continue;
     }
     const body = mutate(SRC);
-    if (body === SRC && !label.startsWith('clean fixture')) {
+    if (body === SRC && !label.startsWith('clean fixture') && !fixture) {
       console.log(`${label.padEnd(46)} SKIPPED — anchor not found (smoke.js drifted)`);
+      wrong++;
+      continue;
+    }
+    const scene = fixture ? fixture(CLEAN) : CLEAN;
+    if (fixture && scene === CLEAN) {
+      console.log(`${label.padEnd(46)} SKIPPED — fixture anchor not found (CLEAN drifted)`);
       wrong++;
       continue;
     }
     fs.copyFileSync(path.join(HERE, 'backend.js'), path.join(dir, 'backend.js'));
     fs.copyFileSync(path.join(HERE, 'build.js'), path.join(dir, 'build.js'));
-    fs.writeFileSync(path.join(dir, 'clean.html'), CLEAN);
+    fs.writeFileSync(path.join(dir, 'clean.html'), scene);
     const mutantPath = path.join(dir, 'mutant-reach.js');
     fs.writeFileSync(mutantPath, body);
     const { out, code } = run(mutantPath, ['clean.html'], env);

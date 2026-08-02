@@ -329,6 +329,8 @@ async function checkCaptionSpeed(ctx) {
   }
 }
 checkCaptionSpeed.requires = ['page', 'beats', 'warnings'];
+// advisory: an unexpected fault must never flip the exit code
+checkCaptionSpeed.onThrow = 'warn';
 
 // CHECK: caption overflow. #cap is white-space:nowrap, so an over-long
 // caption doesn't wrap — it silently extends past the viewport with no
@@ -390,6 +392,9 @@ async function checkCaptionOverflow(ctx) {
   }
 }
 checkCaptionOverflow.requires = ['page', 'beats', 'warnings', 't'];
+// advisory; it also restores VIEWPORT and seeks back, so a fault here
+// leaves state the next check re-establishes
+checkCaptionOverflow.onThrow = 'warn';
 
 // CHECK: framing is invariant across window shapes.
 //
@@ -459,6 +464,9 @@ async function checkFramingInvariance(ctx) {
   }
 }
 checkFramingInvariance.requires = ['page', 'dur', 't', 'fails', 'warnings'];
+// advisory even though it has a hard-fail BRANCH -- the branch is a scene
+// verdict, a THROW is a harness fault
+checkFramingInvariance.onThrow = 'warn';
 
 // CHECK: exposure, both tails. This template's renderer uses ACES tone
 // mapping (scene.template.html), which blows out pale materials — but a
@@ -520,6 +528,9 @@ async function checkExposure(ctx) {
   }
 }
 checkExposure.requires = ['page', 'dur', 't', 'fails', 'warnings'];
+// same split as framing: its >=99% near-black branch is a scene verdict, a
+// throw is not
+checkExposure.onThrow = 'warn';
 
 // CHECK (hard, FIRST — while the browser is cold): the SHIPPED frame both
 // changes across the film and contains an image. A half-dead backend can
@@ -599,6 +610,9 @@ async function checkShippedFrame(ctx) {
   }
 }
 checkShippedFrame.requires = ['browser', 'file', 'fails', 'noise', 'classify'];
+// hard, but it catches internally and always has; the declaration records
+// that rather than changing it
+checkShippedFrame.onThrow = 'continue';
 
 // CHECK (hard): the film actually PLAYS. Every other check in this file --
 // and every page load in shoot.js -- opens the scene with `?record=1`, and
@@ -669,6 +683,8 @@ async function checkLivePlayback(ctx) {
   }
 }
 checkLivePlayback.requires = ['page', 'file', 'fails', 'warnings'];
+// hard, catches internally; same
+checkLivePlayback.onThrow = 'continue';
 
 // SETUP, not a check. It opens the scene with ?record=1 and establishes the
 // state every check after it reads: dur, the sample PLAN, t, and the backend.
@@ -788,6 +804,11 @@ async function checkDeterminism(ctx) {
   }
 }
 checkDeterminism.requires = ['page', 'dur', 'PLAN', 'fails'];
+// a throw leaves the page seeked somewhere arbitrary, and two advisory
+// checks below carry hard-fail branches -- running them on a broken page
+// manufactures a SCENE fail from a HARNESS fault, the misattribution this
+// repo already ate once
+checkDeterminism.onThrow = 'abandon';
 
 // CHECK (hard): determinism ACROSS a page reload, not just within one session.
 // The loop above proves seekTo is pure *inside* a load; it says nothing about a
@@ -799,17 +820,30 @@ checkDeterminism.requires = ['page', 'dur', 'PLAN', 'fails'];
 // t: the cheapest possible cover for a load-time-nondeterminism class that no
 // in-session check can reach.
 //
-// THE `!fails.length` GUARD IS CARRIED UNCHANGED, and it is known debt. It reads
-// `fails` globally, so ANY unrelated failure earlier in the scene silently
-// disables the only check covering load-time nondeterminism. Written at 0.16.9
-// with no recorded reason and never exercised by any control. It is preserved
-// here deliberately: this extraction's gate is byte-unchanged verdicts, and the
-// whole corpus is green, so a fix would be unvalidatable in the same breath as
-// the move that makes it visible. Filed as Phase R's first instance — changing
-// it is a separate change with its own red.
+// THE `!fails.length` GUARD IS GONE (Phase R, 2026-08-01). What it cost is
+// re-run by bracket-driver.js rather than argued here. It read `fails`
+// GLOBALLY, so any unrelated
+// failure earlier in the scene silently disabled the only check covering
+// load-time nondeterminism. Written at 0.16.9 with no recorded reason and never
+// exercised by any control, which is why it survived four months.
+//
+// Its arm in bracket-driver.js builds a fixture carrying two defects at once —
+// a random drawn at load
+// (what this check exists to catch) and a playback loop never started (an
+// unrelated hard fail before the trio). With the guard, smoke reported ONLY the
+// playback failure: a scene whose live HTML and recorded MP4 are different films
+// shipped green on the clause that matters most. Without it, both are reported.
+// `bracket-driver.js` carries that fixture as an arm, so the red is re-runnable
+// rather than a story.
+//
+// `frames.length` STAYS and is a real precondition — this compares against
+// frames[0]. `!fails.length` never was one: this check navigates and reloads the
+// page itself, so nothing it reads depends on an earlier check having succeeded.
+// That is the whole asymmetry, and it is why the two halves of one `if` had
+// opposite justifications.
 async function checkReloadDeterminism(ctx) {
   const { page, file, PLAN, frames, fails } = ctx;
-  if (!fails.length && frames.length) {
+  if (frames.length) {
     await page.goto('file://' + path.resolve(file) + '?record=1');
     await page.waitForFunction('window.sceneReady === true', { timeout: 20000 });
     await page.evaluate('window.stopPlayback()');
@@ -830,6 +864,9 @@ async function checkReloadDeterminism(ctx) {
   }
 }
 checkReloadDeterminism.requires = ['page', 'file', 'PLAN', 'frames', 'fails'];
+// weaker than the above but real: a throw can land mid-reload, so the page
+// is not the page the remaining checks assume
+checkReloadDeterminism.onThrow = 'abandon';
 
 // CHECK (hard): BACKSTOP ONLY — the shipped-frame spread check strictly
 // dominates this one, and an audit found no mutation that fires here without
@@ -860,6 +897,12 @@ async function checkBlankFrame(ctx) {
   }
 }
 checkBlankFrame.requires = ['PLAN', 'frames', 'fails'];
+// PHASE R, 2026-08-01. It destructures { PLAN, frames, fails }, touches no
+// page state, and is array indexing -- abandonment here was inherited from
+// sharing one try block, never argued. bracket-driver.js re-runs it: forcing a
+// throw took the
+// run from 3 advisory warnings to 1
+checkBlankFrame.onThrow = 'continue';
 
 // The two hard checks that precede the ?record=1 load. Ordered, and the order is
 // the one they ran in inline: the shipped-frame check needs the COLD browser --
@@ -1018,6 +1061,30 @@ for (const [listName, list, expected] of CHECK_ORDER) {
 // all-clear, because every window shape sampled at NaN is identical and a check
 // comparing a frame to itself cannot fail. Confidently wrong on one arm and
 // quietly powerless on the other, from one missing key.
+// WHAT A THROW COSTS IS NOW DECLARED PER CHECK, not decided by which `try` a
+// check happens to sit in (Phase R's first unit, 2026-08-01).
+//
+// The trio bundled two decisions into one control-flow fact. "Fail rather than
+// warn" is deliberate and argued: an advisory check crashing must never flip the
+// exit code, a determinism check crashing must. "Abandon every remaining check"
+// was never argued — it is simply what a throw does inside a `try`, and the trio
+// shared one. Preserving a behaviour through an extraction is not the same as it
+// having a reason.
+//
+// The two are independent axes, and this file already proved it before the split:
+// checkShippedFrame and checkLivePlayback are HARD checks that catch internally
+// and let execution continue. So "it is a hard check" never implied "abandon".
+// There were three tiers in the code and the module comments described two.
+const THROW_POLICY = {
+  // Rethrow: the page is not the page the remaining checks assume.
+  abandon: null,
+  // Record the fault as a scene failure, keep going. Same text the outer catch
+  // produces, so a verdict is byte-identical whichever path recorded it.
+  continue: (ctx, line) => ctx.fails.push(line),
+  // Never flip the exit code — the advisory contract.
+  warn: (ctx, line, name) => ctx.warnings.push(`${name}: check errored — ${line}`),
+};
+
 async function runChecks(checks, ctx) {
   for (const check of checks) {
     const missing = check.requires.filter(k => !(k in ctx));
@@ -1025,7 +1092,23 @@ async function runChecks(checks, ctx) {
       throw new Error(`${check.name} ran before ctx carried ${missing.join(', ')} — this is a `
                     + `smoke.js ordering bug, not a scene defect`);
     }
-    await check(ctx);
+    // Undeclared is a HARD ERROR, never a default. A default is how the
+    // unargued behaviour got here in the first place: it would let a new check
+    // inherit a policy nobody chose for it, which is the exact shape this unit
+    // exists to remove.
+    if (!(check.onThrow in THROW_POLICY)) {
+      throw new Error(`${check.name} declares onThrow='${check.onThrow}', which is not one of `
+                    + `${Object.keys(THROW_POLICY).join(', ')}. Every driven check must say what a `
+                    + `THROW from it costs — that is a harness fault, not a scene verdict, and the `
+                    + `answer differs per check`);
+    }
+    const record = THROW_POLICY[check.onThrow];
+    if (!record) { await check(ctx); continue; }
+    try {
+      await check(ctx);
+    } catch (e) {
+      record(ctx, e.message.split('\n')[0], check.name);
+    }
   }
 }
 

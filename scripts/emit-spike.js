@@ -8,9 +8,10 @@
 // fence store from the first occurrence of each fence, verifies every other
 // occurrence against it, reassembles each carrier from its own skeleton plus
 // the canonical store, and byte-compares the result to the tracked file.
-// Exit 0 only if every carrier reassembles byte-identically AND both inline
-// red arms behave (a mutated canonical fence must be detected; a malformed
-// skeleton must be refused). Uncontrolled by any bracket — the two arms are
+// Exit 0 only if every carrier reassembles byte-identically, every scanned
+// directory contributed at least one carrier, no carrier declares a fence
+// twice, AND both inline red arms behave (a mutated canonical fence must be
+// detected; a malformed skeleton must be refused). Uncontrolled by any bracket — the two arms are
 // self-reported by this run, which is weaker than an external control and is
 // labelled as such in CLAUDE.md's map.
 //
@@ -30,12 +31,23 @@ const DIRS = [
 ];
 const MARK = /==== ([A-Z]+)-(START|END) ====/;
 
-const files = DIRS.flatMap((d) =>
-  readdirSync(d)
+// Every DIRS entry must contribute at least one carrier: a green over a
+// reduced scope is indistinguishable from a green over the full one, which is
+// the run-brackets.sh lesson one tier down. The adversarial audit of
+// 2026-08-02 demonstrated both failure shapes this block closes — a silent
+// green with one directory empty, and an uncaught crash blaming the wrong
+// line with all three empty.
+const files = DIRS.flatMap((d) => {
+  const found = readdirSync(d)
     .filter((f) => f.endsWith(".html"))
     .sort()
-    .map((f) => join(d, f)),
-);
+    .map((f) => join(d, f));
+  if (found.length === 0) {
+    console.error(`emit-spike: FAIL — ${d} matched no carriers`);
+    process.exit(1);
+  }
+  return found;
+});
 
 class SpikeError extends Error {}
 
@@ -44,12 +56,16 @@ class SpikeError extends Error {}
 function decompose(text, label) {
   const lines = text.split("\n");
   const parts = [];
+  const seenNames = new Set();
   let cur = { kind: "film", lines: [] };
   let open = null;
   for (const line of lines) {
     const m = line.match(MARK);
     if (m && m[2] === "START") {
       if (open) throw new SpikeError(`${label}: ${m[1]}-START inside open fence ${open}`);
+      if (seenNames.has(m[1]))
+        throw new SpikeError(`${label}: fence ${m[1]} declared twice in one carrier`);
+      seenNames.add(m[1]);
       parts.push(cur);
       open = m[1];
       cur = { kind: "fence", name: open, lines: [line] };
@@ -87,7 +103,18 @@ let divergent = 0;
 
 for (const f of files) {
   const text = readFileSync(f, "utf8");
-  const parts = decompose(text, f);
+  let parts;
+  try {
+    parts = decompose(text, f);
+  } catch (e) {
+    // A malformed real carrier is refused with the same clean FAIL a scoped
+    // miss gets, not an uncaught stack trace that blames the parser's line.
+    if (e instanceof SpikeError) {
+      console.error(`emit-spike: FAIL — ${e.message}`);
+      process.exit(1);
+    }
+    throw e;
+  }
   const fences = parts.filter((p) => p.kind === "fence");
   for (const p of fences) {
     const joined = p.lines.join("\n");
@@ -152,6 +179,10 @@ console.log(
     `${totalCanon} canonical line(s), ${divergent} divergent fence(s), ${mismatched} reassembly mismatch(es)`,
 );
 
+// `mismatched` cannot fire from carrier content alone — content divergence is
+// pass 1's job and sets `divergent` first. The term guards the round-trip
+// machinery (decompose/assemble) against its own future bugs; arm 1 is the
+// proof that the byte comparison itself can go red.
 if (divergent || mismatched || !armsOk) {
   console.error("emit-spike: FAIL");
   process.exit(1);

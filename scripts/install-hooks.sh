@@ -16,7 +16,9 @@
 #                            stamps, subtree link resolution, provenance headers
 #                            and `Not here` edges, the assertion ratchet, and
 #                            freshness markers. Milliseconds.
-#   smoke.js --parity-only — cross-directory fence parity over every carrier,
+#   smoke.js --parity-only — fence parity: every carrier checked against the
+#                            canonical store (templates/fences/), across every
+#                            carrier directory,
 #                            INCLUDING the defect corpus outside `plugin/`,
 #                            which joins the set deliberately: a regression
 #                            fixture running a stale kernel is not measuring the

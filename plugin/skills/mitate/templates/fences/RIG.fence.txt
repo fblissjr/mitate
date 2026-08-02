@@ -1,0 +1,85 @@
+/* ==== RIG-START =======================================================
+   Renderer, post pipeline, and mesh helpers. Byte-identical in every 3D
+   scene — smoke.js FAILS the run if two checked scenes differ here; edit it
+   in ALL 3D scenes or in none. Fenced because it carries two of the
+   LOAD-BEARING determinism guards (sortObjects=false, frustumCulled=false)
+   — exactly the code whose silent drift costs the most. The light rig below
+   the fence is deliberately OUTSIDE it: lights are tuned per scene.
+   ====================================================================== */
+/* ---------- renderer: WebGPURenderer, both backends ----------
+   One renderer class, two backends. With a WebGPU adapter (WEBGPU=metal in the
+   recorder, or a real browser) it runs native WGSL; with none (default
+   headless, GPU-less CI) it transparently falls back to WebGL2 — same scene
+   code, same TSL materials, measured visually identical. Init is ASYNC: the
+   boot block at the bottom awaits renderer.init() and a compileAsync pre-warm
+   before signaling sceneReady, so the recorder can never capture a frame
+   whose shaders are still compiling. */
+const canvas=document.getElementById('c');
+const renderer=new THREE.WebGPURenderer({canvas,antialias:true,preserveDrawingBuffer:true});
+renderer.setPixelRatio(1);                            // fixed DPR = identical pixels everywhere
+/* sortObjects=false is LOAD-BEARING for determinism on r185's node renderer.
+   Confirmed by a minimal out-of-pipeline reproduction (3 meshes, no shadows,
+   both backends): with depth sorting on, REVISITING a state after the sort
+   order changed renders objects at the previous render's pose — first visit
+   correct, every revisit wrong, 100% deterministic-wrong, sticky across
+   re-renders; the stale object's SHADOW draws at the correct pose while its
+   beauty pass lags. Object motion through depth order is a sufficient
+   trigger; camera cuts are just the common cause. sortObjects=false: 40/40
+   clean in the repro, 16/16 on the real scene. Cost: transparent objects
+   draw in CREATION order — when they overlap on screen, create the farther
+   one first. */
+renderer.sortObjects=false;
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFShadowMap;   // PCFSoft deprecated in r185
+renderer.outputColorSpace=THREE.SRGBColorSpace;   // r152+ name; outputEncoding is gone
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=STYLE.exposure;
+/* uTime is the ONLY sanctioned time source for TSL node materials. The TSL
+   `time` node auto-increments off an internal clock and breaks seekTo
+   byte-identity — never import it. seekTo drives this uniform, so a node
+   graph reading uTime is exactly as pure as a property set from t. */
+const uTime=THREE.uniform(0);
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(STYLE.bg);
+const camera=new THREE.PerspectiveCamera(42,FRAME.aspect,.1,300);
+function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();applyFrameVars();}
+addEventListener('resize',resize);resize();
+
+/* ---------- post pipeline: ALWAYS on, pass-through by default ----------
+   Every scene renders through RenderPipeline even with no effects, so the
+   post path is exercised by smoke's determinism and shipped-frame checks on
+   every scene — the untested path is the broken path (that lesson is why
+   Phase 0 exists). Effects are STYLE flags, per-frame pure only:
+     STYLE.bloom: true | {strength,radius,threshold}  — threshold brackets
+       are UNMEASURED on the TSL implementation; do not import the old
+       UnrealBloomPass numbers (see webgpu-stack.md).
+     STYLE.dof:   true | {maxBlur} — focus distance follows the SHOTS[]
+       `focus` property via the solver's shotFocus, so two adjacent shots
+       differing only in focus, joined by cut:'blend', ARE a rack focus.
+   No temporal passes, ever — they break seekTo byte-identity. */
+const uFocus=THREE.uniform(12);
+const pipeline=new THREE.RenderPipeline(renderer);
+{
+  const scenePass=THREE.pass(scene,camera);
+  let out=scenePass.getTextureNode('output');
+  if(STYLE.dof){const o=STYLE.dof===true?{}:STYLE.dof;
+    out=THREE.dof(out,scenePass.getTextureNode('depth'),uFocus,o.maxBlur===undefined?.02:o.maxBlur);}
+  if(STYLE.bloom){const o=STYLE.bloom===true?{}:STYLE.bloom;
+    out=out.add(THREE.bloom(out,o.strength===undefined?.5:o.strength,o.radius===undefined?.3:o.radius,o.threshold===undefined?.9:o.threshold));}
+  pipeline.outputNode=out;
+}
+
+/* ---------- shared helpers ---------- */
+const S=(r,w=24,h=16)=>new THREE.SphereGeometry(r,w,h);
+const B=(x,y,z)=>new THREE.BoxGeometry(x,y,z);
+const C=(rt,rb,h,s=20)=>new THREE.CylinderGeometry(rt,rb,h,s);
+/* frustumCulled=false is LOAD-BEARING for determinism, not a perf oversight.
+   The node renderer's per-mesh cull decision was measured consuming a STALE
+   pose: a mesh near the frustum edge rendered or vanished depending on which
+   t the camera arrived FROM, and the wrong answer persisted through repeated
+   renders at the same t (one gear tooth, present from one seek path, absent
+   from another — byte-determinism failure, arrival-path-keyed). Scenes here
+   are a few dozen meshes; culling buys nothing and costs the contract. */
+function mesh(g,m,parent,px=0,py=0,pz=0){const o=new THREE.Mesh(g,m);o.position.set(px,py,pz);o.castShadow=true;o.receiveShadow=true;o.frustumCulled=false;if(parent)parent.add(o);return o;}
+function std(color,opts={}){return new THREE.MeshStandardMaterial(Object.assign({color,roughness:.7},opts));}
+/* ==== RIG-END ==== */

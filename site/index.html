@@ -143,7 +143,7 @@
       <div class="claim reveal">
         <div class="n">what you gain</div>
         <h2>A scene is text, so an agent can edit it.</h2>
-        <p>Because the output is code rather than pixels, an agent can reshoot <b>one shot</b> without re-rendering the rest, and swap the entire look by changing one line. It diffs and versions like source. It renders at any resolution from the same file, because there is nothing baked in. And determinism means a regression is <b>byte-detectable</b> — the same <span class="mono">t</span> either matches the last run or it does not.</p>
+        <p>Because the output is code rather than pixels, an agent can reshoot <b>one shot</b> without re-rendering the rest, and swap the entire look by changing one line. The film's own code diffs and versions like source — the shared kit inside each file is stamped from one canonical store, so a diff is the film changing, not boilerplate. It renders at any resolution from the same file, because there is nothing baked in. And determinism means a regression is <b>byte-detectable</b> — the same <span class="mono">t</span> either matches the last run or it does not.</p>
       </div>
       <div class="claim reveal">
         <div class="n">what it can't do</div>
@@ -301,7 +301,7 @@
         <div class="stage-step"><div class="sn">02 · SCAFFOLD</div><h3>One file</h3><p>Geometry, materials, characters, shots assembled into a self-contained HTML scene on the window contract.</p><span class="arrow">→</span></div>
         <div class="stage-step"><div class="sn">03 · REVIEW</div><h3>Three axes</h3><p>Composition (inside a frame), continuity (between frames), semantics (captions covered). Looking, not filenames.</p><span class="arrow">→</span></div>
         <div class="stage-step"><div class="sn">04 · GATE</div><h3>Smoke</h3><p>Determinism, a shipped-frame check, aspect containment. The automated floor before any full shoot.</p><span class="arrow">→</span></div>
-        <div class="stage-step"><div class="sn">05 · DELIVER</div><h3>Four formats</h3><p>HTML, MP4, WebP, AVIF — chosen at spec time. Whatever ships, the one scene file stays the source.</p></div>
+        <div class="stage-step"><div class="sn">05 · DELIVER</div><h3>Four formats</h3><p>HTML, MP4, WebP, AVIF — chosen at spec time. Whatever ships, every format renders from the one scene file.</p></div>
       </div>
     </div>
 

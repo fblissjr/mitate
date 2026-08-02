@@ -1,0 +1,62 @@
+<!-- ==== HTML-START ==== -->
+<!-- Shared page scaffold (overlay CSS + caption/title/vig/flash DOM), byte-identical
+     in every 3D scene: smoke.js parity-checks this HTML fence. Edit it in ALL
+     scenes or in none. -->
+<style>
+  /* Overlay text lives in the DOM, not the canvas: it stays crisp in screenshots
+     and restyles without touching the scene. Colors/fonts come from CONFIG below. */
+  :root{--fx:0px;--fy:0px;--fw:1920px;--fh:1080px;}
+  html,body{margin:0;padding:0;overflow:hidden;background:#0e0b14;width:100%;height:100%;}
+  #c{display:block;width:100vw;height:100vh;}
+  #cap{position:fixed;left:calc(var(--fx) + var(--fw)/2);bottom:calc(var(--fy) + var(--fh)*.055);transform:translateX(-50%);
+    font:600 calc(var(--fw)*.015625)/1.3 "Avenir Next","Segoe UI",system-ui,sans-serif;
+    color:#fff;background:rgba(20,14,30,.62);padding:calc(var(--fw)*.00729167) calc(var(--fw)*.01770833);border-radius:999px;
+    white-space:nowrap;opacity:0;border:1px solid rgba(255,255,255,.18);
+    text-shadow:0 2px 8px rgba(0,0,0,.5);}
+  #title{position:fixed;left:calc(var(--fx) + var(--fw)/2);top:calc(var(--fy) + var(--fh)*.07);transform:translateX(-50%);text-align:center;
+    font-family:"Avenir Next","Segoe UI",system-ui,sans-serif;color:#fff;opacity:0;}
+  #title h1{font-size:calc(var(--fw)*.02291667);margin:0;font-weight:800;text-shadow:0 3px 14px rgba(0,0,0,.55);}
+  #title p{font-size:calc(var(--fw)*.0125);margin:calc(var(--fw)*.003125) 0 0;font-weight:500;opacity:.9;}
+  /* will-change pins these as compositor layers. Without it Chrome re-rasterizes
+     the text with a different AA mode after opacity round-trips through 0, so the
+     same t can differ by a few pixels depending on seek ORDER -- which breaks the
+     frames-shot-in-any-order guarantee for any frame containing overlay text. */
+  #cap,#title{will-change:opacity;}
+  #flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;}
+  #vig{position:fixed;inset:0;pointer-events:none;
+    background:radial-gradient(ellipse at center,transparent 58%,rgba(10,6,18,.42) 100%);}
+  /* Boot card: the only thing on screen while shaders compile (1-7s on a cold
+     open). Pure DOM, removed BEFORE sceneReady goes true -- the recorder waits
+     on sceneReady, so no shot can ever contain it. Without this a cold open is
+     a blank dark page that reads as a broken link. */
+  #boot{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+    background:#0e0b14;color:#fff;font-family:"Avenir Next","Segoe UI",system-ui,sans-serif;text-align:center;}
+  #boot b{font-size:clamp(20px,4vw,34px);font-weight:800;letter-spacing:-.02em;}
+  #boot span{font-size:clamp(11px,1.7vw,14px);opacity:.55;font-weight:500;}
+  #boot i{width:38px;height:2px;border-radius:1px;background:rgba(255,255,255,.22);position:relative;overflow:hidden;}
+  #boot i::after{content:"";position:absolute;inset:0;background:#fff;transform:translateX(-101%);animation:bootsweep 1.1s ease-in-out infinite;}
+  @keyframes bootsweep{50%{transform:translateX(0)}100%{transform:translateX(101%)}}
+  @media (prefers-reduced-motion:reduce){#boot i{display:none}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="vig"></div>
+<div id="title"><h1></h1><p></p></div>
+<div id="cap"></div>
+<div id="flash"></div>
+<div id="boot"><b></b><span>compiling shaders — a few seconds on first open</span><i></i></div>
+<!-- PLACEHOLDER. `bun run build.js vendor` REPLACES this tag with three itself,
+     inlined, and deletes the intermediate file: one scene = one self-contained
+     .html, no sibling .js, no CDN. Never point this at a CDN — the render must
+     not touch the network, and three dropped its UMD build after 0.160 so a CDN
+     copy cannot be loaded from a classic script anyway. It MUST stay a classic
+     script, not type="module": Chrome CORS-blocks ES module imports over
+     file://, and opening the scene directly from disk is the whole point.
+     ensureVendor() runs before every build.js command that opens a scene (NOT
+     shoot.js, which never embeds — SKILL.md documents that exception), so this
+     tag is EMBEDDED IN PLACE rather than failed: bundle() calls ensureVendor
+     first and only throws if the tag survives that. What smoke.js genuinely
+     fails is a NON-canonical external ref — a CDN URL, a differently-named
+     bundle — which ensureVendor skips and the external-ref check then catches. -->
+<!-- ==== HTML-END ==== -->

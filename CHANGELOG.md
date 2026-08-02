@@ -7,6 +7,45 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.17.0
+
+### changed
+
+**The fenced kit is single-sourced: parity inverted from "nine copies agree"
+to "every carrier matches the canonical store."** The seven fences now live
+once, in `templates/fences/<NAME>.fence.txt` beside `smoke.js`, and every
+carrier's copy is checked against them. The gate for landing this was
+byte-identity: the store was extracted from the carriers as they stood, and a
+full `--parity-fix` over all nine reported nothing to do — zero behavior
+change, proven before anything was allowed to differ.
+
+What the inversion buys, each shape pinned by a `bracket-parity.js` arm run
+red against the pre-store check first:
+
+- nine copies drifting *together* — a bad propagation laundered into every
+  carrier — now fails, because the store is the copy you edit deliberately;
+- a single scanned scene is a real comparison (the store is always the other
+  side), so the old "parity inert below two scenes" note is gone and a
+  drifted singleton that used to exit 0 now goes red;
+- the store is validated before any scan: a missing, partial, extra-file or
+  mangled store refuses the whole run rather than silently shrinking the
+  fence set it compares.
+
+**`--parity-fix` is now regeneration, not propagation.** It rewrites fences
+from the store; `--from` is refused with the reason (a named-carrier source
+is a second source of truth). The run reports the fences that actually
+changed, not the seven the store carries. All the write-path guarantees
+carry over: validate every file before the first byte, writability checked
+up front, a partial write is loud.
+
+The workflow for editing shared kit code is now: edit the store copy, run
+`--parity-fix`, read the diff. Hand-editing a fence inside a scene is the
+thing the check exists to catch; a scene that legitimately diverges still
+removes its markers and leaves the parity set. SKILL.md, `glossary.md`,
+`instruments.md` and the site's source-of-truth wording updated in the same
+release — "the one scene file stays the source" stopped being true as
+written the day the kit became a build product.
+
 ## 0.16.70
 
 ### fixed

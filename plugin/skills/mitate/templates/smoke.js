@@ -8,23 +8,27 @@
 //
 //   bun run smoke.js                 -> checks every *.html in cwd (skips .bundled)
 //   bun run smoke.js <scene.html>... -> checks the named scenes
-//   bun run smoke.js --parity-fix --from <canonical.html> [scene.html...]
-//                                    -> WRITES: propagates every fenced block
-//                                       from the NAMED source into the other
-//                                       carriers. The source is never inferred,
-//                                       a malformed source or target refuses the
+//   bun run smoke.js --parity-fix [scene.html...]
+//                                    -> WRITES: regenerates every fenced block
+//                                       in the named carriers from the canonical
+//                                       fence store (fences/ beside this file;
+//                                       --store <dir> overrides, for brackets).
+//                                       The store is the single source — there
+//                                       is no --from and no majority vote. A
+//                                       malformed store or target refuses the
 //                                       whole run, and nothing is written until
 //                                       every file has validated. Read the diff
-//                                       before committing: this is propagation,
-//                                       not review.
+//                                       before committing: regeneration is
+//                                       propagation, not review.
 //   bun run smoke.js --parity-only [scene.html...]
-//                                    -> marker parity + template integrity ONLY.
-//                                       No browser, ~0.2s. For a pre-commit, CI's
-//                                       cheap stage, or a quick check after
-//                                       editing a KERNEL/SOLVER block in one
-//                                       scene. Callers should invoke THIS rather
-//                                       than reimplement the check; see
-//                                       references/instruments.md.
+//                                    -> fence-vs-store parity + template
+//                                       integrity ONLY. No browser, ~0.2s. For a
+//                                       pre-commit, CI's cheap stage, or a quick
+//                                       check on a single scene — one file is a
+//                                       real comparison now, because the store
+//                                       is always the other side. Callers should
+//                                       invoke THIS rather than reimplement the
+//                                       check; see references/instruments.md.
 //
 // Checks per scene (one artifact — the source/bundled pair collapsed):
 //   1. the page loads with zero console/page errors (incl. deprecation warnings)
@@ -89,6 +93,84 @@ const SOFT_CONTRACT = ['BEATS', 'FRAME', 'FLASHES', 'CAPFADE'];
 // and one more thing that can misfire -- source-of-truth.md says to prefer the
 // deletion, and this is that.
 const FENCES = ['CONTRACT', 'KERNEL', 'SOLVER', 'RIG', 'DRIVER', 'CHARACTER', 'HTML'];
+// THE one fence-block pattern, shared by the store loader, the scan and the
+// fix. It lived as two inline copies (scan + fix) that happened to agree;
+// the store loader would have been a third, and three copies of a regex is
+// how one of them drifts a character and a malformed block passes exactly one
+// of the three doors. HTML fences the shared page scaffold, which lives
+// outside <script> — its markers are HTML comments, not JS ones.
+const fenceRe = name => name === 'HTML'
+  ? new RegExp(`<!-- ==== ${name}-START ==== -->[\\s\\S]*?<!-- ==== ${name}-END ==== -->`)
+  : new RegExp(`\\/\\* ==== ${name}-START ====[\\s\\S]*?\\/\\* ==== ${name}-END ==== \\*\\/`);
+
+/* ---------- the canonical fence store ---------------------------------------
+   fences/<NAME>.fence.txt beside this file, one per FENCES entry: the SINGLE
+   SOURCE every carrier's fenced blocks are regenerated from and checked
+   against. Ships inside the plugin subtree on purpose — an installed smoke.js
+   resolves it from its own directory, so the cache is self-consistent and no
+   path escapes the subtree (CLAUDE.md invariant 3).
+
+   The loader REFUSES a store it cannot vouch for, and collects every problem
+   before exiting — being told all of them at once is the difference between
+   one fix and seven runs. Refused, not skipped, because each shape below is a
+   scan that silently shrank:
+     - unreadable dir: parity would compare zero fences and print ok;
+     - missing file:  that fence drops out of the comparison for EVERY carrier;
+     - extra file:    either a typo for a real fence (checked by nothing, while
+                      the author believes it is) or dead weight that looks
+                      load-bearing;
+     - malformed block: regenerating from it would write the corruption into
+                      every carrier and report success doing it.
+   Dotfiles are ignored — a .DS_Store must not block a commit — but anything
+   else unexpected refuses. Store files carry the block verbatim plus one
+   trailing newline (the POSIX text-file shape editors enforce); exactly that
+   newline is stripped on read, and any further deviation is a real mismatch. */
+function loadFenceStore(dir) {
+  const problems = [];
+  let entries = null;
+  try { entries = fs.readdirSync(dir); }
+  catch (e) {
+    console.error(`fence-store: cannot read ${dir} — ${e.code || e.message}. The canonical `
+      + `fence store ships beside smoke.js; without it no fence can be checked, so refusing `
+      + `rather than scanning zero fences and reporting ok.`);
+    process.exit(1);
+  }
+  const expected = new Set(FENCES.map(n => `${n}.fence.txt`));
+  for (const f of entries) {
+    if (f.startsWith('.')) continue;
+    if (!expected.has(f)) {
+      problems.push(`${f} is not a fence in FENCES — either a typo for one (in which case `
+        + `nothing is checking it while its author believes otherwise) or dead weight that `
+        + `looks load-bearing. Remove it or register it in FENCES.`);
+    }
+  }
+  const store = new Map();
+  for (const name of FENCES) {
+    const file = `${name}.fence.txt`;
+    let raw = null;
+    try { raw = fs.readFileSync(path.join(dir, file), 'utf8'); }
+    catch (e) {
+      problems.push(`${dir} is missing ${file} — the store must carry every fence in FENCES; `
+        + `a partial store silently shrinks the parity scope for every carrier.`);
+      continue;
+    }
+    const block = raw.endsWith('\n') ? raw.slice(0, -1) : raw;
+    const RE = new RegExp(`^${fenceRe(name).source}$`);
+    if (!RE.test(block)) {
+      problems.push(`${file} is not a single well-formed ${name} block — repair BOTH markers; `
+        + `regenerating from a mangled store would write the corruption into every carrier.`);
+      continue;
+    }
+    store.set(name, block);
+  }
+  if (problems.length) {
+    console.error(`fence-store: ${problems.length} problem(s) in ${dir}, refusing to scan:`);
+    for (const p of problems) console.error('       ' + p);
+    process.exit(1);
+  }
+  return store;
+}
+
 const VIEWPORT = { width: 640, height: 360 };
 const sha256 = buf => crypto.createHash('sha256').update(buf).digest('hex');
 
@@ -1298,43 +1380,52 @@ async function checkScene(browser, file) {
   // bash re-implementation of it had already diverged from this one on its
   // first day (it dropped a file with a mangled START marker silently).
   const parityOnly = argv.includes('--parity-only');
-  // --parity-fix takes a VALUE flag, so the scene list can no longer be built
-  // by filtering one string out of argv — `--from a.html` would leave `a.html`
-  // in the list and the canonical would be treated as a scene to scan.
+  // --store takes a VALUE flag, so the scene list can no longer be built by
+  // filtering one string out of argv — `--store dir` would leave `dir` in the
+  // list and the store path would be treated as a scene to scan.
   const parityFix = argv.includes('--parity-fix');
-  let fixFrom = null, sawFrom = false;
+  let storeDir = null, sawStore = false, sawFrom = false;
   let scenes = [];
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--parity-only' || a === '--parity-fix') continue;
-    if (a === '--from') { sawFrom = true; fixFrom = argv[++i] ?? null; continue; }
+    if (a === '--store') { sawStore = true; storeDir = argv[++i] ?? null; continue; }
+    if (a === '--from') { sawFrom = true; i++; continue; }
     scenes.push(a);
   }
 
-  // TWO FLAG-COMBINATION REFUSALS, both from the 2026-07-31 review and both
-  // reproduced against live fixtures. Refusals rather than best-effort handling
-  // because each failure mode is SILENT — it exits 0 and reports success.
+  // FLAG REFUSALS. Refusals rather than best-effort handling because each
+  // failure mode is SILENT — it exits 0 and reports success. The first two are
+  // from the 2026-07-31 review, reproduced against live fixtures; the third is
+  // the same value-flag class applied to the flag that replaced --from.
   //
   //   * --parity-only + --parity-fix: `parityOnly` was computed and then never
   //     consulted, so --parity-fix silently won. --parity-only is the read-only
   //     contract that static.yml and the INSTALLED pre-commit hook run; a
   //     read-only contract an adjacent flag can turn into a writer is not one.
-  //   * --from without --parity-fix: the value was consumed regardless, eating
-  //     the NEXT FILENAME out of a read-only scan. Reproduced: two genuinely
-  //     drifted files scanned as one and reported green. Silently scanning one
-  //     file fewer than asked is the same class as the mangled-marker episode —
-  //     the check goes quiet and the exit code says everything is fine.
+  //   * --from, anywhere: dead since the store became the single source, and
+  //     consuming it silently would eat the NEXT FILENAME out of the scene
+  //     list — the original --from defect — while teaching the caller that a
+  //     named-carrier source still exists. One refusal, one explanation.
+  //   * --store without a value: the flag would swallow nothing and default
+  //     silently, scanning against a store the caller did not intend.
   const refuseArgs = msg => { console.error(`smoke: ${msg}`); process.exit(1); };
   if (parityOnly && parityFix) {
     refuseArgs('--parity-only and --parity-fix are mutually exclusive. --parity-only is the '
              + 'read-only half that CI and the pre-commit hook run and it must never write; '
              + 'run the fix as its own deliberate invocation.');
   }
-  if (sawFrom && !parityFix) {
-    refuseArgs(`--from is only meaningful with --parity-fix. Consuming it here would swallow `
-             + `${JSON.stringify(fixFrom)} out of the scene list and scan one file fewer than `
-             + `you asked for, reporting green for the file it never read.`);
+  if (sawFrom) {
+    refuseArgs('--from is gone: the canonical fence store is the single source now. Edit '
+             + 'fences/<NAME>.fence.txt beside smoke.js and run --parity-fix to regenerate '
+             + 'every carrier from it; propagating from a named carrier would put a second '
+             + 'source of truth back into the world.');
   }
+  if (sawStore && storeDir == null) {
+    refuseArgs('--store needs a directory argument. Without one the run would fall back to '
+             + 'the default store and scan against fences the caller did not name.');
+  }
+  storeDir = storeDir ?? path.join(__dirname, 'fences');
 
   if (!scenes.length) {
     scenes = fs.readdirSync(process.cwd())
@@ -1346,83 +1437,57 @@ async function checkScene(browser, file) {
   }
   if (!scenes.length) { console.error('no scenes to check'); process.exit(1); }
 
-  // --parity-fix --from <canonical>: the WRITE half of parity. --parity-only
-  // reports that the copies disagree; this makes them agree, from a source you
-  // NAME. Hand-propagation is the tax that measurement made visible, and the
-  // size of that tax is REPORTED BY THE RUN rather than written here: see the
-  // `held byte-identical` figure on the --parity-only verdict line.
+  // --parity-fix: the WRITE half of parity, and since the store became
+  // canonical, THE EMITTER. --parity-only reports that a carrier disagrees
+  // with the store; this regenerates every fenced block in every named carrier
+  // FROM the store. The size of the surface it maintains is REPORTED BY THE
+  // RUN rather than written here: see the `held byte-identical` figure on the
+  // --parity-only verdict line.
   //
-  // This comment carried the number until 2026-08-02, and it was wrong. It read
-  // 4,611 — measured 2026-07-30, with no arm in bracket-parity.js able to see it
-  // go stale, because nothing derived it to compare against. Before CONTRACT
-  // became the seventh fence and before the ninth carrier joined, which together
-  // added ~24%. The true figure was 5,704. A count beside the thing it counts, in the file that
-  // does the counting, stale for eleven versions and restated in three other
-  // tracked files. Nothing could have caught it: "lines held byte-identical" is
-  // not one of check 13's registered countables, and no bracket reads prose.
-  // Deriving it is the only fix that stays true.
+  // (A comment here carried that number until 2026-08-02, and it was wrong —
+  // stale for eleven versions, because nothing derived it. Deriving it is the
+  // only fix that stays true.)
   //
   // TWO NON-NEGOTIABLES, both bracketed in bracket-parity.js:
   //
-  //   * THE SOURCE IS NAMED, NEVER INFERRED. There is no majority vote and no
-  //     "most common block wins". A majority is precisely how a block that
-  //     drifted into three files rewrites the two that were still right — the
-  //     tool would launder a regression into every carrier and report success.
-  //     No --from, no write.
-  //   * A MALFORMED SOURCE IS REFUSED, and so is a malformed target. `-START`
-  //     without a well-formed block is the mangled-marker shape that already
-  //     made this check go quiet once (see the parity section below); reading a
-  //     block out of one, or writing a good block into one, would corrupt a
-  //     file that is already broken in a way nothing else reports.
+  //   * THE STORE IS THE ONLY SOURCE. No --from, no majority vote, no "most
+  //     common block wins". A named-carrier source is a second source of
+  //     truth, and a majority is precisely how a block that drifted into three
+  //     files rewrites the two that were still right — the tool would launder
+  //     a regression into every carrier and report success.
+  //   * A MALFORMED STORE IS REFUSED (loadFenceStore exits before this block
+  //     runs), and so is a malformed target. `-START` without a well-formed
+  //     block is the mangled-marker shape that already made this check go
+  //     quiet once (see the parity section below); writing a good block into
+  //     a file broken in ANOTHER fence would corrupt a carrier that is already
+  //     broken in a way nothing else reports.
   //
   // AND ONE PROPERTY THAT OUTRANKS BOTH: every file and every fence is
   // validated BEFORE the first byte is written. A refusal that has already
   // rewritten three of eight carriers leaves the corpus in a state no check
   // describes and no author expects — worse than either finishing or declining
   // cleanly. That is why this collects `writes` and applies them at the end.
+  const fenceStore = loadFenceStore(storeDir);
   if (parityFix) {
-    const reFor = name => name === 'HTML'
-      ? new RegExp(`<!-- ==== ${name}-START ==== -->[\\s\\S]*?<!-- ==== ${name}-END ==== -->`)
-      : new RegExp(`\\/\\* ==== ${name}-START ====[\\s\\S]*?\\/\\* ==== ${name}-END ==== \\*\\/`);
     const refuse = msg => { console.error(`parity-fix: ${msg}`); process.exit(1); };
 
-    if (!fixFrom) {
-      refuse('need --from <canonical.html>. The source is named, never inferred — there is no '
-           + 'majority vote here, because a block that drifted into three carriers would '
-           + 'otherwise rewrite the two that were correct, and report success doing it.');
-    }
-    let srcText = null;
-    try { srcText = fs.readFileSync(fixFrom, 'utf8'); }
-    catch (e) { refuse(`cannot read source ${fixFrom} — ${e.code || e.message}`); }
-
-    const blocks = new Map();
-    for (const name of FENCES) {
-      const RE = reFor(name);
-      if (srcText.includes(`${name}-START`) && !RE.test(srcText)) {
-        refuse(`source ${fixFrom} has ${name}-START but no well-formed ${name} block — refusing to `
-             + `propagate from a malformed source. Repair BOTH markers there first; a mangled END `
-             + `reads identically to a missing one here.`);
-      }
-      const m = srcText.match(RE);
-      if (m) blocks.set(name, m[0]);
-    }
-    if (!blocks.size) refuse(`source ${fixFrom} carries no fenced block — nothing to propagate`);
-
-    const targets = scenes.filter(f => path.resolve(f) !== path.resolve(fixFrom));
+    const targets = scenes;
     const writes = [];
+    const changedFences = new Set();
     for (const f of targets) {
       let txt = null;
       try { txt = fs.readFileSync(f, 'utf8'); }
       catch (e) { refuse(`cannot read ${f} — ${e.code || e.message}`); }
 
-      // VALIDATE OVER ALL SEVEN FENCES, not over `blocks`. Iterating the fences
-      // the SOURCE happens to carry is how a target broken in a fence the source
-      // lacks got written anyway, exit 0 — and it is not hypothetical: propagating
-      // from scene2d.template.html, which carries 2 of 7, validated two fences
-      // while writing to all nine carriers. The guard's subject is the TARGET's
-      // integrity, so the target's own markers decide what gets inspected.
+      // VALIDATE OVER ALL SEVEN FENCES, not just the ones that will change.
+      // Iterating a narrower set is how a target broken in an untouched fence
+      // got written anyway, exit 0 — not hypothetical: the pre-store tool
+      // iterated the fences its SOURCE carried, and propagating from
+      // scene2d.template.html (2 of 7) validated two fences while writing to
+      // all nine carriers. The guard's subject is the TARGET's integrity, so
+      // the target's own markers decide what gets inspected.
       for (const name of FENCES) {
-        const RE = reFor(name);
+        const RE = fenceRe(name);
         if (txt.includes(`${name}-START`) && !RE.test(txt)) {
           refuse(`${f} has ${name}-START but no well-formed ${name} block — refusing the WHOLE run `
                + `rather than rewriting some carriers and not others. Nothing has been written.`);
@@ -1441,15 +1506,18 @@ async function checkScene(browser, file) {
       }
 
       let next = txt;
-      for (const [name, block] of blocks) {
-        const RE = reFor(name);
+      for (const [name, block] of fenceStore) {
+        const RE = fenceRe(name);
         // A file that does not carry this fence is LEFT ALONE, never given one:
         // removing your markers is how a scene legitimately leaves the parity
         // set, and re-adding them would drag it back in without being asked.
         // Function replacement, not a string: `$&` and `$1` inside a fenced
         // block would otherwise be read as replacement patterns and silently
         // mangle the very bytes this exists to keep identical.
-        if (RE.test(next)) next = next.replace(RE, () => block);
+        if (!RE.test(next)) continue;
+        const replaced = next.replace(RE, () => block);
+        if (replaced !== next) changedFences.add(name);
+        next = replaced;
       }
       if (next !== txt) writes.push([f, next]);
     }
@@ -1473,12 +1541,17 @@ async function checkScene(browser, file) {
       process.exit(1);
     }
     if (writes.length) {
-      console.log(`parity-fix: propagated ${blocks.size} fence(s) from ${fixFrom} into ${writes.length} file(s):`);
+      // The count is the fences that actually CHANGED, not the seven the store
+      // carries — "regenerated 7" over a one-fence drift teaches readers the
+      // number is noise, and a noise number is worse than none.
+      console.log(`parity-fix: regenerated ${changedFences.size} fence(s) from the store into `
+                + `${writes.length} file(s):`);
       for (const [f] of writes) console.log('       ' + f);
-      console.log('re-run --parity-only to confirm, and read the diff before committing — this '
-                + 'command is propagation, not review.');
+      console.log('re-run --parity-only to confirm, and read the diff before committing — '
+                + 'regeneration is propagation, not review.');
     } else {
-      console.log(`parity-fix: nothing to do — every carrier scanned already matches ${fixFrom}`);
+      console.log('parity-fix: nothing to do — every carrier scanned already matches the '
+                + 'canonical store');
     }
     process.exit(0);
   }
@@ -1490,14 +1563,17 @@ async function checkScene(browser, file) {
   // deleted at the end of the run, so staleness cannot outlive it.
   const vendorCache = path.join(os.tmpdir(), `.smoke-vendor-${process.pid}.js`);
 
-  // Kernel parity: templates carry a marked shared-kit block that must stay
-  // byte-identical across files — the two-copies-drift rule, enforced the way
-  // this repo family always enforces it: mirrored copies plus a check that
-  // fails on drift. Only applies when 2+ checked files carry markers, so
-  // scenes predating the kernel (or ones that legitimately diverged and
-  // removed their markers) never fail. A HARD FAIL, not advisory: drift is
-  // objective, and a drifted kit is exactly how the 2D and 3D backends stop
-  // rendering the same ramp the same way.
+  // Fence parity: every fenced block in every carrier must byte-match the
+  // canonical store — INVERTED in the emitter phase from the old rule, "all
+  // carriers agree with each other". The inversion buys two things the old
+  // shape could not have: a SINGLE scene is a real comparison (the store is
+  // always the other side, so the old "parity inert below two scenes" note is
+  // gone), and nine carriers drifting together — a bad propagation laundered
+  // into every copy — still goes red, because the tenth copy is the one you
+  // edit deliberately. Scenes that legitimately diverge remove their markers
+  // and leave the parity set, exactly as before. A HARD FAIL, not advisory:
+  // drift is objective, and a drifted kit is exactly how the 2D and 3D
+  // backends stop rendering the same ramp the same way.
   let kernelFail = false;
   let sceneCount = 0;   // files actually READ, reported on the verdict line
   let heldLines = 0;   // fenced lines held byte-identical, derived on the same pass
@@ -1544,12 +1620,7 @@ async function checkScene(browser, file) {
     // correcting a wrong sentence in eight files by hand is the exact tax the
     // fences exist to remove, and the block sat outside every one of them.
     for (const name of FENCES) {
-      // HTML fences the shared page scaffold (overlay CSS + caption/title DOM),
-      // which lives outside <script> — its markers are HTML comments, not JS ones.
-      const RE = name === 'HTML'
-        ? new RegExp(`<!-- ==== ${name}-START ==== -->[\\s\\S]*?<!-- ==== ${name}-END ==== -->`)
-        : new RegExp(`\\/\\* ==== ${name}-START ====[\\s\\S]*?\\/\\* ==== ${name}-END ==== \\*\\/`);
-      const found = [];
+      const RE = fenceRe(name);
       for (const [f, txt] of texts) {
         // Half-fenced is not exempt — and ask the SAME regex that builds the
         // parity set. An earlier version asked `!txt.includes('KERNEL-END')`,
@@ -1566,40 +1637,20 @@ async function checkScene(browser, file) {
           continue;
         }
         const m = txt.match(RE);
-        if (m) found.push({ f, k: m[0] });
+        if (!m) continue;
+        // The tax, derived rather than remembered: every fenced line in every
+        // carrier that holds it. Summed over what was ACTUALLY READ, so a
+        // narrowed glob shrinks this number too instead of quietly reporting
+        // the old one.
+        heldLines += m[0].split('\n').length;
+        if (m[0] !== fenceStore.get(name)) {
+          kernelFail = true;
+          console.log(`FAIL ${f} — ${name} does not match the canonical store (${storeDir}). `
+                    + `If the change is intended, edit the store copy and run --parity-fix `
+                    + `to regenerate every carrier; a scene that legitimately diverges `
+                    + `removes its markers and leaves the parity set instead.`);
+        }
       }
-      // The tax, derived rather than remembered: every fenced line in every
-      // carrier that holds it. Summed over what was ACTUALLY READ, so a narrowed
-      // glob shrinks this number too instead of quietly reporting the old one.
-      for (const x of found) heldLines += x.k.split('\n').length;
-      {
-      }
-      if (found.length >= 2 && new Set(found.map(x => x.k)).size > 1) {
-        kernelFail = true;
-        console.log(`FAIL ${name} drift — these scenes carry different ${name} blocks:`);
-        for (const x of found) console.log('       ' + x.f);
-      } else if (found.length === 1 && texts.size > 1) {
-        // A comparison of one file compares nothing. Without this line the run
-        // prints `parity/integrity: ok` and the reader credits the fence with a
-        // check that never ran — the precise shape of a green board that means
-        // nothing. Say it out loud instead of documenting it elsewhere.
-        //
-        // Gated on a multi-scene scan on purpose. The documented authoring loop
-        // leaves ONE film in the working directory, where every fence is
-        // trivially uncompared; firing per fence there would print six notes
-        // advising something the author cannot do, and noise that always fires
-        // is noise nobody reads. The single-scene case is stated once below.
-        console.log(`note: ${name} parity inert — only ${found[0].f} carries this fence; `
-                  + `add the other carriers to the scan to compare`);
-      }
-    }
-
-    // The single-scene case, said once rather than once per fence. Parity is
-    // structurally inapplicable here, and a reader who does not know that reads
-    // `parity/integrity: ok` as a fence check that passed.
-    if (texts.size === 1) {
-      console.log('note: parity needs two or more scenes to compare; scanned 1, '
-                + 'so no fence was checked (integrity still was)');
     }
 
     // Template integrity, checked here because it is the same kind of property:
@@ -1630,7 +1681,8 @@ async function checkScene(browser, file) {
     // runs, so a scan that was meant to cover three directories covers two and
     // nothing here knows a third was intended. A green line that states its own
     // scope is the only thing that makes that visible, and it costs one number.
-    const scanned = `${sceneCount} file(s) scanned, ${heldLines} fenced line(s) held byte-identical`;
+    const scanned = `${sceneCount} file(s) scanned, ${heldLines} fenced line(s) held `
+                  + `byte-identical to the canonical store`;
     console.log(kernelFail ? `\nparity/integrity: FAILED (${scanned})`
                            : `\nparity/integrity: ok — ${scanned}`);
     process.exit(kernelFail ? 1 : 0);

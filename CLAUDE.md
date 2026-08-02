@@ -43,10 +43,12 @@ copy of a router is the exact failure this file keeps catching.
 - **What happened and why** — `CHANGELOG.md`
 - **Repo tools** — `scripts/selfcheck.js`, `install-hooks.sh`,
   `stage-films.sh`, `derived-counts.js`, `diagnose-determinism.js`,
-  `sample-determinism.js`. `scripts/bracket-*.js` are their controls, and cover
+  `sample-determinism.js`, `emit-spike.js`. `scripts/bracket-*.js` are their controls, and cover
   `selfcheck.js`, `stage-films.sh` and `derived-counts.js` (through
   `bracket-selfcheck.js`'s check 13 arms). **`diagnose-determinism.js`,
-  `sample-determinism.js` and `install-hooks.sh` are uncontrolled**, which
+  `sample-determinism.js`, `install-hooks.sh` and `emit-spike.js` are
+  uncontrolled** (the spike carries two inline red arms, self-reported rather
+  than bracketed), which
   invariant 6 wants visible rather than glossed. Named rather than counted, on
   purpose: this line read "cover two of the five" and adding one tool made both
   numbers wrong at once. A list of names goes stale loudly; a count goes stale

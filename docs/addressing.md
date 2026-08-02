@@ -1,4 +1,4 @@
-last updated: 2026-08-01
+last updated: 2026-08-02
 
 # Addressing: what `t` is, and what the position-encoding literature does and does not lend us
 
@@ -576,11 +576,16 @@ and a **driver** producing the state stream, as `g(t)` for a film or `g(events)`
 for interaction. Phase 6's gate requires a spike to reuse the kernel with zero
 modification (`docs/plan.md:585-586`).
 
-`docs/working-plan.md:1321-1340` records that the discipline has not held:
-`setCamera(t)` takes `t`, so the gate is not reachable as written, and the
-proposed intervention is to widen the signature to a state object that today
+`docs/working-plan.md:1321-1340` records that the discipline had not held:
+`setCamera(t)` took `t`, so the gate was not reachable as written, and the
+proposed intervention was to widen the signature to a state object that today
 contains only `{t}`, with one rule attached: the kernel never reads anything the
 timeline driver cannot produce.
+
+**That intervention shipped in 0.16.62 (2026-08-01)** — `setCamera(state)` in
+all eight carriers, with the DRIVER constructing `state`. The rule came with it
+and is the load-bearing half. The gate is now untested rather than unreachable;
+`plan.md`'s Phase 6 entry carries that distinction.
 
 ### 8.1 What this buys addressing specifically
 

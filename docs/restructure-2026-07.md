@@ -1,4 +1,4 @@
-last updated: 2026-08-01
+last updated: 2026-08-02
 
 # Restructure plan, 2026-07
 
@@ -157,6 +157,17 @@ last updated: 2026-08-01
 > `references/breakdown.md` does not exist, `build.js` has no `check` verb, and
 > `physics-bake-proposal.md` contains no occurrence of "kinematic". Gate R5 also
 > depends on the Regression-by-edit case, which its own text calls untested.
+>
+> **CORRECTION 2026-08-02: the first clause of that list expired the same day it
+> was written.** 0.16.62 shipped `setCamera(state)` across all eight carriers,
+> so "still the signature in every carrier" was true when checked and false a
+> few hours later. The other three clauses still hold, re-checked 2026-08-02.
+> The document still does not retire — R5.1 is partly done, not done, and the
+> current-position block at the top is the copy to trust. Left in place rather
+> than rewritten because the dated verification was honest work; what it shows
+> is that a verified-against-the-tree claim has a shelf life measured in hours
+> on an active branch, which is the argument for the position block existing at
+> all.
 >
 > **On clause NUMBERS: do not use them.** The gate paragraph below defines its
 > clauses in a different order than the PR table lists them, so "clause 5" names

@@ -1,4 +1,4 @@
-last updated: 2026-08-01
+last updated: 2026-08-02
 
 # Working plan: instruments, routing, and the viewer
 
@@ -1331,9 +1331,13 @@ fenced release**, which is the most expensive place to be wrong:
   timeline driver emits identity, an input driver emits it from events, and
   `setCamera` never changes. That is literally zero modification, and it is the
   shape Phase 6 will want.
-- **That shape is not available today.** `setCamera(t)` takes `t`; the split
-  "costs only discipline" until Phase 6 and has not been implemented. Threading
-  state through the kernel is a large refactor, not a line.
+- **That shape was not available when this was written.** `setCamera(t)` took
+  `t`; the split "costs only discipline" until Phase 6 and had not been
+  implemented. Threading state through the kernel is a large refactor, not a
+  line. **DONE in 0.16.62 (2026-08-01)**: `setCamera(state)` across all eight
+  carriers, propagated with `--parity-fix --from` a named canonical rather than
+  eight hand edits. A view offset can now be a field of `state`, which is the
+  shape this bullet said Phase 6 would want.
 
 So the honest position: our one-line hook does not violate a boundary that
 exists — it **deepens the weld at exactly the point the plan intends to cut**.
@@ -2784,11 +2788,17 @@ change decisions in phases nobody has started.
 ### The weld gets more expensive every phase — cut it while it is cheap
 
 `plan.md` says the kernel/driver split "costs only discipline" until Phase 6.
-**Discipline has not held**: `setCamera(t)` takes `t`, C1 adds a hook inside the
-kernel, and Phase 6's gate ("zero modification") is therefore not reachable as
+**Discipline did not hold**: `setCamera(t)` took `t`, C1 adds a hook inside the
+kernel, and Phase 6's gate ("zero modification") was therefore not reachable as
 written. Every phase from here welds tighter — Phase 3 adds face state, Phase 4
 adds baked tracks, both of which will be authored as functions of `t` because
 that is what the signature invites.
+
+**CUT, 0.16.62 (2026-08-01).** `setCamera(state)` across all eight carriers.
+The timing argument in this section held: it was taken before Phase 3 and Phase
+4 added the state they would have welded in. The C1 hook is not retired by this
+— it still sits inside the kernel — but the seam it was said to deepen now
+exists, so removing it is a local edit rather than a signature change.
 
 **Cheapest possible intervention, and the moment is now:** make the seam *visible*
 without implementing the split — `setCamera` takes a state object that today

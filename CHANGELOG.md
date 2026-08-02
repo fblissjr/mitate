@@ -7,6 +7,27 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.17.2
+
+### fixed
+
+**`bracket-noise.js`'s mutation arms tripped the new carrier-vs-store parity,
+so one arm failed and two were green for the wrong reason.** Every patch
+injects into the DRIVER fence, which pre-store was inert for a lone scene;
+since 0.17.0 the mutated fixture fails parity before the console classifier
+is ever measured. In the 0.17.0 gate run the driver-shaped arm failed
+outright, and the warns-for-real and claims-webgpu arms went red on the
+parity message rather than the one they assert — a green bracket measuring
+the wrong thing, the exact shape invariant 6 hunts. Patched fixtures now take
+the documented divergence exit: their fence markers are neutralized so they
+leave the parity set (fully de-tokenized — a half-visible `NAME-START` trips
+the mangled-marker heuristic, measured on the first attempt). The unmodified
+arm keeps its markers on purpose and now doubles as proof that a pristine
+example still matches the store from inside a browser run. Verified
+red-then-green locally on the arms this platform can measure; the
+claims-webgpu arm is CI-arbitrated per its own documented note (a machine
+serving real WebGPU has no fallback notice to detect).
+
 ## 0.17.1
 
 ### fixed

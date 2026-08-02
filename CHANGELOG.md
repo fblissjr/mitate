@@ -7,6 +7,59 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.64
+
+### changed
+
+**The parity run reports the size of the tax it exists to measure.**
+`--parity-only` now derives and prints the fenced lines held byte-identical
+alongside the file count: `ok — 9 file(s) scanned, 5704 fenced line(s) held
+byte-identical`. Summed over what was actually read, so a narrowed glob shrinks
+the figure instead of reporting the old one.
+
+### fixed
+
+**A hand-written count in `smoke.js` was stale by ~24%, in the file that does
+the counting.** The `--parity-fix` comment read "4,611 lines are held
+byte-identical", measured 2026-07-30 — before `CONTRACT` became the seventh
+fence (0.16.44) and before the defect-corpus fixture became the ninth carrier
+(0.16.45). The true figure is 5,704. Eleven versions stale, in shipped content,
+and restated in three other tracked files.
+
+Nothing could have caught it. "Lines held byte-identical" is not one of check
+13's registered countables, and no bracket reads prose. This is the second
+instance found in two days of the same shape — a count sitting in a blind spot
+between the checks built to eliminate counts — and the remedy is the same one
+both times: derive it, or delete it. The comment now points at the run.
+
+`docs/restructure-2026-07.md` carried it twice. The undated instance now points
+at the command; the dated one is kept, annotated with the re-measurement and the
+reason it grew, because a dated figure is a record rather than a claim.
+
+**The fence list had two copies in `smoke.js`, and the generator was reading the
+wrong one.** `--parity-only` (which ENFORCES) iterated a bare literal;
+`--parity-fix` (which PROPAGATES) used `const FENCES`. They agreed, so nothing
+was broken — but `scripts/derived-counts.js` scrapes `const FENCES` to fill the
+fence-count marker, which means the instrument whose stated guarantee is that it
+*"cannot miss and cannot false-positive, because it never has to recognise
+anything"* was deriving the enforcing list from the propagation copy. Hoisted to
+one module-scope `const` consumed by both. Deleting the copy is O(0); guarding
+two is O(n) and one more thing that can misfire, and `source-of-truth.md` already
+says to prefer the deletion.
+
+**Two shipped files still said six fences.** `references/glossary.md` — *"Six
+exist: KERNEL, SOLVER, RIG, DRIVER, CHARACTER, HTML"* — and
+`templates/bracket-parity.js`'s header. `CONTRACT` became the seventh at 0.16.44,
+so both had been wrong for twenty versions, in content that ships to every
+installed user. This is the **third and fourth** instance of the exact defect
+`instruments.md` carried and check 13 was built to close at 0.16.57. They
+survived it for two structural reasons, both now stated where they bite: the
+sentence carries no registered noun, so the bare-count scanner cannot see it, and
+`derived-counts.js` filters to `.md`, so a `.js` header is out of reach by
+construction. Both now name the array instead of restating it — including the
+glossary line, which says in as many words not to trust a restatement, itself
+included.
+
 ## 0.16.63
 
 ### changed

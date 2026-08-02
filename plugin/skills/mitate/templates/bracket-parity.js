@@ -1,7 +1,7 @@
 /* Bracket for the FENCE PARITY check.
  *
  * Parity is this repo's whole answer to duplication. Self-containment forbids a
- * shared import, so KERNEL/SOLVER/RIG/DRIVER/CHARACTER/HTML are written into
+ * shared import, so every fence in smoke.js's FENCES array is written into
  * nine files and a check says when the copies diverge. That makes the check
  * load-bearing in a way most are not: if it goes quiet, the DRY guarantee goes
  * with it and nothing announces the loss.

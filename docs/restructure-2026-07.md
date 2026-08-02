@@ -56,7 +56,8 @@ last updated: 2026-08-02
 > extraction, and R4.1's gate (byte-unchanged `smoke.js` behaviour) is the
 > expensive one. **R4.4-R4.7 are new (owner-directed 2026-07-30)**, all four about
 > not paying a cost twice: `--parity-fix` stops the same *work* being repeated
-> (4,611 lines held identical by hand); the defect corpus stops the same
+> (the run reports the figure; it was 4,611 when this was written and is larger
+> now); the defect corpus stops the same
 > *mistakes* being repeated; retention stops the same *thinking* being repeated —
 > a design question raised this session was recorded nowhere and had to be
 > recovered; and grading the portfolio stops the same *question* — what do I build
@@ -1373,6 +1374,12 @@ property, not the proxy.
    Measured 2026-07-30: **4,611 lines held byte-identical by hand** — KERNEL 151
    lines × 8 carriers, CHARACTER 278 × 3, SOLVER 113 × 7, DRIVER 111 × 7, RIG 83
    × 7, HTML 60 × 7.
+
+   **That figure is kept because it is dated, and it grew.** Re-measured
+   2026-08-02: **5,704**, once `CONTRACT` became the seventh fence (0.16.44) and
+   the corpus fixture became the ninth carrier (0.16.45) — ~24% in three days,
+   and the surface grows with every example added. `--parity-only` now derives
+   and prints it, so this is the last hand-written copy.
 
    > **A seventh fence candidate, found 2026-07-31: the CONTRACT block.** It is
    > byte-identical across all **8** carriers (verified by hashing the block in

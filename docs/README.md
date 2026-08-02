@@ -1,4 +1,4 @@
-last updated: 2026-07-31
+last updated: 2026-08-02
 
 # Which doc answers which question
 
@@ -14,7 +14,7 @@ reference that needs to reach an installed user goes in
 | If you are asking | Read | When |
 |---|---|---|
 | **I have no context at all — what must I not break** | **[`orientation.md`](orientation.md)** | first, if you are a fresh session or a delegated subagent. ~50 lines: the two rules, three ways to break something silently, and the commands that tell you the truth. A subagent does not auto-load `CLAUDE.md`, so this is the briefing block to paste |
-| what is this project for, and why determinism first | [`../VISION.md`](../VISION.md) | first, once |
+| **what is this project for** — and why determinism first, what a primitive has to be, where a declaration lives | **[`../VISION.md`](../VISION.md)** — the most important document in this repo | **first, and again before anything structural.** Not "once": it is the file the others are downstream of, and where one of them conflicts with it about intent, it wins |
 | what is `t`, and why is it addressed by beat | [`addressing.md`](addressing.md) | before changing anything about time, seeking, or the bake |
 | what is the architecture, and what gates each phase | [`plan.md`](plan.md) | before starting anything phase-shaped |
 | **what should I work on next** | **[`restructure-2026-07.md`](restructure-2026-07.md)** while that migration is open — it carries a current-position block | at the start of a work session |
@@ -22,6 +22,7 @@ reference that needs to reach an installed user goes in
 | **is this already decided, or is it still open** | grep `docs/` for **`Open question`** — every unresolved design question is filed under that exact phrase, deliberately | before re-deriving a decision or re-raising one. **This row exists because a cold-start test found the routing gap it closes:** two zero-context agents were asked about two recorded design questions, both reached correct answers, and *both* got there by guessing a topic keyword after finding no row here — one won on "declarative", the other only after its topic words missed and it searched the repo's *epistemic* vocabulary instead |
 | where does this fact belong | [`source-of-truth.md`](source-of-truth.md) | before writing the same thing twice |
 | has this shape been built before | [`pattern-ledger.md`](pattern-ledger.md) | before proposing a primitive or a fence |
+| **where does data stop and code start** — the representation question, and the brief for the session that settles it | **[`representation.md`](representation.md)** | before proposing anything about the source format, the fences, or a compile step. Carries what is settled (do not re-litigate), what is open, and the measured evidence. **The decision lands in that file** — it was created before the session precisely because this discussion evaporated once already |
 | what may a Phase 4 bake do, and what may it never do | [`physics-bake-proposal.md`](physics-bake-proposal.md) | before any bake code |
 | what did the predecessor already measure | [`predecessor-record.md`](predecessor-record.md) | when tempted to re-measure something. 2,770 lines — exceeds a default read window, so read it in ranges |
 | should examples live in the plugin | [`examples-placement.md`](examples-placement.md) | only if reopening that decision |

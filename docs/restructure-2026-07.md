@@ -1,4 +1,4 @@
-last updated: 2026-08-01
+last updated: 2026-08-02
 
 # Restructure plan, 2026-07
 
@@ -32,8 +32,19 @@ last updated: 2026-08-01
 > that same local-only film. All are now labelled `(local)`. Promote them as
 > separate changes with their own red, not as a bundle.
 >
-> Also still open in R5: `references/breakdown.md`, `build.js check`, and the
-> kinematic-body amendment to the bake proposal.
+> **R5.2 is DONE (0.16.65, 2026-08-02)** — `references/breakdown.md`, the
+> enumeration `VISION.md` and the shape question both name as their prerequisite.
+>
+> **R5.3 is DONE (0.16.67, 2026-08-02)** — `build.js check`, built from that
+> enumeration and against the same day's reading of it. Two things it did NOT
+> do are the useful part: the declared-versus-measured extent check is
+> **blocked**, because measuring geometry means naming scene objects and that is
+> `probe`'s admitted exception, not a second one; and "`BEATS` sums to
+> `DURATION`" **is not a check that can exist**, since `TOTAL` is derived from
+> `BEATS`. The work-list carried both for as long as it existed.
+>
+> **Still open in R5:** item 1's unpromoted half (`hide`, `subjectFromObject`)
+> and item 4, the kinematic-body amendment to the bake proposal.
 >
 > **Phase R's first unit is also done** (0.16.61, separate PR) — the determinism
 > trio, including the `!fails.length` guard this plan had recorded as blocked on
@@ -56,7 +67,8 @@ last updated: 2026-08-01
 > extraction, and R4.1's gate (byte-unchanged `smoke.js` behaviour) is the
 > expensive one. **R4.4-R4.7 are new (owner-directed 2026-07-30)**, all four about
 > not paying a cost twice: `--parity-fix` stops the same *work* being repeated
-> (4,611 lines held identical by hand); the defect corpus stops the same
+> (the run reports the figure; it was 4,611 when this was written and is larger
+> now); the defect corpus stops the same
 > *mistakes* being repeated; retention stops the same *thinking* being repeated —
 > a design question raised this session was recorded nowhere and had to be
 > recovered; and grading the portfolio stops the same *question* — what do I build
@@ -157,6 +169,17 @@ last updated: 2026-08-01
 > `references/breakdown.md` does not exist, `build.js` has no `check` verb, and
 > `physics-bake-proposal.md` contains no occurrence of "kinematic". Gate R5 also
 > depends on the Regression-by-edit case, which its own text calls untested.
+>
+> **CORRECTION 2026-08-02: the first clause of that list expired the same day it
+> was written.** 0.16.62 shipped `setCamera(state)` across all eight carriers,
+> so "still the signature in every carrier" was true when checked and false a
+> few hours later. The other three clauses still hold, re-checked 2026-08-02.
+> The document still does not retire — R5.1 is partly done, not done, and the
+> current-position block at the top is the copy to trust. Left in place rather
+> than rewritten because the dated verification was honest work; what it shows
+> is that a verified-against-the-tree claim has a shelf life measured in hours
+> on an active branch, which is the argument for the position block existing at
+> all.
 >
 > **On clause NUMBERS: do not use them.** The gate paragraph below defines its
 > clauses in a different order than the PR table lists them, so "clause 5" names
@@ -307,7 +330,7 @@ last updated: 2026-08-01
 >    is *same machine, same backend, before vs after* — capture it immediately
 >    before starting the extraction rather than reusing this block.
 >
-> **Not gate-blocking, but open:** ten of the corpus's twelve defects are
+> **Not gate-blocking, but open:** most of the corpus's defects are
 > unmeasured and labelled UNVERIFIED; `bracket-corpus.js` does not exist so
 > nothing runs the corpus; `bracket-noise.js` false-reds on macOS (passes on the
 > Linux gate); and `/extract-patterns` has no bracket and has never been run —
@@ -1363,6 +1386,12 @@ property, not the proxy.
    lines × 8 carriers, CHARACTER 278 × 3, SOLVER 113 × 7, DRIVER 111 × 7, RIG 83
    × 7, HTML 60 × 7.
 
+   **That figure is kept because it is dated, and it grew.** Re-measured
+   2026-08-02: **5,704**, once `CONTRACT` became the seventh fence (0.16.44) and
+   the corpus fixture became the ninth carrier (0.16.45) — ~24% in three days,
+   and the surface grows with every example added. `--parity-only` now derives
+   and prints it, so this is the last hand-written copy.
+
    > **A seventh fence candidate, found 2026-07-31: the CONTRACT block.** It is
    > byte-identical across all **8** carriers (verified by hashing the block in
    > each), it names the window contract, and it sits **outside every fence** —
@@ -1442,7 +1471,7 @@ property, not the proxy.
      a file that silently leaves the parity set is the exact failure
      `bracket-parity.js` exists to catch.
 
-   **The twelve characterized defects must be re-measured against the new build,
+   **The characterized defects must be re-measured against the new build,
    not assumed to carry over.** They are mechanical and most should survive a
    re-skin, but "should" is not a measurement, and their timestamps will move if
    any beat duration does.
@@ -1772,12 +1801,28 @@ asked about one and reaching it without being told where to look.
    it is exactly what a bake refactor would trip over, so pass `rootX`
    explicitly as part of the same pass.
 
-2. **`references/breakdown.md`** — enumerate the declarative layer. It exists,
-   works, and is *"unnamed, unspecified, and unvalidated as a whole."* It was
-   the #1 recommendation in two internal documents, costed at one afternoon and
-   no code, and is a ranked item in none. `working-plan.md:1300` already cites
-   "after the enumeration exists" as a revival trigger for something else — a
-   trigger on a thing nobody scheduled.
+2. **`references/breakdown.md`** — enumerate the declarative layer. **DONE,
+   0.16.65 (2026-08-02).** It existed, worked, and was *"unnamed, unspecified,
+   and unvalidated as a whole"* — the #1 recommendation in two internal
+   documents, costed at one afternoon and no code, and a ranked item in none.
+   The revival trigger elsewhere that read "after the enumeration exists" was a
+   trigger on a thing nobody had scheduled; its enumeration half is now met and
+   its other half is not, which is recorded on the row rather than treated as a
+   fire.
+
+   **What it found, because the findings reorder what follows.** The layer is
+   **uneven** — the character proportion vector is a real schema that throws,
+   `STYLE` and `CONFIG` are open bags that validate nothing. Validation clusters
+   where a mistake is *unrepresentable* (an unknown name fails a lookup) rather
+   than where it is *expensive*: a declared extent that does not match its
+   geometry, an anchor outside its beat, and a caption that will not fit are all
+   decidable from the tables and none is checked. `STYLE` has twelve kit-read
+   keys against three declared in the template, plus seven film-private ones that
+   the source does not distinguish from kit keys.
+
+   **Consequence for item 3 below:** `build.js check` is no longer a list of
+   plausible validations — the enumeration named its work-list, and every item on
+   it is decidable before a frame renders.
 
 3. **`build.js check`** — cross-reference validator over the tables that already
    exist: shot anchors land inside their beat, subject and focus names resolve,
@@ -1785,6 +1830,33 @@ asked about one and reaching it without being told where to look.
    declared-versus-measured extents, `BEATS` sums to `DURATION`. Buildable
    today; *"would have caught at least three of this film's defects before a
    single frame rendered."*
+
+   **DONE (0.16.67, 2026-08-02), and two of the six items above are wrong.**
+   Recorded on the row rather than edited away, because the way a work-list goes
+   wrong is the transferable part:
+
+   - **Declared-versus-measured extents is BLOCKED, not built.** Measuring an
+     extent means naming the object it belongs to, which is `build.js probe`'s
+     admitted exception to the prime directive — admitted on three conditions
+     that a second instrument would not satisfy. Building it would have been the
+     cheapest available way to lose the rule, so `check` names the gap on every
+     run instead. What is actually missing is small and separate: the comparison
+     between what `probe` already reports and what `SUBJECTS` declares.
+   - **"`BEATS` sums to `DURATION`" is undecidable in the useful sense.**
+     `TOTAL` is derived from `BEATS`, so a mismatch is unrepresentable —
+     `breakdown.md` had already written that down, one tier above this row, and
+     this row was never reconciled with it. The lesson is narrow and repeats:
+     **a plan written before its own prerequisite lands does not re-read itself
+     when the prerequisite says something different.**
+   - **A third item needed narrowing rather than deleting.** "Union shots use
+     only wide rungs" condemns a shipped, commented two-shot on its first run.
+     See the CHANGELOG entry; the short version is that an explicit `anchor`
+     supplies exactly what a union box lacks, and a rule that cannot see that
+     distinction reports a correct film as broken.
+
+   So four of six shipped, one is blocked with a reason, one does not exist.
+   The four are bracketed one arm per property in `bracket-commands.js`, each
+   watched go red with its own check neutralised.
 
 4. **Amend `physics-bake-proposal.md` with the kinematic-body option.** As
    written, the declared impulse (`{beat:'hit', at:.3, impulse:[...]}`) is a

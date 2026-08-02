@@ -1,4 +1,4 @@
-last updated: 2026-08-01
+last updated: 2026-08-02
 
 # mitate: founding plan
 
@@ -115,14 +115,29 @@ unchanged. This is a structuring rule, not extra machinery; Phase 6 proves it
 with a spike.
 
 **"Until then it costs only discipline" — retracted 2026-07-30.** Discipline did
-not hold. `setCamera(t)` takes `t`, not a state value, so the split is a
-convention rather than a seam and Phase 6's gate below is not reachable as
-written. The cheap repair, and the reason it is urgent, are in
+not hold. `setCamera(t)` took `t`, not a state value, so the split was a
+convention rather than a seam and Phase 6's gate below was not reachable as
+written. The cheap repair, and the reason it was urgent, are in
 [`working-plan.md`](working-plan.md) under "The weld gets more expensive every
-phase": give `setCamera` a state object that today holds only `{t}`, and the
-gate is met by construction instead of by argument. Every later phase welds
-tighter, because face state and baked tracks will be authored as functions of
-`t` — that is what the signature invites.
+phase": give `setCamera` a state object that today holds only `{t}`. Every later
+phase welds tighter, because face state and baked tracks will be authored as
+functions of `t` — that is what the signature invites.
+
+**The repair LANDED in 0.16.62 (2026-08-01).** `setCamera(state)` is the
+signature in all eight carriers, `state` holds `{t}` today, and the DRIVER
+constructs it. The paragraph above is kept in the past tense rather than deleted
+because the retraction it records is still the reason the seam exists.
+
+**What that does and does not settle.** It removes the specific obstacle named
+below — a bounded view offset no longer has to enter *inside* the kernel,
+because it can enter as a field of `state`. It does **not** declare Phase 6's
+gate met: the gate is that a spike reuses kernel, characters, materials and at
+least one instrument with **zero** modification, and only a spike can measure
+that. The honest reading is that the gate moved from *unreachable as written* to
+*untested*, which is a different thing and a better one. One discipline carries
+it: the driver owns what goes into `state`, and the kernel never reads anything
+the timeline driver cannot produce — or `state` becomes a global with better
+manners.
 
 ## The render stack (verified 2026-07-23, session spike)
 
@@ -674,11 +689,19 @@ skill docs alone.
 **Phase 6 — Interactive spike.** Input driver over the unchanged kernel;
 `museum-walk`. *Gate:* the spike reuses kernel, characters, materials, and at
 least one instrument with zero modification — proving the layer split held.
-**This gate is currently unreachable, and knowing why is the point of keeping it
-worded this way.** `setCamera(t)` takes `t`, so a bounded view offset has to
-enter *inside* the kernel, and one line inside `SOLVER` is not zero. The seam
-fix above makes it reachable by construction; until that lands, treat this gate
-as a measurement of the weld rather than of the spike.
+**This gate was unreachable until 0.16.62, and knowing why is the point of
+keeping it worded this way.** `setCamera(t)` took `t`, so a bounded view offset
+had to enter *inside* the kernel, and one line inside `SOLVER` is not zero.
+**The seam fix landed 2026-08-01**: `setCamera(state)` across all eight
+carriers, so the offset can now enter as a field of `state` rather than as a
+line in the kernel.
+
+**The gate is therefore no longer unreachable — it is untested.** Do not read
+that as met. Nothing has yet reused the kernel with zero modification; the seam
+only removes the one obstacle this paragraph could name in advance. Until a
+spike runs, this gate measures nothing either way, and the useful question it
+now asks is whether a *second* obstacle exists that only building the spike will
+find.
 This phase decides whether interactivity becomes a sibling skill or a
 mitate register; that decision is explicitly out of scope until the
 spike exists.
@@ -691,11 +714,13 @@ swap, arrived at by accident, and it is real evidence the layer split holds.**
 Two things it also established, both recorded in
 [working-plan.md](working-plan.md) Track C. First, the gate's "zero
 modification" is not yet literally reachable: a bounded view offset has to enter
-somewhere, and because `setCamera(t)` takes `t` rather than a state value, the
-split this plan describes is still a discipline rather than a seam. The offset
-therefore lands as a hook *inside* `setCamera` — which deepens the weld at
+somewhere, and because `setCamera(t)` took `t` rather than a state value, the
+split this plan describes was a discipline rather than a seam. The offset
+therefore landed as a hook *inside* `setCamera` — which deepened the weld at
 precisely the point Phase 6 intends to cut, so the spike should start by cutting
-there rather than discovering it. Second, the same machinery recording and
+there rather than discovering it. **That cut was made in 0.16.62** — the
+signature is `setCamera(state)` now, so the spike inherits the seam instead of
+having to open it. Second, the same machinery recording and
 replaying its own camera deltas is a **Phase 4 bake** by this plan's own
 definition (sample once at build time, splice as data, play back pure), and the
 cheapest one available: the baker is a person, so there is no version pin, no

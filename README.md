@@ -1,4 +1,4 @@
-last updated: 2026-07-30
+last updated: 2026-08-02
 
 # mitate
 
@@ -98,7 +98,8 @@ window.SHOTS    = SHOTS.map(/* cut-entry windows */);
 
 window.seekTo = function (t) {      // the f in f(t)
   uTime.value = t;
-  setCamera(t); animate(t); setOverlay(t);
+  const state = { t };              // the driver builds it; the kernel reads it
+  setCamera(state); animate(t); setOverlay(t);
   pipeline.render();
 };
 window.stopPlayback = function () { playing = false; };

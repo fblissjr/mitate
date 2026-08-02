@@ -1,4 +1,4 @@
-last updated: 2026-08-01
+last updated: 2026-08-02
 
 # Working plan: instruments, routing, and the viewer
 
@@ -1331,9 +1331,13 @@ fenced release**, which is the most expensive place to be wrong:
   timeline driver emits identity, an input driver emits it from events, and
   `setCamera` never changes. That is literally zero modification, and it is the
   shape Phase 6 will want.
-- **That shape is not available today.** `setCamera(t)` takes `t`; the split
-  "costs only discipline" until Phase 6 and has not been implemented. Threading
-  state through the kernel is a large refactor, not a line.
+- **That shape was not available when this was written.** `setCamera(t)` took
+  `t`; the split "costs only discipline" until Phase 6 and had not been
+  implemented. Threading state through the kernel is a large refactor, not a
+  line. **DONE in 0.16.62 (2026-08-01)**: `setCamera(state)` across all eight
+  carriers, propagated with `--parity-fix --from` a named canonical rather than
+  eight hand edits. A view offset can now be a field of `state`, which is the
+  shape this bullet said Phase 6 would want.
 
 So the honest position: our one-line hook does not violate a boundary that
 exists — it **deepens the weld at exactly the point the plan intends to cut**.
@@ -2762,7 +2766,7 @@ rather than a matter of mood.
 
 | deferred | why | revived by |
 |---|---|---|
-| JSON `tables`/`patch` round-trip (**answered 2026-07-30** — see "What actually wants structure" above; the decline is right about JSON and too broad about structure) | the tables contain functions exactly where they matter (`SUBJECTS.pos` is a function of `t`); a projection that cannot represent the interesting half lies about completeness. The cited pain — regex-editing JS source — is a tooling habit, not a format problem | an agent needing to *restructure* tables mechanically, after the enumeration exists |
+| JSON `tables`/`patch` round-trip (**answered 2026-07-30** — see "What actually wants structure" above; the decline is right about JSON and too broad about structure) | the tables contain functions exactly where they matter (`SUBJECTS.pos` is a function of `t`); a projection that cannot represent the interesting half lies about completeness. The cited pain — regex-editing JS source — is a tooling habit, not a format problem | an agent needing to *restructure* tables mechanically, after the enumeration exists. **Half met 2026-08-02**: the enumeration shipped (`references/breakdown.md`, 0.16.65). The other half has not — nothing yet needs to restructure tables mechanically — so this row does NOT revive, and saying so is the point of a conjunction being written as one. What the enumeration adds to the decline: the tables are not one kind of thing, so a single format question was always the wrong shape. `STYLE`/`CONFIG` are open bags with no schema; the proportion vector is a real schema that throws; `SUBJECTS.pos` is a function. Any future round-trip is per-table or it lies |
 | `ACTORS` presence table | one prior instance in the corpus, differently spelled; `hide()` covers the drift risk | a second film with multi-appearance presence that `hide()` cannot express |
 | occlusion linter | **not a one-film finding** — the predecessor's two-character scene closed with it explicitly open ("geometric contact is not legible contact… the contact point sits behind a body"). Still ranked third: 3 of 4 new instances were static staging the contact sheet already catches by eye; the 4th was a transit defect a beat-midpoint sample structurally cannot see, and `transitions` catches it. So the linter automates eye-work on a converging axis — real, but third | probe + transitions shipped and composition rounds still not converging |
 | solver-aware staging | the proposed vocabulary fails on its own originating use case: props at fixed world positions a character walks to, which was every exhibit in the film that motivated it | a design that handles walked-to props |
@@ -2784,11 +2788,17 @@ change decisions in phases nobody has started.
 ### The weld gets more expensive every phase — cut it while it is cheap
 
 `plan.md` says the kernel/driver split "costs only discipline" until Phase 6.
-**Discipline has not held**: `setCamera(t)` takes `t`, C1 adds a hook inside the
-kernel, and Phase 6's gate ("zero modification") is therefore not reachable as
+**Discipline did not hold**: `setCamera(t)` took `t`, C1 adds a hook inside the
+kernel, and Phase 6's gate ("zero modification") was therefore not reachable as
 written. Every phase from here welds tighter — Phase 3 adds face state, Phase 4
 adds baked tracks, both of which will be authored as functions of `t` because
 that is what the signature invites.
+
+**CUT, 0.16.62 (2026-08-01).** `setCamera(state)` across all eight carriers.
+The timing argument in this section held: it was taken before Phase 3 and Phase
+4 added the state they would have welded in. The C1 hook is not retired by this
+— it still sits inside the kernel — but the seam it was said to deepen now
+exists, so removing it is a local edit rather than a signature change.
 
 **Cheapest possible intervention, and the moment is now:** make the seam *visible*
 without implementing the split — `setCamera` takes a state object that today
@@ -3272,3 +3282,48 @@ code, and ranked in none. The NaN question is one of the things a specification
 would have to take a position on, which is the argument for doing R5.2 **before**
 answering (1) rather than after: a policy written against an unenumerated language
 will cover the parts someone happened to remember.
+
+---
+
+### Open question: what did the harness buy, and did it go too far? (2026-08-02, owner-raised)
+
+**A design session, not a task, and deliberately filed as undecided.** The
+owner's words: *"did we go too far in restructuring and building checks on top of
+checks? I don't know. What did we gain all these cycles and PRs?"* — raised with
+the explicit caveat that it may not be clear cut.
+
+**The shape of the concern.** Six working days produced a 1173-line self-check
+pointed at this repo's own claims, nine brackets, controls over those controls, a
+defect corpus, and a documentation tier where three files exceed a default read
+window. Over the same span the *shipped* example corpus did not grow. That last
+fact is about shipping and not about building — scenes have been built and run as
+tests throughout, and the owner's position is that the bar for shipping one
+reliably has not been met yet — but the ratio is what prompts the question.
+
+**Both readings are live, and neither has been tested:**
+
+- *It went too far.* The apparatus generates its own work: a large share of
+  recorded defects were **in the checks**, and would not have existed without the
+  checks. `restructure-2026-07.md` has outlived its own deletion condition and
+  become a second standing backlog beside this file.
+- *It was right, or not far enough.* This ships into other people's install
+  caches, where a broken artifact is invisible to its author, and several defects
+  reached installed users for many versions before a check found them. On that
+  reading the apparatus is a one-time cost now largely amortized.
+
+**What would settle it, and why it has not been done.** The measurement is
+**per-check yield over time**: for each check and bracket, what it caught at
+introduction, what it has caught *since*, and whether what it caught was a
+product defect or a meta defect. That distinguishes a check that catches latent
+problems from one that only ever catches the person writing the next commit.
+Nobody has gathered it. Until it exists, both readings above are assertions.
+
+**Do not answer this from the changelog alone.** The changelog is written by the
+same author who built the checks, so "this check caught X" is self-reported. The
+yield measurement has to read the diffs.
+
+**Guard on this question specifically.** It is phrased in a way that invites
+agreement, and this repo has a recorded failure mode where an agent adopts a
+questioner's framing rather than its findings and the framing becomes structure.
+Anyone picking this up should build the case both ways before concluding, and
+should treat "this is the wrong frame" as an admissible answer.

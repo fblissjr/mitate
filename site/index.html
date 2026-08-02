@@ -365,7 +365,9 @@ window.SHOTS    = SHOTS.map(<span class="c-cm">/*cuts*/</span>);
 <span class="c-cm">// the f in f(t)</span>
 window.seekTo = function (t) {
   uTime.value = t;
-  setCamera(t); animate(t);
+  <span class="c-cm">// the driver builds the state</span>
+  const state = { t };
+  setCamera(state); animate(t);
   setOverlay(t);
   pipeline.render();
 };

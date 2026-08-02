@@ -78,6 +78,17 @@ const CONTRACT = ['seekTo', 'DURATION', 'stopPlayback', 'sceneReady'];
 // SHOTS joins this list only for 3D scenes — a 2D scene has no shot list by
 // design, so an unconditional check would warn on every one of them.
 const SOFT_CONTRACT = ['BEATS', 'FRAME', 'FLASHES', 'CAPFADE'];
+// THE fence list. One copy, module scope, consumed by BOTH halves of parity --
+// the --parity-only loop that ENFORCES and the --parity-fix loop that
+// PROPAGATES. It lived as two literals until 0.16.64 and they happened to
+// agree, which is the only reason nothing was broken: scripts/derived-counts.js
+// scrapes `const FENCES` to fill the fence-count marker, and the copy it was
+// reading was the propagation one, not the enforcing one. A generator whose
+// whole claim is that it "cannot miss and cannot false-positive" was deriving
+// from the wrong list. Deleting the copy is O(0); guarding two copies is O(n)
+// and one more thing that can misfire -- source-of-truth.md says to prefer the
+// deletion, and this is that.
+const FENCES = ['CONTRACT', 'KERNEL', 'SOLVER', 'RIG', 'DRIVER', 'CHARACTER', 'HTML'];
 const VIEWPORT = { width: 640, height: 360 };
 const sha256 = buf => crypto.createHash('sha256').update(buf).digest('hex');
 
@@ -825,7 +836,15 @@ checkDeterminism.onThrow = 'abandon';
 // GLOBALLY, so any unrelated
 // failure earlier in the scene silently disabled the only check covering
 // load-time nondeterminism. Written at 0.16.9 with no recorded reason and never
-// exercised by any control, which is why it survived four months.
+// exercised by any control, which is why it survived at all. It lived SEVEN DAYS
+// -- entered 2c5742f (0.16.9, 2026-07-25), removed 2026-08-01 -- and this line
+// said "four months" until 2026-08-02, in a repository whose entire history is
+// eight days. Nobody measured that duration -- bracket-driver.js is what found
+// the defect, and it did so by building a fixture carrying two defects at once,
+// not by anything noticing time pass. The figure was written to convey "a long
+// while" and then read as a fact. Corrected rather than deleted because the
+// point survives at the true number and sharpens: a week was plenty, because
+// elapsed time was never going to be what surfaced this.
 //
 // Its arm in bracket-driver.js builds a fixture carrying two defects at once —
 // a random drawn at load
@@ -1329,8 +1348,19 @@ async function checkScene(browser, file) {
 
   // --parity-fix --from <canonical>: the WRITE half of parity. --parity-only
   // reports that the copies disagree; this makes them agree, from a source you
-  // NAME. 4,611 lines are held byte-identical by hand across the carriers, and
-  // hand-propagation is the tax that measurement made visible.
+  // NAME. Hand-propagation is the tax that measurement made visible, and the
+  // size of that tax is REPORTED BY THE RUN rather than written here: see the
+  // `held byte-identical` figure on the --parity-only verdict line.
+  //
+  // This comment carried the number until 2026-08-02, and it was wrong. It read
+  // 4,611 — measured 2026-07-30, with no arm in bracket-parity.js able to see it
+  // go stale, because nothing derived it to compare against. Before CONTRACT
+  // became the seventh fence and before the ninth carrier joined, which together
+  // added ~24%. The true figure was 5,704. A count beside the thing it counts, in the file that
+  // does the counting, stale for eleven versions and restated in three other
+  // tracked files. Nothing could have caught it: "lines held byte-identical" is
+  // not one of check 13's registered countables, and no bracket reads prose.
+  // Deriving it is the only fix that stays true.
   //
   // TWO NON-NEGOTIABLES, both bracketed in bracket-parity.js:
   //
@@ -1351,7 +1381,6 @@ async function checkScene(browser, file) {
   // describes and no author expects — worse than either finishing or declining
   // cleanly. That is why this collects `writes` and applies them at the end.
   if (parityFix) {
-    const FENCES = ['CONTRACT', 'KERNEL', 'SOLVER', 'RIG', 'DRIVER', 'CHARACTER', 'HTML'];
     const reFor = name => name === 'HTML'
       ? new RegExp(`<!-- ==== ${name}-START ==== -->[\\s\\S]*?<!-- ==== ${name}-END ==== -->`)
       : new RegExp(`\\/\\* ==== ${name}-START ====[\\s\\S]*?\\/\\* ==== ${name}-END ==== \\*\\/`);
@@ -1471,6 +1500,7 @@ async function checkScene(browser, file) {
   // rendering the same ramp the same way.
   let kernelFail = false;
   let sceneCount = 0;   // files actually READ, reported on the verdict line
+  let heldLines = 0;   // fenced lines held byte-identical, derived on the same pass
   {
     // One check, four fences. KERNEL is the shared kit (all templates); SOLVER
     // is the cinematography solver, which reached SIX copies before its fence
@@ -1513,7 +1543,7 @@ async function checkScene(browser, file) {
     // loop and the MP4 render provably identical"), which is how it was found:
     // correcting a wrong sentence in eight files by hand is the exact tax the
     // fences exist to remove, and the block sat outside every one of them.
-    for (const name of ['CONTRACT', 'KERNEL', 'SOLVER', 'RIG', 'DRIVER', 'CHARACTER', 'HTML']) {
+    for (const name of FENCES) {
       // HTML fences the shared page scaffold (overlay CSS + caption/title DOM),
       // which lives outside <script> — its markers are HTML comments, not JS ones.
       const RE = name === 'HTML'
@@ -1537,6 +1567,12 @@ async function checkScene(browser, file) {
         }
         const m = txt.match(RE);
         if (m) found.push({ f, k: m[0] });
+      }
+      // The tax, derived rather than remembered: every fenced line in every
+      // carrier that holds it. Summed over what was ACTUALLY READ, so a narrowed
+      // glob shrinks this number too instead of quietly reporting the old one.
+      for (const x of found) heldLines += x.k.split('\n').length;
+      {
       }
       if (found.length >= 2 && new Set(found.map(x => x.k)).size > 1) {
         kernelFail = true;
@@ -1594,7 +1630,7 @@ async function checkScene(browser, file) {
     // runs, so a scan that was meant to cover three directories covers two and
     // nothing here knows a third was intended. A green line that states its own
     // scope is the only thing that makes that visible, and it costs one number.
-    const scanned = `${sceneCount} file(s) scanned`;
+    const scanned = `${sceneCount} file(s) scanned, ${heldLines} fenced line(s) held byte-identical`;
     console.log(kernelFail ? `\nparity/integrity: FAILED (${scanned})`
                            : `\nparity/integrity: ok — ${scanned}`);
     process.exit(kernelFail ? 1 : 0);

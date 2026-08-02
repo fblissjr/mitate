@@ -55,6 +55,7 @@ const os = require('os');
 const path = require('path');
 
 const BUILD = path.join(__dirname, 'build.js');
+const SMOKE = path.join(__dirname, 'smoke.js');
 const EXAMPLES = path.join(__dirname, '..', 'examples');
 const TEMPLATE = path.join(__dirname, 'scene.template.html');
 
@@ -91,9 +92,53 @@ const base = scene.replace(/\.html$/, '');
 // The basename is preserved because the guard matches on it.
 const templateCopy = path.join(work, path.basename(TEMPLATE));
 
-const run = (args, cwd) => {
+/* FIXTURES FOR `check`, one defect apiece.
+ *
+ * `check` is the one verb whose whole output is a verdict, so "the path
+ * executes" — this file's stated scope everywhere else — says nothing about it.
+ * A checker that runs and finds nothing is indistinguishable from a broken one,
+ * which is the shape the rest of this file exists to close for the other verbs.
+ * So these rows do assert content: one arm per property `check` claims to
+ * decide, each on a copy of the real scene with exactly that property broken.
+ *
+ * MUTATED FROM THE REAL SOURCE, not hand-written. A synthetic fixture proves a
+ * checker works on synthetic fixtures. `mutate` throws when a replacement
+ * matches nothing, so an edit to noise-chart.html's tables breaks this loudly
+ * instead of leaving arms that pass against an unmodified copy — a fixture that
+ * silently equals its original is a green arm testing the null change.
+ */
+const SHOT = "  {at:['title',0], subject:'chart', size:'FS', angle:0, elev:0},";
+const LIT_SHOTS = "const SHOTS=[\n  {at:['title',0], subject:'chart', size:'FS', angle:0, elev:0},\n].map(sh=>({...sh,t:beatAt(sh.at[0],sh.at[1])}));";
+const IMP_SHOTS = "const SHOTS=[];\nfor (const q of [{at:['title',0], subject:'chart', size:'FS', angle:0, elev:0}])\n  SHOTS.push({...q,t:beatAt(q.at[0],q.at[1])});";
+const NONLIT_SHOTS = "function buildShots(){return [{at:['title',0], subject:'chart', size:'FS', angle:0, elev:0}]\n  .map(sh=>({...sh,t:beatAt(sh.at[0],sh.at[1])}));}\nconst SHOTS=buildShots();";
+const BAD = {};
+const badPath = tag => (BAD[tag] = path.join(work, `check-${tag}.html`));
+const mutate = (tag, pairs) => {
+  let src = fs.readFileSync(SOURCE, 'utf8');
+  for (const [from, to] of pairs) {
+    if (!src.includes(from)) {
+      console.error(`bracket-commands: fixture "${tag}" cannot be built — ${path.basename(SOURCE)} `
+        + `no longer contains:\n  ${from}\nRepoint the mutation; an unmutated copy would make its arm `
+        + `assert nothing.`);
+      process.exit(1);
+    }
+    src = src.split(from).join(to);
+  }
+  fs.writeFileSync(BAD[tag], src);
+};
+// A copy of the tool PAIR with smoke.js's caption constant renamed. `check`
+// reads that threshold out of smoke.js rather than carrying its own, so this is
+// the control over that one-home claim: rename it and the verb must refuse,
+// never fall back to a private copy that could then drift.
+const DRIFT = path.join(work, 'drift');
+const DRIFT_BUILD = path.join(DRIFT, 'build.js');
+for (const t of ['subject', 'focus', 'anchor', 'beat', 'rung', 'order', 'flash', 'frame',
+                 'union', 'anchored-union', 'caption', 'repeat', 'notascene',
+                 'imperative', 'nonliteral']) badPath(t);
+
+const run = (args, cwd, build) => {
   try {
-    const out = execFileSync('bun', ['run', BUILD, ...args],
+    const out = execFileSync('bun', ['run', build || BUILD, ...args],
       { cwd: cwd || process.cwd(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
         env: { ...process.env, FRAMES_DIR: path.join(work, 'frames') } });
     return { code: 0, out };
@@ -105,8 +150,15 @@ const run = (args, cwd) => {
 // [label, argv, expect]
 //   expect.artifact — a path that must exist afterwards
 //   expect.stdout   — a substring the run must print (for verbs with no artifact)
+//   expect.absent   — a substring the run must NOT print
 //   expect.fails    — this row MUST exit non-zero, and print this substring
 //   expect.needs    — external binary; absent => SKIP, reported, not counted
+//   expect.build    — run a different build.js copy (for the tool-pair arms)
+//
+// `absent` exists for the false-positive side, which this repo has paid for
+// more than once: a first-cut check here reported 46 failures of which 45 were
+// correct files. An arm that only ever asserts a finding IS present cannot tell
+// a sharp check from an indiscriminate one.
 const ROWS = [
   // `stdout: ''` here for the file's whole life, and never evaluated: the guard
   // below read `if (ok && expect.stdout)`, where '' is falsy. So this row
@@ -120,6 +172,7 @@ const ROWS = [
   ['strip',   ['strip', scene, '0', '0.5', '4'],  { artifact: base + '.strip.jpg' }],
   ['motion',  ['motion', scene, '1'],             { stdout: 'motion:', needs: 'ffmpeg' }],
   ['probe',   ['probe', scene, '0', 'DURATION'],  { stdout: 'DURATION' }],
+  ['check',   ['check', scene],                   { stdout: 'check: ok' }],
   ['frames',  ['frames', scene, '1'],             { artifact: path.join(work, 'frames', 'f00001.png') }],
   ['video',   ['video', scene, '1'],              { artifact: base + '.mp4', needs: 'ffmpeg' }],
   ['all',     ['all', scene, '1'],                { artifact: base + '.mp4', needs: 'ffmpeg' }],
@@ -135,12 +188,76 @@ const ROWS = [
   // with a real history: running any command on one used to inflate it with
   // 0.77 MB of inlined three, idempotently, and it reached `git add` once.
   ['(red) bundle a template', ['bundle', templateCopy], { fails: 'shipped' }],
+
+  // `check`'s error tier: the tables cannot both be satisfied, so the verb owes
+  // a non-zero exit. Each names the substring its own message carries, because
+  // "exit 1" alone would let any one of these pass on another's finding.
+  ['(red) check subject',   ['check', BAD.subject],   { fails: 'is not in SUBJECTS' }],
+  ['(red) check focus',     ['check', BAD.focus],     { fails: 'focus "charts" is not in SUBJECTS' }],
+  ['(red) check anchor',    ['check', BAD.anchor],    { fails: 'outside 0..1' }],
+  ['(red) check beat name', ['check', BAD.beat],      { fails: 'which BEATS does not declare' }],
+  ['(red) check rung',      ['check', BAD.rung],      { fails: 'is not a rung in SIZES' }],
+  ['(red) check shot order',['check', BAD.order],     { fails: 'before SHOTS[0]' }],
+  // No shipped scene declares a flash, so this arm is the ONLY thing that ever
+  // exercises that resolver. Without it the code path is prose.
+  ['(red) check flash beat',['check', BAD.flash],     { fails: 'CONFIG.flashes[0]' }],
+  ['(red) check frame px',  ['check', BAD.frame],     { fails: 'FRAME.aspect' }],
+  ['(red) check not a scene', ['check', BAD.notascene], { fails: 'no BEATS table' }],
+  ['(red) check cps home',  ['check', scene],         { fails: 'no longer declares CPS_WARN_THRESHOLD',
+                                                        build: DRIFT_BUILD }],
+
+  // `check`'s advisory tier: exit 0, and the finding must be ON SCREEN. The
+  // anchored-union row is the false-positive control — the shipped two-shot in
+  // bear-and-bees.html is exactly this shape and is deliberate, so a rule that
+  // cannot tell the two apart would condemn a correct film.
+  ['(warn) check union rung',    ['check', BAD.union],            { stdout: 'union of 2 subjects on rung MS' }],
+  ['(warn) check union anchored',['check', BAD['anchored-union']], { absent: 'union of' }],
+  ['(red) check loop-built SHOTS',  ['check', BAD['imperative']], { stdout: 'SHOTS is declared but assembled' }],
+  ['(red) check call-built SHOTS',  ['check', BAD['nonliteral']], { stdout: 'SHOTS is declared but assembled' }],
+  ['(warn) check caption cps',   ['check', BAD.caption],          { stdout: 'cps against a' }],
+  ['(warn) check repeat framing',['check', BAD.repeat],           { stdout: 'share one framing' }],
 ];
 
 const results = [];
 try {
   fs.copyFileSync(SOURCE, scene);
   fs.copyFileSync(TEMPLATE, templateCopy);
+
+  const shot = (body) => [[SHOT, body]];
+  mutate('subject', shot("  {at:['title',0], subject:'chartt', size:'FS', angle:0, elev:0},"));
+  mutate('focus',   shot("  {at:['title',0], subject:'chart', size:'FS', angle:0, elev:0, focus:'charts'},"));
+  mutate('anchor',  shot("  {at:['title',1.4], subject:'chart', size:'FS', angle:0, elev:0},"));
+  mutate('beat',    shot("  {at:['ttitle',0], subject:'chart', size:'FS', angle:0, elev:0},"));
+  mutate('rung',    shot("  {at:['title',0], subject:'chart', size:'FSX', angle:0, elev:0},"));
+  mutate('order',   shot("  {at:['ports',.5], subject:'chart', size:'FS', angle:0, elev:0},\n"
+                       + "  {at:['title',.5], subject:'chart', size:'WS', angle:0, elev:0},"));
+  mutate('union',   shot("  {at:['title',0], subject:['chart','chart'], size:'MS', angle:0, elev:0},"));
+  // Same shot, one field added. The pair is the whole point: the rule must fire
+  // on the first and stay quiet on the second, or it is not a rule about unions.
+  mutate('anchored-union', shot("  {at:['title',0], subject:['chart','chart'], size:'MS', angle:0, elev:0, anchor:.45},"));
+  mutate('repeat',  shot(SHOT + "\n  {at:['mxrow',.2], subject:'chart', size:'FS', angle:0, elev:0},"
+                              + "\n  {at:['ports',.2], subject:'chart', size:'FS', angle:0, elev:0},"));
+  // A table the checker CANNOT read must say so. Both shapes below are legal
+  // JS that a film could plausibly write, and before 0.16.68 both produced a
+  // clean green: the loop form evaluated the empty literal as a valid table,
+  // the call form fell into the same 'absent' state as a 2D scene with no
+  // SHOTS at all. A verdict that cannot tell 'nothing to check' from 'could
+  // not check' is the failure this whole file exists to keep out.
+  mutate('imperative',  [[LIT_SHOTS, IMP_SHOTS]]);
+  mutate('nonliteral',  [[LIT_SHOTS, NONLIT_SHOTS]]);
+  mutate('flash',   [['  flashes: [],', '  flashes: [{beat:"nosuchbeat", at:0}],']]);
+  mutate('frame',   [['px: [1920, 1080]', 'px: [1080, 1920]']]);
+  // Long enough to cross the threshold, not merely longer than the original —
+  // a first draft of this fixture lengthened the caption to 28.8 cps against a
+  // 30 cps limit and its arm reported MISSED, which is the fixture failing to
+  // reach the property rather than the check failing to see it.
+  mutate('caption', [['cap: "Bottom row', 'cap: "Far more of a caption than anybody could read while it is on screen, and then some. Bottom row']]);
+  fs.writeFileSync(BAD.notascene, '<html><body><script>const NOTHING=[1];</script></body></html>');
+
+  fs.mkdirSync(DRIFT, { recursive: true });
+  fs.copyFileSync(BUILD, DRIFT_BUILD);
+  fs.writeFileSync(path.join(DRIFT, 'smoke.js'),
+    fs.readFileSync(SMOKE, 'utf8').split('CPS_WARN_THRESHOLD').join('CPS_RENAMED'));
 
   for (const [label, argv, expect] of ROWS) {
     // A vacuous expectation is a defect, not a style choice — see the vendor row.
@@ -162,7 +279,7 @@ try {
         required ? false : null]);
       continue;
     }
-    const r = run(argv);
+    const r = run(argv, undefined, expect.build);
     if (expect.fails !== undefined) {
       const ok = r.code !== 0 && r.out.includes(expect.fails);
       results.push([label, ok ? 'CAUGHT' : 'MISSED', `exit ${r.code}`, ok]);
@@ -181,6 +298,12 @@ try {
     if (ok && expect.stdout !== undefined) {
       ok = r.out.includes(expect.stdout);
       why += ok ? '' : `, stdout lacks "${expect.stdout}"`;
+    }
+    // The other direction, and it carries as much as the one above: this is
+    // where a check that fires on a correct file is caught.
+    if (ok && expect.absent !== undefined) {
+      ok = !r.out.includes(expect.absent);
+      why += ok ? '' : `, stdout contains "${expect.absent}" and must not`;
     }
     // The line that NAMES the failure, not the last two lines. Those are a
     // blank and the interpreter banner on any Bun crash, so the 0.16.41 gate
@@ -206,12 +329,16 @@ try {
 // real hole. One number cannot say both. Grouping is what makes the difference
 // legible, and it is why this reports per tier.
 const TIER = {
-  core:   ['vendor', 'bundle', 'probe', 'frames'],
+  core:   ['vendor', 'bundle', 'probe', 'frames', 'check'],
   review: ['poster', 'sheet', 'aspect', 'strip', 'motion'],
   export: ['video', 'all', 'avif', 'loop'],
 };
-const tierOf = label => label.startsWith('(red)') ? 'red'
-  : Object.keys(TIER).find(k => TIER[k].includes(label)) || 'other';
+// `(red)` and `(warn)` are both control arms and they assert opposite things:
+// red says the dispatch must REFUSE, warn says the report must SAY. Splitting
+// them keeps a green board from reading as if every control were a refusal.
+const CONTROL = /^\((red|warn)\)/;
+const tierOf = label => (CONTROL.exec(label) || [])[1]
+  || Object.keys(TIER).find(k => TIER[k].includes(label)) || 'other';
 
 let wrong = 0, skipped = 0;
 const tally = {};
@@ -246,6 +373,7 @@ line('review', !tally.review?.skipped
       + 'Track E1 closes it.');
 line('export', 'DELIBERATELY not gated — no encoder belongs in CI (working-plan Track E)');
 line('red',    'the dispatch must refuse these');
+line('warn',   'advisories that must be REPORTED — including one that must NOT fire');
 
 if (wrong) {
   console.log(`\n${wrong} row(s) did not behave as specified — a build.js verb is broken, or the`

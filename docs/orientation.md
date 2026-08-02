@@ -1,4 +1,4 @@
-last updated: 2026-07-31
+last updated: 2026-08-02
 
 # Zero-context orientation
 
@@ -53,6 +53,10 @@ committed version does. A cold-start run nearly reported the repo broken over a
 check that was green again five minutes later.
 
 ## Where to go next
+
+**[`VISION.md`](../VISION.md) is the most important document here** — it says why
+the two rules above exist and what they are *for*. Read it before proposing
+anything structural; where another file conflicts with it about intent, it wins.
 
 [`docs/README.md`](README.md) routes question → file. Start there rather than
 guessing. `CLAUDE.md` carries the invariants and the full map of scripts,

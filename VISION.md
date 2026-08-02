@@ -1,4 +1,4 @@
-last updated: 2026-07-30
+last updated: 2026-08-02
 
 # Why this exists, and why in this order
 
@@ -24,6 +24,13 @@ Not "a tool that makes films." Films are how the engine gets proven: every
 shipped example demonstrates that a layer works and fails loudly when it does
 not.
 
+**And not a template library.** A template is a finished thing you fill in. It
+solves one film and rots on the second, because the next film is not that film.
+What this is for is the pair of problems a template cannot hold together —
+**consistency**, so the same idea is not rebuilt differently in every film, and
+**the hand-rolled case**, so a film can still do something nobody anticipated. A
+primitive earns its place only if it serves both.
+
 But proving is not the point either. **The point is that the films land** — that
 a gag reads without captions, that a contact looks like impact rather than
 clipping, that a mechanism becomes obvious in motion when it was opaque in prose.
@@ -36,7 +43,7 @@ makes the second claim checkable; it is not a substitute for it.
 > written to protect against building a game engine nobody asked for, and it is
 > still right about *that*. It was wrong to describe the destination.
 
-## Determinism is not a constraint. It is the instrument.
+## Determinism is the instrument, not the point
 
 The easy reading is that purity is a price paid for nice properties — byte
 comparison, one file serving both the page and the render. True, and far too
@@ -61,13 +68,37 @@ rather than of the process, adding a generator upstream costs nothing. You do no
 graduate past determinism; you keep using it, on the output of each new thing you
 add.
 
-## `t` is a coordinate, and state is what a driver emits
+### Two claims, and only one is load-bearing
+
+These get conflated, and the conflation is how a useful instrument turns into
+dogma.
+
+- **Reproducibility** — the same inputs produce the same scene. This is the
+  property. It is what makes evaluation possible, and it does not bend.
+- **Byte-identity** — one *technique* for measuring reproducibility, with a
+  stated validity scope. `CLAUDE.md` invariant 5 already limits it to a single
+  backend, because two backends legitimately disagree per pixel.
+
+Where the technique's scope runs out, the claim survives and the measurement
+changes. A bake replayed is byte-identical; the same bake recomputed under a new
+solver version will not be, and that is not a determinism failure — it is where a
+tolerance-shaped oracle becomes the right instrument. The bake proposal already
+treats re-bake identity as its own question rather than assuming it.
+
+**The guard against dogma is a magnitude.** A check that reports only pass or
+fail cannot tell a scene that renders a *different film* from one that moved a
+single pixel by a single bit — and treated as equal, the second spends the
+credibility the first depends on. A difference should be reported with its size
+and its location. That is also what makes a failure actionable rather than merely
+alarming.
+
+## `t` is a coordinate; `state` is what a driver emits
 
 `t` is a position, not a clock: an address you evaluate, not a cursor you
 advance. Nothing asks what time it is, only what the scene looks like at this
 address. Any `t`, any order, any number of times, the same pixels.
 
-Determinism is a property of the **mapping** from `t` to pixels — not of the
+Determinism is a property of the **mapping** from state to pixels — not of the
 process that produced the mapping. That distinction is what makes the rest
 reachable:
 
@@ -88,9 +119,39 @@ are what the shape admits, and whether any of them gets built — or whether the
 useful direction turns out to be something not listed — is genuinely open. What
 the shape buys is that finding out later costs a signature change rather than a
 rewrite. `docs/addressing.md` works this through properly, including what the
-position-encoding literature in machine learning does and does not transfer.
+position-encoding literature in machine learning does and does **not** transfer:
+the mechanism does not, because nothing here compares two positions.
 
-One honest limit: a recording gives you an oracle for *that run*, not for the
+### `state` is the intermediate layer. The window contract is not.
+
+Worth being exact, because the design depends on the difference.
+
+- **The window contract** is an interface *for tools*. It is deliberately thin,
+  and the thinness is the whole value: any scene is interchangeable for any
+  other because no tool knows a film's internals. Widen it and that dies.
+- **`state`** is the value a driver hands the kernel. It is where meaning
+  accumulates, and the table above is its growth plan.
+
+`setCamera(t)` became `setCamera(state)` in 0.16.62. That was `state` acquiring
+its first named parameter — the seam a bake, a viewer and an input driver all
+widen. The contract does not move when they do, which is the point of having two
+layers instead of one.
+
+### Scene position and presentation time are not the same coordinate
+
+They are fused today: playback advances `t` in real seconds. Separate them — `t`
+addresses the scene, and a second mapping decides how fast an observer moves
+through it — and slow motion, holds, speed-ups and timelapse become
+**declarative** instead of authored into the beats.
+
+That matters beyond convenience once anything is simulated. If a bake is computed
+at scene-position resolution, how fast someone watches it cannot change what
+happened. Leave the two fused and playback speed is a physics parameter, which is
+exactly the coupling this project exists to remove. A warped coordinate already
+exists as one of the addressing frames; the separation at the presentation layer
+does not.
+
+**One honest limit.** A recording gives you an oracle for *that run*, not for the
 generator. Nothing yet tells you a simulator is right — that needs a different
 kind of instrument, property- or distribution-shaped rather than byte-identical,
 and this project has never built one.
@@ -121,11 +182,99 @@ It must be **opt-in and per-object**, never a global mode. Wanting a character t
 clip through a wall as a joke, or gravity set to Mars, is a legitimate authoring
 decision — "cede control here, keep it there" is the interface.
 
-**And it is premature until the layer beneath it is named.** The declarative
-layer that already exists is, in this project's own words, *"substantial, it
-works, and it is unnamed, unspecified, and unvalidated as a whole."* Adding
-another layer on top of tables nobody has enumerated, validated by nothing, buys
-a capability with no foundation. Enumerate first.
+**And it was premature until the layer beneath it was named.** That layer was,
+in this project's own words, *"substantial, it works, and it is unnamed,
+unspecified, and unvalidated as a whole."* Adding another layer on top of tables
+nobody had enumerated, validated by nothing, buys a capability with no
+foundation.
+
+**The enumeration now exists** — `references/breakdown.md`, 2026-08-02. Two of
+its findings change what comes next rather than merely recording it: the layer is
+**uneven**, with real schemas that throw beside open bags that validate nothing;
+and validation clusters where a mistake is *unrepresentable* (an unknown name
+fails a lookup) rather than where it is *expensive* (an extent that does not
+match its geometry passes silently). The second is the gap a compile step closes
+and a runtime cannot.
+
+### Where a declaration lives is not decided, and it is not a detail
+
+The table says *what* you declare. It does not say where the declaration lives,
+and today the answer is: as JavaScript object literals inside the shipped
+artifact, replicated into every file that carries them. That came from a tool for
+building explainer videos. Nobody here chose it.
+
+It belongs in this file rather than in the plan because **"declarative" is a
+claim about structure**. If a declaration cannot be read, validated or rendered
+independently of the artifact that embeds it, the claim is about authoring style
+instead — and the difference shows up as work: blocks held byte-identical across
+every carrier, a tool to propagate them, and a control to police that tool. The
+parity run reports the size of that tax on every invocation. It is not small, and
+it grows with every example added.
+
+The direction was written down before this project had its current name, and it
+has already been applied three times: **make the implicit thing data, then make
+the tooling read it.** `BEATS` made timing data, and timing became retimeable.
+`SHOTS` made camera data, and framing became solvable. `FRAME` made the frame
+data, and vertical and square output became first-class — each one previously
+impossible by construction, whatever an author wrote. The same record names the
+shape it should take: **data and a small compiler, not an abstraction layer.**
+
+It has never been applied to geometry or motion, which is where most of a film
+actually is.
+
+**Open, with a position and an ordering.** The position: JSON is not the right
+shape, and whether something with more structure is remains the question. The
+ordering is the one this file already applies — enumerate the layer before
+choosing a representation for it, because you cannot pick a shape for a set
+nobody has listed. The question is filed under `Open question` in
+[`docs/restructure-2026-07.md`](docs/restructure-2026-07.md), which is where it
+lives; this file says why it matters, not what to do about it.
+
+## The shape a primitive has to have
+
+Two failure modes bound the design, and naming them is more useful than naming a
+technology.
+
+**A closed vocabulary rots.** If the only expressible things are the ones someone
+anticipated, the first film that needs something else either cannot be made or is
+made by escaping the system — and once authors escape, the consistency the
+vocabulary existed for is gone.
+
+**An unstructured one cannot be checked.** Nothing can validate a declaration
+that has no shape. That is why declared extents rot, why a hand-written subject
+table can disagree with the geometry it describes and nothing notices, and why a
+NaN can make one instrument fail loudly while another goes silently all-clear on
+the same run.
+
+Both are avoidable at once, and the existence proof is already in the tree.
+`buildCharacter(P, matFor)` takes a fixed proportion vector — a real schema — and
+a **function** for materials. From that one constructor, `menagerie` builds a
+bear, a human and an invented strider. Structure at the seam, arbitrary code in
+the leaf.
+
+That is the rule to design to: **schema where things connect, code where things
+are specific.** It is not a language to learn and it is not a template to fill
+in.
+
+A primitive earns its place when it makes a **pair** of things travel together
+that were previously re-derived apart — a biped and its gait, a shot size and the
+camera math that realises it. The test is not "is this reusable" but *does using
+it make the next film's version consistent with this one, without forbidding the
+film that needs something else.*
+
+## What this is all for
+
+Today, staging a character tripping over another moving character means computing
+the outcome by hand: where each one is, how fast, with what stride and what mass,
+where the contact lands and what it looks like — then tuning until it reads, and
+re-tuning every one of those numbers when any single one changes.
+
+The destination is that you declare the bodies and the intent and the system
+works out the consequence — the same move lighting already made, and the reason
+the bake is described as a declarative layer rather than a feature. Determinism
+is what makes it reachable: a computed consequence is only trustworthy if you can
+hold it still and check it, and only useful if it does not change under you
+between runs.
 
 ## How it gets better
 
@@ -149,13 +298,35 @@ carried over, and survived only because an archive audit went looking.
 Not "are there more features." These:
 
 - A change to a scene either matches the last run byte-for-byte or it does not,
-  and the difference is *localisable*.
+  and the difference is *localisable* — reported with its size and its position,
+  not as a bare verdict.
 - A claim in this repo can be re-derived by running something, not by trusting
   prose.
+- A declaration can be validated **before a frame is rendered**.
 - A new capability reuses the kernel, the characters, the materials and at least
   one instrument **without modification** — that is Phase 6's gate, and it is the
   real test of whether the layering was ever true.
+- A film that needs something the vocabulary cannot say can still be made, and
+  the gap is visible afterwards rather than silently absorbed.
 - A session arriving with no context can find what it needs and act correctly.
 
-The last one is measurable and gets measured. The others are the reason the first
-one has to hold.
+The last one is measurable and gets measured. They are listed because a criterion
+you fail is worth more than one you have quietly dropped — and two of them were
+written on 2026-08-02 as outright false, which is worth recording because one of
+them stopped being so on the same day.
+
+**Pre-render validation: now partly true, and the honest boundary is narrow.**
+`build.js check` (0.16.67) cross-references the declarative tables against each
+other before anything renders — every name a shot uses, every anchor inside its
+beat, captions against the reading limit. What it does **not** do is compare a
+declared extent against the geometry it claims to describe; that needs the scene's
+own objects, which is `probe`'s admitted exception. So the criterion holds for the
+tables' internal consistency and fails for the one case that needs runtime
+geometry — and that case is the layer's most expensive gap, not a rounding error.
+The verb states which tables it covered on every run, because a validator whose
+green cannot be told from a run that read nothing was the first defect it shipped
+with.
+
+**Determinism magnitude: still false.** A determinism failure reports that it
+happened, not how large it was or where. Nothing has changed here, and the guard
+against dogma above is the argument for changing it.

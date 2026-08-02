@@ -7,6 +7,270 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.69
+
+### fixed
+
+**The same unmeasured duration, in the second shipped file that carried it.**
+`bracket-driver.js` said the `!fails.length` guard went unexercised for "four
+months". It lived seven days — entered at 0.16.9 on 2026-07-25, removed
+2026-08-01 — in a repository whose entire history is eight.
+
+0.16.66 corrected the `smoke.js` copy of this figure and **grepped one file
+instead of the tree**, so it fixed the instance and left the class, in the commit
+whose message argued for fixing the class. Found by `/audit-claims` hours later.
+Both shipped; both are now right.
+
+The comment keeps its point at the true number, because the point survives and
+sharpens: elapsed time was never going to surface this defect. A fixture that
+could carry two defects at once was.
+
+## 0.16.68
+
+### fixed
+
+**`build.js check` reported `ok` on a table it could not read.** Shipped one
+version earlier, found the same day by `/audit-claims`. A scene whose `SHOTS` is
+built by a loop gave `0 shot(s)` and a clean green; one returned from a call fell
+into the same state as a 2D scene that has no `SHOTS` at all. Two legal shapes a
+film could plausibly write, both silently uncovered by the verb whose entire
+purpose is catching what a render would miss.
+
+**It is the same silent-scope class closed for the brackets earlier the same
+day** — a green indistinguishable from a run that checked nothing, which
+`--parity-only`'s file count and the bracket tallies already close one tier up.
+Fixing the instances did not prevent the next instance, which is the 2026-07-30
+postmortem's conclusion recurring on a tool written by someone who had read it.
+
+Now: `tableSource` distinguishes *declared but not a literal* from *not declared*
+rather than collapsing both to null; a literal that later lines push into or
+splice is reported rather than read stale; such a table draws a warning naming
+it; the header says `SHOTS unread` instead of asserting `no SHOTS (2D)` about a
+scene that declares one; and **the verdict line states its scope** — either the
+tables covered, or the tables not covered.
+
+Two arms, both watched red first against the live defect: a loop-built and a
+call-built `SHOTS`, each failing with `exit 0, stdout lacks` before the change.
+`bracket-commands.js` at 34 rows.
+
+### changed
+
+**Four claims that describe what `check` covers, corrected in the same commit,
+because each becomes wrong in a new way if the verb changes without them.**
+
+- `references/instruments.md` said such a table "is reported as unreadable rather
+  than checked — in both cases it says which table it could not cover." It said
+  nothing. Corrected in the file whose whole subject is what a check cannot see,
+  and the remaining quieter blind spot — a `NaN` no comparison reaches — is now
+  stated separately from the one that was fixed.
+- `VISION.md` listed pre-render validation among its currently-false criteria.
+  Now partly true, with the boundary drawn narrowly: true for the tables'
+  internal consistency, still false for a declared extent versus its geometry.
+  The determinism-magnitude criterion remains false and says so.
+- `SKILL.md` routed `breakdown.md` as "what nothing checks" — inverted by 0.16.67.
+- `references/breakdown.md`: `flashWidth` is read by all three templates, not
+  "2D and character"; `cameraFloor` by both 3D templates, not "character only".
+  Both errors came from a grep capped with `head -6` whose truncation was read as
+  completeness. And the 2D camera does not "interpolate linearly" — values are
+  lerped against a smoothstep-eased fraction, so motion eases rather than running
+  at constant velocity.
+
+## 0.16.67
+
+### added
+
+**`build.js check` — the declarative tables cross-referenced against each other,
+before a frame renders or the page loads.** R5 item 3, and the first consumer of
+`references/breakdown.md`, which enumerated the layer and found its validation
+column mostly empty.
+
+It resolves every `subject`, `focus`, `size` and beat name a shot uses; rejects
+an `at` fraction outside `0..1`, shots out of time order, a `KEYS` or
+`CONFIG.flashes` entry naming a beat that does not exist, a duplicated beat, and
+a `FRAME.px` that does not describe `FRAME.aspect`. It warns on a union shot
+taking a rung whose anchor is a body landmark, on a caption above the reading
+speed `smoke.js` already owns, and on three or more shots sharing one framing.
+No browser, no encoder, no frames — string work over the scene source, so it runs
+on a scene too broken to load, which is exactly when a name error is cheapest to
+find. Today a mistyped subject throws only on a frame where that shot is live: a
+viewer finds it, not the toolchain.
+
+**It is not a second exception to the prime directive, and the distinction is
+the design.** That rule binds tooling which DRIVES a scene to the window
+contract; `check` drives nothing and reads only kit-owned table names, never a
+film's own identifiers. Going through the contract was considered and rejected on
+two grounds: `window.SHOTS` is deliberately a `{t, cutEnd}` projection and the
+authored fields are on no window at all, and a scene whose shot names a
+nonexistent beat throws inside `beatAt` at load — so it never reaches
+`sceneReady` and a contract reader would have nothing to inspect.
+
+**One work-list item was deliberately NOT built: declared-versus-measured
+extents.** Comparing a declared `h`/`w`/`d` against geometry means naming scene
+objects, which is `build.js probe`'s admitted exception. Extending it on the way
+past would have been the cheapest possible way to lose the rule. `check` prints
+that gap on every run, green ones included.
+
+**One work-list item turned out not to exist.** "`BEATS` sums to `DURATION`" is
+undecidable in the useful sense: `TOTAL` is *derived* from `BEATS`, so the two
+cannot disagree. `breakdown.md` had already said so and the plan had not caught
+up. What replaces it is the coherence that IS decidable — no duplicate beat name,
+every `dur` positive — plus `FRAME.px` against `FRAME.aspect`, which
+`breakdown.md` listed as unvalidated and is the same kind of fact.
+
+**Narrowed once, against a shipped film, and that is the finding worth keeping.**
+The rule as specified — "union shots use only wide rungs" — condemns
+`bear-and-bees.html`'s two-shot, which asks for `MS` on a pair deliberately and
+annotates itself as doing so. It supplies `anchor:.45`, and the solver prefers an
+explicit `anchor` over the rung's own, so that shot is not making the mistake.
+The check now fires only on a union that overrides nothing, and
+`bracket-commands.js` carries the anchored case as an arm that must stay quiet.
+Without it the first run of this verb would have reported a correct, shipped,
+commented shot as a defect.
+
+### changed
+
+- **`bracket-commands.js` gains a `check` row per property the verb decides**,
+  each mutated from a real shipped scene rather than hand-written, plus
+  `expect.absent` for the false-positive direction and `expect.build` for the one
+  arm whose fixture is the tool pair rather than a scene. Every arm was watched
+  go red with its own check neutralised; the union pair was additionally run
+  end-to-end through the harness with the narrowing removed, which reports FAIL
+  and exits 1. Its fixture builder refuses to write an unmutated copy, so an edit
+  to `noise-chart.html`'s tables breaks the controls loudly instead of leaving
+  arms that assert nothing.
+- **The caption threshold has one home and `check` reads it out of `smoke.js`**
+  rather than restating it, so the two instruments cannot disagree about the same
+  beat. Renaming the constant makes `check` refuse rather than fall back — which
+  is itself an arm.
+- **`references/instruments.md`** gains the `check` section: what it decides, at
+  which severity, and the three things it cannot see.
+- **`references/breakdown.md`** amended the same day it was written, by the work
+  it specified. Its validation column now records what `check` closed, and it
+  gained two `SHOTS` fields the enumeration had missed — `anchor` and `anchorX`,
+  both read by the solver and both used by shipped examples. Reading a spec does
+  not find those; writing code against it does.
+- **`SKILL.md`** routes to `check` at step 3, the moment the tables exist.
+- **`fixtures/defect-corpus/README.md`**: defect 10b moves out of the UNVERIFIED
+  table. `check` finds **four** shots sharing a byte-identical framing, not the
+  five the prototype's squint strip reported — the fifth differs by `elev` alone,
+  which the eye reads as the same card and a table comparison does not. The rung
+  half of that row is untouched and stays unverified.
+
+## 0.16.66
+
+### fixed
+
+**A duration in `smoke.js` that was never measured, off by roughly seventeen
+times, in shipped content.** The comment explaining the removed `!fails.length`
+guard said it *"survived four months."* It entered at 0.16.9 on 2026-07-25 and
+was removed on 2026-08-01: **seven days**, in a repository whose entire history
+is eight. The same figure has been repeated in several tracked files.
+
+It was written to convey "a long time" and read as a fact — which is the class
+this repo has spent two days closing, arriving here as an elapsed-time claim
+rather than a count. Corrected rather than deleted, because the point survives at
+the true figure and sharpens: a week was enough, because nothing was ever going
+to find this defect by elapsed time. What found it was building a fixture that
+could carry two defects at once.
+
+## 0.16.65
+
+### added
+
+**`references/breakdown.md` — the declarative layer, enumerated.** R5.2, and the
+prerequisite `VISION.md` and the open shape question both name: you cannot choose
+a representation for a set nobody has listed. Derived by reading the three
+templates and every shipped example rather than from the plan; the `STYLE` and
+`CONFIG` key surfaces were enumerated mechanically, which is why the
+kit-versus-film split is known rather than guessed.
+
+One section per table — `BEATS`, `STYLE`, `CONFIG`, `FRAME`, `SUBJECTS`, `SHOTS`,
+`SIZES`, `KEYS`, the character proportion vector — each with its fields, its
+consumers, and what validates it.
+
+**Four findings that change what comes next rather than merely recording it:**
+
+- **The layer is uneven.** The proportion vector is a real schema that throws on
+  violation; `STYLE` and `CONFIG` are open bags that validate nothing. A
+  misspelled `exposure` renders at the default and looks like an authoring choice.
+- **Validation clusters where a mistake is UNREPRESENTABLE, not where it is
+  expensive.** Unknown names throw because a lookup fails. The errors that are
+  representable — an extent that does not match its geometry, an anchor outside
+  its beat, a caption that will not fit — have no check, and every one is
+  decidable from the tables before a frame renders.
+- **`STYLE` has twelve kit-read keys and the template declares three.** An author
+  scaffolding from a template cannot discover the other nine except by reading an
+  example, which this project treats as a defect rather than a route. Seven more
+  keys are film-private, and nothing in the source distinguishes the two kinds —
+  so extending the kit risks colliding with a name a film already uses.
+- **Two kit-read `CONFIG` keys appear in no template**, `flashWidth` and
+  `cameraFloor`.
+
+The character vector is named as the model worth copying: a fixed schema with one
+typed hole (`matFor`), from which one constructor yields a bear, a human and an
+invented strider. Structure at the seam, arbitrary code in the leaf.
+
+Deliberately not enumerated: geometry construction and per-frame motion, which
+are authored code rather than declaration and are where most of a film's lines
+live. Naming that boundary is as far as an enumeration can go, and it is the
+question the enumeration existed to make answerable.
+
+`SKILL.md` routes to it. `VISION.md`'s "enumerate first" paragraph is updated,
+since it described a thing that had not been done and now has.
+
+## 0.16.64
+
+### changed
+
+**The parity run reports the size of the tax it exists to measure.**
+`--parity-only` now derives and prints the fenced lines held byte-identical
+alongside the file count: `ok — 9 file(s) scanned, 5704 fenced line(s) held
+byte-identical`. Summed over what was actually read, so a narrowed glob shrinks
+the figure instead of reporting the old one.
+
+### fixed
+
+**A hand-written count in `smoke.js` was stale by ~24%, in the file that does
+the counting.** The `--parity-fix` comment read "4,611 lines are held
+byte-identical", measured 2026-07-30 — before `CONTRACT` became the seventh
+fence (0.16.44) and before the defect-corpus fixture became the ninth carrier
+(0.16.45). The true figure is 5,704. Eleven versions stale, in shipped content,
+and restated in three other tracked files.
+
+Nothing could have caught it. "Lines held byte-identical" is not one of check
+13's registered countables, and no bracket reads prose. This is the second
+instance found in two days of the same shape — a count sitting in a blind spot
+between the checks built to eliminate counts — and the remedy is the same one
+both times: derive it, or delete it. The comment now points at the run.
+
+`docs/restructure-2026-07.md` carried it twice. The undated instance now points
+at the command; the dated one is kept, annotated with the re-measurement and the
+reason it grew, because a dated figure is a record rather than a claim.
+
+**The fence list had two copies in `smoke.js`, and the generator was reading the
+wrong one.** `--parity-only` (which ENFORCES) iterated a bare literal;
+`--parity-fix` (which PROPAGATES) used `const FENCES`. They agreed, so nothing
+was broken — but `scripts/derived-counts.js` scrapes `const FENCES` to fill the
+fence-count marker, which means the instrument whose stated guarantee is that it
+*"cannot miss and cannot false-positive, because it never has to recognise
+anything"* was deriving the enforcing list from the propagation copy. Hoisted to
+one module-scope `const` consumed by both. Deleting the copy is O(0); guarding
+two is O(n) and one more thing that can misfire, and `source-of-truth.md` already
+says to prefer the deletion.
+
+**Two shipped files still said six fences.** `references/glossary.md` — *"Six
+exist: KERNEL, SOLVER, RIG, DRIVER, CHARACTER, HTML"* — and
+`templates/bracket-parity.js`'s header. `CONTRACT` became the seventh at 0.16.44,
+so both had been wrong for twenty versions, in content that ships to every
+installed user. This is the **third and fourth** instance of the exact defect
+`instruments.md` carried and check 13 was built to close at 0.16.57. They
+survived it for two structural reasons, both now stated where they bite: the
+sentence carries no registered noun, so the bare-count scanner cannot see it, and
+`derived-counts.js` filters to `.md`, so a `.js` header is out of reach by
+construction. Both now name the array instead of restating it — including the
+glossary line, which says in as many words not to trust a restatement, itself
+included.
+
 ## 0.16.63
 
 ### changed

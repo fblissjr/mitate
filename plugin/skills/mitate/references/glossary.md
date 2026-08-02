@@ -46,7 +46,11 @@ gate enforces.
 **fence** — a block of code marked `/* ==== NAME-START ==== */ … NAME-END`,
 written byte-identically into every scene that carries it. Self-containment
 forbids a shared import, so the copies are real and a check reports divergence.
-Six exist: `KERNEL`, `SOLVER`, `RIG`, `DRIVER`, `CHARACTER`, `HTML`.
+The list is `smoke.js`'s `FENCES`, and it is the enforcing copy — a fence absent
+from it is not checked, whatever a doc says. `CONTRACT` joined at 0.16.44 and
+this sentence named six until 0.16.64, which is the third file to carry that
+exact omission. Read the array; do not trust a restatement of it, including this
+one.
 
 **the parity set** — the files a given fence is actually compared across on one
 run. A file whose fence is malformed *leaves the set*, which is how the check

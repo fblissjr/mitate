@@ -1,4 +1,4 @@
-last updated: 2026-08-01
+last updated: 2026-08-02
 
 # mitate
 
@@ -6,6 +6,16 @@ A Claude Code skill (and its showcase site) that turns any input into a
 deterministic animated scene. Read [`docs/plan.md`](docs/plan.md) for the
 architecture and the phase gates; this file is only the things that bite on the
 first edit.
+
+**Read [`VISION.md`](VISION.md) first, and treat it as the most important
+document here.** It is the only file that says what this is *for* — why
+determinism comes first and what it is first for, what a primitive has to be,
+where a declaration lives, and which of two determinism claims is load-bearing.
+Everything in this file is a rule; everything in the plan is a sequence. Both are
+downstream of that one, and **where any document here conflicts with `VISION.md`
+about intent, `VISION.md` wins and the other is the thing to fix.** It is
+deliberately short and it is deliberately argued rather than summarised — do not
+compress it into a bullet list, and do not restate it here.
 
 ## Map
 
@@ -21,7 +31,12 @@ subagent (which never auto-loads this file). Neither is restated here; a second
 copy of a router is the exact failure this file keeps catching.
 
 - **What it is, for a user** — `README.md` (repo root), `plugin/README.md`
-- **Why, and in what order** — `VISION.md` (determinism first, and what for)
+- **Why, and in what order** — `VISION.md`. **The most important document in this
+  repo**, and the one to read before deciding anything structural: determinism as
+  the instrument rather than the point, `t` as a coordinate and `state` as the
+  intermediate layer, the declarative layers and the open question of where a
+  declaration lives, and the shape a primitive has to have. It carries success
+  criteria the project currently **fails**, on purpose
 - **The skill that ships** — `plugin/skills/mitate/SKILL.md`, plus
   `references/` (start with `glossary.md` — the words this project uses as if you
   knew them), `templates/`, `examples/`, and `plugin/agents/film-reviewer.md`
@@ -78,6 +93,14 @@ copy of a router is the exact failure this file keeps catching.
   and stays that way. Narration, not doctrine — read it for what a day actually
   did and why, and read `docs/postmortems/` for what was concluded. Tracked as of
   2026-08-01, so a log is now citable; that changed its reach, not its standing
+- **Point-in-time snapshots** — `snapshots/<YYYY-MM-DD>/`, each a frozen record of
+  what the project was on one date: architecture, the verification apparatus, the
+  state of play, the doc topology, and how it got there. **A dated record, in the
+  same class as `CHANGELOG.md` and the logs — it settles nothing and is never the
+  tiebreaker.** Do not link to one from a live document: a live document pointing
+  at a frozen one is how the frozen one starts being read as current. Read one to
+  ask *how did it get this way*, which no live document answers because none is
+  supposed to
 - **This file** — `CLAUDE.md`, the front door. `scripts/selfcheck.js` check 9
   asserts every tracked top-level entry appears in this Map, because the claim
   below it is a completeness claim and prose could not hold it: a review found

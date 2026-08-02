@@ -22,7 +22,8 @@ description: >
 > **Provenance.** Canonical for routing and workflow order. Verified 2026-07-31
 > against `templates/` and `references/` — including the Environment section,
 > re-checked against `build.js`'s encoder call sites after Track E1 moved the
-> review verbs off ffmpeg.
+> review verbs off ffmpeg. Step 3's `build.js check` line added 2026-08-02 and
+> run against every shipped example and template before being written.
 
 **What it makes:** one self-contained HTML file that plays an animated scene in
 any browser, and renders frame-exact to MP4, AVIF or WebP. No player, no build
@@ -127,6 +128,20 @@ placeholders, the camera frames the template's demo, not your film.
 - `references/materials.md` before any surface beyond flat colour — the toon,
   subsurface and glass packs, and what does and does not bloom.
 
+```bash
+bun run build.js check <name>.html    # the tables against each other — no browser, no frames
+```
+
+Run it the moment `BEATS`, `SUBJECTS` and `SHOTS` exist, and after every edit to
+them. It resolves every name a shot uses, checks each anchor lands inside its own
+beat, and reads captions at the same limit `smoke.js` uses — all from the source
+text, so it costs no render and works on a scene too broken to load. A typo in a
+subject name otherwise throws only on a frame where that shot is live, which
+means a viewer finds it. `references/breakdown.md` is the table-by-table
+specification; `references/instruments.md` says what `check` cannot see, and the
+headline is that it never compares a declared `h`/`w`/`d` against the geometry —
+that is `probe`, below.
+
 ### 4. Review, on three axes
 
 ```bash
@@ -226,7 +241,8 @@ Not style — each was measured, and each fails quietly rather than loudly.
 
 Pinned: `three@0.185.1`, `playwright-core@1.61.1`, bun. **No encoder is needed to
 build or review a scene** — `bundle`, `frames`, `probe`, `poster`, `sheet`,
-`aspect` and `strip` all run on bun and a browser alone.
+`aspect` and `strip` all run on bun and a browser alone, and `check` needs not
+even a browser.
 
 `playwright-core` ships **no browser** — run `bunx playwright install chromium`
 before the first render, or set `CHROMIUM_PATH`.
@@ -254,6 +270,7 @@ Cited above at the step that needs them. In full:
 |---|---|
 | `method.md` | **before building anything** — the failure axes and the discipline |
 | `glossary.md` | a term is doing more work than it looks like |
+| `breakdown.md` | what the declarative tables can say, and where `build.js check` still cannot reach |
 | `film-language.md` | authoring `SUBJECTS` and `SHOTS` |
 | `bibles.md` | choosing the look, at spec time |
 | `materials.md` | authoring any surface beyond flat colour |

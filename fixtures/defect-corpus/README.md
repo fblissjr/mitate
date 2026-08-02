@@ -1,4 +1,4 @@
-last updated: 2026-08-01
+last updated: 2026-08-02
 
 # The defect corpus — apparatus, not an example
 
@@ -84,12 +84,24 @@ file and failing when that changes in either direction. Not yet written.
 
 ## The defects, and which have been re-measured
 
-The prototype carried twelve characterized defects, <!--count-mention--> and
-this build enumerates them as <!--derived:defect-rows-->14<!--/derived--> rows
-across the two tables below — three of the twelve are split into sub-lettered
-rows (`2b`, `5b`, `10b`), which is why the two numbers differ and why the
-sentence that used to state only the first one misled every reader who counted
-the second. **The defects are mechanical and most should survive a re-skin, but
+This build enumerates the prototype's defects as
+<!--derived:defect-rows-->14<!--/derived--> rows across the two tables below:
+**<!--derived:defect-bases-->11<!--/derived--> base defects, three of which are
+split into sub-lettered rows** (`2b`, `5b`, `10b`).
+
+**The prototype's own count is NOT stated here, because no tracked file can check
+it.** This sentence said "twelve" until 2026-08-02, with arithmetic that only
+balances at eleven — three splits over eleven bases gives the fourteen rows; over
+twelve it would give fifteen. Whether the prototype carried eleven, or carried
+twelve and one was never enumerated here, is unanswerable from the tree: the
+prototype is local-only. Per the rule that a claim may cite a local artifact but
+must not rest on one, this file now states what its own tables hold and stops
+asserting what only one machine could confirm.
+
+The figure was also **exempted from the count check by a `count-mention` marker**
+— the escape hatch for legitimate historical mentions, applied to a number that
+contradicted the table three lines below it, which is why the generator never
+caught it. **The defects are mechanical and most should survive a re-skin, but
 "should" is not a measurement** — and the engine changed underneath this build
 when the fences were brought current, which can move both framings and numbers.
 
@@ -99,14 +111,24 @@ when the fences were brought current, which can move both framings and numbers.
 |---|---|---|---|---|
 | 8 | `endcap` — a beat in which no character moves | `motion` 0.94 against peak 5.75 | **1.05 against peak 6.79** (`orbit`), median 2.57 | **survives**; still the weakest beat by a wide margin, and both numbers moved |
 | 11 | `SUBJECTS.walker` declares `w:2.8` | measured 3.62 | **3.12 @ t=5, 3.30 @ t=20, 5.76 @ t=45** (fallen) | **survives**; declared extent is under the real one at every sampled moment. The prototype's 3.62 does **not** reproduce — the figure moved |
+| 10b | five shots are the identical card | squint strip, by eye | **four** shots share a byte-identical framing — `SHOTS[2,6,9,11]`, all `walker` / `FSA` / angle 26 / elev 7 | **survives, and the count moved.** The fifth (`fall`) differs by `elev` alone, which the eye reads as the same card and a table comparison does not. The rung half of the row — 15 of 22 at `FSA` — is untouched by this and remains UNVERIFIED |
 | — | beat map: 17 beats, 60.0s | 17 beats, 60.0s | **unchanged**, confirmed by `motion` | durations carried over, so timestamps below are still addressed correctly |
 
-Re-run those two with:
+Re-run those three with:
 
 ```bash
 bun run plugin/skills/mitate/templates/build.js motion fixtures/defect-corpus/after-hours.html 12
 bun run plugin/skills/mitate/templates/build.js probe fixtures/defect-corpus/after-hours.html 20 'bb(walker.root)'
+bun run plugin/skills/mitate/templates/build.js check fixtures/defect-corpus/after-hours.html
 ```
+
+**`check` is also this file's cheapest standing use, and its report is worth
+reading as a boundary.** It runs in milliseconds with no browser, and on this
+scene it finds exactly one thing: 10b's repeated framing. Every other defect
+below needs pixels, geometry or a clock. That is not a gap in the checker — it is
+the honest shape of what a declarative cross-reference can reach, and it is why
+row 11's declared-versus-real extent is the row `check` names and does not
+measure.
 
 **NOT yet re-measured against this build — carried from the prototype and
 therefore UNVERIFIED here.** Do not cite these numbers as properties of this
@@ -126,11 +148,10 @@ to serve.
 | 7 | the chase has no pursuit — gap constant within ±0.4 from 47.5s | AABB separation trace |
 | 9 | paws render as hard black rectangles | self-shadowed by the leg |
 | 10 | ~4 of 9 act-one beats read unaided vs 7 of 8 act-two | `nocap` sheet |
-| 10b | 15 of 22 shots are `FSA`; five are the identical card | squint strip |
 
 ## The finding that justifies the whole directory
 
-The prototype's twelve defects were found by a **single** `film-reviewer` pass on <!--count-mention-->
+The prototype's defects — however many it carried; see above — were found by a **single** `film-reviewer` pass on
 a film its author had already reviewed over roughly eight look-and-edit rounds
 and delivered as an MP4. The review found almost nothing the author had
 considered and dismissed, and nearly everything the author had never looked at.

@@ -370,9 +370,19 @@ try {
     // THE `!fails.length` GUARD, which is the other half of this unit. The guard
     // read `fails` GLOBALLY, so any unrelated earlier failure disabled the only
     // check covering load-time nondeterminism -- and nothing exercised it for
-    // four months, because demonstrating it needs a fixture carrying TWO defects
-    // at once, which is why plan.md recorded the fix as blocked on a red-able
-    // fixture that did not exist.
+    // its whole life, because demonstrating it needs a fixture carrying TWO
+    // defects at once, which is why plan.md recorded the fix as blocked on a
+    // red-able fixture that did not exist.
+    //
+    // That life was SEVEN DAYS: entered 2c5742f (0.16.9, 2026-07-25), removed
+    // 2026-08-01. This comment said "four months" until 2026-08-02, in a repo
+    // whose entire history is eight days. Nobody measured it -- bracket-driver.js
+    // is what surfaced the defect, with a fixture rather than with elapsed time.
+    // The figure meant "a long while" and was then read as a fact -- and the
+    // smoke.js copy of it was corrected earlier the same day while this one was
+    // missed, because that fix grepped one file instead of the tree. Elapsed
+    // time was never going to be what surfaced this defect; a fixture that could
+    // carry two at once was.
     //
     // This arm builds one FROM `CLEAN` rather than storing a second scene: a
     // random drawn once at load (pure within a session, different per load --

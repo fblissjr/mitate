@@ -1,4 +1,4 @@
-last updated: 2026-08-01
+last updated: 2026-08-02
 
 # Pattern ledger: how many times have we built this
 
@@ -53,7 +53,7 @@ names where it went, or why it has not moved.
 |---|---|---|---|
 | **contact measured, not inferred** | **6** | 5 recorded in `instruments.md` as a recurring class, + the 2026-07-25 film `(local)` | `build.js probe` — plan item A1. Trigger long past; earn-in blocked it because its bar was "a film was blocked" and this shape is *not blocked, reliably wrong* |
 | **declared extents rot; measured ones do not** | **6** | 3 predecessor films cropped their own payoff; 3 of 5 hand-computed extents wrong on the 2026-07-25 film `(local)` | `subjectFromObject` — Track D, promoted. The predecessor *specified* the fix and it never shipped, while a code comment claimed it had |
-| **presence gating (scale gate)** | **2 spellings** | `bear-and-bees` (`clamp(sc,.001,1)` + a `visible` flip), ×1 tracked; 2026-07-25 film `(local)` (`Math.max(1e-4,…)`, **×11**, re-counted 2026-08-01 — this row said ×7) | `hide(obj, u)` kit helper — Track D. **The trigger stands**: two spellings is drift, not reuse, and that is what justifies a helper. The second spelling lives in a local prototype `(local)`, not in the tracked corpus. So the drift is between one tracked file and one local one — enough to justify the helper, not enough to promote from |
+| **presence gating (scale gate)** | **2 spellings** | `bear-and-bees` (`clamp(sc,.001,1)` + a `visible` flip), ×1 tracked; `fixtures/defect-corpus/after-hours.html` (`Math.max(1e-4,…)`, **×11**, counted 2026-08-02 — this row said ×7, then said the spelling was local-only) | `hide(obj, u)` kit helper — Track D. **The trigger stands**: two spellings is drift, not reuse, and that is what justifies a helper. **Both spellings are tracked**, so this row rests on nothing local: the ×11 is re-countable by anyone with the repo. It does not raise the count — the corpus fixture is a re-skin of the 2026-07-25 film with the script unchanged, so it is the same instance carried into the tree, not an independent rebuild. Promote as its own change with its own red, not bundled |
 | **transition windows under-sampled** | **2** | 0.5.1 review (which shipped the `window.SHOTS` export for it); 2026-07-25 film `(local)`, ~1% continuity coverage | `build.js transitions` — plan item A2. The export exists; the sweep does not |
 | **per-shot camera energy** | **1** | `bear-and-bees` wanted `locked` for the hush while the film wanted `steadicam`; went all-locked | Open carry-forward. Same shape as the viewer's camera-delta seam — design them together |
 | **built (non-DOM) text** | **1** | 2026-07-25 film: a stroke alphabet, 3 bugs, all "one letter on a wrong assumption" | Deferred. Enters at the **chart tier** when it lands — a grid of 36 glyphs exposes that bug class at a glance; a title card cannot |
@@ -71,6 +71,26 @@ handoff reports that feed it are not.
 A shape sitting at 1 is not a failure. It is the ledger working: the entry costs
 a row, and the row is what makes the *second* instance visible as a second
 rather than as a fresh idea.
+
+**Check a `(local)` label before trusting it — five rows still carry one, and at
+least one was wrong.** `fixtures/defect-corpus/after-hours.html` is a re-skin of
+the 2026-07-25 film in which *the script did not change*, so evidence recorded
+here as living only on one machine may in fact be sitting in the tracked tree,
+countable with a grep. That was true of the presence-gating row and was found
+only because someone counted. The remaining rows citing that film — contact
+measured, declared extents, transition windows, built text, multi-station
+travel, row/grid layout — have **not** been re-checked against the fixture, and
+each needs checking on its own rather than as a batch: the fixture carries the
+script, not the surrounding film, so a citation may or may not have survived the
+re-skin.
+
+The distinction that matters when one does survive: a re-skin is the **same
+instance carried into the tree**, so it makes the evidence re-runnable without
+raising the count. `(local)` is a claim about where evidence lives, and the rule
+it serves is that a claim may cite a local artifact but must not rest on one.
+Getting it wrong in the direction found here is the benign one — it understates
+what is checkable. Getting it wrong the other way rests a promotion on something
+nobody else can run.
 
 ## Maintaining it
 
@@ -122,7 +142,7 @@ A session with no investment in them can.
 
 The corpus evidence is unambiguous and was gathered independently of this idea:
 
-- The prototype's twelve defects came from a **single** independent <!--count-mention-->
+- The prototype's defects — the count is not restated here; `fixtures/defect-corpus/README.md` explains why it cannot be checked — came from a **single** independent <!--count-mention-->
   `film-reviewer` pass on a film its author had already reviewed over eight
   look-and-edit rounds and shipped. It found almost nothing the author had
   considered and dismissed, and nearly everything they had never looked at.

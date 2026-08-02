@@ -872,10 +872,21 @@ const toolJs = new Map([
   const ENCODER_BUDGET = {
     video: 1, shootAndScale: 1, avif: 1, loop: 1,          // export — the four that stay
     motion: 1,                                             // measurement — needs recalibration
-    // RATCHETED 10 -> 6 by Track E1: poster, aspectSheet, sheet (x2) and strip
+    // RATCHETED 10 -> 5 by Track E1: poster, aspectSheet, sheet (x2) and strip
     // moved to build.js's in-page tiler. Those five lines are deleted rather
     // than zeroed, so re-adding an encoder to any of them trips the
     // outside-the-boundary arm instead of quietly fitting under a stale budget.
+    //
+    // THAT FIGURE READ 6 UNTIL 2026-08-02, against a table of five entries, a
+    // migration commit saying "10 call sites across 9 functions -> 5 across 5",
+    // and a run printing 5. It was also inconsistent with its own next sentence,
+    // which names five removals from ten. Nothing caught it for eleven versions:
+    // check 12 scans bracket-*.js only, and check 13's REGISTRY holds six
+    // countables, none of them encoder sites. So the one stale hand-written
+    // count in this file sat between the two checks built to stop stale
+    // hand-written counts, in the blind spot they share. Prefer deriving it:
+    // `Object.keys(ENCODER_BUDGET).length` is the honest form, and the only
+    // reason it stays prose is that the ARROW is history rather than state.
   };
   const ENCODERS = /\b(?:run|execFileSync|spawnSync|spawn)\(\s*['"](?:ffmpeg|avifenc|img2webp)['"]/;
   const DECL = /^(?:async\s+)?function\s+([A-Za-z0-9_]+)|^const\s+([A-Za-z0-9_]+)\s*=\s*(?:async\s*)?\(/;
@@ -1045,8 +1056,67 @@ const toolJs = new Map([
        + `Every bracket prints its own tally at runtime — say it structurally ("one arm per `
        + `property", "the static half") and let the run produce the number. A count in a comment `
        + `goes stale the next time an arm lands, and this one has four times.`);
-  } else {
-    notes.push('no bracket states its own arm count in prose (the count is derived at runtime)');
+  }
+
+  /* SECOND HALF, 2026-08-02. Forbidding the STALE number never required a LIVE
+   * one, and three brackets satisfied the half above by printing no count at
+   * all: `all arms as specified`, a green line that cannot tell twenty-three
+   * arms from zero. That is the same shape `run-brackets.sh` already fails a
+   * zero-match glob over — "a green step that ran zero controls is
+   * indistinguishable from one that ran five" — reproduced one level down, in
+   * the controls themselves.
+   *
+   * The sharpest part is that this check's OWN success note asserted "the count
+   * is derived at runtime" while that was false for a third of them. The check
+   * built to stop stale claims about arm counts was emitting one.
+   *
+   * WHY THIS SHAPE RATHER THAN A LAYER ABOVE: the recorded failure class here is
+   * coverage decay — a control that was right when written and silently stops
+   * covering what it claims. A control that reports its own SCOPE cannot decay
+   * silently and needs nothing above it to notice. Adding a fourth recursion
+   * layer would decay the same way; this does not.
+   *
+   * THE TEST: a success line is a console.log saying "as specified" or
+   * "exercised" and NOT mentioning `wrong` — the `${wrong}` lines run only when
+   * the bracket is already red, and a count you see only on failure says nothing
+   * about whether the green was earned. That line must interpolate.
+   *
+   * LIMIT, stated because an unstated one gets trusted past it -- and stated
+   * BACKWARDS until 2026-08-02, which is worse than leaving it unstated. The
+   * first version claimed a bracket wording its tally differently "is not seen
+   * and would pass while printing nothing", i.e. a silent miss. Tested: it is
+   * FLAGGED. A success line is recognised by the literal phrases "as specified"
+   * or "exercised", so a bracket with a perfectly good derived count under
+   * different wording has no recognised success line at all and trips the check.
+   *
+   * So the real hazard is the opposite one: a FALSE POSITIVE against a compliant
+   * bracket, not a false negative against a sloppy one. This check goes LOUD on
+   * a deviation, never quiet. The idiom is the contract; a bracket that wants
+   * different wording must add its phrase here rather than expect to be missed.
+   *
+   * Recorded at length because a wrong statement of a blind spot is worse than
+   * none: it points the next reader at a failure mode that does not exist while
+   * the real one goes unwatched. Found by an auditor told to test the sentence
+   * rather than read it. */
+  const noTally = [];
+  let brackets = 0;
+  for (const [f, text] of toolJs) {
+    if (!/^bracket-.*\.js$/.test(path.posix.basename(f))) continue;
+    brackets++;
+    const success = text.split('\n').filter(l =>
+      /console\.log\(/.test(l) && /\b(?:as specified|exercised)\b/.test(l) && !/\bwrong\b/.test(l));
+    if (!success.length || !success.some(l => l.includes('${'))) noTally.push(f);
+  }
+  if (noTally.length) {
+    fail(`${noTally.length} bracket(s) print no derived count on the success path: `
+       + `${noTally.join(', ')}. "all arms as specified" cannot be told apart from a run that `
+       + `exercised nothing. Print the tally you already computed — the idiom is `
+       + `\`all \${ran} arms as specified\` — so the green states its own scope.`);
+  }
+
+  if (!hits.length && !noTally.length) {
+    notes.push(`no bracket states its own arm count in prose, and all ${brackets} `
+             + `print a derived count on success`);
   }
 }
 

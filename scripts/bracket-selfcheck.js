@@ -219,6 +219,32 @@ const ARMS = [
     return () => fs.writeFileSync(f, before);
   }, 'arm count in prose'],
 
+  // The other half of check 12: forbidding a stale count never required a live
+  // one, and three brackets passed for months by printing none. The arm strips
+  // the interpolation from a success line, which is exactly the state they were
+  // in — not a synthetic mutation.
+  ['a bracket prints a success line with no derived count', () => {
+    const f = path.join(ROOT, 'scripts', 'bracket-run-brackets.js');
+    const before = fs.readFileSync(f, 'utf8');
+    fs.writeFileSync(f, before.replace('console.log(`\\nall ${ran} arms as specified`);',
+                                       "console.log('\\nall arms as specified');"));
+    return () => fs.writeFileSync(f, before);
+  }, 'print no derived count on the success path'],
+
+  // MUST STAY GREEN, and it guards a real false-positive rather than restating
+  // the current state. bracket-driver.js prints its tally on a SEPARATE line
+  // ("N arm(s) exercised, M skipped") and then a bare "all arms as specified".
+  // A check that only inspected the "as specified" line would fail it — a
+  // working bracket condemned for wording its tally the other legal way. This
+  // arm rewrites one bracket into that shape and requires green.
+  ['the "exercised" tally idiom on its own line (must stay green)', () => {
+    const f = path.join(ROOT, 'scripts', 'bracket-stage-films.js');
+    const before = fs.readFileSync(f, 'utf8');
+    fs.writeFileSync(f, before.replace('console.log(`\\nall ${ran} arms as specified`);',
+      "console.log(`\\n${ran} arm(s) exercised, 0 skipped`);\nconsole.log('all arms as specified');"));
+    return () => fs.writeFileSync(f, before);
+  }, null],
+
   ['a bracket counts arms NARRATIVELY (must stay green)', () => {
     const f = path.join(ROOT, 'scripts', 'bracket-run-brackets.js');
     const before = fs.readFileSync(f, 'utf8');
@@ -317,6 +343,14 @@ const ARMS = [
     s => s.replace('description: >\n', 'description: >\n  padding well under the cap.\n')),
     null],
 
+  // BLIND SPOT, and it is a property of check 11 rather than a defect here:
+  // this arm CANNOT go red while an uncommitted version bump sits in the tree.
+  // Check 11 diffs the working tree against the last commit touching
+  // plugin.json, so a staged-but-uncommitted bump already satisfies it and the
+  // injected violation has nothing to prove. Confirmed both ways on 2026-08-02:
+  // MISSED with a pending bump, green on a clean checkout and green again after
+  // committing. Run this bracket on a clean tree, or read a MISSED here as "ask
+  // what is uncommitted" before believing selfcheck has stopped working.
   ['plugin content changed without a version bump', () => {
     const f = path.join(ROOT, 'plugin', 'skills', 'mitate', 'templates', 'smoke.js');
     const before = fs.readFileSync(f, 'utf8');
@@ -400,8 +434,9 @@ const ARMS = [
   }, 'has no frontmatter'],
 ];
 
-let wrong = 0;
+let wrong = 0, ran = 0;
 for (const [label, breakIt, expect] of ARMS) {
+  ran++;
   let undo = () => {};
   let r;
   try { undo = breakIt(); r = run(); } finally { undo(); }
@@ -417,4 +452,4 @@ if (wrong) {
     + ` claims to. Its green means less than it looks like. Do not trust it until this is 0.`);
   process.exit(1);
 }
-console.log('\nall arms as specified');
+console.log(`\nall ${ran} arms as specified`);

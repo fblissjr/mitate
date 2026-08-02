@@ -797,7 +797,7 @@ prescription targets. Prescribing on that evidence would be the
 "instruments that generalise from a single sample" root cause, committed while
 writing the document that names it.
 
-**`circus.html` is that film and it has an answer key**: two defects a strip
+**The prototype scene is that film and it has an answer key**: two defects a strip
 caught after eight rounds of author review missed them, plus roughly eight more
 the sheet caught along the way. One invocation says whether the yield generalises
 past an author reviewing work they were already close to.
@@ -818,7 +818,7 @@ landing before its evidence, which is acceptable for a reversible doc line, but
 an untriggered debt is the format this plan just fixed. Same column as everything
 else: *trigger — before the step-3 prescription is written.*
 
-**Score it against the answer key, written in advance.** `circus.html` carries
+**Score it against the answer key, written in advance.** The prototype scene carries
 three classes of defect and **which class the reviewer hits is the whole
 finding**:
 
@@ -829,7 +829,7 @@ finding**:
 | **3** — neither the instruments nor the author saw it | unknown by construction | strongest result; justifies prescription on its own |
 
 **The viewer layer is unkeyed territory, and it needs its own advance
-classification.** `circus.html` carries a prototype viewer — orbit, captions,
+classification.** The prototype scene carries a viewer — orbit, captions,
 caption size, scrub — that postdates every reference the reviewer is reading and
 that no one but its author has examined. The three classes above cover the
 *film*; they say nothing about the viewer. Fixed in advance:
@@ -850,7 +850,7 @@ evaluated for prescription. Record which it did. That is arguably more decisive
 for the prescription question than the yield count.
 
 **A second discriminator is sitting in the fixture, and it is free.** The nocap
-sheet on `circus.html` **does not strip the title card** — the logo is geometry,
+sheet on the prototype scene **does not strip the title card** — the logo is geometry,
 and the 3D templates ship no `txt()`, so the two title beats survive the
 "cover every word" pass with their words intact. A reviewer that opened that
 image is positioned to notice its own semantics pass is compromised there; one
@@ -1014,7 +1014,7 @@ everything else is blocked on.
 (blind to limb-level breaks, ~2% of frame area), but the new property is **window
 selection**, and that needs its own positive control: does it surface a defect
 nobody hand-picked? The fixture for that exists today and is about to evaporate —
-`circus.html` lives outside the repo and has two characterized defects at known
+the prototype scene lives outside the repo and has two characterized defects at known
 timestamps. Its current state is the negative control (both fixed; the sweep
 should be quiet). The positive control is two named reverts, recorded here so the
 bracket is reproducible without the film ever being committed:
@@ -2242,7 +2242,7 @@ What the archaeology found, recorded so it is not repeated:
   searched and are tracked as of 2026-08-01, so the search is now reproducible by
   anyone with the repo — it was not at the time.)
 - **It is NOT inherited from the predecessor**, which is the natural guess and is
-  wrong. `internal/circus_prototype/smoke.js` (local) has no across-reload check
+  wrong. `the local prototype's own smoke.js` (local) has no across-reload check
   at all. The rename is 0.13.0 and this is 0.16.9, so it was written in this repo,
   after the rename. The other local copies carrying it are downstream snapshots,
   which is why it looks older and more widespread than it is.
@@ -2567,7 +2567,7 @@ location was inherited, never re-chosen.
 `internal/*` + `!internal/log/`, never `internal/` + a negation, because git does
 not descend into an excluded directory. `CLAUDE.md` spends ten lines on that and
 warns that widening the negation publishes the rest — and the rest is
-`internal/outside_comms/` (third-party correspondence) and the circus fixture. A
+`internal/outside_comms/` (third-party correspondence) and the local prototype fixture. A
 public repo sits one careless `.gitignore` edit from publishing private
 correspondence, and that exposure exists ONLY because a tracked directory lives
 inside a private tree.
@@ -2824,7 +2824,7 @@ and this catches the class where an instrument was never reached at all.
 Every instrument in this repo was bracketed by hand-injecting a defect and
 confirming it fires — `strip`'s 1.2-unit jump, the shipped-frame check's
 half-dead adapter, and 0.16.1's four controls. Each time the fixture was built
-from scratch and thrown away. `circus.html` is currently the third such fixture
+from scratch and thrown away. The prototype scene is currently the third such fixture
 about to evaporate.
 
 **Keep a small corpus of scenes with characterized defects at known timestamps**
@@ -2832,7 +2832,7 @@ about to evaporate.
 instrument then has a positive control the day it is written, and a
 *regression* control the day someone changes it. This is what makes the
 occlusion linter cheap to evaluate whenever its trigger fires, and it is why the
-two `circus` reverts are recorded in A2 rather than left in a conversation.
+two the prototype reverts are recorded in A2 rather than left in a conversation.
 
 ### Phase 3 has a design input it does not know about
 
@@ -3196,7 +3196,7 @@ Open by that test right now:
 | **WebKit** | **open** — verified only by hand |
 | **`WEBGPU=vulkan`** | **open** — a standing `plan.md` carry-forward |
 
-### Preserve `circus.html` now — it is time-sensitive twice over
+### Preserve the prototype scene now — it is time-sensitive twice over
 
 It lives outside the repo and will evaporate. Two reasons that is a cost, not
 housekeeping:
@@ -3207,7 +3207,7 @@ housekeeping:
    chart-control note (search "did NOT reproduce it in 15 metal runs")
    narrows the suspect space toward "shadowed fur shells, multi-shot solver
    traffic, the character rig" — the machinery `bear-and-bees` has and the noise
-   chart lacks. `circus.html` has 14 shots and two rigs, i.e. *more* multi-shot
+   chart lacks. The prototype scene has 14 shots and two rigs, i.e. *more* multi-shot
    solver traffic than the current suspect film. A loop of repeated metal smoke
    runs answers it, and `plan.md` notes Phase 4 raises the stakes on this one,
    because a bake is worth nothing if playback is not deterministic.

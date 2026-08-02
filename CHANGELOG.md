@@ -740,7 +740,7 @@ kept **because it is broken**, with characterized defects at known timestamps. A
 new instrument gets a positive control the day it is written, and a regression
 control the day someone changes it.
 
-`working-plan.md` predicted its own failure here — *"`circus.html` is currently
+`working-plan.md` predicted its own failure here — *"The prototype scene is currently
 the third such fixture about to evaporate"* — and was right: the prototype lives
 on one machine, gitignored and unbacked-up. This is the fix.
 
@@ -1043,7 +1043,7 @@ malformed source, with a bracket arm proving the refusal, because a malformed
 fence makes a file *leave the parity set*, which is how this check has already
 gone quiet twice while printing `ok`.
 
-**The defect corpus.** It is built from the `circus` scene with a new theme,
+**The defect corpus.** It is built from the the prototype scene with a new theme,
 character, name, opening title font and style, set somewhere else with a
 different character; the script stays, and content and captions can stay the
 same. What the
@@ -1067,7 +1067,7 @@ new build rather than assumed to carry over.
 
 `working-plan.md` records that every instrument here was
 bracketed by hand-building a fixture and discarding it, and predicted its own
-failure: *"`circus.html` is currently the third such fixture about to
+failure: *"The prototype scene is currently the third such fixture about to
 evaporate."* **The prediction came true** — that prototype is gitignored, on one
 machine, unbacked-up, and is the only candidate reproducer for the open 1-in-6
 `WEBGPU=metal` determinism failure. Keeping a small corpus of scenes with
@@ -1095,7 +1095,7 @@ recorded as an open question, which is the minimum rather than the fix.
 Three retention channels exist and two work. Postmortems are tracked and checked;
 the CHANGELOG is why history can be cut from `CLAUDE.md`. **Design questions and
 fixtures have no channel at all** — the structured-data question evaporated,
-`circus.html` is evaporating, and a cookbook of shape recipes was written once,
+the prototype scene is evaporating, and a cookbook of shape recipes was written once,
 cited from two shipped files as though carried over, was not, and survived only
 because an archive audit went looking. `VISION.md` already names the shape of the
 answer — capturing a pattern should be a *side effect* of making a film, not an

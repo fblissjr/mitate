@@ -483,7 +483,7 @@ Nothing structural. Everything here is currently false.
 
    **Provenance question, closed 2026-07-30.** The hypothesis was that `probe.js`
    arrived with the migration from `explainer-video` → `screenwright` → mitate.
-   It did not. Grepped both frozen predecessor trees and the 0.16.0-era circus
+   It did not. Grepped both frozen predecessor trees and the 0.16.0-era the prototype
    toolchain under `internal/`: **no `probe.js` file and no `probe` subcommand in
    any generation.** Every "probe" hit there is `ffprobe`, `probeArgs` (encoder
    version checks), or a comment describing a step-halving probe as a *technique*.
@@ -863,7 +863,7 @@ Things that exist and cannot be reached do not exist
    actually uses will manufacture a problem. Measure with the tool whose behaviour
    you are reasoning about.
 
-9. **Triage `internal/circus_prototype/bench/`.** Nine measurement harnesses —
+9. **Triage `the local prototype's bench directory`.** Nine measurement harnesses —
    `bench_viewer_{desktop,mobile,loop}`, `bench_playback`, `bench_capture`,
    `bench_reviewloop`, `bench_scene`, `bench_liveplay_{corpus,bracket}` — all
    built on `backend.js`, all aimed at the viewer and playback questions the
@@ -1406,7 +1406,7 @@ property, not the proxy.
    fixture.** `working-plan.md`'s *"Instrument brackets want a defect corpus, not
    per-instrument improvisation"* records that every instrument here was
    bracketed by hand-building a fixture and throwing it away, and it predicted
-   its own failure: *"`circus.html` is currently the third such fixture about to
+   its own failure: *"The prototype scene is currently the third such fixture about to
    evaporate."* **That prediction came true.** The prototype is in `internal/`,
    gitignored, on one machine, unbacked-up — and it is the only candidate
    reproducer for the open 1-in-6 `WEBGPU=metal` determinism failure, a use that
@@ -1416,7 +1416,7 @@ property, not the proxy.
    timestamps**. A new instrument then has a positive control the day it is
    written, and a *regression* control the day someone changes it.
 
-   **The scene to build it from is `circus`.** Change the theme, the character,
+   **The scene to build it from is the prototype.** Change the theme, the character,
    the name, the opening title font and the style; set it somewhere else with a
    different character. **Keep the script** — content and captions can stay the
    same.
@@ -1508,7 +1508,7 @@ property, not the proxy.
      checked by `selfcheck.js`. This one works.
    - **The CHANGELOG** — works, and is why history can be cut from `CLAUDE.md`.
    - **Design questions and fixtures** — no channel. The structured-data question
-     evaporated; `circus.html` is evaporating (R4.5); and a cookbook of shape
+     evaporated; the prototype scene is evaporating (R4.5); and a cookbook of shape
      recipes was written once, cited from two shipped files *as though carried
      over*, was not carried over, and survived only because an archive audit went
      looking.

@@ -13,7 +13,7 @@ artifacts:
   - docs/predecessor-record.md
   - docs/source-of-truth.md
   - site/app.js
-  - internal/circus_prototype/ (local)
+  - the local prototype directory (local)
   - references/style-3d.md (historical — renamed since)
   - 7250546
   - 8022f49
@@ -133,7 +133,7 @@ second.
 > more specific than my own result.
 >
 > Re-verified from a self-contained harness
-> (`internal/circus_prototype/bench/bench_liveplay_bracket.js`): all four rows
+> (`a local prototype's bench harness`): all four rows
 > fire — unmodified 20/20 playing; loop throw, `seekTo` throw, and swallowing
 > host all 0/0 frozen. Corrected in 0.16.2.
 >
@@ -268,7 +268,7 @@ whole `smoke.js` suite. Recorded as forward item 5.
    if:* every check in `smoke.js` has a recovered claim and a verified oracle.
    *Wrong-premise if:* the audit finds the two escapes were the only blind spots,
    which would mean the trigger threshold is too sensitive for this suite.
-6. **Verify `internal/circus_prototype/` survives.** *Refuted if:* it is lost —
+6. **Verify `the local prototype directory` survives.** *Refuted if:* it is lost —
    the bracket expressions and answer key survive in `docs/working-plan.md`, but
    the reproducer use for the open 1-in-6 `WEBGPU=metal` determinism FAIL does
    not.

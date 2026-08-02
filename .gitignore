@@ -51,3 +51,8 @@ bun-debug.log*
 # Logs / OS cruft
 *.log
 Thumbs.db
+
+# Transient bracket workspaces. bracket-commands.js mkdtemps these into cwd and
+# removes them in a finally -- this is the belt for the path where it cannot,
+# because scratch in the repo root is one `git add -A` from a commit.
+.mitate-cmd-*/

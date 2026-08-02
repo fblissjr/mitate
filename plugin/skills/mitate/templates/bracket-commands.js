@@ -117,10 +117,16 @@ const mutate = (tag, pairs) => {
   let src = fs.readFileSync(SOURCE, 'utf8');
   for (const [from, to] of pairs) {
     if (!src.includes(from)) {
-      console.error(`bracket-commands: fixture "${tag}" cannot be built — ${path.basename(SOURCE)} `
+      // THROW, never process.exit. `exit` terminates without unwinding, so the
+      // finally below never runs and the temp workspace is left in the repo
+      // root -- where it is not gitignored, and where the next `git add -A`
+      // sweeps it into a commit. That happened on 2026-08-02: a repointed
+      // mutation string exited here, two .mitate-cmd-* directories survived, and
+      // selfcheck check 9 caught them at the pre-commit hook. The check did its
+      // job; this is the leak it was catching.
+      throw new Error(`bracket-commands: fixture "${tag}" cannot be built — ${path.basename(SOURCE)} `
         + `no longer contains:\n  ${from}\nRepoint the mutation; an unmutated copy would make its arm `
         + `assert nothing.`);
-      process.exit(1);
     }
     src = src.split(from).join(to);
   }
@@ -134,7 +140,7 @@ const DRIFT = path.join(work, 'drift');
 const DRIFT_BUILD = path.join(DRIFT, 'build.js');
 for (const t of ['subject', 'focus', 'anchor', 'beat', 'rung', 'order', 'flash', 'frame',
                  'union', 'anchored-union', 'caption', 'repeat', 'notascene',
-                 'imperative', 'nonliteral']) badPath(t);
+                 'imperative', 'nonliteral', 'durconst', 'unreadable']) badPath(t);
 
 const run = (args, cwd, build) => {
   try {
@@ -213,6 +219,8 @@ const ROWS = [
   ['(warn) check union rung',    ['check', BAD.union],            { stdout: 'union of 2 subjects on rung MS' }],
   ['(warn) check union anchored',['check', BAD['anchored-union']], { absent: 'union of' }],
   ['(red) check loop-built SHOTS',  ['check', BAD['imperative']], { stdout: 'SHOTS is declared but assembled' }],
+  ['(warn) check dur from a const',['check', BAD['durconst']],   { stdout: 'cannot resolve', absent: 'ERROR' }],
+  ['(red) check unreadable SHOTS',  ['check', BAD['unreadable']], { stdout: 'SHOTS is declared but could not be read' }],
   ['(red) check call-built SHOTS',  ['check', BAD['nonliteral']], { stdout: 'SHOTS is declared but assembled' }],
   ['(warn) check caption cps',   ['check', BAD.caption],          { stdout: 'cps against a' }],
   ['(warn) check repeat framing',['check', BAD.repeat],           { stdout: 'share one framing' }],
@@ -243,6 +251,19 @@ try {
   // the call form fell into the same 'absent' state as a 2D scene with no
   // SHOTS at all. A verdict that cannot tell 'nothing to check' from 'could
   // not check' is the failure this whole file exists to keep out.
+  // A dur that references a scene constant is ORDINARY AUTHORING, not a defect.
+  // Before 0.16.70 the unresolved-identifier proxy made it read as `undefined`
+  // and check ERRORED on a valid scene -- a false positive, in a verb now wired
+  // into every push, so the first author to write `const HOLD = 2.5` would have
+  // redded main.
+  mutate('durconst',    [["const BEATS = [", "const HOLD = 2.5;\nconst BEATS = ["],
+                         ["{name: 'title', dur: 2.4}", "{name: 'title', dur: HOLD}"]]);
+  // A 3D scene whose SHOTS literal cannot be SLICED must say so. Until 0.16.70
+  // every malformed-literal path returned null, which means "this scene has no
+  // SHOTS" -- so a broken table printed `no SHOTS (2D)` under a clean green.
+  // That is the same class 0.16.68 closed for loop-built tables, reached through
+  // the other door, and its commit message claimed the class was shut.
+  mutate('unreadable',  [["const SHOTS=[\n", "const SHOTS=[\n  /* unterminated comment\n"]]);
   mutate('imperative',  [[LIT_SHOTS, IMP_SHOTS]]);
   mutate('nonliteral',  [[LIT_SHOTS, NONLIT_SHOTS]]);
   mutate('flash',   [['  flashes: [],', '  flashes: [{beat:"nosuchbeat", at:0}],']]);
@@ -317,6 +338,12 @@ try {
     }
     results.push([label, ok ? 'ok' : 'FAIL', why, ok]);
   }
+} catch (e) {
+  // Cleanup first, THEN report: an unbuildable fixture is a real failure and must
+  // exit non-zero, but it must not also leave scratch behind on the way out.
+  fs.rmSync(work, { recursive: true, force: true });
+  console.error(String(e && e.message ? e.message : e));
+  process.exit(1);
 } finally {
   fs.rmSync(work, { recursive: true, force: true });
 }

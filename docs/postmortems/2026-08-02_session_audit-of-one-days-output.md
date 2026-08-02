@@ -127,6 +127,43 @@ So the earlier postmortem's conclusion holds, and the useful refinement is that
 constructing an adversarial input (one finding, the only one that was a defect
 rather than a description).
 
+## ANNOTATION, same day — a third instrument, and the class was still open
+
+A targeted code review ran after this postmortem was written, pointed not at the
+diff but at **`build.js check`'s reimplemented semantics** read against the
+`KERNEL` and `SOLVER` fences it mirrors. It returned **fifteen findings**.
+
+**That is a fourth instrument and it out-yielded the other three**, which revises
+this document's own §"What it says about review". The list is now: reading a diff
+(near zero here), reading a claim against its code (nine), constructing an
+adversarial input (one, the only defect), and **reading a control against the
+thing it reimplements (fifteen)**. The last is the one nothing had tried.
+
+Two of the fifteen were fixed immediately (0.16.70) and both sharpen this
+postmortem's existing conclusions rather than adding new ones:
+
+- **A false ERROR on a valid scene**, in the verb wired into CI on every push
+  hours earlier. `dur: SOME_CONST` is ordinary authoring; the unresolved-identifier
+  proxy made it read as invalid. So the day's own new CI step carried a live
+  false-positive risk from the moment it landed.
+- **The silent-green class this postmortem opens with was still open.** 0.16.68
+  closed it for loop-built tables and its commit message said the class was shut.
+  A table whose literal cannot be *sliced* took the other door and printed
+  `no SHOTS (2D)` under a clean green. **Third time in one day that fixing the
+  instance did not close the position** — which is the 2026-07-30 postmortem's
+  verdict recurring for the third consecutive session, now with a same-day
+  instance inside the document describing it.
+
+The remaining thirteen are filed rather than fixed. Their shape is uniform and is
+the finding: `check` reimplements the kit in order to validate it, **and nothing
+proves the two models agree**. Divergences run both ways — it passes what the
+solver throws on (a missing `size`, an empty `SHOTS`, `subject: []`) and fails
+what the kit accepts (prototype-named beats). `plan.md:772` already names this
+trap: *"a control that rebuilds its subject verifies a reimplementation."* The
+trap is unavoidable here — `check` is static and cannot call `beatAt` — so the
+mitigation cannot be "do not reimplement"; it has to be a control that compares
+the two models, and no such control exists.
+
 ## Forward items
 
 1. **Fix (1) by making `check` state its scope** — the same corrective already
@@ -145,3 +182,12 @@ rather than a description).
 4. **Run `/audit-claims` at the end of any day that produced a reference.** The
    cost here was four parallel agents and roughly an hour; the yield was ten
    findings, one of them a shipped code defect.
+5. **Build the control that compares `check`'s model to the kit's** — the thirteen
+   open findings are all instances of its absence. *Done if:* a bracket arm drives
+   a scene in a page and asserts that `check`'s resolved anchors, spans and rung
+   lookups equal the kit's for the same tables. *Refuted if:* the two cannot be
+   compared without loading the page, which would make `check` and `smoke` the
+   same instrument and this verb's static premise wrong.
+6. **Point a review at a control against the thing it reimplements**, on anything
+   else that mirrors kit logic. It out-yielded every other instrument tried here
+   and nothing had tried it.

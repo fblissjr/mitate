@@ -7,6 +7,48 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.70
+
+### fixed
+
+**A false ERROR on a valid scene, in a verb wired into every push hours earlier.**
+`const HOLD = 2.5; ... dur: HOLD` is ordinary authoring. The unresolved-identifier
+proxy made `typeof b.dur === 'number'` false, so `check` exited 1 and reported
+`has dur undefined` — quoting a value the source never wrote, which is the worst
+shape a false positive takes: it names something the author cannot find in their
+own file. The same run reported a wrong total.
+
+"This reader could not resolve it" and "the author wrote something invalid" are
+different verdicts. Unresolved is now a **warning** that names the beat, says the
+timeline after it is approximate, and puts `BEATS` in the not-covered list.
+
+**The silent-green class 0.16.68 claimed to close was still open through the
+other door.** A 3D scene whose `SHOTS` literal cannot be *sliced* — a malformed
+block comment, an unbalanced bracket, a regex carrying one — returned `null` from
+`tableSource`, which means "this scene has no SHOTS". So it printed
+`no SHOTS (2D)` and a clean green, asserting a scene kind that was false.
+
+`tableSource` now separates three states where it had two: **not declared**
+(null), **declared but assembled at runtime** (IMPERATIVE, 0.16.68), and
+**declared but unsliceable** (UNPARSEABLE, this release). Unreadable also joins
+the not-covered list, which it never did.
+
+Both watched red first — the valid scene exiting 1, the broken one silent — and
+both found by a targeted code review of `check`'s reimplemented semantics, which
+returned fifteen findings. The other thirteen are filed, not fixed; these two
+came first because CI now runs this verb on every push, so the false positive was
+live, and because 0.16.68's commit message asserted a class was shut that was not.
+
+**And a scratch leak, found by the pre-commit hook while committing the above.**
+`bracket-commands.js` mkdtemps its workspace into `cwd` and removes it in a
+`finally` — but the unbuildable-fixture path called `process.exit(1)`, which
+terminates without unwinding, so the `finally` never ran. Two `.mitate-cmd-*`
+directories survived a repointed mutation string, were not gitignored, and were
+swept up by `git add -A`. `selfcheck` check 9 caught them at the hook.
+
+Now it throws instead, cleanup runs on both paths, and the pattern is gitignored
+as a belt. The check worked; this is the leak it was catching.
+
 ## 0.16.69
 
 ### fixed

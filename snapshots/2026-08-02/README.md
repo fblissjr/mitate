@@ -5,8 +5,10 @@ last updated: 2026-08-02
 A point-in-time record of what mitate is, how it is built, and how it checks
 itself.
 
-**Begun at `main` = 0.16.60 with two PRs open; completed at `main` = 0.16.69 with
-everything merged.** It was revised three times during the day it describes,
+**Begun at `main` = 0.16.60 with two PRs open; completed at `main` = 0.16.70.**
+An earlier line here said 0.16.69 and "from here it does not change" — written
+while the day was still running, which made it a prediction rather than a record.
+A freeze declared before the thing being frozen has stopped is not a freeze. It was revised three times during the day it describes,
 which is not a violation of the freeze below but the condition for it: a record
 dated 2026-08-02 has to be true at the END of 2026-08-02 or the date is a lie.
 **From here it does not change.** A later day gets its own directory.

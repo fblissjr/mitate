@@ -962,6 +962,10 @@ const TABLE_OPEN = { '[': ']', '{': '}', '(': ')' };
 // legitimate (a 2D scene has no SHOTS), and conflating the two let a loop-built
 // SHOTS report `0 shot(s)` under a green verdict until 0.16.68.
 const IMPERATIVE = Symbol('imperative');
+// Declared, and its literal could not be sliced -- a malformed block comment, an
+// unbalanced bracket, a regex carrying one. Distinct from IMPERATIVE (assembled
+// at runtime) and from null (not declared at all): three states, three verdicts.
+const UNPARSEABLE = Symbol('unparseable');
 
 // A literal that later lines push into is a literal this reader captured BEFORE
 // the film finished writing it. Scanned rather than parsed, and narrow on
@@ -976,7 +980,13 @@ function mutatedAfterDeclaration(text, name) {
 }
 function tableSource(text, name) {
   const m = new RegExp('^[ \\t]*(?:const|let|var)[ \\t]+' + name + '[ \\t]*=', 'm').exec(text);
-  if (!m) return null;
+  if (!m) return null;                                   // genuinely not declared
+  // From here the table IS declared, so every failure below is UNPARSEABLE, not
+  // absent. Returning null for these made a 3D scene with a broken SHOTS literal
+  // print `no SHOTS (2D)` under a clean green -- the same silent-scope class
+  // 0.16.68 closed for loop-built tables, reached through the other door, and
+  // that commit's message claimed the class was shut. It was not.
+  const declared = true;
   let i = m.index + m[0].length;
   // Skip whitespace AND comments. `const CONFIG = /* … */ {` is legal, and a
   // whitespace-only skip reads it as "no such table" — a silent miss, which is
@@ -984,7 +994,7 @@ function tableSource(text, name) {
   for (;;) {
     while (i < text.length && /\s/.test(text[i])) i++;
     if (text[i] === '/' && text[i + 1] === '/') { while (i < text.length && text[i] !== '\n') i++; continue; }
-    if (text[i] === '/' && text[i + 1] === '*') { const e = text.indexOf('*/', i + 2); if (e < 0) return null; i = e + 2; continue; }
+    if (text[i] === '/' && text[i + 1] === '*') { const e = text.indexOf('*/', i + 2); if (e < 0) return UNPARSEABLE; i = e + 2; continue; }
     break;
   }
   // DECLARED, but not as a literal — `const SHOTS = buildShots();`, or
@@ -997,7 +1007,7 @@ function tableSource(text, name) {
   for (const from = i; i < text.length; i++) {
     const c = text[i];
     if (c === '/' && text[i + 1] === '/') { while (i < text.length && text[i] !== '\n') i++; continue; }
-    if (c === '/' && text[i + 1] === '*') { const e = text.indexOf('*/', i + 2); if (e < 0) return null; i = e + 1; continue; }
+    if (c === '/' && text[i + 1] === '*') { const e = text.indexOf('*/', i + 2); if (e < 0) return UNPARSEABLE; i = e + 1; continue; }
     if (c === '"' || c === "'" || c === '`') {
       const q = c;
       for (i++; i < text.length; i++) { if (text[i] === '\\') { i++; continue; } if (text[i] === q) break; }
@@ -1005,11 +1015,11 @@ function tableSource(text, name) {
     }
     if (TABLE_OPEN[c]) { stack.push(TABLE_OPEN[c]); continue; }
     if (c === ']' || c === '}' || c === ')') {
-      if (stack.pop() !== c) return null;
+      if (stack.pop() !== c) return UNPARSEABLE;
       if (!stack.length) return text.slice(from, i + 1);
     }
   }
-  return null;
+  return UNPARSEABLE;
 }
 
 // A stand-in for anything the table names that this process cannot know: a
@@ -1019,8 +1029,12 @@ function tableSource(text, name) {
 // needs this — several SUBJECTS entries size themselves from geometry built at
 // runtime — and without it those scenes would report "unreadable" and the
 // checks that only need the KEYS of that table would be lost with it.
+const UNRESOLVED_TAG = Symbol('unresolved');
 const UNRESOLVED = new Proxy(function () {}, {
-  get(t, k) { return k === Symbol.toPrimitive || k === 'valueOf' ? () => NaN : UNRESOLVED; },
+  get(t, k) {
+    if (k === UNRESOLVED_TAG) return true;
+    return k === Symbol.toPrimitive || k === 'valueOf' ? () => NaN : UNRESOLVED;
+  },
   apply() { return UNRESOLVED; },
   construct() { return UNRESOLVED; },
   has() { return true; },
@@ -1029,11 +1043,19 @@ const UNRESOLVED = new Proxy(function () {}, {
 // contains, and nothing that touches the filesystem, the network or a process.
 // This evaluates text out of a file the caller named, so the surface it offers
 // that text is the whole safety argument.
+// "This reader could not resolve it" and "the author wrote something invalid" are
+// DIFFERENT VERDICTS and conflating them cost a false ERROR on a valid scene:
+// `const HOLD = 2.5; ... dur: HOLD` is ordinary authoring, and until 0.16.70 it
+// exited 1 -- in a verb wired into every push. Unresolved is a gap in the reader,
+// which is a warning that names the table; invalid is a defect in the scene.
+const unresolved = v => v !== null && v !== undefined && v[UNRESOLVED_TAG] === true;
+
 const TABLE_GLOBALS = { Math, JSON, Number, String, Array, Object, Boolean, isNaN, parseFloat, parseInt };
 function tableValue(text, name) {
   const src = tableSource(text, name);
   if (src === null) return { state: 'absent' };
   if (src === IMPERATIVE) return { state: 'imperative', why: 'its initializer is not a literal' };
+  if (src === UNPARSEABLE) return { state: 'unreadable', why: 'its literal could not be sliced from the source' };
   const scope = new Proxy({}, {
     has: () => true,
     get(t, k) {
@@ -1084,7 +1106,10 @@ function check(scene) {
     // Declared and unreadable is a hole in THIS tool, not a verdict on the
     // scene, and it is said out loud: an instrument that quietly checks less
     // than it reports is the failure references/instruments.md exists to track.
-    if (r.state === 'unreadable') add(CHECK_WARN, `${name} is declared but could not be read here, so nothing below covers it — ${r.why}`);
+    if (r.state === 'unreadable') {
+      add(CHECK_WARN, `${name} is declared but could not be read here, so nothing below covers it — ${r.why}`);
+      uncovered.push(name);
+    }
     if (r.state === 'imperative') {
       add(CHECK_WARN, `${name} is declared but assembled at runtime, so nothing below covers it — ${r.why}. `
                     + `This verb reads literals; a table built by a loop or a call is beyond it.`);
@@ -1104,8 +1129,20 @@ function check(scene) {
   for (const b of beats) {
     if (typeof b.name !== 'string') { add(CHECK_ERR, `BEATS has an entry with no name`); continue; }
     if (span[b.name]) add(CHECK_ERR, `BEATS declares "${b.name}" twice — every other table addresses beats by name, so the second is unreachable`);
+    if (unresolved(b.dur)) {
+      add(CHECK_WARN, `BEATS "${b.name}" has a dur this reader cannot resolve — it references something `
+                    + `outside the table, which is legal authoring and beyond a literal reader. The timeline `
+                    + `below is computed without it, so every span after this beat is approximate.`);
+      if (!uncovered.includes('BEATS')) uncovered.push('BEATS');
+    }
     const dur = typeof b.dur === 'number' && b.dur > 0 ? b.dur : NaN;
-    if (!Number.isFinite(dur)) add(CHECK_ERR, `BEATS "${b.name}" has dur ${JSON.stringify(b.dur)} — a beat is a positive number of seconds`);
+    // NOT an error when the value is merely unresolved -- that case warned above.
+    // JSON.stringify of the proxy is `undefined`, so the old message quoted a
+    // value the source never wrote, which is the worst shape a false positive
+    // can take: it names something the author cannot find in their own file.
+    if (!Number.isFinite(dur) && !unresolved(b.dur)) {
+      add(CHECK_ERR, `BEATS "${b.name}" has dur ${JSON.stringify(b.dur)} — a beat is a positive number of seconds`);
+    }
     span[b.name] = [acc, acc + (Number.isFinite(dur) ? dur : 0)];
     acc += Number.isFinite(dur) ? dur : 0;
   }

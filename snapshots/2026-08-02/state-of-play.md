@@ -17,7 +17,7 @@ no readers who acted on an earlier one.
 
 | | |
 |---|---|
-| `main` | version **0.16.69**, everything merged and pushed, both workflows green |
+| `main` | version **0.16.70**, everything merged and pushed, both workflows green |
 | open PRs | **none** |
 | unpushed work | **none** |
 | branches deleted | `phase-r-determinism-trio`, `r5-state-seam`, `drift-2026-08-02`, `snapshot-2026-08-02`, `postmortem-what-caught-defects` — all merged first, local and on `origin` |

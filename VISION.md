@@ -209,7 +209,12 @@ independently of the artifact that embeds it, the claim is about authoring style
 instead — and the difference shows up as work: blocks held byte-identical across
 every carrier, a tool to propagate them, and a control to police that tool. The
 parity run reports the size of that tax on every invocation. It is not small, and
-it grows with every example added.
+it grows with every example added. One measurement sharpens what the tax is
+evidence *of* (2026-08-02, method in `docs/representation.md`): the replicated
+surface is almost entirely kit machinery and its comments — declaration
+literals are a rounding error of it — so the tax argues for emitting the kit
+from one source, while the independence claim above is about the film's own
+declarations and stands on its own evidence.
 
 The direction was written down before this project had its current name, and it
 has already been applied three times: **make the implicit thing data, then make
@@ -222,13 +227,14 @@ shape it should take: **data and a small compiler, not an abstraction layer.**
 It has never been applied to geometry or motion, which is where most of a film
 actually is.
 
-**Open, with a position and an ordering.** The position: JSON is not the right
-shape, and whether something with more structure is remains the question. The
-ordering is the one this file already applies — enumerate the layer before
-choosing a representation for it, because you cannot pick a shape for a set
-nobody has listed. The question is filed under `Open question` in
-[`docs/restructure-2026-07.md`](docs/restructure-2026-07.md), which is where it
-lives; this file says why it matters, not what to do about it.
+**Decided 2026-08-02, and recorded where the brief said it would be.** The
+boundary is drawn in [`docs/representation.md`](docs/representation.md)'s
+decision section, which owns it: data is what is decidable without running the
+scene, every end of decidability is a named, typed hole, and the line moves by
+the plan's cost-scaled triggers. The ordering this file argued for — enumerate
+the layer before choosing a representation — held: the enumeration came first,
+and the decision cites its evidence. This file still says why the question
+mattered, not what was chosen; read the decision there.
 
 ## The shape a primitive has to have
 

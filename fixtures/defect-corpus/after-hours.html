@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Circus</title>
+<title>After Hours</title>
 <!-- ==== HTML-START ==== -->
 <!-- Shared page scaffold (overlay CSS + caption/title/vig/flash DOM), byte-identical
      in every 3D scene: smoke.js parity-checks this HTML fence. Edit it in ALL
@@ -1217,7 +1217,16 @@ function gaitPose(rig,s,vAmp,o={}){
   const stride=o.stride!==undefined?o.stride:(P.hindUpper+P.hindLower)*.62;
   const swingH=o.swingH!==undefined?o.swingH:.28*stride;
   const start=o.start||0;
-  const rootX=o.rootX!==undefined?o.rootX:rig.root.position.x;
+  /* rootX is REQUIRED, and that is the whole point of this line. It used to
+     default to `rig.root.position.x` — MUTABLE SCENE-GRAPH STATE — and was
+     correct only because every caller assigned root.position.x on the line
+     above. That is an ordering dependence inside animate, not an argument, and
+     it is exactly what a bake trips over: a baked track replays poses with no
+     scene graph to read back from. Loud rather than defaulted, because the
+     silent failure is NaN foot targets — a film that renders and is subtly
+     wrong, which is the class this project spends its budget avoiding. */
+  if(o.rootX===undefined) throw new Error('gaitPose: rootX is required — pass the same pure-function-of-t value you assign to root.position.x');
+  const rootX=o.rootX;
   for(const l of rig.planted){
     let[fx,fy]=footTarget(s,l.phase,stride,swingH);
     fx+=start+l.ax;                                  // plant column under the attach
@@ -2102,7 +2111,16 @@ function focusDist(sh,t,p,E){const X=sh.focus?subjectExtent(sh.focus,t):E;
   return Math.hypot(p[0]-X.cx,p[1]-X.cy,p[2]-X.cz);}
 const fitFov=f=>camera.aspect>=FRAME.aspect?f:
   2*Math.atan(Math.tan(f*Math.PI/360)*FRAME.aspect/camera.aspect)*180/Math.PI;
-function setCamera(t){
+/* THE STATE SEAM. Takes `state`, not `t`, and today `state` holds only {t}.
+   The extra indirection buys one thing and it is structural: the DRIVER owns
+   what goes in, and the kit never reads anything the timeline driver cannot
+   produce. A bake, a viewer and an input driver all need to widen this exact
+   argument, and widening a parameter is a local edit while changing a signature
+   across every carrier is not. Do it now or pay for it once per consumer.
+   ONE DISCIPLINE, or `state` becomes a global with better manners: the driver
+   constructs it; nothing here reaches around it for ambient values. */
+function setCamera(state){
+  const {t}=state;
   let i=0;for(let k=0;k<SHOTS.length;k++)if(t>=SHOTS[k].t)i=k;
   const cur=SHOTS[i],c=solveShot(cur,t);
   let p=c.p,l=c.l,fovd=c.fovd,fd=focusDist(cur,t,c.p,c.E);
@@ -2456,7 +2474,7 @@ window.SHOTS=SHOTS.map(s=>({t:s.t,cutEnd:s.t+(CUT_DUR[s.cut||'hard']||0)}));
    whose pixel diff was confined to shadowed regions. Ticking the frame here
    makes seekTo self-contained for any caller pattern. Private API, pinned at
    three 0.185.1; smoke fails loudly if an upgrade renames it. */
-window.seekTo=function(t){t=clamp(t,0,TOTAL);uTime.value=t;setCamera(t);animate(t);setOverlay(t);uFocus.value=shotFocus;if(renderer._nodes)renderer._nodes.nodeFrame.update();else console.warn('nodeFrame API missing: shadow determinism guard inactive');pipeline.render();};
+window.seekTo=function(t){t=clamp(t,0,TOTAL);uTime.value=t;const state={t};setCamera(state);animate(t);setOverlay(t);uFocus.value=shotFocus;if(renderer._nodes)renderer._nodes.nodeFrame.update();else console.warn('nodeFrame API missing: shadow determinism guard inactive');pipeline.render();};
 let playing=true,t0=null;
 function loop(now){if(!playing)return;if(t0===null)t0=now;window.seekTo(((now-t0)/1000)%TOTAL);requestAnimationFrame(loop);}
 window.stopPlayback=function(){playing=false;};

@@ -12,7 +12,7 @@
 # looked like it tracked them. Excluding the children instead leaves the parent
 # traversable so the negation can take effect.
 #
-# The negation is deliberately narrow. internal/ still holds the circus fixture,
+# The negation is deliberately narrow. internal/ still holds the local prototype fixture,
 # the prior-artifacts tree, outside_comms and scratch renders, and NONE of that
 # is tracked. Widening this pattern publishes them; add a new negated line for a
 # specific path instead.

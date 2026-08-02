@@ -239,7 +239,7 @@ the check.
 ## Conventions
 
 - **Session logs are TRACKED, in `internal/log/`, as of 2026-08-01** (owner's
-  call). Everything else under `internal/` stays local — the circus fixture, the
+  call). Everything else under `internal/` stays local — the local prototype fixture, the
   prior-artifacts tree, `outside_comms/`, scratch renders. `.gitignore` excludes
   `internal/*` and re-includes only `internal/log/`, which is the form that
   works: git does not descend into an excluded *directory*, so ignoring

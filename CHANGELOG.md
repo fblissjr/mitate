@@ -7,6 +7,85 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.63
+
+### changed
+
+**Version reconciliation. No plugin content differs from 0.16.62** — this bump
+exists so a check can tell that, and the reason is worth recording because it
+will recur the next time two plugin-content branches are open at once.
+
+0.16.61 and 0.16.62 were independent branches, each bumping the cascade. Landing
+them together puts both bumps behind one merge, and `selfcheck` check 11 anchors
+on the last commit touching `plugin.json`. A merge commit that simply took one
+side's version would be TREESAME to that parent, so git's history simplification
+skips it and the anchor lands on the *branch's* bump — leaving 0.16.61's
+`smoke.js` and `bracket-driver.js` looking like plugin content that changed with
+no bump behind it. They are not: they ship in this version. The bump is what
+tells the check so, and it is carried in the merge commit itself rather than a
+follow-up, so the anchor is the merge.
+
+Squash-merging trades the failure rather than fixing it — the cascade check goes
+green and the freshness check reds on every doc dated to the previous day,
+because the committer date becomes the squash date.
+
+**Check 11 is blind to merge topology.** Recorded rather than fixed: changing a
+check means running its bracket red-then-green first, and that is its own change.
+
+## 0.16.62
+
+> **Ordering note.** This entry is numbered 0.16.62 because 0.16.61 is claimed by
+> the open determinism-trio PR, which is independent of this one and touches
+> different files. **That PR should merge first.** If this one lands first
+> instead, 0.16.61 must be re-bumped rather than merged behind a higher version.
+
+### changed
+
+**R5.1's state seam: `setCamera(t)` → `setCamera(state)`, where `state` holds
+only `{t}` today.** The indirection buys one structural thing — the DRIVER owns
+what goes in, and the kit never reads anything the timeline driver cannot
+produce. A bake, a viewer and an input driver all need to widen this exact
+argument, and widening a parameter is a local edit where changing a signature
+across every carrier is not. The plan's reason for doing it now holds: it gets
+several times more expensive after Phases 3 and 4, once face state and baked
+tracks are authored as functions of `t`.
+
+Propagated across all 8 carriers with `--parity-fix --from` the named canonical
+rather than eight hand edits: `SOLVER` carries the signature, `DRIVER` the
+`const state={t}` construction, and `scene2d` carries neither (it has no camera).
+Zero stale `setCamera(t)` call sites.
+
+### fixed
+
+**`gaitPose` no longer reads mutable scene-graph state.** `rootX` defaulted to
+`rig.root.position.x` and was correct only because every caller assigned
+`root.position.x` on the line above — an ordering dependence inside `animate`,
+not an argument, and exactly what a bake trips over since a baked track replays
+poses with no scene graph to read back from.
+
+`rootX` is now required, with a **loud throw** rather than a default: the silent
+failure is NaN foot targets, a film that renders and is subtly wrong. **5 of 7
+call sites were relying on the default**; all now pass the same
+pure-function-of-`t` value they already computed one line above. A green corpus
+run is therefore real evidence that no caller was missed.
+
+### docs
+
+**The pattern ledger's evidence was audited and it was wrong in two ways.** Four
+rows cite "the 2026-07-25 film", which is a local prototype rather than anything
+tracked. Every such citation is now labelled
+`(local)`, per the rule that a claim may cite a local artifact but must not rest
+on one.
+
+The presence-gating row claimed `Math.max(1e-4,…)` **×7**. Re-counted: **×11**.
+The ledger's own introduction restated "seven times" as well, so one stale figure
+lived in two places; the intro now points at the row instead of repeating it.
+
+**The trigger still stands** — two spellings is drift, so `hide(obj, u)` remains
+justified — but the drift is between one tracked file (`bear-and-bees`, ×1) and
+one local one. `hide(obj,u)` and `subjectFromObject` are therefore NOT
+promoted here: each is a separate change with its own red, and neither belongs
+bundled into a branch that has already made two behavioural changes.
 ## 0.16.61
 
 ### changed
@@ -748,7 +827,7 @@ kept **because it is broken**, with characterized defects at known timestamps. A
 new instrument gets a positive control the day it is written, and a regression
 control the day someone changes it.
 
-`working-plan.md` predicted its own failure here — *"`circus.html` is currently
+`working-plan.md` predicted its own failure here — *"The prototype scene is currently
 the third such fixture about to evaporate"* — and was right: the prototype lives
 on one machine, gitignored and unbacked-up. This is the fix.
 
@@ -1051,7 +1130,7 @@ malformed source, with a bracket arm proving the refusal, because a malformed
 fence makes a file *leave the parity set*, which is how this check has already
 gone quiet twice while printing `ok`.
 
-**The defect corpus.** It is built from the `circus` scene with a new theme,
+**The defect corpus.** It is built from the the prototype scene with a new theme,
 character, name, opening title font and style, set somewhere else with a
 different character; the script stays, and content and captions can stay the
 same. What the
@@ -1075,7 +1154,7 @@ new build rather than assumed to carry over.
 
 `working-plan.md` records that every instrument here was
 bracketed by hand-building a fixture and discarding it, and predicted its own
-failure: *"`circus.html` is currently the third such fixture about to
+failure: *"The prototype scene is currently the third such fixture about to
 evaporate."* **The prediction came true** — that prototype is gitignored, on one
 machine, unbacked-up, and is the only candidate reproducer for the open 1-in-6
 `WEBGPU=metal` determinism failure. Keeping a small corpus of scenes with
@@ -1103,7 +1182,7 @@ recorded as an open question, which is the minimum rather than the fix.
 Three retention channels exist and two work. Postmortems are tracked and checked;
 the CHANGELOG is why history can be cut from `CLAUDE.md`. **Design questions and
 fixtures have no channel at all** — the structured-data question evaporated,
-`circus.html` is evaporating, and a cookbook of shape recipes was written once,
+the prototype scene is evaporating, and a cookbook of shape recipes was written once,
 cited from two shipped files as though carried over, was not, and survived only
 because an archive audit went looking. `VISION.md` already names the shape of the
 answer — capturing a pattern should be a *side effect* of making a film, not an

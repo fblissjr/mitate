@@ -8,7 +8,9 @@ instances, so none of those triggers could fire.** This file is the counter.
 
 It exists because of a specific failure the corpus already contains: the
 scale-gate presence idiom appears as `clamp(sc,.001,1)` in `bear-and-bees` and
-as `Math.max(1e-4, …)` in a later film, seven times in that one file. Two
+as `Math.max(1e-4, …)` in a later film — the count is in that shape's row below,
+not restated here, because this sentence carried "seven times" while the row now
+reads eleven and neither had been re-counted since it was written. Two
 spellings of one idea, in two scenes, neither aware of the other, and nothing
 recorded the collision. Left alone that produces individually good scenes that
 each paid full price for the same thing.
@@ -49,10 +51,10 @@ names where it went, or why it has not moved.
 
 | shape | count | where seen | disposition |
 |---|---|---|---|
-| **contact measured, not inferred** | **6** | 5 recorded in `instruments.md` as a recurring class, + the 2026-07-25 film | `build.js probe` — plan item A1. Trigger long past; earn-in blocked it because its bar was "a film was blocked" and this shape is *not blocked, reliably wrong* |
-| **declared extents rot; measured ones do not** | **6** | 3 predecessor films cropped their own payoff; 3 of 5 hand-computed extents wrong on the 2026-07-25 film | `subjectFromObject` — Track D, promoted. The predecessor *specified* the fix and it never shipped, while a code comment claimed it had |
-| **presence gating (scale gate)** | **2 spellings** | `bear-and-bees` (`clamp(sc,.001,1)` + a `visible` flip); 2026-07-25 film (`Math.max(1e-4,…)`, ×7) | `hide(obj, u)` kit helper — Track D. Two spellings is drift, not reuse; that is what justifies a helper, not the seven copies in one file |
-| **transition windows under-sampled** | **2** | 0.5.1 review (which shipped the `window.SHOTS` export for it); 2026-07-25 film, ~1% continuity coverage | `build.js transitions` — plan item A2. The export exists; the sweep does not |
+| **contact measured, not inferred** | **6** | 5 recorded in `instruments.md` as a recurring class, + the 2026-07-25 film `(local)` | `build.js probe` — plan item A1. Trigger long past; earn-in blocked it because its bar was "a film was blocked" and this shape is *not blocked, reliably wrong* |
+| **declared extents rot; measured ones do not** | **6** | 3 predecessor films cropped their own payoff; 3 of 5 hand-computed extents wrong on the 2026-07-25 film `(local)` | `subjectFromObject` — Track D, promoted. The predecessor *specified* the fix and it never shipped, while a code comment claimed it had |
+| **presence gating (scale gate)** | **2 spellings** | `bear-and-bees` (`clamp(sc,.001,1)` + a `visible` flip), ×1 tracked; 2026-07-25 film `(local)` (`Math.max(1e-4,…)`, **×11**, re-counted 2026-08-01 — this row said ×7) | `hide(obj, u)` kit helper — Track D. **The trigger stands**: two spellings is drift, not reuse, and that is what justifies a helper. The second spelling lives in a local prototype `(local)`, not in the tracked corpus. So the drift is between one tracked file and one local one — enough to justify the helper, not enough to promote from |
+| **transition windows under-sampled** | **2** | 0.5.1 review (which shipped the `window.SHOTS` export for it); 2026-07-25 film `(local)`, ~1% continuity coverage | `build.js transitions` — plan item A2. The export exists; the sweep does not |
 | **per-shot camera energy** | **1** | `bear-and-bees` wanted `locked` for the hush while the film wanted `steadicam`; went all-locked | Open carry-forward. Same shape as the viewer's camera-delta seam — design them together |
 | **built (non-DOM) text** | **1** | 2026-07-25 film: a stroke alphabet, 3 bugs, all "one letter on a wrong assumption" | Deferred. Enters at the **chart tier** when it lands — a grid of 36 glyphs exposes that bug class at a glance; a title card cannot |
 | **multi-station travel** | **1** | 2026-07-25 film: chained `lerp`s over a `LEGS` table | Deferred — register-specific to the presenter explainer, which is one commission, not a committed register |
@@ -183,3 +185,55 @@ Two consequences for the design pass, both empirical rather than speculative now
   the count in this file must not absorb those instances either: they come from
   scenes outside this corpus, so folding them in would break what the number
   means (see the entry conditions above).
+
+## Open question: when does a pattern need its provenance, and when is that noise?
+
+Owner-raised 2026-08-01, and it is a **session of its own** rather than a task.
+Filed here because this file is where attribution policy actually bites.
+
+**The position that prompted it:** note the pattern and use it if it works. We do
+not always need to say exactly where it came from. That is not laxness — it is a
+claim that provenance has a cost and should be paid when it buys something.
+
+**Today produced evidence for it, by accident.** A pass removing references to one
+local prototype rewrote ~33 citations across ten files. The ones that rewrote
+cleanly were the ones stating a *lesson* — a threshold, a defect class, a rule.
+The ones that read badly afterward were the ones **resting on the artifact**:
+"we know X because that scene did X." That is a usable diagnostic and it fell out
+of doing the work rather than out of designing a policy:
+
+> **If removing the citation breaks the claim, the claim was leaning on the
+> artifact rather than on the finding.**
+
+### What the session has to decide
+
+- **When citation earns its cost.** A measured figure needs a source you can
+  re-run. A shape that has been rebuilt three times needs a count. A technique
+  that simply works needs neither — and today the repo treats all three the same.
+- **Cross-scene generalizations, which the current model cannot express.** The
+  ledger counts *independent solutions of the same shape*, one row per shape. But
+  the most valuable findings may be assembled from several scenes and belong to
+  none of them: not "scene A did this", but "A, C and D each did part of this and
+  the general form is X". A row with one origin cannot hold that.
+- **Which citations are safe to make at all.** Public repo. A local prototype is
+  not a citable source for a public claim, whatever it taught — and the fix is
+  not a careful label, it is writing the finding so it does not need one.
+- **How to mine example scenes, and against what.** Reading a finished film for
+  technique is one method. Others: diffing scenes against each other for
+  convergent solutions, reading session logs and postmortems for what an author
+  said they built twice, and running an instrument across the corpus to find a
+  shape nobody named. **These have never been compared** — `/extract-patterns`
+  implements the first, and nothing establishes it is the best of the four.
+
+### Why the process is part of the deliverable
+
+Owner's framing, and it matches the flywheel section above: the value is in the
+findings *and* in working out what makes sense. That argues for running the
+methods against the same corpus and comparing what each surfaces, rather than
+picking one and writing it up as doctrine.
+
+**Prior art in this repo to start from, not to re-derive:** the flywheel section
+above (capture as a side effect of use, and the 2026-07-31 direction that it must
+be runnable on work you did not do), `/extract-patterns`, and
+`docs/examples-placement.md`, which already argues that reading an example to
+learn a technique is a bug report against the references.

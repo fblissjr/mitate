@@ -17,7 +17,7 @@ example.
 
 `working-plan.md` recorded that every instrument here was bracketed by
 hand-building a fixture and throwing it away, and predicted its own failure —
-*"`circus.html` is currently the third such fixture about to evaporate."* That
+*"The prototype scene is currently the third such fixture about to evaporate."* That
 came true: the prototype survives on one machine, gitignored and unbacked-up.
 This directory is the fix.
 
@@ -32,8 +32,8 @@ prototype was the only candidate reproducer for the open 1-in-6 `WEBGPU=metal`
 determinism failure — `noise-chart.html` failed to reproduce it in 15 runs
 precisely because it lacks them.
 
-The title words were length-matched to the originals on purpose (`THE STRANGE` /
-`MUSEUM` against `THE AMAZING` / `CIRCUS`, 11 and 6 characters each) so the glyph
+The title words were length-matched to the originals on purpose — `THE STRANGE` /
+`MUSEUM`, 11 and 6 characters, the same lengths the source used — so the glyph
 arch, gap and scale metrics did not move.
 
 **Measured constraint, found the hard way:** the scene's procedural alphabet

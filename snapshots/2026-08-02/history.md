@@ -48,17 +48,26 @@ day, which maps nearly one-to-one onto version ranges.
 per release with review as garnish. The current era ships roughly one
 instrument-or-claim repair per release with capability as the exception.
 
-Two facts make that concrete. **[verified]** The shipped example corpus is five
-scenes, and all five predate 0.13.0 — **no new film has shipped in this repo's
-entire life.** The only scene added since is the defect-corpus fixture, which is
-deliberately broken and does not ship. **[reported]** The last *plan-phase* gate
-declared met is Phase 2; every "gate met" since has been a restructure gate.
+One fact makes that concrete. **[verified]** The **shipped** example corpus is
+five scenes, all of which predate 0.13.0, and the only scene added to the tree
+since is the defect-corpus fixture, which is deliberately broken and does not
+ship. **[reported]** The last *plan-phase* gate declared met is Phase 2; every
+"gate met" since has been a restructure gate.
 
-Read uncharitably that is a project that stopped making films. Read against
-`VISION.md` it is the stated order of work — determinism and the harness first,
-films as the proof — and the record is consistent with the second reading. What
-the record does **not** contain is a decision point where that trade was
-re-examined against how long it has run.
+**That is a statement about shipping, not about building, and the difference
+matters.** Scenes have been built and run as tests throughout — the corpus
+fixture is one, re-skinned from a working film — and the owner's position
+(2026-08-02) is that it is too early to ship scenes *reliably*, which is a
+judgment about the bar, not an absence of work. Read against `VISION.md` the
+order is the stated one: determinism and the harness first, films as the proof.
+
+**What the record does not contain is an evaluation of that trade.** The
+open question, in the owner's words: *did we go too far in restructuring and
+building checks on top of checks — and what did we gain for all these cycles and
+PRs?* It is filed as genuinely undecided rather than answered here, because the
+evidence needed to settle it is per-check yield over time, and nobody has
+gathered it. See `docs/working-plan.md` under `Open question` for where that
+lives and what would answer it.
 
 ## Where the cost actually is
 
@@ -212,11 +221,6 @@ Each verified during assembly on 2026-08-02.
   that reasoning is written in `selfcheck.js`. It was never annotated onto the
   postmortem, so a reader following the doctrine finds a metric moving away from
   its target and an invariant that reads as violated.
-- **Commits made on 2026-08-01 are unsigned** — eight of them, including what
-  was then the tip of `main`, after a long run of signed ones. **Signing works
-  again as of 2026-08-02**; the gap is closed going forward and permanent in
-  history. An earlier outage on 07-30 was noticed within the hour and repaired;
-  this one went unremarked.
 
 ## Two patterns the record shows and no document states
 

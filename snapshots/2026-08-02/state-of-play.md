@@ -23,9 +23,8 @@ readers who acted on the earlier version.
 | branch with no PR | `postmortem-what-caught-defects` — docs only, still unmerged, conflicts with nothing |
 | local work not yet pushed | `drift-2026-08-02` (two corrections), `snapshot-2026-08-02` (this directory) |
 
-**The `nas` remote was unreachable at cleanup time**, so its `r5-state-seam` ref
-is stale and its `main` is many commits behind. That second remote is easy to
-forget and has been forgotten before.
+Branch cleanup covered `origin`. Any other push target a working copy is
+configured with is out of scope for this record and is handled separately.
 
 ## The merge, and what it costs
 
@@ -250,4 +249,3 @@ small, actionable and currently owned by nobody:
   old.
 - A postmortem forward item points at a threshold that has since moved the other
   way for a good reason recorded only in the code.
-- Eight commits from 2026-08-01 are unsigned. Signing works again.

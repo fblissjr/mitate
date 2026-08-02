@@ -3282,3 +3282,48 @@ code, and ranked in none. The NaN question is one of the things a specification
 would have to take a position on, which is the argument for doing R5.2 **before**
 answering (1) rather than after: a policy written against an unenumerated language
 will cover the parts someone happened to remember.
+
+---
+
+### Open question: what did the harness buy, and did it go too far? (2026-08-02, owner-raised)
+
+**A design session, not a task, and deliberately filed as undecided.** The
+owner's words: *"did we go too far in restructuring and building checks on top of
+checks? I don't know. What did we gain all these cycles and PRs?"* — raised with
+the explicit caveat that it may not be clear cut.
+
+**The shape of the concern.** Six working days produced a 1173-line self-check
+pointed at this repo's own claims, nine brackets, controls over those controls, a
+defect corpus, and a documentation tier where three files exceed a default read
+window. Over the same span the *shipped* example corpus did not grow. That last
+fact is about shipping and not about building — scenes have been built and run as
+tests throughout, and the owner's position is that the bar for shipping one
+reliably has not been met yet — but the ratio is what prompts the question.
+
+**Both readings are live, and neither has been tested:**
+
+- *It went too far.* The apparatus generates its own work: a large share of
+  recorded defects were **in the checks**, and would not have existed without the
+  checks. `restructure-2026-07.md` has outlived its own deletion condition and
+  become a second standing backlog beside this file.
+- *It was right, or not far enough.* This ships into other people's install
+  caches, where a broken artifact is invisible to its author, and several defects
+  reached installed users for many versions before a check found them. On that
+  reading the apparatus is a one-time cost now largely amortized.
+
+**What would settle it, and why it has not been done.** The measurement is
+**per-check yield over time**: for each check and bracket, what it caught at
+introduction, what it has caught *since*, and whether what it caught was a
+product defect or a meta defect. That distinguishes a check that catches latent
+problems from one that only ever catches the person writing the next commit.
+Nobody has gathered it. Until it exists, both readings above are assertions.
+
+**Do not answer this from the changelog alone.** The changelog is written by the
+same author who built the checks, so "this check caught X" is self-reported. The
+yield measurement has to read the diffs.
+
+**Guard on this question specifically.** It is phrased in a way that invites
+agreement, and this repo has a recorded failure mode where an agent adopts a
+questioner's framing rather than its findings and the framing becomes structure.
+Anyone picking this up should build the case both ways before concluding, and
+should treat "this is the wrong frame" as an admissible answer.

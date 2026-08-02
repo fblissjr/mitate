@@ -214,6 +214,11 @@ const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mitate-driver-'));
 try {
   fs.writeFileSync(path.join(dir, 'a.html'), TRIVIAL);
   fs.writeFileSync(path.join(dir, 'b.html'), TRIVIAL);
+  // smoke resolves the canonical fence store from its own __dirname, which for
+  // a mutant is this temp dir — the same sibling rule as the backend.js and
+  // build.js copies below, learned the same way: on 0.17.0 a relocated smoke
+  // refused on the store ENOENT before any arm could pose its question.
+  fs.cpSync(path.join(HERE, 'fences'), path.join(dir, 'fences'), { recursive: true });
 
   const run = (mutantPath, argv, env) => {
     let out = '', code = 0;

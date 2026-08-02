@@ -7,6 +7,30 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.17.1
+
+### fixed
+
+**The documented workspace omitted the fence store, so 0.17.0's smoke.js
+refused to run in it.** SKILL.md's setup step copies four tools into the film
+workspace; `smoke.js` now resolves `fences/` beside itself and refuses to
+scan without it (correctly — a scan over zero fences reporting ok is the
+defect class the store loader exists to close). Reproduced in a scratch
+workspace built exactly as documented: the run dies on the store refusal
+before the first scene. The copy list now includes `fences/`, and gate.yml's
+workspace step — the same shape, and the same break — copies it too. The
+census of the class closed at three: `bracket-driver.js` runs smoke.js
+*mutants* out of a temp dir, so it now copies the store beside each mutant
+(the fourth candidate, `bracket-commands.js`'s drift copy, only ever reads
+smoke.js as text — no store needed, verified before leaving it alone).
+
+Found because the `.github/` workflows were left out of the 0.17.0 sweep.
+While correcting static.yml's parity-step comment, its neon-derivation
+argument turned out to be carrying two stale hand-written facts: "all five
+fences" (gearbox has carried six since `CONTRACT` joined at 0.16.44) and
+line indexes measured before the file grew. Re-verified mechanically against
+every fence gearbox carries, and the comment no longer states indexes at all.
+
 ## 0.17.0
 
 ### changed

@@ -101,11 +101,14 @@ ends up unable to swap bibles.
 | `scene2d.template.html` | flat vector, Canvas2D | no, born self-contained |
 
 ```bash
-cp "${CLAUDE_SKILL_DIR}"/templates/{scene.template.html,shoot.js,build.js,smoke.js,backend.js} .
+cp -R "${CLAUDE_SKILL_DIR}"/templates/{scene.template.html,shoot.js,build.js,smoke.js,backend.js,fences} .
 mv scene.template.html <name>.html
 bun add three@0.185.1 playwright-core@1.61.1
 bun run build.js vendor <name>.html
 ```
+
+`fences/` is the canonical fence store and travels with `smoke.js`, which
+refuses to run without it rather than silently checking zero fences.
 
 `vendor` embeds three into the scene. Every `build.js` command re-embeds
 automatically, so skipping it is recoverable there — but a direct `shoot.js` run

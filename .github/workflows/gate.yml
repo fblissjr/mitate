@@ -26,7 +26,9 @@
 #
 # MEASURED on ubuntu-latest, 2026-07-30, five runs on the pre-container config:
 #   static.yml            8s        every push, unfiltered
-#   this workflow    3m04s-5m05s    of which smoke 2m36s over 8 scenes; the
+#   this workflow    ~6m30s         measured 2026-08-02 (393s). This line read
+#                                  3m04s-5m05s until then, which was the figure
+#                                  before the workspace grew; of that, smoke over 8 scenes; the
 #                                   chromium install it used to do (22s + apt)
 #                                   is gone, the image carries the browsers
 # No figure is recorded for the container config yet — the first run of it is

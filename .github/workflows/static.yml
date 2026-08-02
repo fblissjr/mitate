@@ -80,5 +80,37 @@ jobs:
       #
       # QUOTE THE GLOB: the script expands it, so an unmatched pattern is caught
       # there and fails loudly rather than being expanded away by this shell.
+      # `build.js check` ran NOWHERE in CI against a real scene until 0.16.70. Its
+      # bracket (under templates/, so gate.yml runs it) exercises it against
+      # synthetic fixtures and mutated copies -- which proves the verb works and
+      # proves nothing about the scenes that ship. A shipped scene developing a
+      # table error would have reached a user.
+      #
+      # It belongs HERE rather than in gate.yml because it needs no browser: the
+      # whole run is milliseconds of string parsing, so it costs this job almost
+      # nothing and runs on every push instead of on the filtered set.
+      #
+      # THE CORPUS FIXTURE IS INCLUDED, and this is the first thing in CI that has
+      # ever read it -- gate.yml copies templates/ and examples/ into its
+      # workspace and not fixtures/, so `after-hours.html` has been executed by
+      # nothing since it landed. Be honest about what that buys: `check` exits 0
+      # on a warning, and the corpus's one finding IS a warning, so this gives
+      # visibility in the log and not a gate. `bracket-corpus.js` -- assert the
+      # EXPECTED verdict, fail when it moves in either direction -- is still the
+      # real fix and is still unbuilt.
+      #
+      # One scene per invocation, so it is a loop; `set -e` would stop at the
+      # first failure and hide the rest, which is the defect run-brackets.sh
+      # exists to avoid one tier up. Every scene is checked, then the job fails.
+      - name: declarative cross-reference
+        run: |
+          fail=0
+          for f in plugin/skills/mitate/templates/*.template.html \
+                   plugin/skills/mitate/examples/*.html \
+                   fixtures/defect-corpus/*.html; do
+            bun run plugin/skills/mitate/templates/build.js check "$f" || fail=1
+          done
+          exit $fail
+
       - name: brackets
         run: ./scripts/run-brackets.sh 'scripts/bracket-*.js'

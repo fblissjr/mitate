@@ -3228,3 +3228,47 @@ the *scene* and held the environment fixed, so it could only ever implicate scen
 machinery. Before hunting fur shells and solver traffic, assert the resolved
 browser binary is identical across the failing and passing runs — it is one line
 of logging and it retires or promotes an entire suspect class.
+
+### Open question: NaN has no policy, and the kit has become a DSL (2026-08-01, owner-raised)
+
+Two questions, raised together because they are the same question at two
+altitudes, and both are **design sessions rather than tasks**. Filed under the
+greppable phrase so they are found rather than re-derived.
+
+**1. NaN propagates instead of failing, and the kit has no position on it.**
+Three independent instances are already recorded, which is the point — this is a
+shape, not an incident:
+
+- `dur` undefined → `t` NaN. `checkExposure` drew a confident hard fail (`render
+  is 100.0% near-black`) while `checkFramingInvariance` went **silently
+  all-clear on the same run**, because every window shape sampled at NaN is
+  identical and a check comparing a frame against itself cannot fail.
+  Confidently wrong on one arm, quietly powerless on the other, from one missing
+  key.
+- `gaitPose` with no `rootX` → NaN foot targets: a film that renders and is
+  subtly wrong. Settled at 0.16.62 with a **throw**, deliberately — but that is
+  one site's answer, chosen locally, not a policy.
+- The general form: NaN satisfies `<`, `>` and `===` comparisons in ways that
+  make some checks fire wrongly and others go blind, so it defeats guards and
+  verdicts in *opposite* directions at once.
+
+**What is actually undecided:** whether the kit's numeric entry points should
+reject non-finite input at the boundary (a `finite(x, where)` helper, throwing or
+clamping), whether the CHECKS should treat a non-finite sample as a harness fault
+rather than a scene verdict, or both. The `onThrow` seam added in Phase R's first
+unit is the natural place for the second half — a non-finite reading is a harness
+fault by construction, which is exactly the distinction that seam now encodes.
+
+**2. This is a DSL now, and it is unnamed.** Beat addressing (`ramp`, `pulse`,
+`span`, `during`, `beatAt`, `rampE`, `secAt`, `rampS`, `latch`, `warp`, `quant`),
+the declarative tables (`BEATS`, `SHOTS`, `STYLE`, `CONFIG`, `FRAME`), the fenced
+kit, and now `setCamera(state)` — that is a language with a grammar, and nothing
+specifies it as a whole.
+
+**This half already has a home and is unstarted:** R5.2, `references/breakdown.md`
+— *"it exists, works, and is unnamed, unspecified, and unvalidated as a whole"*,
+the #1 recommendation in two internal documents, costed at one afternoon and no
+code, and ranked in none. The NaN question is one of the things a specification
+would have to take a position on, which is the argument for doing R5.2 **before**
+answering (1) rather than after: a policy written against an unenumerated language
+will cover the parts someone happened to remember.

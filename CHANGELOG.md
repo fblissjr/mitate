@@ -47,8 +47,8 @@ run is therefore real evidence that no caller was missed.
 ### docs
 
 **The pattern ledger's evidence was audited and it was wrong in two ways.** Four
-rows cite "the 2026-07-25 film"; that film is `internal/circus_prototype/circus.html`
-— gitignored, one machine, unbackupable. Every such citation is now labelled
+rows cite "the 2026-07-25 film", which is a local prototype rather than anything
+tracked. Every such citation is now labelled
 `(local)`, per the rule that a claim may cite a local artifact but must not rest
 on one.
 
@@ -58,7 +58,7 @@ lived in two places; the intro now points at the row instead of repeating it.
 
 **The trigger still stands** — two spellings is drift, so `hide(obj, u)` remains
 justified — but the drift is between one tracked file (`bear-and-bees`, ×1) and
-one unbackupable one. `hide(obj,u)` and `subjectFromObject` are therefore NOT
+one local one. `hide(obj,u)` and `subjectFromObject` are therefore NOT
 promoted here: each is a separate change with its own red, and neither belongs
 bundled into a branch that has already made two behavioural changes.
 

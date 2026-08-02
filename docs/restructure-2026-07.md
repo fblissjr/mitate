@@ -26,7 +26,7 @@ last updated: 2026-08-01
 > **`hide(obj,u)` and `subjectFromObject` were deliberately NOT promoted**, and
 > the survey that stopped them is worth reading before anyone re-scopes this:
 > neither exists in the tracked tree at all, and the ledger evidence for both
-> lives in `internal/circus_prototype/circus.html` — gitignored, one machine.
+> lives in a local prototype `(local)` rather than in the corpus.
 > The triggers do still fire (two spellings is drift), but the ledger's count for
 > the presence idiom was **×7 against an actual ×11**, and four of its rows cite
 > that same local-only film. All are now labelled `(local)`. Promote them as

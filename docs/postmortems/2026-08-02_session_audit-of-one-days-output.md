@@ -164,6 +164,39 @@ trap is unavoidable here — `check` is static and cannot call `beatAt` — so t
 mitigation cannot be "do not reimplement"; it has to be a control that compares
 the two models, and no such control exists.
 
+## ANNOTATION, same day, second session — the instrument re-run, and the class re-confirmed
+
+Forward item 4 (run `/audit-claims` at the end of any day that produced a
+reference) was executed at the end of the day's second session, over the
+representation-decision diff plus `.claude/` and `.github/` — six auditors,
+each given quoted claims and told to test. **Eight findings, all fixed the
+same session.** Two results extend this document rather than merely repeating
+it:
+
+- **Five of the eight were the same defect wearing a new coat: prose made
+  false by a decision landing hours after it was written.** The
+  representation decision was recorded mid-session, and the freshest documents
+  — written that morning, under care, by a session that had read this
+  postmortem — still described the question as open, pointed a method citation
+  at the wrong file, and cited a finding recorded only in an untracked memo.
+  The corrective that transfers: **when a decision lands, grep the same day's
+  output for the framing it invalidates.** The newest prose is the most likely
+  to be wrong about it, precisely because it was written closest to the
+  change.
+- **The adversarial-input instruction again produced the only code-behavior
+  findings.** Reading passes returned prose drift; the auditor told to
+  construct hostile inputs against `scripts/emit-spike.js` returned four
+  reachable failure-shape gaps (silent green over a shrunk scope, wrong-blame
+  crash, uncaught refusals, duplicate fences accepted) — the same
+  instrument-yield ordering this document reports, reproduced on a tool that
+  was one day old.
+
+Two auditors' verdicts were narrowed on checking, consistent with the "weigh
+every finding yourself" step: one reported a live exit-condition term as dead
+code when it guards the round-trip machinery rather than content divergence,
+and one finding's premise (a comparison bracket as the fix) had been
+overtaken by the recorded decision's structural alternative.
+
 ## Forward items
 
 1. **Fix (1) by making `check` state its scope** — the same corrective already

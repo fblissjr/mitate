@@ -1683,15 +1683,19 @@ property, not the proxy.
    belongs here is the instruction to grade it and the note that the grades are
    expected to change — a portfolio whose entries never move is a wish list.
 
-   **Open question, recorded so it stops evaporating: does any of the declarative
-   layer want to be data rather than code?** `BEATS`, `SHOTS`, `SUBJECTS`,
+   **Open question — RESOLVED 2026-08-02: does any of the declarative
+   layer want to be data rather than code?** The decision is recorded in
+   [`representation.md`](representation.md)'s decision section, which owns it
+   (the enumeration this item asked for happened first, as
+   `references/breakdown.md`). The paragraph below is kept as the record of
+   the question as it stood, because this paragraph existing at all is why the
+   discussion survived to be decided: `BEATS`, `SHOTS`, `SUBJECTS`,
    `STYLE`, the gait vectors and the lighting tables are all JavaScript object
    literals today. Owner position, 2026-07-30: JSON is **not** the right shape;
    the question is whether something with *some* semblance of structure is
-   better. Unresolved, and it interacts with R5.2's enumeration of the
+   better. It interacts with R5.2's enumeration of the
    declarative layer — enumerate first, since you cannot choose a shape for a set
-   nobody has listed. This paragraph exists because the discussion itself was
-   lost once already.
+   nobody has listed.
 
 **Gate R4:** every **core and review** `build.js` verb exercised in CI —
 **except `motion`, carved out by name** — with the export verbs reported as

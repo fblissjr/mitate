@@ -10,8 +10,10 @@ went looking for it. `restructure-2026-07.md` files that as its worked example o
 knowledge evaporating. This file exists so the outcome has a home before it is
 reached.
 
-Nothing here is decided. Where this file states something as settled, it is
-citing a decision made elsewhere, and the citation is given.
+**The decision below is now recorded (2026-08-02, owner).** The sections above
+it are the brief as written before the session, kept intact as the record of
+what was open and what the evidence said; where a section says something is
+undecided, the decision section wins.
 
 ---
 
@@ -41,6 +43,13 @@ Do not re-litigate these. Each has a home; the home wins.
 | JSON is not the right shape; whether something with more structure is remains open | owner, 2026-07-30 |
 
 ## Open — the agenda, in order
+
+> **Status, 2026-08-02:** item 1 is decided — see the decision section.
+> Item 2 is half-decided: the kit half (emit from one canonical source) is
+> adopted behind the R1 byte-identity gate; the film-declaration half is
+> deliberately deferred and stays open. Item 3 follows the kit decision:
+> fences become build products once R1's gate is green, comments carried in
+> the canonical copy. Item 4 is decided as strangler, never big-bang.
 
 **1. Where does data stop and code start?**
 `references/breakdown.md` enumerated the declarative layer and deliberately
@@ -160,12 +169,84 @@ session's most important input.
 
 Then the session, one question at a time, in the order above.
 
-## The decision goes here
+## The decision (2026-08-02, owner)
 
-When it is reached, this file records: the boundary as drawn, the cases it cannot
-hold, what was rejected and why, and what would make the decision wrong. Until
-then the section is empty on purpose — an empty section is honest and a
-placeholder full of options is not.
+Reached in session, from written positions compared rather than a live
+convergence: the argued draft is `docs/representation-exploration.html`
+(branch `representation-exploration`), audited the same day against
+`VISION.md`, `plan.md` and the site before being adopted. This section is the
+record; the page is the argument.
+
+**The boundary as drawn.**
+
+1. **Data is what is decidable without running the scene; code is what must be
+   run.** Every place decidability ends is a **named, typed hole** — a function
+   with a declared signature whose surroundings validate without calling it.
+   `SUBJECTS.pos` and `matFor(part)` are the shipped shapes of that rule, and
+   the closed-form seam (`bearXAt` shared by `SUBJECTS` and `animate()`) is
+   its canonical in-scene form. A fact earns the data side when a second
+   consumer uses its decidability; nothing becomes data for purity's sake.
+2. **The line moves by cost-scaled triggers, not by a reframe and not by a
+   single count** — `plan.md`'s Promotion table governs: craft on a second
+   instance, a primitive on a second consumer, a fence on a third, a
+   vocabulary change when a film is blocked or reliably wrong. The permanent
+   residue is affirmed: the hand-rolled case never migrates, by design.
+3. **Three kinds, not two.** Authored data; **derived data** (never authored,
+   always regenerable, deriving command named where the artifact lives —
+   `BEAT{}`, `TOTAL`, staged films, future bakes); code.
+4. **Extents: derive, with an intent channel.** The base extent derives from
+   construction (`bear.height`); any hand adjustment must be a **named term**,
+   never a bare number folded in. This follows the recorded evidence
+   (hand-declared extents wrong three of five in `plan.md`'s promotion
+   worked-examples; ledger count 6) over the declare-and-compare
+   alternative. Implementation is R4 on the exploration page's roadmap,
+   red-first on the corpus fixture.
+5. **The kit is emitted, not replicated** — direction adopted, gated on the
+   emitter reproducing every carrier byte-identically before anything may
+   differ (the R1 spike). The measured basis, method included because VISION
+   cites this file for it: menagerie's seven fence regions <!--count-mention-->
+   classified line-by-line (2026-08-02) — 823 lines, of which 3 are
+   declaration literals (the `SIZES` ladder and the cut table), 458 machinery
+   code, 341 comment-only, 21 blank. The replicated fenced surface is
+   machinery and its comments, with declaration literals a rounding error, so
+   the parity tax funds an emission program, not a schema program.
+6. **The harness stays in the JS family.** Every language boundary is a
+   reimplementation boundary, and the thirteen open `check` findings are what
+   that costs even *within* one language. TypeScript at the seams is decided
+   during R2, where the canonical source is written anyway; other languages
+   enter only behind derived-data boundaries (a wasm bake is the eligible
+   case).
+7. **Strategic frame: durable foundation.** The engine, primitives and
+   declarative layers are the destination, per `VISION.md`; the site's
+   "bootstrap until models catch up" hedge is reworded to match.
+
+**The cases it cannot hold.** A hole is opaque to every static instrument, so
+each one added cedes checkable surface — the discipline is that holes carry
+signatures, and a check for that does not exist yet. Derived extents remove
+static framing reasoning from `check` permanently; that cost was taken
+knowingly, against the alternative of policing two sources of truth forever.
+And this decision does **not** deliver `VISION.md`'s stronger criterion —
+declarations readable, validatable or renderable independently of the
+embedding artifact. The film-declaration half of the source-artifact question
+(agenda item 2) is deliberately deferred, not answered.
+
+**Rejected, and why.** Pure-literal tables (demotes the shipped holes, buys no
+consumer anything). Functions-anywhere (dissolves decidability). A single
+recurrence trigger (the defect `plan.md` names). A one-time reframe of
+geometry and motion into declarations (no trigger has fired; the movement
+rules exist so that one can). Declare-and-compare extents (against the
+three-of-five record — revisit if the intent-channel hybrid proves
+unworkable in R4). Leaving the harness language open (rejected as a standing
+question; reopens only on the wrong-if below).
+
+**What would make it wrong.** The exploration page's Wrong-if section is the
+full list; the load-bearing ones: the decidability test fails to sort a full
+scene inventory; the shipped holes prove unrepresentative (surroundings that
+cannot validate without calling the hole); a deliberate reframe becomes the
+actual strategic aim; R2's shared-semantics approach proves impossible even
+within JS, which reopens the harness question; the fence-composition
+measurement fails to replicate on other carriers, which reopens the
+two-programs split.
 
 ### Falsifiers, written in advance
 

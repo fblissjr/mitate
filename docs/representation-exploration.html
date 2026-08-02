@@ -17,6 +17,7 @@
     --derived: #5b3f8f;   --derived-bg: #efe9f8;
     --kit: #3d6b4f;       --kit-bg: #e7f1ea;
     --warn-bg: #fdf6e3;
+    --audit: #7a4a12;     --audit-bg: #f6ecdf;
     --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   }
   @media (prefers-color-scheme: dark) {
@@ -32,6 +33,7 @@
       --derived: #b49ae0; --derived-bg: #261d38;
       --kit: #8fc4a4;     --kit-bg: #1b2b21;
       --warn-bg: #2a2617;
+      --audit: #dfae72;   --audit-bg: #2b2115;
     }
   }
   * { box-sizing: border-box; }
@@ -51,6 +53,12 @@
     background: var(--warn-bg); padding: .8rem 1rem; border-radius: 6px;
     margin: 1.2rem 0; font-size: .92rem;
   }
+  .audit {
+    border: 1px solid var(--line); border-left: 4px solid var(--audit);
+    background: var(--audit-bg); padding: .6rem .9rem; border-radius: 6px;
+    margin: .8rem 0; font-size: .87rem;
+  }
+  .audit b:first-child { color: var(--audit); }
   .prov { color: var(--muted); font-size: .85rem; }
   code, pre { font-family: var(--mono); font-size: .84em; }
   code { background: var(--card); border: 1px solid var(--line); border-radius: 4px; padding: .08em .35em; }
@@ -69,7 +77,6 @@
   .tag.derived { color: var(--derived); background: var(--derived-bg); }
   .tag.kit     { color: var(--kit);     background: var(--kit-bg); }
 
-  /* spectrum diagram */
   .spectrum { display: flex; gap: 4px; margin: 1.2rem 0 .3rem; min-width: 640px; }
   .spectrum > div {
     flex: 1; padding: .6rem .6rem .7rem; border-radius: 8px; font-size: .8rem; line-height: 1.45;
@@ -85,7 +92,6 @@
   .frontier .right { flex: 3; padding-left: .6rem; }
   .scrollwrap { overflow-x: auto; }
 
-  /* cards */
   .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin: 1rem 0; }
   .card {
     background: var(--card); border: 1px solid var(--line); border-radius: 10px;
@@ -98,7 +104,6 @@
   .procon h5 { margin: .2rem 0 .3rem; font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
   .procon ul { margin: 0; padding-left: 1.1rem; }
 
-  /* 2x2 */
   table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .9rem; }
   th, td { border: 1px solid var(--line); padding: .6rem .7rem; text-align: left; vertical-align: top; }
   th { background: var(--card); }
@@ -108,7 +113,6 @@
   }
   .quiet { color: var(--muted); font-size: .85rem; }
 
-  /* annotated example rows */
   .ex { border: 1px solid var(--line); border-radius: 10px; margin: 1rem 0; overflow: hidden; }
   .ex .exhead {
     display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap;
@@ -117,7 +121,6 @@
   .ex pre { border: none; border-radius: 0; margin: 0; }
   .ex .exnote { padding: .6rem .9rem .8rem; font-size: .88rem; border-top: 1px solid var(--line); }
 
-  /* roadmap */
   .phase { display: grid; grid-template-columns: 3.2rem 1fr; gap: .9rem; margin: 1.1rem 0; }
   .phase .pnum {
     font-family: var(--mono); font-weight: 700; text-align: center;
@@ -138,57 +141,58 @@
 <h1>Where data stops and code starts</h1>
 <p class="prov">Drafted 2026-08-02 from the session draft position, <a href="representation.md">the
 session brief</a>, <code>references/breakdown.md</code>, and the authored surface of
-<code>plugin/skills/mitate/examples/menagerie.html</code>. Figures carry the command that derives
-them; prefer re-running to citing.</p>
+<code>plugin/skills/mitate/examples/menagerie.html</code>. Revised the same day after an alignment
+audit against <code>VISION.md</code>, <code>docs/plan.md</code>, and the site's strategic copy.
+Boxes marked "audit note" show where that audit changed a claim. Figures carry the command or
+definition that derives them; prefer re-running to citing.</p>
 
 <div class="status">
   <b>Exploration, not doctrine.</b> This page argues one side of a design session that is still
-  open. It settles nothing; the decision, when reached, is recorded in
-  <a href="representation.md"><code>docs/representation.md</code></a> and that file wins wherever
+  open. It settles nothing. The decision, when reached, lands in
+  <a href="representation.md"><code>docs/representation.md</code></a>, and that file wins wherever
   the two disagree. An empty decision section there remains a valid outcome.
 </div>
 
 <h2>The question, and the stakes</h2>
-<p><b>Where is the boundary between data and code in a mitate scene?</b> Everything else in this
-design space — what the source artifact is, what the fenced blocks become, what a compiler
-validates, how a migration runs — is downstream of it.</p>
-<p>Two measured costs make it worth deciding now rather than later, and part of this page's
-argument is that they are <em>different problems</em>:</p>
+<p>Where is the boundary between data and code in a mitate scene? Everything else in this design
+space is downstream of it: what the source artifact is, what the fenced blocks become, what a
+compiler validates, and how a migration runs.</p>
+<p>Two measured costs make it worth deciding now. This page argues they are different problems:</p>
 <ul class="tight">
-  <li><b>Duplication.</b> 5,704 lines held byte-identical across nine carriers
-      <span class="quiet">(derived by <code>smoke.js --parity-only</code>, 2026-08-02; grows with
-      every example)</span>, policed by a propagation tool, a bracket, a pre-commit hook and a
-      three-glob discipline.</li>
-  <li><b>Validation in the wrong place.</b> Checks cluster where a mistake is
-      <em>unrepresentable</em> (an unknown name fails a lookup), not where it is
-      <em>expensive</em> (an extent that disagrees with its geometry passes silently). And the
-      static validator that exists, <code>build.js check</code>, reimplements kit semantics with
-      nothing comparing the two models — thirteen open findings share that single root cause
+  <li><b>Duplication.</b> The parity run holds 5,704 fenced lines byte-identical across nine
+      carriers <span class="quiet">(derived by <code>smoke.js --parity-only</code>, 2026-08-02;
+      the surface grows with every example)</span>. Policing it costs a propagation tool, a
+      bracket, a pre-commit hook, and a three-glob discipline.</li>
+  <li><b>Validation in the wrong place.</b> Checks cluster where a mistake is unrepresentable: an
+      unknown name fails a lookup. They are absent where a mistake is expensive: an extent that
+      disagrees with its geometry passes silently. The static validator that exists,
+      <code>build.js check</code>, reimplements kit semantics, and nothing compares the two
+      models. Thirteen open findings share that single root cause
       <span class="quiet">(postmortem, 2026-08-02)</span>.</li>
 </ul>
 
 <h2>The claim</h2>
-<p><b>Data is the part of a scene that is decidable without running it. Code is the part that must
-be run.</b> A function inside a table is not a violation of the line — it is the explicit,
-<em>typed marker</em> of exactly where decidability ends. The schema around the hole is what makes
-the ending explicit instead of ambient.</p>
-<p>A fact <em>earns</em> the data side when a second consumer — something besides the renderer —
-uses that decidability: a validator, a solver, a retimer, a recorder, a stager. Every table that
-exists today passes that test. Nothing was made data for purity's sake, and nothing should be.</p>
+<p>Data is the part of a scene you can decide without running it. Code is the part you must run.
+A function inside a table does not violate that line. It marks, with a type, exactly where
+decidability ends, and the schema around the hole makes the ending explicit instead of
+ambient.</p>
+<p>A fact earns the data side when a second consumer uses that decidability: a validator, a
+solver, a retimer, a recorder, a stager. Every table that exists today passes that test. Nothing
+was made data for purity's sake, and nothing should be.</p>
 
 <div class="scrollwrap">
 <div class="spectrum">
   <div class="zone-data"><b>Pure literals</b><code>BEATS</code>, <code>FRAME</code>,
-    <code>CONFIG</code>, proportion vectors. Fully decidable; validated (unevenly) today.</div>
-  <div class="zone-data"><b>Tables with resolution</b><code>SHOTS</code> — literal rows, anchors
-    resolved against <code>BEATS</code>. Still decidable; <code>check</code> proves it.</div>
-  <div class="zone-hole"><b>Typed holes</b><code>SUBJECTS.pos</code>,
-    <code>matFor(part)</code> — declared signature, opaque body. Decidability ends here,
-    <em>visibly</em>.</div>
-  <div class="zone-code"><b>Closed forms</b><code>bearXAt(t)</code> — named seams shared by
-    data and code, so two consumers cannot disagree.</div>
-  <div class="zone-code"><b>Authored code</b><code>buildWorlds()</code>,
-    <code>animate()</code> — where most of a film's lines live. Reviewable, not decidable.</div>
+    <code>CONFIG</code>, proportion vectors. Fully decidable; validated unevenly today.</div>
+  <div class="zone-data"><b>Tables with resolution</b><code>SHOTS</code>: literal rows, anchors
+    resolved against <code>BEATS</code>. Still decidable, and <code>check</code> proves it.</div>
+  <div class="zone-hole"><b>Typed holes</b><code>SUBJECTS.pos</code> and
+    <code>matFor(part)</code>: declared signature, opaque body. Decidability ends here,
+    visibly.</div>
+  <div class="zone-code"><b>Closed forms</b><code>bearXAt(t)</code>: named seams that data and
+    code share, so two consumers cannot disagree.</div>
+  <div class="zone-code"><b>Authored code</b><code>buildWorlds()</code> and
+    <code>animate()</code>, where most of a film's lines live. Reviewable, not decidable.</div>
 </div>
 <div class="frontier">
   <div class="left">readable, validatable, diffable as fact</div>
@@ -196,69 +200,89 @@ exists today passes that test. Nothing was made data for purity's sake, and noth
 </div>
 </div>
 
-<h2>The foundational form: an invariant plus a movement rule</h2>
-<p>This is a long-horizon decision, so the thing to record is not an inventory of today's tables —
-any list is obsolete at the next capability. It is three commitments:</p>
+<div class="audit">
+  <b>Audit note.</b> This test is weaker than VISION's. VISION asks whether a declaration can be
+  read, validated, or <em>rendered</em> independently of the artifact that embeds it
+  (<code>VISION.md</code>, "Where a declaration lives"). Decidability-without-execution says
+  nothing about artifact independence: a table you can parse out of the HTML still lives only
+  inside the HTML, and the <code>SHOTS</code> resolution interleaving shows how fragile that
+  parsing is. The roadmap below now states what it does not deliver on this axis.
+</div>
+
+<h2>The foundational form: an invariant plus movement triggers</h2>
+<p>This is a long-horizon decision, so the thing worth recording is not an inventory of today's
+tables. Any list goes stale at the next capability. Record three commitments instead:</p>
 <div class="cards">
   <div class="card">
     <h4>1 · The invariant</h4>
     <p>Everything on the data side is decidable and validatable without executing a scene. Every
-    place decidability ends is a named, typed hole — never ambient code mixed through the
+    place decidability ends is a named, typed hole, never ambient code mixed through the
     declarations.</p>
   </div>
   <div class="card">
-    <h4>2 · The movement rule</h4>
-    <p>The line advances only on measured recurrence (the pattern-ledger's count), and each
-    migration must hand a named second consumer a decision it could not previously make. Films
-    push facts across the line as a side effect of being made — the flywheel, given a
-    direction.</p>
+    <h4>2 · The movement triggers</h4>
+    <p>The line advances by triggers that scale with the cost of the form, per the plan's
+    promotion table: a craft rule on the second instance, a primitive on a second consumer, a new
+    fence only on a third, and a vocabulary change when a film is blocked saying something the
+    tables cannot say, or is not blocked but reliably wrong. Each migration must hand a named
+    second consumer a decision it could not previously make.</p>
   </div>
   <div class="card">
     <h4>3 · The permanent residue</h4>
     <p>Some code never migrates, by design. The hand-rolled case is not a backlog of
-    not-yet-data; it is half the reason primitives exist, forever
+    not-yet-data. It is half the reason primitives exist
     (<a href="representation.md">constraint 4</a>).</p>
   </div>
 </div>
 
+<div class="audit">
+  <b>Audit note.</b> The first version of commitment 2 was a single gate: advance only on a
+  pattern-ledger recurrence count. <code>docs/plan.md</code>'s promotion section names exactly
+  that as the defect it fixed: "one trigger for four costs is the defect." Its cost table gives
+  each layer its own trigger, and the vocabulary layer, which is the data side of this boundary,
+  advances on blockedness, not on a count. Rewritten to match. The ledger still matters: the plan
+  also concludes every trigger is unfireable without a count, which is what roadmap phase R5
+  instruments.
+</div>
+
 <h3>Three kinds, not two</h3>
-<p>The two-sided line hides a third kind that the repo already treats specially: things that are
-<em>never authored and always regenerable</em>. <code>BEAT{}</code> and <code>TOTAL</code> are
-forbidden to hand-write today; staged films are derived by <code>stage-films.sh</code>; a future
-physics bake is the same kind at much larger volume.</p>
+<p>The two-sided line hides a third kind the repo already treats specially: things that are never
+authored and always regenerable. <code>BEAT{}</code> and <code>TOTAL</code> are forbidden to
+hand-write today. <code>stage-films.sh</code> derives the staged films. A future physics bake is
+the same kind at much larger volume.</p>
 <div class="cards">
   <div class="card">
     <h4><span class="tag data">authored data</span></h4>
-    <p>Tables, vectors, declared intent. Written by an author, validated before render, owns the
-    meaning.</p>
+    <p>Tables, vectors, declared intent. An author writes it, a validator checks it before
+    render, and it owns the meaning.</p>
   </div>
   <div class="card">
     <h4><span class="tag derived">derived data</span></h4>
     <p>Computed from authored data by a tool at build time: beat spans, durations, staged copies,
-    bakes. Never hand-edited; a check that it is stale is always possible because the deriving
-    command is named.</p>
+    bakes. Never hand-edited. Staleness is always checkable because the deriving command is
+    named.</p>
   </div>
   <div class="card">
     <h4><span class="tag codes">code</span></h4>
-    <p>Construction and per-frame motion. Runnable, judged by review. Carries the measured lessons
+    <p>Construction and per-frame motion. Runnable, judged by review. The measured lessons live
     as comments beside the lines they constrain.</p>
   </div>
 </div>
-<p>Derived data is small today and becomes the <em>largest</em> of the three the day anything is
-baked. A representation decision with no place for it gets re-litigated then.</p>
+<p>Derived data is small today and becomes the largest of the three the day anything is baked. A
+representation decision with no place for it gets re-litigated then.</p>
 
-<h2>Two axes, not one — the cost map</h2>
-<p>Crossing data/code with <b>kit</b> (fenced, byte-identical in every carrier) versus
-<b>film</b> (authored per scene) shows the two measured costs live in different cells:</p>
+<h2>Two axes, not one: the cost map</h2>
+<p>Cross data/code with kit versus film. Kit means fenced and byte-identical in every carrier;
+film means authored per scene. The two measured costs live in different cells:</p>
 <table>
   <tr><th></th><th>data</th><th>code</th></tr>
   <tr>
     <th><span class="tag kit">kit</span></th>
-    <td><code>SIZES</code>, the cut-duration table <span class="quiet">(ride inside fenced
+    <td><code>SIZES</code>, the cut-duration table <span class="quiet">(they ride inside fenced
       blocks)</span></td>
     <td><code>KERNEL</code> · <code>SOLVER</code> · <code>RIG</code> · <code>DRIVER</code> ·
       <code>CHARACTER</code> · <code>CONTRACT</code> · <code>HTML</code><br>
-      <span class="cost">all 5,704 parity lines live here</span></td>
+      <span class="cost">the parity tax lives here</span></td>
   </tr>
   <tr>
     <th><span class="tag data">film</span></th>
@@ -266,246 +290,298 @@ baked. A representation decision with no place for it gets re-litigated then.</p
       <code>SUBJECTS</code> · <code>SHOTS</code> · proportion vectors<br>
       <span class="cost">every validation gap lives here</span></td>
     <td><code>buildWorlds()</code> add-ons · <code>animate()</code> · helpers
-      <span class="quiet">(53–172 lines per shipped example, 701 in the corpus fixture; covered by
-      no static check, no parity, no reference)</span></td>
+      <span class="quiet">(53 to 172 lines per shipped example, 701 in the corpus fixture; no
+      static check, no parity, no reference covers any of it)</span></td>
   </tr>
 </table>
-<p><b>Consequence — the single most attackable claim on this page:</b> duplication is not evidence
-that film content should become data. It is evidence that <em>kit code should be emitted rather
-than replicated</em>. Duplication is solved by a compiler over the kit row (agenda items 2–3);
-validation is solved by schemas over the film row (question 1 proper). <b>Two separable programs.
-Either can ship without the other.</b></p>
+<p>Consequence: duplication is not evidence that film content should become data. It is evidence
+that kit code should be emitted rather than replicated. A compiler over the kit row solves
+duplication (agenda items 2 and 3). Schemas over the film row solve validation (question 1
+proper). Two separable programs; either can ship without the other.</p>
+
+<div class="audit">
+  <b>Audit note, with the number that settles it.</b> The first version asserted the split
+  ("entirely kit code") without measuring it, and VISION reads the other way: its "Where a
+  declaration lives" section attributes the parity tax to declarations not being independently
+  readable. Measured 2026-08-02, on menagerie's seven fence regions (823 lines, classified
+  line-by-line by a throwaway script): 3 lines are declaration literals, the <code>SIZES</code>
+  ladder and the cut table, or 0.4%; 458 lines are machinery code (56%); 341 are comment-only
+  (41%); 21 blank. The replicated surface is machinery and its comments, so the tax funds the
+  emission program, not the schema program. VISION's deeper claim survives untouched:
+  declarations still cannot be read, validated, or rendered independently of the artifact. The
+  session should reconcile VISION's attribution paragraph with this composition; per repo rule
+  that is a fact question, and the number wins arguments prose cannot.
+</div>
 
 <h2>Real examples, annotated</h2>
 <p>All from <code>plugin/skills/mitate/examples/menagerie.html</code>, quoted 2026-08-02.</p>
 
 <div class="ex">
   <div class="exhead"><span class="tag data">authored data</span>
-    <b>BEATS</b> — pure literal, two consumers beyond the renderer</div>
+    <b>BEATS</b>: pure literal, two consumers beyond the renderer</div>
   <pre><code>const BEATS = [
   {name: 'title',  dur: 2.6},
   {name: 'walk',   dur: 6.2, cap: "1 · Bear, human, strider — one skeleton family"},
   ...
 ];</code></pre>
-  <div class="exnote">Durations, never timestamps — retiming is a one-line edit because
-  accumulation is <em>derived</em>. Read by the retimer, by <code>build.js check</code> (duplicate
-  names, non-positive durations, caption reading speed), and by every anchor resolution.
-  <code>BEAT{}</code>/<code>TOTAL</code> are the derived-data kind: forbidden to author.</div>
+  <div class="exnote">Durations, never timestamps. Retiming is a one-line edit because
+  accumulation is derived. The retimer reads it, <code>build.js check</code> reads it (duplicate
+  names, non-positive durations, caption reading speed), and every anchor resolves against it.
+  <code>BEAT{}</code> and <code>TOTAL</code> are the derived-data kind: forbidden to author.</div>
 </div>
 
 <div class="ex">
   <div class="exhead"><span class="tag hole">typed hole</span>
-    <b>SUBJECTS.pos</b> — data around a declared, opaque function</div>
+    <b>SUBJECTS.pos</b>: data around a declared, opaque function</div>
   <pre><code>bear: {pos: t => [bearXAt(t)+bear.centerX, bear.height/2, LANE.bear],
        h: bear.height+.3, w: bear.length, d: 1.6},</code></pre>
   <div class="exnote">The hole has a signature (<code>t → center</code>) and everything around it
-  is decidable without calling it: the solver frames the <code>h/w/d</code> box and never inspects
-  the body; <code>check</code> resolves every name statically. Note <code>h</code> is
-  <em>derived from the built character</em> while <code>d</code> is a hand number — the extent
-  fork below, live in one line.</div>
+  is decidable without calling it: the solver frames the <code>h/w/d</code> box and never
+  inspects the body; <code>check</code> resolves every name statically. Note that
+  <code>h</code> derives from the built character while <code>d</code> is a hand number. That is
+  the extent fork below, live in one line.</div>
 </div>
 
 <div class="ex">
   <div class="exhead"><span class="tag codes">closed form at a seam</span>
-    <b>bearXAt</b> — one home for a fact, inside one scene</div>
+    <b>bearXAt</b>: one home for a fact, inside one scene</div>
   <pre><code>const bearXAt = t => lerp(STARTS.bear, -6.1, ramp(t,'walk',.02,.92));
 // SUBJECTS and animate() both derive from THESE, so the camera
 // and the bodies can never disagree (proven-walker rule)</code></pre>
-  <div class="exnote">The repo's "every fact has one home" rule operating <em>within</em> a scene:
-  a named function shared by the data side (<code>SUBJECTS.pos</code>) and the code side
-  (<code>animate()</code>). Under this draft, this is the canonical boundary shape — not "no
-  functions in tables," not "functions anywhere." Note the latent data visible by inspection:
+  <div class="exnote">The repo's one-home rule operating inside a scene: a named function that
+  the data side (<code>SUBJECTS.pos</code>) and the code side (<code>animate()</code>) share.
+  This draft treats it as the canonical boundary shape: not "no functions in tables," not
+  "functions anywhere." The latent data is visible by inspection:
   <code>(from, to, beat, window)</code>.</div>
 </div>
 
 <div class="ex">
-  <div class="exhead"><span class="tag codes">code, on purpose</span>
-    <b>animate()</b> — beat-addressed envelopes times authorial taste</div>
+  <div class="exhead"><span class="tag codes">code today, bake target tomorrow</span>
+    <b>animate()</b>: beat-addressed envelopes times authorial constants</div>
   <pre><code>const look = pulse(t,'look',.1,.9);          // the ADDRESS is already data
 chainCurl(bear.neckChain, -.4*look, 'y');    // the AMPLITUDE is taste
 bear.head.rotation.y = -.75*look;</code></pre>
-  <div class="exnote">The addressing (<code>'look'</code>, the window) is declarative already;
-  the constants are judgment. Extracting <code>-.75</code> into a table relocates a number without
-  giving any consumer a new decision it can make — the second-consumer test says no, for now. The
-  measured lessons live as comments beside the lines they constrain
-  (<code>tailWag</code>: "amplitudes crossfade, phases never mix"), which a
-  closed vocabulary could not hold.</div>
+  <div class="exnote">The addressing (<code>'look'</code>, the window) is declarative already.
+  The constants are judgment, and extracting <code>-.75</code> into a table relocates a number
+  without giving any consumer a new decision.</div>
 </div>
 
-<div class="ex">
-  <div class="exhead"><span class="tag data">schema at the seam</span>
-    <b>the proportion vector + matFor</b> — the existence proof</div>
-  <pre><code>strider = buildCharacter(
-  {hipH:3.4, torsoLen:1.4, neckLen:1.8, neckSegs:5, tailLen:2.4, tailSegs:6, ...},
-  part => std({torso:0x4e6e8e, head:0x6fa3b7, ...}[part], {roughness:.6}));
-// three eyes across the brow — the text said so
-for(const k of[-1,0,1]) { ... }</code></pre>
-  <div class="exnote">A fixed schema (that throws on impossible bodies) with one typed hole
-  (<code>matFor: part → material</code>, six named parts). From one constructor: a bear, a human,
-  and an invented strider — built deliberately "to keep the anti-template test honest." The three
-  eyes are the permanent residue: the scaffold must say things it did not anticipate.</div>
+<div class="audit">
+  <b>Audit note.</b> The first version used <code>tailWag()</code> here as the exhibit for code
+  that never migrates, held better by its comment than by any vocabulary. VISION disagrees by
+  name: its Phase 4 section says the declarative interaction layer exists to replace
+  "hand-tuning three sine waves that approximate a swing," which describes the wag almost
+  literally. So the wag sits on the bake's target list, not in the residue. What survives:
+  VISION's own interface is "cede control here, keep it there," opt-in per object, so the taste
+  channel persists even after the mechanism is declared. The safe residue exhibit is the
+  strider's three eyes (<code>// the text said so</code>), built to keep the anti-template test
+  honest.
 </div>
 
-<h2>Hypotheticals — how the line moves, and the one live fork</h2>
+<h2>How the line moves, and the one live fork</h2>
 
-<h3>The move, illustrated: <code>TRAVEL</code> <span class="quiet">(hypothetical, deliberately not
-proposed now)</span></h3>
+<h3>The move, illustrated: <code>TRAVEL</code> <span class="quiet">(hypothetical, deliberately
+not proposed now)</span></h3>
 <pre><code>// The same move BEATS made, applied to the latent data in the closed forms:
 const TRAVEL = { bear: {from: -16.5, to: -6.1, over: ['walk', .02, .92]} };</code></pre>
-<p>The moment this exists, a second consumer exists: <code>check</code> could decide
-<em>statically</em> that a subject's travel stays inside some shot's coverage for the whole film —
-undecidable today. But one film's travel pattern is a recurrence count of one; the movement rule
-says the ledger decides <em>when</em>, not an argument. This is the shape of every future
-migration: find the latent data, name the second consumer, wait for the count.</p>
+<p>The moment this exists, a second consumer exists: <code>check</code> could decide statically
+that a subject's travel stays inside some shot's coverage for the whole film, which nothing can
+decide today. When it happens is a trigger question: as a vocabulary change, the plan says it
+fires when a film is blocked or reliably wrong, and the ledger's count is the evidence that a
+trigger fired. One film's travel pattern is neither, yet. This is the shape of every future
+migration: find the latent data, name the second consumer, watch the trigger.</p>
 
-<h3>The extent fork — a genuine decision this session must make or explicitly defer</h3>
-<p>The layer's most expensive unvalidated fact: <code>SUBJECTS.h/w/d</code> versus the geometry it
-claims to describe. Both resolutions are already half-present in the tree, and they pull the
-boundary in opposite directions:</p>
+<h3>The extent fork: decide it or defer it, but from the record</h3>
+<p>The layer's most expensive unvalidated fact is <code>SUBJECTS.h/w/d</code> versus the geometry
+it claims to describe. Both resolutions are half-present in the tree, and they pull the boundary
+in opposite directions:</p>
 <div class="cards">
   <div class="card">
-    <h4>A · Declare-and-compare</h4>
-    <p>Extents are authored data; <code>probe</code> measures the built geometry; a check compares
-    the two.</p>
+    <h4>A · Declare and compare</h4>
+    <p>Extents are authored data. <code>probe</code> measures the built geometry, and a check
+    compares the two.</p>
     <div class="procon">
       <div><h5>for</h5><ul>
-        <li>Extents stay statically readable — <code>check</code> can reason about framing without
-          a browser</li>
-        <li>Stays inside <code>probe</code>'s existing exception; no new one acquired</li>
-        <li>The declaration remains the author's stated intent, drift becomes <em>detectable</em></li>
+        <li>Extents stay statically readable, so <code>check</code> can reason about framing
+          without a browser</li>
+        <li>Stays inside <code>probe</code>'s existing exception; acquires no new one</li>
+        <li>The declaration remains stated intent, and drift becomes detectable</li>
       </ul></div>
       <div><h5>against</h5><ul>
-        <li>Needs the runtime for the comparison — the check is not purely static</li>
-        <li>Two sources of truth held in agreement by an instrument, forever</li>
+        <li>The comparison needs the runtime; the check is not purely static</li>
+        <li>Two sources of truth, held in agreement by an instrument, forever</li>
       </ul></div>
     </div>
   </div>
   <div class="card">
-    <h4>B · Derive-and-dissolve</h4>
-    <p>Extents are computed from construction (as menagerie's <code>h: bear.height+.3</code>
-    partly does); the check dissolves because the declaration cannot be wrong.</p>
+    <h4>B · Derive and dissolve</h4>
+    <p>Extents are computed from construction, as menagerie's <code>h: bear.height+.3</code>
+    partly does. The check dissolves because the declaration cannot be wrong.</p>
     <div class="procon">
       <div><h5>for</h5><ul>
-        <li>The defect class becomes unrepresentable — the strongest kind of fix this repo
-          recognises</li>
+        <li>The defect class becomes unrepresentable, the strongest kind of fix this repo
+          recognizes</li>
         <li>No instrument to run, no drift to police</li>
       </ul></div>
       <div><h5>against</h5><ul>
-        <li>Extents stop being statically readable; <code>check</code> loses framing reasoning
-          entirely</li>
-        <li>The fudge terms (<code>+.3</code>, <code>d: 1.6</code>) are authorial intent that
-          derivation cannot produce — so in practice it is a hybrid, and the hybrid needs a
-          rule</li>
+        <li>Extents stop being statically readable, and <code>check</code> loses framing
+          reasoning entirely</li>
+        <li>The fudge terms (<code>+.3</code>, <code>d: 1.6</code>) are intent that derivation
+          cannot produce, so in practice this is a hybrid, and the hybrid needs a rule</li>
       </ul></div>
     </div>
   </div>
 </div>
-<p class="quiet">This page does not pick. It is the one place the draft finds the boundary
-genuinely underdetermined by its own test: A treats extents as intent (data), B treats them as
-consequence (derived data). Which they <em>are</em> is an authoring question the owner decides.</p>
+
+<div class="audit">
+  <b>Audit note.</b> The first version presented this fork as evidence-free. It is not.
+  <code>docs/plan.md</code>'s promotion worked-examples record hand-declared extents wrong three
+  times out of five, while the one framed from measured <code>rig.height</code>/<code>centerX</code>
+  was right first try, filed as "evidence for a vocabulary change, measured extents replacing
+  declared." The pattern-ledger holds declared-extents at count 6, cited as proof the trigger had
+  long fired. The choice stays with the owner, because it turns on whether an extent is intent or
+  consequence. But the recorded evidence leans derive and measure, and the session should start
+  from that record, not from a blank fork.
+</div>
 
 <h2>Decisions and tradeoffs</h2>
 
 <div class="cards">
   <div class="card">
-    <h4>D1 · Typed holes are on the data side</h4>
-    <p>Rejects both alternatives: pure-literal tables (demotes <code>pos</code>/<code>matFor</code>
-    and buys no consumer anything) and functions-anywhere (dissolves decidability).</p>
+    <h4>D1 · Typed holes sit on the data side</h4>
+    <p>This rejects both alternatives: pure-literal tables (demotes <code>pos</code> and
+    <code>matFor</code> and buys no consumer anything) and functions-anywhere (dissolves
+    decidability).</p>
     <div class="procon">
       <div><h5>for</h5><ul>
         <li>Blesses the two shipped patterns that already work</li>
-        <li>Keeps tracking-shots-for-free and material packs</li>
-        <li>Holes are enumerable — a validator can list every point where decidability ends</li>
+        <li>Keeps tracking shots for free, and material packs</li>
+        <li>Holes are enumerable, so a validator can list every point where decidability ends</li>
       </ul></div>
       <div><h5>against</h5><ul>
-        <li>A hole is opaque to every static instrument; each one added is surface ceded</li>
-        <li>Needs discipline (or a check) that holes carry declared signatures</li>
+        <li>A hole is opaque to every static instrument; each one added cedes surface</li>
+        <li>Needs discipline, or a check, that holes carry declared signatures</li>
       </ul></div>
     </div>
   </div>
 
   <div class="card">
-    <h4>D2 · Invariant + movement rule, not a one-time reframe</h4>
-    <p>The line moves by measured recurrence, not by a single architectural migration of geometry
-    and motion into declarations.</p>
+    <h4>D2 · Cost-scaled movement triggers, not a one-time reframe</h4>
+    <p>The line moves by the plan's trigger table: blockedness for vocabulary, consumer counts
+    for primitives and fences, instances for craft. Not by a single architectural migration of
+    geometry and motion into declarations.</p>
     <div class="procon">
       <div><h5>for</h5><ul>
         <li>Every migration lands with its consumer and its evidence attached</li>
-        <li>No speculative schema — the "another copy of the code" failure is structurally
-          avoided</li>
-        <li>Matches how <code>BEATS</code>/<code>SHOTS</code>/<code>FRAME</code> actually
-          happened</li>
+        <li>No speculative schema, so the "another copy of the code" failure cannot start</li>
+        <li>Matches how <code>BEATS</code>, <code>SHOTS</code>, and <code>FRAME</code> actually
+          happened, and matches the plan's promotion model exactly</li>
       </ul></div>
       <div><h5>against</h5><ul>
-        <li><b>Honest counter:</b> if the strategic aim is a deliberate leap — geometry as
-          declarations the way <code>SHOTS</code> did cameras — recurrence-gating is too slow and
-          this decision is miscast as process</li>
-        <li>The ledger must actually be counted, which today is manual</li>
+        <li>Honest counter: if the strategic aim is a deliberate leap, geometry as declarations
+          the way <code>SHOTS</code> did cameras, trigger-gating is too slow and this decision is
+          miscast as process</li>
+        <li>The triggers are unfireable without a count, and counting is manual today (R5)</li>
       </ul></div>
     </div>
   </div>
 
   <div class="card">
     <h4>D3 · Derived data is a first-class kind</h4>
-    <p>Named now, before a bake makes it the largest kind. Rule: never authored, always
+    <p>Named now, before a bake makes it the largest kind. The rule: never authored, always
     regenerable, deriving command named where the artifact lives.</p>
     <div class="procon">
       <div><h5>for</h5><ul>
         <li>The bake proposal slots in without re-litigating the boundary</li>
-        <li>Staleness is always checkable (recompute and compare)</li>
+        <li>Staleness is always checkable: recompute and compare</li>
       </ul></div>
       <div><h5>against</h5><ul>
-        <li>A third kind is more ontology to hold; the repo currently manages with conventions
-          per-artifact</li>
+        <li>A third kind is more ontology to hold; the repo currently manages with per-artifact
+          conventions</li>
       </ul></div>
     </div>
   </div>
 
   <div class="card">
     <h4>D4 · The kit is emitted, not replicated</h4>
-    <p>Fenced blocks become build products from one canonical source; the shipped artifact is
-    still one self-contained HTML (invariant 1 is a <em>delivery</em> constraint, satisfied by
-    emission).</p>
+    <p>Fenced blocks become build products from one canonical source. The shipped artifact is
+    still one self-contained HTML file; invariant 1 is a delivery constraint, and emission
+    satisfies it.</p>
     <div class="procon">
       <div><h5>for</h5><ul>
-        <li>Retires the 5,704-line parity tax and its whole police apparatus
-          (tool + bracket + hook + three-glob discipline)</li>
-        <li><code>check</code> and the kit read one source — the thirteen-findings class
-          <em>dissolves</em> instead of being bracketed</li>
+        <li>Retires the parity tax and its police apparatus: tool, bracket, hook, three-glob
+          discipline</li>
+        <li><code>check</code> and the kit read one source, so the thirteen-findings class
+          dissolves instead of being bracketed</li>
         <li>Comments survive: the canonical copy carries them once (constraint 5)</li>
       </ul></div>
       <div><h5>against</h5><ul>
-        <li>A compiler is a new load-bearing tool needing its own controls, red-first</li>
-        <li><code>git diff</code> on an example stops showing the whole artifact — reviewability
-          of the emitted file must be deliberately preserved</li>
-        <li>Migration touches every carrier; sequencing risk is real (see roadmap gate R1)</li>
+        <li>A compiler is a new load-bearing tool that needs its own controls, red first</li>
+        <li><code>git diff</code> on an example stops showing the whole artifact, so
+          reviewability of the emitted file must be deliberately preserved</li>
+        <li>The site's public bet says "the one scene file stays the source" and "diffs and
+          versions like source." Emission breaks source-equals-artifact as messaged, so this
+          decision includes site work, not just tooling work</li>
+        <li>Migration touches every carrier; sequencing risk is real (gate R1)</li>
       </ul></div>
     </div>
   </div>
 
   <div class="card">
     <h4>D5 · Close the open bags</h4>
-    <p><code>STYLE</code>/<code>CONFIG</code> gain a declared key registry: kit-read keys with
-    shapes and defaults, film-private keys explicitly marked. <code>check</code> warns on unknown
-    keys.</p>
+    <p><code>STYLE</code> and <code>CONFIG</code> gain a declared key registry: kit-read keys
+    with shapes and defaults, film-private keys explicitly marked. <code>check</code> warns on
+    unknown keys.</p>
     <div class="procon">
       <div><h5>for</h5><ul>
-        <li>A misspelled <code>exposure</code> stops rendering-at-default-and-looking-like-a-choice</li>
-        <li>Kit/film namespace collision (a real recorded hazard) becomes detectable</li>
-        <li>Kit-read keys no template declares (<code>flashWidth</code>, <code>cameraFloor</code>)
-          become reachable without reading kit source</li>
+        <li>A misspelled <code>exposure</code> stops rendering at the default and passing as a
+          choice</li>
+        <li>Kit/film name collision, a recorded hazard, becomes detectable</li>
+        <li>Kit-read keys no template declares (<code>flashWidth</code>,
+          <code>cameraFloor</code>) become reachable without reading kit source</li>
       </ul></div>
       <div><h5>against</h5><ul>
-        <li>The registry is a list that can drift from the code that reads the keys — it needs a
-          derivation or a control, or it is the six-entry-registry failure again</li>
+        <li>A registry can drift from the code that reads the keys. It needs a derivation or a
+          control, or it repeats the six-entry-registry failure</li>
       </ul></div>
     </div>
   </div>
 
   <div class="card">
     <h4>D6 · The extent fork</h4>
-    <p>Unresolved on purpose — see above. Recorded here so its absence from the decision list is
-    visible rather than silent.</p>
+    <p>Open, but not blank: the plan's recorded evidence (three of five hand-declared extents
+    wrong; ledger count 6) leans derive and measure. Recorded here so its absence from the
+    decision list is visible rather than silent.</p>
+  </div>
+
+  <div class="card">
+    <h4>D7 · The harness stays in the JS family</h4>
+    <p>Owner question, 2026-08-02: should the harness move off pure JavaScript, any language fair
+    game? Position: no. Stay JS-family under bun, decide TypeScript at the seams during the
+    emitter work, and admit other languages only behind derived-data boundaries.</p>
+    <div class="procon">
+      <div><h5>for staying</h5><ul>
+        <li>The scene is JS by necessity, and both harness jobs are JS-adjacent: driving a
+          browser through the window contract, and reading JS table literals out of scene
+          source</li>
+        <li>Every language boundary is a reimplementation boundary. The thirteen findings
+          happened with <code>check</code> and the kit in the same language; a second language
+          makes R2's shared-semantics fix impossible by construction</li>
+        <li>bun runs TypeScript natively, so types at the seams cost no build step. That is
+          schema-where-things-connect expressed in the harness's own language</li>
+      </ul></div>
+      <div><h5>against / where it bends</h5><ul>
+        <li>Types that restate runtime validators are another copy of the code; types and
+          validators need one home or they drift</li>
+        <li>The bake is a legitimate exception: simulation emits derived data, so its language
+          is invisible behind the artifact. Wasm has spec-pinned float semantics where JS
+          <code>Math.sin</code> is implementation-defined, which strengthens re-bake
+          reproducibility, a question VISION already flags</li>
+        <li>Python, Go, or Rust for the harness proper: rejected. Playwright exists there, but
+          every table read becomes a cross-language parse and the shared-semantics control
+          dies</li>
+      </ul></div>
+    </div>
   </div>
 </div>
 
@@ -514,44 +590,45 @@ consequence (derived data). Which they <em>are</em> is an authoring question the
   <div class="card">
     <h4>Now</h4>
     <ul class="tight">
-      <li>Nothing authored changes hands immediately: today's tables already satisfy the
+      <li>Nothing authored changes hands immediately. Today's tables already satisfy the
         invariant, and today's holes already have signatures.</li>
-      <li>The thirteen open <code>check</code> findings get a <em>strategy</em> instead of a
-        backlog: if D4 proceeds, the class dissolves; the comparison bracket (postmortem forward
-        item 5) is built only if D4 stalls. A trigger, not a preference.</li>
-      <li>The parity apparatus keeps running unchanged until R1's gate is green — no check is
-        relaxed in anticipation.</li>
+      <li>The thirteen open <code>check</code> findings get a strategy instead of a backlog: if
+        D4 proceeds, the class dissolves; the comparison bracket (postmortem forward item 5) gets
+        built only if D4 stalls. A trigger, not a preference.</li>
+      <li>The parity apparatus keeps running unchanged until R1's gate is green. No check relaxes
+        in anticipation.</li>
     </ul>
   </div>
   <div class="card">
     <h4>Longer term</h4>
     <ul class="tight">
-      <li>At bake time: a bake is derived data, arriving into a slot that already exists. No
+      <li>At bake time: a bake is derived data arriving into a slot that already exists. No
         boundary re-litigation.</li>
       <li>As <code>state</code> widens (<code>{t, baked}</code>, <code>{t, view}</code>): schema
-        at the seam again; the window contract stays thin and untouched.</li>
-      <li>At agent scale: the boundary is also the line between "checkable by machine, cheaply,
-        always" and "reviewable by judgment, per film" — and the ratio of films to reviewers only
-        grows. That is the real long-term argument for pushing recurring facts across the line.</li>
+        at the seam again. The window contract stays thin and untouched.</li>
+      <li>At agent scale: the boundary doubles as the line between checkable by machine, cheaply,
+        always, and reviewable by judgment, per film. The ratio of films to reviewers only grows.
+        Machine checks raise the floor; looking stays the method, which is also how the site
+        already frames the gate ("the lint can reject a scene; it can never approve one").</li>
     </ul>
   </div>
 </div>
 
-<h2>Roadmap — my read of how we get there</h2>
+<h2>Roadmap: how we get there, on my read</h2>
 <p class="quiet">Strangler-shaped, never big-bang. Every step keeps invariant 1 (one
-self-contained HTML that opens from disk) and both workflows green. Each phase carries its gate in
-the repo's own idiom; a phase without a red-first control does not ship.</p>
+self-contained HTML file that opens from disk) and both workflows green. Each phase carries its
+gate in the repo's own idiom; a phase without a red-first control does not ship.</p>
 
 <div class="phase">
   <div class="pnum">R0</div>
   <div class="pbody">
     <h4>Decide and record</h4>
-    <p>The session reaches (or explicitly defers) the boundary decision and the extent fork;
-    the outcome lands in <a href="representation.md"><code>docs/representation.md</code></a>'s
-    decision section in the owner's words — the boundary as drawn, the cases it cannot hold, what
+    <p>The session reaches, or explicitly defers, the boundary decision and the extent fork. The
+    outcome lands in <a href="representation.md"><code>docs/representation.md</code></a>'s
+    decision section in the owner's words: the boundary as drawn, the cases it cannot hold, what
     was rejected and why, what would make it wrong.</p>
-    <p class="gate"><b>done if:</b> the decision section is non-empty, or the deferral is recorded
-    with its trigger. Owner's call throughout; this page is one input.</p>
+    <p class="gate"><b>done if:</b> the decision section is non-empty, or the deferral is
+    recorded with its trigger. Owner's call throughout; this page is one input.</p>
   </div>
 </div>
 
@@ -559,32 +636,35 @@ the repo's own idiom; a phase without a red-first control does not ship.</p>
   <div class="pnum">R1</div>
   <div class="pbody">
     <h4>Single-source the kit (the emitter)</h4>
-    <p>The fenced blocks move to one canonical home; a build step assembles scenes from it.
-    First gate is deliberately zero-behavior-change: the emitter must reproduce all nine current
-    carriers <b>byte-identically</b> before anything is allowed to differ. Then carriers flip from
-    hand-maintained to derived, and the parity check inverts — from "nine copies agree with each
-    other" to "every carrier matches emitter output" — before eventually becoming a bracket over
-    the emitter itself.</p>
-    <p class="gate"><b>done if:</b> emission reproduces every carrier byte-for-byte
-    (<code>--parity-only</code> green is then a corollary, not a discipline), and
-    <code>--parity-fix</code>'s job description shrinks to "regenerate".
-    <b>refuted if:</b> carriers turn out to need per-film divergence inside fences — that would
-    mean the fences were never really kit, and the whole cost map above is miscarved.</p>
+    <p>The fenced blocks move to one canonical home, and a build step assembles scenes from it.
+    The first gate is deliberately zero-behavior-change: the emitter must reproduce all nine
+    current carriers byte-identically before anything may differ. Then carriers flip from
+    hand-maintained to derived, and the parity check inverts, from "nine copies agree with each
+    other" to "every carrier matches emitter output," before eventually becoming a bracket over
+    the emitter itself. This phase also owns the messaging change: the site currently says "the
+    one scene file stays the source," and R1 is the point where that sentence stops being true as
+    written. Rewording the site is part of the phase, not an afterthought.</p>
+    <p class="gate"><b>done if:</b> emission reproduces every carrier byte-for-byte, making the
+    parity green a corollary instead of a discipline, and <code>--parity-fix</code>'s job shrinks
+    to "regenerate." <b>refuted if:</b> carriers need per-film divergence inside fences, which
+    would mean the fences were never really kit and the cost map above is miscarved.</p>
   </div>
 </div>
 
 <div class="phase">
   <div class="pnum">R2</div>
   <div class="pbody">
-    <h4>One source for semantics — the thirteen findings, resolved structurally</h4>
+    <h4>One source for semantics: the thirteen findings, resolved structurally</h4>
     <p>With the kit single-sourced, <code>build.js check</code> reads the same canonical tables
     and logic definitions the kit is built from, instead of reimplementing beat accumulation and
-    anchor resolution from memory of them. The open findings close as a class.</p>
-    <p class="gate"><b>done if:</b> the divergence cases from the review (empty <code>SHOTS</code>,
-    <code>subject: []</code>, prototype-named beats, the two-way framing-key mismatch) each
-    resolve identically in <code>check</code> and in a driven page.
+    anchor resolution from memory of them. The open findings close as a class. This is also the
+    natural moment to decide TypeScript for the harness and the canonical source (D7): the seams
+    are being written once anyway, and types there are cheap; types anywhere else wait.</p>
+    <p class="gate"><b>done if:</b> the divergence cases from the review (empty
+    <code>SHOTS</code>, <code>subject: []</code>, prototype-named beats, the two-way framing-key
+    mismatch) each resolve identically in <code>check</code> and in a driven page.
     <b>trigger:</b> if R1 stalls for more than a working week, build the comparison bracket from
-    forward item 5 instead — the class must not stay open on the strength of a plan.</p>
+    forward item 5 instead. The class must not stay open on the strength of a plan.</p>
   </div>
 </div>
 
@@ -592,14 +672,14 @@ the repo's own idiom; a phase without a red-first control does not ship.</p>
   <div class="pnum">R3</div>
   <div class="pbody">
     <h4>Close the open bags</h4>
-    <p><code>STYLE</code>/<code>CONFIG</code> key registry, derived from the kit's actual reads
-    (the enumeration in <code>breakdown.md</code> was already produced mechanically — that
-    derivation becomes the registry's source, not a hand-list). <code>check</code> warns on
-    unknown keys; film-private keys get an explicit marker.</p>
-    <p class="gate"><b>done if:</b> a misspelled kit key warns, naming the near-miss; every
-    shipped scene is warning-clean after annotation; the registry is derived or controlled, never
-    hand-held. <b>refuted if:</b> the registry cannot be derived from the reads — then it is
-    another copy of the code and D5 is wrong as specified.</p>
+    <p><code>STYLE</code> and <code>CONFIG</code> get a key registry derived from the kit's
+    actual reads. The enumeration in <code>breakdown.md</code> was already produced mechanically,
+    and that derivation becomes the registry's source, never a hand-list. <code>check</code>
+    warns on unknown keys; film-private keys get an explicit marker.</p>
+    <p class="gate"><b>done if:</b> a misspelled kit key warns and names the near-miss, every
+    shipped scene is warning-clean after annotation, and the registry is derived or controlled.
+    <b>refuted if:</b> the registry cannot be derived from the reads. Then it is another copy of
+    the code, and D5 is wrong as specified.</p>
   </div>
 </div>
 
@@ -607,27 +687,29 @@ the repo's own idiom; a phase without a red-first control does not ship.</p>
   <div class="pnum">R4</div>
   <div class="pbody">
     <h4>The extent fork, implemented</h4>
-    <p>Whichever way R0 decided: A wires <code>probe</code>'s measurement against declared
-    extents (inside its existing exception — read-only, authoring-time, no artifact pipeline);
-    B ships derivation helpers plus the hybrid rule for intent terms. Either way the layer's most
-    expensive gap finally has an instrument or stops being representable.</p>
-    <p class="gate"><b>done if:</b> the corpus fixture gains a deliberately-wrong extent and the
-    chosen mechanism goes red on it, before any shipped scene is touched (red before green, on
-    the corpus, as designed).</p>
+    <p>Whichever way R0 decided. A wires <code>probe</code>'s measurement against declared
+    extents, inside its existing exception: read-only, authoring-time, in no artifact pipeline.
+    B ships derivation helpers plus the hybrid rule for intent terms. The plan's recorded
+    evidence (three of five wrong when hand-declared) is the prior. Either way the layer's most
+    expensive gap finally has an instrument, or stops being representable.</p>
+    <p class="gate"><b>done if:</b> the corpus fixture gains a deliberately wrong extent and the
+    chosen mechanism goes red on it before any shipped scene is touched. Red before green, on
+    the corpus, as designed.</p>
   </div>
 </div>
 
 <div class="phase">
   <div class="pnum">R5</div>
   <div class="pbody">
-    <h4>Instrument the movement rule</h4>
-    <p>The pattern-ledger's counting becomes cheap enough to actually fire promotion triggers —
-    the flywheel from VISION.md, given its mechanism. <code>TRAVEL</code> is the first candidate
-    watched: the day a second film hand-rolls a travel closed-form, the count says so.</p>
-    <p class="gate"><b>done if:</b> a migration proposal arrives with its ledger count and its
-    named second consumer attached, without a human going looking. <b>refuted if:</b> two more
-    films ship and no fact recurs — then the residue really is all residue, and the line is
-    already in the right place.</p>
+    <h4>Instrument the movement triggers</h4>
+    <p>The plan concludes that every promotion trigger is unfireable without a count, and nobody
+    was counting. This phase makes the pattern-ledger's counting cheap enough that triggers
+    actually fire. <code>TRAVEL</code> is the first candidate watched: the day a second film
+    hand-rolls a travel closed-form, the count says so.</p>
+    <p class="gate"><b>done if:</b> a migration proposal arrives with its trigger evidence and
+    its named second consumer attached, without a human going looking. <b>refuted if:</b> two
+    more films ship and nothing recurs or blocks. Then the residue really is residue, and the
+    line already sits in the right place.</p>
   </div>
 </div>
 
@@ -635,39 +717,73 @@ the repo's own idiom; a phase without a red-first control does not ship.</p>
   <div class="pnum">R6</div>
   <div class="pbody">
     <h4>Longer term, VISION-gated</h4>
-    <p>The derived-data tier takes its first large occupant (the physics bake, under the
-    proposal's red lines); presentation-time separation makes speed declarative; <code>state</code>
-    widens by named parameters as drivers arrive. None of this is scheduled — it is what the
-    boundary was drawn to survive.</p>
+    <p>The derived-data tier takes its first large occupant: the physics bake, under the
+    proposal's red lines, possibly with wasm compute behind the data boundary (D7).
+    Presentation-time separation makes viewing speed declarative. <code>state</code> widens by
+    named parameters as drivers arrive. None of this is scheduled. It is what the boundary was
+    drawn to survive.</p>
   </div>
 </div>
 
-<h2>Wrong-if</h2>
+<h2>What this page does not deliver</h2>
 <ul class="tight">
-  <li>The kit/film cost split is wrong — if any authored film content is inside the parity
-    surface, "two separable programs" collapses back into one.</li>
-  <li>The decidability test cannot sort a full scene inventory — a test that admits everything or
-    nothing is not a boundary.</li>
-  <li>The shipped holes are unrepresentative — if the next film needs holes whose surroundings
-    are not decidable without calling them, D1's condition fails as a rule.</li>
-  <li>The movement rule is too slow for the actual strategic intent — if a deliberate one-time
-    reframe of geometry/motion is the aim, D2 has miscast a strategy question as process.</li>
-  <li>"Render data as code" is about the <em>input</em> side — the film's source material as the
-    data, the scene as its rendering — in which case this page bounds the wrong seam and should be
-    rewritten around input-to-scene.</li>
-  <li>R1's byte-identity gate proves unreachable for a boring mechanical reason (ordering,
-    whitespace) — then the gate softens to "semantically identical + smoke-green", and that
-    softening must be recorded as the first tolerance this project accepted on the artifact
-    path.</li>
+  <li><b>Artifact independence for film declarations.</b> VISION's stronger criterion, that a
+    declaration can be read, validated, or rendered independently of the artifact embedding it,
+    is not met by R0 through R6. R1 emits the kit; the film tables stay embedded. That is agenda
+    item 2, the source-artifact question, deferred rather than answered, and the site's
+    source-equals-artifact messaging is one reason to defer it deliberately.</li>
+  <li><b>Determinism magnitude.</b> VISION's other admitted-failing criterion, that a determinism
+    failure reports its size and location, is out of this roadmap's scope. Noting it here so the
+    roadmap does not read as covering both of VISION's open failures when it addresses only the
+    extent gap.</li>
+  <li><b>A representation syntax.</b> The settled table says no DSL, and the owner's 2026-07-30
+    position says JSON is not the right shape. This page draws the boundary; it does not pick a
+    shape for the data side.</li>
 </ul>
 
+<h2>Wrong-if</h2>
+<ul class="tight">
+  <li>The kit/film cost split fails at other carriers: the 0.4% declaration share is measured on
+    one 3D carrier, and a materially different composition elsewhere would reopen "two separable
+    programs."</li>
+  <li>The decidability test cannot sort a full scene inventory. A test that admits everything or
+    nothing is not a boundary.</li>
+  <li>The shipped holes are unrepresentative: if the next film needs holes whose surroundings are
+    not decidable without calling them, D1's condition fails as a rule.</li>
+  <li>The movement triggers are too slow for the actual strategic intent: if a deliberate
+    one-time reframe of geometry and motion is the aim, D2 has miscast a strategy question as
+    process.</li>
+  <li>"Render data as code" is about the input side, the film's source material as the data and
+    the scene as its rendering. The site weakens this reading by declaring "there is no input
+    format" as a design position, but the site settles nothing, so the wrong-if stays listed.</li>
+  <li>R1's byte-identity gate proves unreachable for a boring mechanical reason such as ordering
+    or whitespace. Then the gate becomes "semantically identical plus smoke-green," which VISION
+    already sanctions: where byte-identity's scope runs out, the claim survives and the
+    measurement changes. Record the scope-out; it is not a concession.</li>
+  <li>R2's shared-semantics approach proves impossible even within JS, because <code>check</code>
+    must stay fully static and cannot execute kit definitions in any form. Then D7's
+    same-language argument loses its main beneficiary, and the harness language question
+    reopens.</li>
+</ul>
+
+<div class="audit">
+  <b>Audit note.</b> One tension is surfaced here for the owner rather than resolved. The site
+  hedges the whole apparatus as "a bootstrap to personalize, until models can do all of this on
+  their own," while VISION treats the engine and its declarative layers as the durable
+  destination, and this page argues the boundary matters more over time. The site is downstream
+  and settles nothing, but the sentence is the owner's. Which framing is the strategic position
+  changes how hard this decision is worth pressing.
+</div>
+
 <hr style="border:none;border-top:1px solid var(--line);margin:3rem 0 1rem">
-<p class="prov">Branch <code>representation-exploration</code> · drafted 2026-08-02 · settles
-nothing — <a href="representation.md"><code>docs/representation.md</code></a> owns the decision.
-Figures: parity tax from <code>smoke.js --parity-only</code> (three globs); line ranges from the
-measured-evidence section of the brief; finding counts from
-<code>docs/postmortems/2026-08-02_session_audit-of-one-days-output.md</code>. Re-run rather than
-cite.</p>
+<p class="prov">Branch <code>representation-exploration</code> · drafted and audited 2026-08-02 ·
+settles nothing; <a href="representation.md"><code>docs/representation.md</code></a> owns the
+decision. Figures: parity tax from <code>smoke.js --parity-only</code> (three globs); fence
+composition classified over menagerie's seven fence regions (823 lines: 3 declaration literals,
+458 machinery, 341 comment-only, 21 blank); line ranges from the brief's measured-evidence
+section; finding counts from
+<code>docs/postmortems/2026-08-02_session_audit-of-one-days-output.md</code>; extent evidence and
+trigger table from <code>docs/plan.md</code>'s Promotion section. Re-run rather than cite.</p>
 
 </main>
 </body>

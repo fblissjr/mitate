@@ -164,6 +164,29 @@ reproducible copy — and check 8 compares the installed hook against that
 generator, because an installer only speaks when you run it and the whole point
 of a hook is that you never run it again.
 
+## Added later the same day, after this file was first written
+
+**`build.js check` (0.16.67)** — a static cross-reference over the declarative
+tables. No browser, no page load: it reads table literals out of source text and
+resolves every name a shot uses, every anchor against its beat, captions against
+the limit `smoke.js` owns. It is the first instrument here that validates a scene
+*before anything renders*.
+
+It shipped with the defect this file exists to catch — **a green verdict that
+could not be told from a run that read nothing** — and 0.16.68 closed it: a table
+it cannot parse now draws a warning naming it, and the verdict states either the
+tables covered or the tables not covered.
+
+**A CI step running it on every push** was added to `static.yml`, over every
+template, every example, and the corpus fixture. Until then `check` ran in CI only
+inside its own bracket, against synthetic fixtures — which proved the verb worked
+and proved nothing about the scenes that ship.
+
+That step is also **the first thing in CI that has ever read the defect corpus**.
+`gate.yml` copies `templates/` and `examples/` into its workspace and not
+`fixtures/`. Be exact about what it buys: `check` exits 0 on a warning and the
+corpus's one finding is a warning, so this is visibility in a log, not a gate.
+
 ## The defect corpus
 
 `fixtures/defect-corpus/` holds scenes kept **broken on purpose**, with

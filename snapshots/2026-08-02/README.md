@@ -3,8 +3,13 @@ last updated: 2026-08-02
 # Snapshot — 2026-08-02
 
 A point-in-time record of what mitate is, how it is built, and how it checks
-itself. Written at `main` = `3bb15b5` (0.16.60), with two PRs open at 0.16.61 and
-0.16.62.
+itself.
+
+**Begun at `main` = 0.16.60 with two PRs open; completed at `main` = 0.16.69 with
+everything merged.** It was revised three times during the day it describes,
+which is not a violation of the freeze below but the condition for it: a record
+dated 2026-08-02 has to be true at the END of 2026-08-02 or the date is a lie.
+**From here it does not change.** A later day gets its own directory.
 
 ## Read this first: a snapshot is not a source of truth
 

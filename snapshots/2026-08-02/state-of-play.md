@@ -9,22 +9,25 @@ pointer or count written in the same sitting as the work.
 
 ## Position
 
-**This section was written twice on the same day, which is the point.** It first
-recorded two open PRs at 0.16.61 and 0.16.62 against a `main` at 0.16.60. Those
-landed within hours. What follows is the end-of-day state; the superseded
-paragraph is not preserved, because unlike a plan document this file has no
-readers who acted on the earlier version.
+**This section was written three times on one day, which is the point.** It first
+recorded two open PRs against a `main` at 0.16.60; then the merged state at
+0.16.63 with a day's work sitting unpushed; this is the third and final version.
+Superseded paragraphs are not preserved — unlike a plan document, this file has
+no readers who acted on an earlier one.
 
 | | |
 |---|---|
-| `main` | version **0.16.63**, both PRs merged |
+| `main` | version **0.16.69**, everything merged and pushed, both workflows green |
 | open PRs | **none** |
-| deleted | `phase-r-determinism-trio` and `r5-state-seam`, local and on `origin`, both fully merged first |
-| branch with no PR | `postmortem-what-caught-defects` — docs only, still unmerged, conflicts with nothing |
-| local work not yet pushed | `drift-2026-08-02` (two corrections), `snapshot-2026-08-02` (this directory) |
+| unpushed work | **none** |
+| branches deleted | `phase-r-determinism-trio`, `r5-state-seam`, `drift-2026-08-02`, `snapshot-2026-08-02`, `postmortem-what-caught-defects` — all merged first, local and on `origin` |
 
 Branch cleanup covered `origin`. Any other push target a working copy is
 configured with is out of scope for this record and is handled separately.
+
+**Everything below this line describes the day as it happened** and is left in
+its original tense. The merge hazard, the corrections, the audit: all of it is
+what the record is for.
 
 ## The merge, and what it costs
 
@@ -142,8 +145,9 @@ both **design sessions rather than tasks**:
 
 **NaN has no policy, and the kit has become a DSL** (`docs/working-plan.md`,
 owner-raised). Three recorded instances where NaN made one check confidently
-wrong and another silently all-clear. The DSL half has a home in R5.2, unstarted —
-and R5.2 is the prerequisite this turns on, because a policy written against an
+wrong and another silently all-clear. The DSL half had a home in R5.2, **which
+shipped later the same day (0.16.65)** — and R5.2 was the prerequisite this turns
+on, because a policy written against an
 unenumerated language covers only what someone remembered.
 
 **When does a pattern need its provenance, and when is that noise?**
@@ -223,29 +227,38 @@ most consequential is `plan.md`'s Phase 6 entry — the seam moved that gate fro
 one, and the plan did not say so. Corrected without claiming the gate is met,
 because only a spike can measure that.
 
-## Next work, in order
+## Next work, in order — as it stood at the close of 2026-08-02
 
-1. Land `drift-2026-08-02` and this snapshot, then
-   `postmortem-what-caught-defects` — which is where the day's distilled finding
-   lives and which `main` still cannot see.
-2. **R5.2, `references/breakdown.md`** — the prerequisite the NaN question turns
-   on.
-3. The corpus debt: `bracket-corpus.js`.
-4. `hide(obj,u)` and `subjectFromObject` — triggers verified as still firing, but
-   each is its own change with its own red. Explicitly **not** a bundle.
+Everything the earlier versions of this section listed as next got done. What
+remains:
 
-## Housekeeping surfaced on 2026-08-02, none of it filed anywhere live
+1. **The representation design session.** `docs/representation.md` is its brief
+   and the place its decision goes, written before the session on purpose.
+   `build.js check`'s result is a real input: silent on all eight shipped scenes,
+   one finding on the fixture built to be catchable — weak vindication for the
+   compile-step case, and the brief says so rather than letting it read as proof.
+2. **A code review of 0.16.67-0.16.69.** 475 lines written by a delegated agent,
+   whose claims and riskiest mechanism were audited but whose implementation was
+   not read.
+3. **`bracket-corpus.js`.** The corpus is now *read* in CI by the declarative
+   cross-reference, which is the first thing that ever has — but `check` exits 0
+   on a warning, so that is visibility, not a gate. Asserting the expected verdict
+   remains the real fix and remains unbuilt.
+4. **The yield table verified against diffs**, which the filed question demands
+   and which no pass has yet done.
+5. **`motion` off the encoder**, the one non-export use of ffmpeg left.
 
-Recorded in [`history.md`](history.md) with evidence; listed here because each is
-small, actionable and currently owned by nobody:
+## What shipped after this file was first written
 
-- `CHANGELOG.md` carries an `## unreleased` heading stranded mid-file, above a
-  released version, describing shipped work. Nothing checks heading order.
-- Two of the six working days have no session log, and they are the first two.
-- A backticked pointer in the earliest log does not resolve; check 3 excludes
-  backticked prose by design.
-- The 2026-07-30 log's opening summary contradicts its own body.
-- A "four months" duration claim ships inside `smoke.js` in a repo eight days
-  old.
-- A postmortem forward item points at a threshold that has since moved the other
-  way for a good reason recorded only in the code.
+| version | |
+|---|---|
+| 0.16.64 | `--parity-only` reports the tax it measures; the fence list stops having two copies |
+| 0.16.65 | **R5.2** — the declarative layer enumerated |
+| 0.16.66 | an unmeasured duration, off by ~17x |
+| 0.16.67 | **R5.3** — `build.js check` |
+| 0.16.68 | `check` reported ok on a table it could not read, plus the four claims describing its coverage |
+| 0.16.69 | the same duration, in the second shipped file carrying it |
+
+Plus `VISION.md` rewritten whole and named the repo's most important document, a
+postmortem on auditing a day's output, and a CI step running the declarative
+cross-reference on every push.

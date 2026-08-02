@@ -989,8 +989,18 @@ bucket (e).
   wording is part of the work. *Gate:* the emitter reproduces every carrier
   byte-for-byte, behind a bracket recorded red before green. *Refuted if:*
   carriers need per-film divergence inside fences — then the fences were never
-  kit and the track is miscarved. Until this gate is green, the parity
-  apparatus runs unchanged; no check relaxes in anticipation.
+  kit and the track is miscarved.
+  **MET 2026-08-02** (0.17.0, `ae9a977`): the store is
+  `plugin/skills/mitate/templates/fences/<NAME>.fence.txt`; the rewritten
+  `bracket-parity.js` was recorded red against the pre-store check and green
+  on every arm after (runs cited in the 0.17.0 changelog entry); the store
+  was extracted byte-identically from the carriers as they stood, and a full
+  `--parity-fix` over all of them reported nothing to do. Parity now compares
+  each carrier against the store, `--from` is removed with its reason, and
+  the wording obligations landed in the same release (site, SKILL.md,
+  glossary, instruments, invariant 2). Independently re-verified at stamp
+  time: selfcheck, parity-against-store, the full bracket, and the spike,
+  each exit 0.
 - **REP2 — one source for semantics.** `build.js check` reads the canonical
   definitions the kit is built from instead of reimplementing beat
   accumulation and anchor resolution; the open reimplementation-divergence
@@ -998,9 +1008,10 @@ bucket (e).
   decided here, where the seams are written anyway. *Gate:* the review's
   divergence cases (a missing `size`, empty `SHOTS`, `subject: []`,
   prototype-named beats) resolve identically in `check` and in a driven page.
-  *Standing trigger:* if REP1 stalls more than a working week, build the
-  model-comparison bracket (2026-08-02 postmortem, forward item 5) instead —
-  the class must not stay open on the strength of a plan.
+  *The stall trigger is retired unfired:* REP1 met the same day it was
+  adopted, so the model-comparison bracket (2026-08-02 postmortem, forward
+  item 5) is permanently superseded by the structural path — recorded here
+  because that forward item points at this decision.
 - **REP3 — close the open bags.** `STYLE`/`CONFIG` gain a key registry
   **derived from the kit's actual reads** (the mechanical enumeration behind
   `references/breakdown.md` becomes its source); `check` warns on unknown

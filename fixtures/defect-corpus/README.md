@@ -1,4 +1,4 @@
-last updated: 2026-08-01
+last updated: 2026-08-02
 
 # The defect corpus — apparatus, not an example
 
@@ -99,14 +99,24 @@ when the fences were brought current, which can move both framings and numbers.
 |---|---|---|---|---|
 | 8 | `endcap` — a beat in which no character moves | `motion` 0.94 against peak 5.75 | **1.05 against peak 6.79** (`orbit`), median 2.57 | **survives**; still the weakest beat by a wide margin, and both numbers moved |
 | 11 | `SUBJECTS.walker` declares `w:2.8` | measured 3.62 | **3.12 @ t=5, 3.30 @ t=20, 5.76 @ t=45** (fallen) | **survives**; declared extent is under the real one at every sampled moment. The prototype's 3.62 does **not** reproduce — the figure moved |
+| 10b | five shots are the identical card | squint strip, by eye | **four** shots share a byte-identical framing — `SHOTS[2,6,9,11]`, all `walker` / `FSA` / angle 26 / elev 7 | **survives, and the count moved.** The fifth (`fall`) differs by `elev` alone, which the eye reads as the same card and a table comparison does not. The rung half of the row — 15 of 22 at `FSA` — is untouched by this and remains UNVERIFIED |
 | — | beat map: 17 beats, 60.0s | 17 beats, 60.0s | **unchanged**, confirmed by `motion` | durations carried over, so timestamps below are still addressed correctly |
 
-Re-run those two with:
+Re-run those three with:
 
 ```bash
 bun run plugin/skills/mitate/templates/build.js motion fixtures/defect-corpus/after-hours.html 12
 bun run plugin/skills/mitate/templates/build.js probe fixtures/defect-corpus/after-hours.html 20 'bb(walker.root)'
+bun run plugin/skills/mitate/templates/build.js check fixtures/defect-corpus/after-hours.html
 ```
+
+**`check` is also this file's cheapest standing use, and its report is worth
+reading as a boundary.** It runs in milliseconds with no browser, and on this
+scene it finds exactly one thing: 10b's repeated framing. Every other defect
+below needs pixels, geometry or a clock. That is not a gap in the checker — it is
+the honest shape of what a declarative cross-reference can reach, and it is why
+row 11's declared-versus-real extent is the row `check` names and does not
+measure.
 
 **NOT yet re-measured against this build — carried from the prototype and
 therefore UNVERIFIED here.** Do not cite these numbers as properties of this
@@ -126,7 +136,6 @@ to serve.
 | 7 | the chase has no pursuit — gap constant within ±0.4 from 47.5s | AABB separation trace |
 | 9 | paws render as hard black rectangles | self-shadowed by the leg |
 | 10 | ~4 of 9 act-one beats read unaided vs 7 of 8 act-two | `nocap` sheet |
-| 10b | 15 of 22 shots are `FSA`; five are the identical card | squint strip |
 
 ## The finding that justifies the whole directory
 

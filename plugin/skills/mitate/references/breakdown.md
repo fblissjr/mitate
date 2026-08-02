@@ -16,6 +16,13 @@ the honest answer is usually *nothing*.
 > kit-versus-film split below is known rather than guessed. The validation column
 > was checked against the actual `throw` sites.
 >
+> **Amended the same day**, by the work this file specified: `build.js check`
+> shipped in 0.16.67 and closes part of the validation column below, so those
+> rows now say so. Building it also found two `SHOTS` fields this enumeration had
+> missed — `anchor` and `anchorX`, both read by the solver and both used by
+> shipped examples — which is the ordinary result of writing code against a spec
+> rather than reading one.
+>
 > **Not audited:** whether each documented semantic is *correct* — this file
 > records what the code does, and a wrong-but-consistent semantic would survive
 > it. Field descriptions are copied from the templates' own comments where those
@@ -43,7 +50,11 @@ Two things are derived and must never be authored: `BEAT{}` (each beat's absolut
 `t0`/`t1`, accumulated from `BEATS`) and `TOTAL` (their sum, published as
 `window.DURATION`). Because duration is derived, a declared-versus-actual
 mismatch is impossible by construction — the one place in this layer where that
-is true.
+is true. **So "check that `BEATS` sums to `DURATION`" is not a check that can
+exist**, and a plan that listed it was asking for a control over a subtraction
+with one operand. `build.js check` recomputes the accumulation anyway, because it
+needs the spans to resolve every anchor, and validates what a sum cannot: that no
+beat is declared twice and that every `dur` is a positive number.
 
 ---
 
@@ -69,8 +80,11 @@ absolutely — *nothing else in the file may contain a literal timestamp* — an
 everything addresses beats by name through `ramp`/`pulse`/`beatAt`.
 
 **Validated:** `beat(name)` throws on an unknown name, in all three templates.
-**Not validated:** nothing checks that `cap` fits the frame at the documented
-reading speed *before* rendering; `smoke.js` checks it afterwards, per-run.
+`build.js check` reads reading speed against the same limit `smoke.js` owns,
+before a frame renders, and rejects a duplicated or non-positive `dur`.
+**Not validated:** whether the caption is legible at the size it will actually be
+viewed — a different question from whether it fits, and `instruments.md` records
+it as having no instrument at all.
 
 ## `STYLE` — the look
 
@@ -117,7 +131,10 @@ misspelled `exposure` renders at the default and looks like an authoring choice.
 | `flashWidth` | 2D and character templates | `.25` (per-flash `w` overrides) |
 | `cameraFloor` | character template only | off. Opt-in, world units — clamps the camera's `y` |
 
-**Validated: nothing**, same as `STYLE`.
+**Validated: one key.** `build.js check` resolves each `flashes[].beat` against
+`BEATS` — the only exercise that resolver gets, since no shipped scene declares a
+flash. Everything else here is unvalidated, same as `STYLE`: a misspelled
+`capFade` still renders at the default and reads as a choice.
 
 ## `FRAME` — the one declared reference frame
 
@@ -135,8 +152,10 @@ ladder against frame height, an overflow check against a hardcoded width — whi
 disagreed the moment a window was not 16:9.
 
 **Validated:** `smoke.js` reads `FRAME.aspect` and fails a scene whose contents
-change at a different window shape (framing invariance). **Not validated:**
-whether `px` and `aspect` agree with each other.
+change at a different window shape (framing invariance). `build.js check` fails a
+scene whose `px` and `aspect` disagree — the recorder would otherwise render at a
+shape the scene was never composed for. **Not validated:** whether either is the
+frame the film wanted.
 
 ## `SUBJECTS` — what a camera can frame
 
@@ -156,12 +175,17 @@ Craft note from the template: track a subject's **travel**, not its jumps — le
 vertical action out of `pos` so it moves in the frame instead of being cancelled
 by the camera.
 
-**Validated:** an unknown subject name throws. **Not validated — and this is the
+**Validated:** an unknown subject name throws; `build.js check` resolves every
+name a shot uses without loading the page. **Not validated — and this is the
 layer's most expensive gap:** nothing compares `h`/`w`/`d` against the geometry
 they claim to describe. A declared extent that is wrong produces a shot framed
 around a box that does not match the object, and it reads as a composition
 problem rather than a data error. This is a counted, recurring defect class, not
-a hypothetical.
+a hypothetical. It is also the one item on `check`'s work-list that `check` does
+**not** do: measuring geometry means naming scene objects, which is `build.js
+probe`'s admitted exception to the prime directive and not a second command's to
+take. The instrument that exists is `probe`; what is missing is the comparison
+between what it reports and what `SUBJECTS` declares.
 
 ## `SHOTS` — the shot list
 
@@ -181,6 +205,8 @@ const SHOTS = [
 | `fov` | this shot's lens, default `STYLE.lens` |
 | `size2` / `angle2` | optional end values — a push/pull or an orbit eased across the shot |
 | `focus` | subject the depth-of-field plane sits on, default the shot's subject |
+| `anchor` | overrides the rung's vertical anchor `a` outright. The remedy for a union box, which has no waist for `MS` to aim at |
+| `anchorX` | horizontal aim, as a fraction of the box width along camera-right. Default `0` |
 | `cut` | how the shot **enters**: `'hard'` (default), `'whip'` (.16s snap), `'blend'` (.8s dolly-morph) |
 | `match` | `true` = must enter with the same framing vocabulary as the previous shot |
 
@@ -193,9 +219,14 @@ and `anchor` all equal the previous shot's. An unknown `size` throws.
 **Validated lazily:** `subject` and `focus` throw on an unknown name — but only
 on a frame where that shot is active, so a typo in a shot nobody seeks to is
 found by a viewer, not by loading.
-**Not validated:** that `at`'s fraction lies within `0..1`; that shots are in
-ascending time order; that a union shot uses a wide enough rung to contain the
-box it just built.
+**Validated before the page loads, by `build.js check`:** every one of the three
+this section used to list as unchecked — `at`'s fraction inside `0..1`, shots in
+ascending time order, and a union on a rung whose anchor is a body landmark. The
+last is a warning rather than an error, and narrowed: a union that supplies
+`anchor` explicitly has supplied the landmark the box lacks, which is what a
+shipped two-shot does deliberately. `check` also resolves the names the two rows
+above leave to load time and to luck, and flags three or more shots that share
+one framing.
 
 ## `SIZES` — the shot-size ladder
 
@@ -216,7 +247,9 @@ frame has no cinematography to solve.** Values interpolate linearly between
 adjacent keys, with `CONFIG.sway` noise added. World space is 90 units tall, `y`
 down, origin centre, contained on both axes against `FRAME.aspect`.
 
-**Validated:** the beat name, via `beatAt`. **Not validated:** anything else.
+**Validated:** the beat name, via `beatAt`, and again by `build.js check` before
+the page loads, along with `at` inside `0..1`. **Not validated:** anything else —
+`x`, `y` and `zoom` have no reachable ground truth without rendering.
 
 ## The character proportion vector
 
@@ -258,9 +291,16 @@ bags with no schema at all — `STYLE` and `CONFIG`. The rest sit between.
 **Validation clusters where a mistake is unrepresentable, not where it is
 expensive.** Unknown names throw because a lookup fails; the checks that would
 catch an authoring error which *is* representable — an extent that does not match
-its geometry, an anchor outside its beat, a caption that will not fit — do not
-exist. Every one of those is checkable from the tables alone, before a frame
-renders.
+its geometry, an anchor outside its beat, a caption that will not fit — did not
+exist. Two of those three now do: `build.js check` (0.16.67) is that reading of
+this section, built from it. The third is still open and is the expensive one,
+because it is the only item here that cannot be decided from the tables at all —
+it needs the geometry, and reading geometry is `probe`'s exception.
+
+**Which is the sharper form of the claim above.** "Decidable from the tables
+alone" was the right test, and applying it separates the layer's gaps into two
+kinds that look identical in this file: the ones a text pass closes, and the one
+that needs the scene to be running. Only the first kind was ever cheap.
 
 **Kit-read and film-private are indistinguishable in the source.** A key the kit
 consumes and a key one film invented look identical in `STYLE`. Nothing marks the

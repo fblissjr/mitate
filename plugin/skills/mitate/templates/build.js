@@ -15,10 +15,12 @@
 //   bun run build.js aspect <scene.html> [t]      -> <name>.aspect.jpg, one moment at four window shapes
 //   bun run build.js strip  <scene.html> <t0> <t1> [fps] -> <name>.strip.jpg, consecutive frames
 //   bun run build.js motion <scene.html> [fps]     -> per-beat motion profile + dead air, no files kept
+//   bun run build.js check  <scene.html>           -> cross-reference the declarative tables, no browser, no frames
 //
 // Prereqs: bun add three@0.185.1 playwright-core@1.61.1. That is the whole list
 // for BUILDING AND REVIEWING a scene — `vendor`, `bundle`, `frames`, `probe`,
 // `poster`, `sheet`, `aspect` and `strip` need no external binary at all.
+// `check` needs neither: it is string work over the scene file.
 // EXPORT needs encoders: `video`/`all` need ffmpeg, `avif` needs avifenc (macOS:
 // brew install libavif), `loop` needs img2webp (brew install webp). `motion`
 // still needs ffmpeg pending a recalibration of its scale.
@@ -894,6 +896,341 @@ function motion(scene, fps = 12) {
   }
 }
 
+/* ---- check: the declarative layer, cross-referenced ------------------------
+ *
+ * references/breakdown.md enumerates the tables a scene declares — BEATS,
+ * SHOTS, SUBJECTS, SIZES, CONFIG, FRAME, KEYS — and its "what validates it"
+ * column is mostly empty. Validation clusters where a mistake is
+ * UNREPRESENTABLE (an unknown name fails a lookup, so it throws) rather than
+ * where it is expensive. This closes the other half: errors that are perfectly
+ * representable, decidable from the tables alone, and today found by a viewer.
+ *
+ * IT DOES NOT DRIVE THE SCENE, which is why it is not a second exception beside
+ * `probe`. The prime directive binds tooling that DRIVES a scene to the window
+ * contract; this launches no browser, calls no `seekTo`, and reads no runtime
+ * state. It reads source text, and only for the KIT-OWNED table names above —
+ * never a film's own identifiers, which is the property that keeps every other
+ * tool swappable across scenes. Same category as `smoke.js --parity-only`
+ * (string work over files, no render) and as loop()'s CONFIG.sway warning.
+ *
+ * WHY STATIC RATHER THAN THROUGH THE CONTRACT, since the contract is this
+ * repo's default answer. `window.SHOTS` is deliberately a projection —
+ * `{t, cutEnd}`, for smoke's transition sampling — and SUBJECTS, SIZES and the
+ * authored shot fields are on no window at all. Widening the contract to carry
+ * them is a real option and a separate change across every carrier. It would
+ * also buy less than it costs here: a shot naming a beat that does not exist
+ * throws inside `beatAt` at load, so the scene never reaches `sceneReady` and a
+ * contract reader has nothing to inspect. These are the errors worth having
+ * BEFORE the page can load at all.
+ *
+ * WHAT IT CANNOT SEE lives with the other instrument limits in
+ * references/instruments.md. The short version: it cannot compare a declared
+ * extent against the geometry that extent claims to describe — the layer's most
+ * expensive gap by breakdown.md's account — because measuring geometry means
+ * naming scene objects, and that is `probe`'s admitted exception, not this
+ * command's to take.
+ */
+
+// Two severities. An ERROR is a statement the tables cannot both satisfy — a
+// name that resolves to nothing, an anchor outside its own beat — and it sets
+// the exit code. A WARN is a composition judgement the tables merely make
+// visible; those stay advisory for the same reason smoke's exposure lint does,
+// because a lint that fires on a defensible choice is one people stop reading.
+const CHECK_ERR = 'ERROR', CHECK_WARN = 'warn';
+
+// Three or more shots sharing one framing. Bounded on BOTH sides by the shipped
+// corpus rather than chosen: `bracket-commands.js` covers the firing side, and
+// two shipped examples sit at two identical framings apiece — gearbox and
+// menagerie each return to their establishing shot, which is ordinary grammar
+// and must not fire. The defect corpus's `after-hours.html` sits at four.
+const IDENTICAL_FRAMING_WARN = 3;
+// FRAME.px must describe FRAME.aspect. A tolerance rather than equality because
+// aspect is written as a ratio (16/9) and px as integers, so exactness is not
+// available at every frame shape; 0.5% is tighter than any deliberate choice
+// and looser than rounding.
+const FRAME_ASPECT_TOL = 0.005;
+
+// Read one TOP-LEVEL declaration's initialiser out of scene source text.
+// Anchored at the start of a line, so a same-named local inside a function is
+// not mistaken for the table. Returns null when the scene simply does not
+// declare it — a 2D scene has no SHOTS — which the caller separates from the
+// case where it is declared and could not be read.
+const TABLE_OPEN = { '[': ']', '{': '}', '(': ')' };
+function tableSource(text, name) {
+  const m = new RegExp('^[ \\t]*(?:const|let|var)[ \\t]+' + name + '[ \\t]*=', 'm').exec(text);
+  if (!m) return null;
+  let i = m.index + m[0].length;
+  // Skip whitespace AND comments. `const CONFIG = /* … */ {` is legal, and a
+  // whitespace-only skip reads it as "no such table" — a silent miss, which is
+  // the one outcome a checker must never produce.
+  for (;;) {
+    while (i < text.length && /\s/.test(text[i])) i++;
+    if (text[i] === '/' && text[i + 1] === '/') { while (i < text.length && text[i] !== '\n') i++; continue; }
+    if (text[i] === '/' && text[i + 1] === '*') { const e = text.indexOf('*/', i + 2); if (e < 0) return null; i = e + 2; continue; }
+    break;
+  }
+  if (!TABLE_OPEN[text[i]]) return null;                 // `const STYLE = BIBLES.workshop;`
+  const stack = [];
+  for (const from = i; i < text.length; i++) {
+    const c = text[i];
+    if (c === '/' && text[i + 1] === '/') { while (i < text.length && text[i] !== '\n') i++; continue; }
+    if (c === '/' && text[i + 1] === '*') { const e = text.indexOf('*/', i + 2); if (e < 0) return null; i = e + 1; continue; }
+    if (c === '"' || c === "'" || c === '`') {
+      const q = c;
+      for (i++; i < text.length; i++) { if (text[i] === '\\') { i++; continue; } if (text[i] === q) break; }
+      continue;
+    }
+    if (TABLE_OPEN[c]) { stack.push(TABLE_OPEN[c]); continue; }
+    if (c === ']' || c === '}' || c === ')') {
+      if (stack.pop() !== c) return null;
+      if (!stack.length) return text.slice(from, i + 1);
+    }
+  }
+  return null;
+}
+
+// A stand-in for anything the table names that this process cannot know: a
+// scene constant, a rig, a helper. It absorbs property access, calls and
+// arithmetic and collapses to NaN, so `h: bear.height*SCALE+.3` yields NaN
+// rather than throwing and taking the whole table with it. The shipped corpus
+// needs this — several SUBJECTS entries size themselves from geometry built at
+// runtime — and without it those scenes would report "unreadable" and the
+// checks that only need the KEYS of that table would be lost with it.
+const UNRESOLVED = new Proxy(function () {}, {
+  get(t, k) { return k === Symbol.toPrimitive || k === 'valueOf' ? () => NaN : UNRESOLVED; },
+  apply() { return UNRESOLVED; },
+  construct() { return UNRESOLVED; },
+  has() { return true; },
+});
+// Deliberately tiny: enough for the arithmetic and JSON a table legitimately
+// contains, and nothing that touches the filesystem, the network or a process.
+// This evaluates text out of a file the caller named, so the surface it offers
+// that text is the whole safety argument.
+const TABLE_GLOBALS = { Math, JSON, Number, String, Array, Object, Boolean, isNaN, parseFloat, parseInt };
+function tableValue(text, name) {
+  const src = tableSource(text, name);
+  if (src === null) return { state: 'absent' };
+  const scope = new Proxy({}, {
+    has: () => true,
+    get(t, k) {
+      if (k === Symbol.unscopables) return undefined;
+      return k in TABLE_GLOBALS ? TABLE_GLOBALS[k] : UNRESOLVED;
+    },
+  });
+  try {
+    return { state: 'ok', value: new Function('__s', `with(__s){return (${src});}`)(scope) };
+  } catch (e) {
+    return { state: 'unreadable', why: String(e.message).split('\n')[0] };
+  }
+}
+
+// The caption thresholds have ONE home and it is smoke.js, which already runs
+// this lint per render. Read out of its source rather than restated here: a
+// second copy of the number is the drift docs/source-of-truth.md forbids, and
+// two instruments must not be able to disagree about the same beat. It throws
+// when the constant is renamed, because a silent fallback would let the copies
+// diverge — which is the entire failure being avoided.
+function smokeConst(name) {
+  const p = path.join(__dirname, 'smoke.js');
+  let src;
+  try { src = fs.readFileSync(p, 'utf8'); } catch (e) {
+    throw new Error(`check: cannot read ${p}, which owns the caption thresholds. `
+      + `Copy smoke.js beside build.js — the setup step copies both.`);
+  }
+  const m = new RegExp('^const ' + name + '\\s*=\\s*([0-9.]+)\\s*;', 'm').exec(src);
+  if (!m) {
+    throw new Error(`check: smoke.js no longer declares ${name}. That constant is its one home; `
+      + `repoint this reader at the new name rather than restating the number here.`);
+  }
+  return Number(m[1]);
+}
+
+function check(scene) {
+  const text = fs.readFileSync(scene, 'utf8');
+  const found = {}, out = [];
+  const add = (sev, msg) => out.push([sev, msg]);
+  for (const name of ['BEATS', 'SHOTS', 'SUBJECTS', 'SIZES', 'CONFIG', 'FRAME', 'KEYS']) {
+    const r = tableValue(text, name);
+    found[name] = r.state === 'ok' ? r.value : null;
+    // Declared and unreadable is a hole in THIS tool, not a verdict on the
+    // scene, and it is said out loud: an instrument that quietly checks less
+    // than it reports is the failure references/instruments.md exists to track.
+    if (r.state === 'unreadable') add(CHECK_WARN, `${name} is declared but could not be read here, so nothing below covers it — ${r.why}`);
+  }
+  const beats = Array.isArray(found.BEATS) ? found.BEATS : null;
+  if (!beats || !beats.length) {
+    throw new Error(`check: no BEATS table found in ${path.basename(scene)} — every mitate scene `
+      + `declares one, so either this is not a scene or the declaration is not top-level.`);
+  }
+
+  // BEAT spans, accumulated exactly as the kit accumulates them. TOTAL is
+  // derived here for the same reason it is derived in the scene: a declared
+  // duration and an actual one cannot disagree if only one of them exists.
+  const span = {}; let acc = 0;
+  for (const b of beats) {
+    if (typeof b.name !== 'string') { add(CHECK_ERR, `BEATS has an entry with no name`); continue; }
+    if (span[b.name]) add(CHECK_ERR, `BEATS declares "${b.name}" twice — every other table addresses beats by name, so the second is unreachable`);
+    const dur = typeof b.dur === 'number' && b.dur > 0 ? b.dur : NaN;
+    if (!Number.isFinite(dur)) add(CHECK_ERR, `BEATS "${b.name}" has dur ${JSON.stringify(b.dur)} — a beat is a positive number of seconds`);
+    span[b.name] = [acc, acc + (Number.isFinite(dur) ? dur : 0)];
+    acc += Number.isFinite(dur) ? dur : 0;
+  }
+  const TOTAL = acc;
+  const known = n => Object.prototype.hasOwnProperty.call(span, n);
+  // A beat name that resolves, and the absolute t an [beat, fraction] anchor
+  // addresses. `at` defaults to 0 in the kit's beatAt, so an omitted fraction
+  // is correct rather than missing — flagging it would condemn valid source.
+  const anchorAt = (bn, fr) => span[bn][0] + (fr === undefined ? 0 : fr) * (span[bn][1] - span[bn][0]);
+
+  const subjects = found.SUBJECTS && typeof found.SUBJECTS === 'object' ? Object.keys(found.SUBJECTS) : null;
+  const sizes = found.SIZES && typeof found.SIZES === 'object' ? found.SIZES : null;
+  // WIDE RUNGS, DERIVED, not listed. A rung's `a` is a vertical anchor ON the
+  // subject — a body landmark, which is what makes MS "waist-up". A union box
+  // has no waist, so the rungs that are meaningful for one are exactly those
+  // that aim at the box centre. Deriving it means an edit to the ladder cannot
+  // leave a hand-written list behind.
+  const wide = sizes ? new Set(Object.keys(sizes).filter(k => sizes[k] && Math.abs(sizes[k].a - 0.5) < 1e-9)) : null;
+  const shots = Array.isArray(found.SHOTS) ? found.SHOTS : null;
+  const framings = new Map();
+
+  if (shots) {
+    let prev = null;
+    shots.forEach((s, i) => {
+      const at = Array.isArray(s.at) ? s.at : null;
+      const bn = at ? at[0] : null;
+      const where = `SHOTS[${i}]` + (typeof bn === 'string' ? ` (${bn})` : '');
+      if (!at || typeof bn !== 'string') {
+        add(CHECK_ERR, `${where}: \`at\` must be [beatName, fraction] — got ${JSON.stringify(s.at)}`);
+      } else if (!known(bn)) {
+        add(CHECK_ERR, `${where}: anchored to beat "${bn}", which BEATS does not declare`);
+      } else {
+        const fr = at[1];
+        if (fr !== undefined && !(typeof fr === 'number' && fr >= 0 && fr <= 1)) {
+          // The anchor is a FRACTION of the beat. 1.4 is not "late in the
+          // beat", it is a shot that starts inside some later beat entirely —
+          // silently, because beatAt happily returns the number.
+          add(CHECK_ERR, `${where}: anchor fraction ${JSON.stringify(fr)} is outside 0..1, so the shot does not start inside its own beat`);
+        } else {
+          const t = anchorAt(bn, fr);
+          if (prev && t < prev.t) {
+            add(CHECK_ERR, `${where}: starts at t=${t.toFixed(2)}s, before ${prev.where} at t=${prev.t.toFixed(2)}s — `
+              + `a shot runs until the NEXT shot starts, so an out-of-order entry gives the earlier one a negative length`);
+          }
+          prev = { t, where };
+        }
+      }
+      const named = Array.isArray(s.subject) ? s.subject : [s.subject];
+      if (subjects) {
+        for (const n of named) {
+          if (typeof n !== 'string') { add(CHECK_ERR, `${where}: subject ${JSON.stringify(n)} is not a name`); continue; }
+          // The lookup that throws at RUNTIME, and only on a frame where this
+          // shot is live — so a typo in a shot nobody seeks to is found by a
+          // viewer today. Here it costs no frame.
+          if (!subjects.includes(n)) add(CHECK_ERR, `${where}: subject "${n}" is not in SUBJECTS (${subjects.join(', ')})`);
+        }
+        if (typeof s.focus === 'string' && !subjects.includes(s.focus)) {
+          add(CHECK_ERR, `${where}: focus "${s.focus}" is not in SUBJECTS (${subjects.join(', ')})`);
+        }
+      }
+      if (sizes) {
+        for (const k of ['size', 'size2']) {
+          if (typeof s[k] === 'string' && !sizes[s[k]]) {
+            add(CHECK_ERR, `${where}: ${k} "${s[k]}" is not a rung in SIZES (${Object.keys(sizes).join(' ')})`);
+          }
+        }
+        // NARROWED, and the narrowing is the point. The flat rule "a union
+        // takes wide rungs only" condemns a shipped two-shot in
+        // bear-and-bees.html that is deliberate and annotated as such — it asks
+        // for MS on a pair and supplies `anchor:.45`, aiming low at the face.
+        // An explicit anchor IS the landmark the union lacks, and the solver
+        // prefers it over the rung's `a`, so a shot that supplies one is not
+        // making the mistake this looks for.
+        if (Array.isArray(s.subject) && wide && typeof s.size === 'string' && sizes[s.size]
+            && !wide.has(s.size) && s.anchor === undefined) {
+          add(CHECK_WARN, `${where}: union of ${s.subject.length} subjects on rung ${s.size}, whose anchor `
+            + `${sizes[s.size].a} aims at a body landmark a union box does not have. Use a wide rung `
+            + `(${[...wide].join(' ')}) or set \`anchor\` explicitly.`);
+        }
+      }
+      const key = JSON.stringify([s.subject, s.size, s.size2, s.angle, s.angle2, s.elev, s.fov, s.anchor, s.anchorX]);
+      if (!framings.has(key)) framings.set(key, []);
+      framings.get(key).push(i);
+    });
+    for (const [key, idx] of framings) {
+      if (idx.length < IDENTICAL_FRAMING_WARN) continue;
+      const s = shots[idx[0]];
+      add(CHECK_WARN, `SHOTS[${idx.join(',')}]: ${idx.length} shots share one framing `
+        + `(subject ${JSON.stringify(s.subject)}, ${s.size}, angle ${s.angle || 0}) — `
+        + `distinct beats reading as the same card`);
+      void key;
+    }
+  }
+
+  // 2D keeps explicit keyframes where 3D has a solver. Same anchor grammar,
+  // spelled `{beat, at}` rather than `at:[beat, fraction]`.
+  if (Array.isArray(found.KEYS)) {
+    found.KEYS.forEach((k, i) => {
+      if (typeof k.beat !== 'string' || !known(k.beat)) {
+        add(CHECK_ERR, `KEYS[${i}]: anchored to beat ${JSON.stringify(k.beat)}, which BEATS does not declare`);
+      } else if (k.at !== undefined && !(typeof k.at === 'number' && k.at >= 0 && k.at <= 1)) {
+        add(CHECK_ERR, `KEYS[${i}] (${k.beat}): anchor fraction ${JSON.stringify(k.at)} is outside 0..1`);
+      }
+    });
+  }
+
+  const config = found.CONFIG && typeof found.CONFIG === 'object' ? found.CONFIG : {};
+  if (Array.isArray(config.flashes)) {
+    config.flashes.forEach((f, i) => {
+      if (typeof f.beat !== 'string' || !known(f.beat)) {
+        add(CHECK_ERR, `CONFIG.flashes[${i}]: anchored to beat ${JSON.stringify(f.beat)}, which BEATS does not declare`);
+      }
+    });
+  }
+
+  // Captions, against the reading speed smoke.js already owns. A caption is
+  // only fully legible between its fade-in and its fade-out, so the readable
+  // window is (dur - 2*capFade) and not the beat.
+  const cps = smokeConst('CPS_WARN_THRESHOLD');
+  const fade = typeof config.capFade === 'number' ? config.capFade : smokeConst('CAP_FADE_DEFAULT');
+  for (const b of beats) {
+    if (typeof b.cap !== 'string' || !b.cap) continue;
+    const rate = b.cap.length / Math.max((span[b.name] ? span[b.name][1] - span[b.name][0] : 0) - 2 * fade, 0.01);
+    if (rate > cps) add(CHECK_WARN, `beat "${b.name}": caption reads at ${rate.toFixed(1)} cps against a ${cps} cps limit — "${b.cap}"`);
+  }
+
+  // FRAME.px is what the recorder renders at; FRAME.aspect is what the scene
+  // composes against. breakdown.md lists their agreement as unvalidated, and it
+  // is the one thing in that table decidable without a frame.
+  const frame = found.FRAME;
+  if (frame && Array.isArray(frame.px) && typeof frame.aspect === 'number' && frame.px.length === 2
+      && frame.px.every(n => typeof n === 'number' && n > 0)) {
+    const r = frame.px[0] / frame.px[1];
+    if (Math.abs(r - frame.aspect) / frame.aspect > FRAME_ASPECT_TOL) {
+      add(CHECK_ERR, `FRAME.px ${frame.px.join('x')} is ${r.toFixed(4)}, but FRAME.aspect is ${frame.aspect.toFixed(4)} — `
+        + `the recorder would render at a shape the scene was not composed for`);
+    }
+  }
+
+  const errors = out.filter(([sev]) => sev === CHECK_ERR).length;
+  const warns = out.length - errors;
+  console.log(`check ${path.basename(scene)} — ${beats.length} beat(s) / ${TOTAL.toFixed(1)}s`
+    + (shots ? `, ${shots.length} shot(s)` : ', no SHOTS (2D)')
+    + (subjects ? `, ${subjects.length} subject(s)` : '')
+    + (Array.isArray(found.KEYS) ? `, ${found.KEYS.length} camera key(s)` : ''));
+  for (const [sev, msg] of out) console.log(`  ${sev.padEnd(5)} ${msg}`);
+  // Said on every run, green ones included: a clean report here is not a clean
+  // scene, and the gap is the expensive one. See references/instruments.md.
+  console.log(`\n  not checked here: whether a declared h/w/d matches the geometry it describes.`);
+  console.log(`  That needs the scene's own objects — \`build.js probe <scene> <t> 'bb(x)'\`.`);
+  if (errors) {
+    console.log(`\n${errors} error(s), ${warns} warning(s) — the tables disagree with each other, `
+      + `and no frame has to render for that to be true.`);
+    process.exitCode = 1;
+    return;
+  }
+  console.log(`\ncheck: ok — 0 errors, ${warns} warning(s)`);
+}
+
 /* probe — measure the scene's own geometry at one t, instead of inferring it.
  *
  * The defect class this exists for is the most-repeated in the project's
@@ -1024,7 +1361,7 @@ async function probe(scene, when, exprs) {
   }
 }
 
-const USAGE = 'usage: bun run build.js vendor|bundle|frames|video|all|avif|loop|poster|sheet|aspect|strip|motion|probe <scene.html> [fps|t|t0] [width|t1] [frac|fps]\n'
+const USAGE = 'usage: bun run build.js vendor|bundle|frames|video|all|avif|loop|poster|sheet|aspect|strip|motion|check|probe <scene.html> [fps|t|t0] [width|t1] [frac|fps]\n'
   + "       probe: bun run build.js probe <scene.html> <when> '<expr>' ['<expr>' ...]";
 // arg1/arg2/arg3 are deliberately neutral: their meaning is per-command (fps
 // for frames, t for poster, width for sheet, ...) and the old names (fpsArg,
@@ -1056,6 +1393,16 @@ else if (step === 'aspect') die(aspectSheet(target, Number(arg1 || 0), Number(ar
 else if (step === 'sheet') die(sheet(target, Number(arg1 || 480), arg2 === undefined ? 0.6 : Number(arg2), arg3 === 'nocap'));
 else if (step === 'strip') die(strip(target, Number(arg1), Number(arg2), Number(arg3 || 30)));
 else if (step === 'motion') motion(target, Number(arg1 || 12));
+// Synchronous and browserless, so it needs no encoder probe and no `die`. It
+// sets process.exitCode rather than calling process.exit, so the whole report
+// reaches the terminal before the code is read. The catch is `die`'s shape for
+// a sync verb, and it is here rather than nowhere because this command's entire
+// output is a report: answering "is this a scene?" with an interpreter stack
+// trace would be the one verb whose failure mode is harder to read than its
+// subject.
+else if (step === 'check') {
+  try { check(target); } catch (e) { console.error(String(e && e.message || e)); process.exit(1); }
+}
 // probe takes ALL remaining argv rather than the neutral arg1..arg3 slots: the
 // point is measuring several offsets at one t in one page load, and capping it
 // at three would send an author back to hand-written page.evaluate for the

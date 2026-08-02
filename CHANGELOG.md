@@ -7,6 +7,87 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.16.67
+
+### added
+
+**`build.js check` — the declarative tables cross-referenced against each other,
+before a frame renders or the page loads.** R5 item 3, and the first consumer of
+`references/breakdown.md`, which enumerated the layer and found its validation
+column mostly empty.
+
+It resolves every `subject`, `focus`, `size` and beat name a shot uses; rejects
+an `at` fraction outside `0..1`, shots out of time order, a `KEYS` or
+`CONFIG.flashes` entry naming a beat that does not exist, a duplicated beat, and
+a `FRAME.px` that does not describe `FRAME.aspect`. It warns on a union shot
+taking a rung whose anchor is a body landmark, on a caption above the reading
+speed `smoke.js` already owns, and on three or more shots sharing one framing.
+No browser, no encoder, no frames — string work over the scene source, so it runs
+on a scene too broken to load, which is exactly when a name error is cheapest to
+find. Today a mistyped subject throws only on a frame where that shot is live: a
+viewer finds it, not the toolchain.
+
+**It is not a second exception to the prime directive, and the distinction is
+the design.** That rule binds tooling which DRIVES a scene to the window
+contract; `check` drives nothing and reads only kit-owned table names, never a
+film's own identifiers. Going through the contract was considered and rejected on
+two grounds: `window.SHOTS` is deliberately a `{t, cutEnd}` projection and the
+authored fields are on no window at all, and a scene whose shot names a
+nonexistent beat throws inside `beatAt` at load — so it never reaches
+`sceneReady` and a contract reader would have nothing to inspect.
+
+**One work-list item was deliberately NOT built: declared-versus-measured
+extents.** Comparing a declared `h`/`w`/`d` against geometry means naming scene
+objects, which is `build.js probe`'s admitted exception. Extending it on the way
+past would have been the cheapest possible way to lose the rule. `check` prints
+that gap on every run, green ones included.
+
+**One work-list item turned out not to exist.** "`BEATS` sums to `DURATION`" is
+undecidable in the useful sense: `TOTAL` is *derived* from `BEATS`, so the two
+cannot disagree. `breakdown.md` had already said so and the plan had not caught
+up. What replaces it is the coherence that IS decidable — no duplicate beat name,
+every `dur` positive — plus `FRAME.px` against `FRAME.aspect`, which
+`breakdown.md` listed as unvalidated and is the same kind of fact.
+
+**Narrowed once, against a shipped film, and that is the finding worth keeping.**
+The rule as specified — "union shots use only wide rungs" — condemns
+`bear-and-bees.html`'s two-shot, which asks for `MS` on a pair deliberately and
+annotates itself as doing so. It supplies `anchor:.45`, and the solver prefers an
+explicit `anchor` over the rung's own, so that shot is not making the mistake.
+The check now fires only on a union that overrides nothing, and
+`bracket-commands.js` carries the anchored case as an arm that must stay quiet.
+Without it the first run of this verb would have reported a correct, shipped,
+commented shot as a defect.
+
+### changed
+
+- **`bracket-commands.js` gains a `check` row per property the verb decides**,
+  each mutated from a real shipped scene rather than hand-written, plus
+  `expect.absent` for the false-positive direction and `expect.build` for the one
+  arm whose fixture is the tool pair rather than a scene. Every arm was watched
+  go red with its own check neutralised; the union pair was additionally run
+  end-to-end through the harness with the narrowing removed, which reports FAIL
+  and exits 1. Its fixture builder refuses to write an unmutated copy, so an edit
+  to `noise-chart.html`'s tables breaks the controls loudly instead of leaving
+  arms that assert nothing.
+- **The caption threshold has one home and `check` reads it out of `smoke.js`**
+  rather than restating it, so the two instruments cannot disagree about the same
+  beat. Renaming the constant makes `check` refuse rather than fall back — which
+  is itself an arm.
+- **`references/instruments.md`** gains the `check` section: what it decides, at
+  which severity, and the three things it cannot see.
+- **`references/breakdown.md`** amended the same day it was written, by the work
+  it specified. Its validation column now records what `check` closed, and it
+  gained two `SHOTS` fields the enumeration had missed — `anchor` and `anchorX`,
+  both read by the solver and both used by shipped examples. Reading a spec does
+  not find those; writing code against it does.
+- **`SKILL.md`** routes to `check` at step 3, the moment the tables exist.
+- **`fixtures/defect-corpus/README.md`**: defect 10b moves out of the UNVERIFIED
+  table. `check` finds **four** shots sharing a byte-identical framing, not the
+  five the prototype's squint strip reported — the fifth differs by `elev` alone,
+  which the eye reads as the same card and a table comparison does not. The rung
+  half of that row is untouched and stays unverified.
+
 ## 0.16.66
 
 ### fixed

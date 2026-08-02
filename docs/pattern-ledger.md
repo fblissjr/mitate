@@ -185,3 +185,55 @@ Two consequences for the design pass, both empirical rather than speculative now
   the count in this file must not absorb those instances either: they come from
   scenes outside this corpus, so folding them in would break what the number
   means (see the entry conditions above).
+
+## Open question: when does a pattern need its provenance, and when is that noise?
+
+Owner-raised 2026-08-01, and it is a **session of its own** rather than a task.
+Filed here because this file is where attribution policy actually bites.
+
+**The position that prompted it:** note the pattern and use it if it works. We do
+not always need to say exactly where it came from. That is not laxness — it is a
+claim that provenance has a cost and should be paid when it buys something.
+
+**Today produced evidence for it, by accident.** A pass removing references to one
+local prototype rewrote ~33 citations across ten files. The ones that rewrote
+cleanly were the ones stating a *lesson* — a threshold, a defect class, a rule.
+The ones that read badly afterward were the ones **resting on the artifact**:
+"we know X because that scene did X." That is a usable diagnostic and it fell out
+of doing the work rather than out of designing a policy:
+
+> **If removing the citation breaks the claim, the claim was leaning on the
+> artifact rather than on the finding.**
+
+### What the session has to decide
+
+- **When citation earns its cost.** A measured figure needs a source you can
+  re-run. A shape that has been rebuilt three times needs a count. A technique
+  that simply works needs neither — and today the repo treats all three the same.
+- **Cross-scene generalizations, which the current model cannot express.** The
+  ledger counts *independent solutions of the same shape*, one row per shape. But
+  the most valuable findings may be assembled from several scenes and belong to
+  none of them: not "scene A did this", but "A, C and D each did part of this and
+  the general form is X". A row with one origin cannot hold that.
+- **Which citations are safe to make at all.** Public repo. A local prototype is
+  not a citable source for a public claim, whatever it taught — and the fix is
+  not a careful label, it is writing the finding so it does not need one.
+- **How to mine example scenes, and against what.** Reading a finished film for
+  technique is one method. Others: diffing scenes against each other for
+  convergent solutions, reading session logs and postmortems for what an author
+  said they built twice, and running an instrument across the corpus to find a
+  shape nobody named. **These have never been compared** — `/extract-patterns`
+  implements the first, and nothing establishes it is the best of the four.
+
+### Why the process is part of the deliverable
+
+Owner's framing, and it matches the flywheel section above: the value is in the
+findings *and* in working out what makes sense. That argues for running the
+methods against the same corpus and comparing what each surfaces, rather than
+picking one and writing it up as doctrine.
+
+**Prior art in this repo to start from, not to re-derive:** the flywheel section
+above (capture as a side effect of use, and the 2026-07-31 direction that it must
+be runnable on work you did not do), `/extract-patterns`, and
+`docs/examples-placement.md`, which already argues that reading an example to
+learn a technique is a bug report against the references.

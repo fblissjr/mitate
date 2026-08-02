@@ -872,10 +872,21 @@ const toolJs = new Map([
   const ENCODER_BUDGET = {
     video: 1, shootAndScale: 1, avif: 1, loop: 1,          // export — the four that stay
     motion: 1,                                             // measurement — needs recalibration
-    // RATCHETED 10 -> 6 by Track E1: poster, aspectSheet, sheet (x2) and strip
+    // RATCHETED 10 -> 5 by Track E1: poster, aspectSheet, sheet (x2) and strip
     // moved to build.js's in-page tiler. Those five lines are deleted rather
     // than zeroed, so re-adding an encoder to any of them trips the
     // outside-the-boundary arm instead of quietly fitting under a stale budget.
+    //
+    // THAT FIGURE READ 6 UNTIL 2026-08-02, against a table of five entries, a
+    // migration commit saying "10 call sites across 9 functions -> 5 across 5",
+    // and a run printing 5. It was also inconsistent with its own next sentence,
+    // which names five removals from ten. Nothing caught it for eleven versions:
+    // check 12 scans bracket-*.js only, and check 13's REGISTRY holds six
+    // countables, none of them encoder sites. So the one stale hand-written
+    // count in this file sat between the two checks built to stop stale
+    // hand-written counts, in the blind spot they share. Prefer deriving it:
+    // `Object.keys(ENCODER_BUDGET).length` is the honest form, and the only
+    // reason it stays prose is that the ARROW is history rather than state.
   };
   const ENCODERS = /\b(?:run|execFileSync|spawnSync|spawn)\(\s*['"](?:ffmpeg|avifenc|img2webp)['"]/;
   const DECL = /^(?:async\s+)?function\s+([A-Za-z0-9_]+)|^const\s+([A-Za-z0-9_]+)\s*=\s*(?:async\s*)?\(/;

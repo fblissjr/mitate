@@ -1,4 +1,4 @@
-last updated: 2026-08-01
+last updated: 2026-08-02
 
 # Where truth lives
 
@@ -19,7 +19,7 @@ other surface points at the home. Nothing restates.
 | **delivery-side** facts — shipping the scene itself: bundle size over the wire, hosting and mount policy, posters | `references/delivery.md` | — |
 | **recording-side** facts — formats, encoders, decode cost, what GitHub renders inline | `references/recordings.md` | — |
 | repo invariants that bite on first edit | CLAUDE.md | — |
-| **why determinism comes first**, and what it is first for | `VISION.md` | `site/` is DOWNSTREAM of this, one-directionally — see below |
+| **INTENT** — what this is for, why determinism comes first and what it is first for, what a primitive has to be, where a declaration lives, and which of reproducibility and byte-identity is load-bearing | **`VISION.md`** — the most important document in this repo, and the one every other is downstream of. Where any of them conflicts with it about intent, it wins and the other is the thing to fix | `site/` is DOWNSTREAM of this, one-directionally — see below. Nothing summarises it: it is argued rather than stated, and a bullet-point copy loses the argument, which is the content |
 | history — what happened and why | CHANGELOG.md and git | docs speak present tense only |
 | **a check's pass criterion** | the code that implements the check, beside the flag or constant it governs | CI config and session logs POINT; they never restate it |
 | **what a session did** | `internal/log/`, one file per working day — **tracked as of 2026-08-01** | a finding worth keeping is still promoted to a postmortem. Tracking made the log citable; it did NOT make it doctrine. Cite it for what happened, never for what is true — where a log and a postmortem disagree, the postmortem wins |

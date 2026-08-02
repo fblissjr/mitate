@@ -1,7 +1,20 @@
 # mitate showcase — Netlify config
 # Static site. The only build step stages the skill's example scenes into
-# films/ — they are tracked once, as plugin/skills/mitate/examples/, so the
-# site and the skill can never drift into two different versions of a film.
+# films/ — they are tracked once, as plugin/skills/mitate/examples/, so there is
+# one place to change a film rather than two.
+#
+# THE SITE MAY LAG THE SKILL, and that is fine. This line used to claim the two
+# "can never drift", which is not true: the base directory is `site`, so Netlify
+# skips the build when nothing under it changed — and a film change happens in
+# plugin/skills/mitate/examples/, outside it. A new film can therefore sit in the
+# repo while the deployed site still serves the previously staged copy, reported
+# as a green "Deploy canceled".
+#
+# Left alone deliberately. This is a project website, not a product surface: a
+# film being a build behind costs nothing, and the fix (a build `ignore` command
+# widened to watch examples/) buys a guarantee nobody needs. Recorded so the next
+# reader does not mistake the skip for a misconfiguration, or the staging step
+# for a freshness guarantee.
 
 [build]
   publish = "."

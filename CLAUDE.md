@@ -70,12 +70,21 @@ copy of a router is the exact failure this file keeps catching.
   it runs every bracket even when one is red, and **fails when its glob matches
   nothing**, because a green step that ran zero controls is indistinguishable
   from one that ran five.
-- **The defect corpus** — `fixtures/defect-corpus/`, scenes kept BROKEN on
-  purpose so a check that stops catching something is noticed. It is a parity
-  carrier (the ninth), wired into `static.yml` and the pre-commit hook and
-  **deliberately not into `gate.yml`**: a general pass/fail gate that goes red
-  for a correct reason is one people learn to route around. Read its `README.md`
-  before adding a defect — **most rows are still labelled UNVERIFIED**, and the
+- **The defect corpus** — `fixtures/defect-corpus/`, scenes kept with KNOWN
+  COMPOSITION DEFECTS as calibration targets for the review instruments.
+  **They pass the smoke gate by design** — the defects are visual (sliding
+  paws, dead framing, occlusion), not gate-detectable; this line said "so a
+  check that stops catching something is noticed" until 2026-08-03, when one
+  measurement showed no check catches them and the wiring was built to match
+  reality: `templates/bracket-corpus.js` pins the fixture's usability and
+  each VERIFIED row's derivable signature, red when the corpus stops
+  matching its own README. The scenes stay out of the smoke gate's pass/fail
+  (a gate red for a correct reason is one people learn to route around); the
+  bracket runs in the gate's bracket loop, where green means "still matches
+  its documentation". Also a parity carrier (the ninth), wired into
+  `static.yml` and the pre-commit hook. Read its `README.md`
+  before adding a defect — **most rows are still labelled UNVERIFIED** (each
+  one verified later earns its bracket arm), and the
   README carries the row count as a derived marker rather than in prose, because
   this line used to say "the twelve" while the tables held fourteen
 - **Repo-development agents and skills** — `.claude/agents/control-builder.md`,

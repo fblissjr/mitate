@@ -189,6 +189,18 @@ owner's in-session asks.
    and whether emitter-driven fence propagation counts as "a change to the
    corpus" gets decided rather than re-argued (this session treated it as
    not counting, without a ruling).
+   *(Disposition, 2026-08-03 evening, owner: ruled and built. Propagation
+   counted as the trigger firing; the coarse tier shipped as
+   `bracket-corpus.js` (0.18.1) — with the design premise corrected by
+   measurement first: the corpus PASSES smoke, its defects being
+   composition-class, so the bracket pins usability plus the verified
+   rows' signatures rather than expecting a gate failure. Recorded red
+   against a healthy scene before being trusted. Row-by-row arms accrue
+   as rows leave UNVERIFIED; row 8 waits on an encoder, stated in the
+   bracket header. CLAUDE.md's corpus bullet and the corpus README were
+   corrected in the same change — the "so a check that stops catching is
+   noticed" framing was itself checkable prose that had never been
+   checked, for three days.)*
 6. **The fresh-session docs-only test stays live** (handoff, "one
    deliberately deferred review"): weeks from now, a session with no
    context builds a film from the docs alone; store-workflow confusion is

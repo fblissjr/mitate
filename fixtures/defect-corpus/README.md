@@ -1,6 +1,17 @@
-last updated: 2026-08-02
+last updated: 2026-08-03
 
 # The defect corpus — apparatus, not an example
+
+> **Wired as of 2026-08-03:** `plugin/skills/mitate/templates/bracket-corpus.js`
+> (in the gate's bracket loop) asserts the fixture still passes smoke — a
+> corpus scene that stops running stops being apparatus — and pins each
+> VERIFIED row's derivable signature: row 10b via `build.js check`'s
+> repeat-framing warning, row 11 via a probe of the walker's real width
+> against its declaration. Row 8 needs an encoder and is deferred, stated in
+> the bracket's header. **A row moving out of UNVERIFIED earns its arm in the
+> same change** — that is the wiring the earlier "before the next change,
+> build the runner" note was waiting for, ruled on by the owner (coarse tier
+> now, row-by-row as verification happens).
 
 Scenes kept **because they are broken**, with characterized defects at known
 timestamps. A new instrument gets a positive control the day it is written, and

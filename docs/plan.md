@@ -1067,7 +1067,11 @@ bucket (e).
   including what is forbidden — live in `representation.md` and are not
   copied here. *Gate:* the corpus fixture gains a
   deliberately wrong extent and the mechanism goes red on it, before any
-  shipped scene is touched.
+  shipped scene is touched. **The fixture already exists** (noted
+  2026-08-03): the corpus's row 11 IS a characterized wrong extent —
+  `walker` declares `w:2.8` against a measured ~3.12 — and
+  `bracket-corpus.js` already pins its geometry side, so REP4's red-first
+  starts from a verified defect rather than authoring one.
 - **REP5 — instrument the movement triggers.** Makes the pattern-ledger's
   counting cheap enough that the Promotion table's triggers actually fire —
   this file declares them unfireable without a count. *Gate:* a migration

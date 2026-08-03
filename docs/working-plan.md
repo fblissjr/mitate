@@ -2793,7 +2793,7 @@ found all three of its violations at once:
   check read the stale table **while claiming coverage** and error on a
   scene that drives fine.
 
-**Queued as one red-first cascade (0.18.1):** the three fixes above, each
+**Queued as one red-first cascade (the next plugin version):** the three fixes above, each
 with a new bracket arm (the STYLE case lands as a declared-coverage warn
 plus a sixth `bracket-check-kit.js` arm pinning it — the stub cannot know
 the lens, so honesty, not agreement, is the achievable property there);

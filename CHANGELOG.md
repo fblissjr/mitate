@@ -7,6 +7,27 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.18.1
+
+### added
+
+**The defect corpus is wired, three days after it was tracked — and the
+wiring corrected the doctrine.** `bracket-corpus.js` (in the gate's bracket
+loop, seven-PR-old forward item, owner-ruled) walks up to
+`fixtures/defect-corpus/` (skipping with a stated reason where the corpus
+does not exist — it deliberately never ships) and asserts what one
+measurement showed is actually true of it: the fixture PASSES smoke — its
+fourteen documented defects are composition-class, invisible to the
+pass/fail gate — so "kept broken so a check that stops catching is noticed"
+was never the mechanism, and CLAUDE.md plus the corpus README now say what
+is: a calibration target for the review instruments, pinned by usability
+(smoke still passes) and the VERIFIED rows' derivable signatures (row 10b
+via `check`'s repeat-framing warning naming `SHOTS[2,6,9,11]`; row 11 via a
+probe of the walker's real width against its declared 2.8). Recorded red
+against a healthy scene before being trusted; a row leaving UNVERIFIED
+earns its arm in the same change. Bonus noted on the REP track: row 11 is a
+characterized wrong extent, so REP4's red-first fixture already exists.
+
 ## 0.18.0
 
 ### changed

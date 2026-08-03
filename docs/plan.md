@@ -1031,10 +1031,12 @@ bucket (e).
   verdict carrying the same phrase — recorded red on all four against the
   pre-REP2 pair (the kit silently NaN'd two of them, so the kit gained
   three refusals in the same phase, regenerated into every carrier by the
-  emitter), green after; every shipped scene still checks clean and
-  drives. Where `check` stays deliberately stricter than the kit (anchor
-  fraction outside 0..1, duplicate beat names), the verb's header declares
-  the one-way divergence. **Decision point 6, resolved with the
+  emitter), green after; every shipped scene still checks clean, and the
+  PR's browser gate drove the full corpus green on a clean checkout. Where
+  `check` stays deliberately stricter than the kit — among the cases:
+  anchor fraction outside 0..1, duplicate beat names, out-of-order shots,
+  `FRAME.px` disagreeing with `FRAME.aspect` — the divergence is one-way
+  and the verb's header declares it as a class. **Decision point 6, resolved with the
   implementation: the canonical source stays plain JS.** Executing the
   store verbatim is what closes the divergence class; a TS seam would
   reinsert a transpile boundary — a reimplementation boundary by point 6's

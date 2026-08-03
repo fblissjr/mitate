@@ -20,13 +20,18 @@ thirteen open findings — `check` and the kit disagreeing in both directions,
 with nothing comparing them — close as a class: there is one model now, and
 a new bracket (`bracket-check-kit.js`) runs the review's four divergence
 cases through BOTH instruments and requires the same verdict with the same
-phrase. Recorded red first on all four (check green on three kit refusals,
-the kit silent on one check refusal), green after. The subject, focus and
-rung refusals now quote the kit's own throw (`unknown subject: x`,
-`unknown size: x`), with the declared names appended; where `check` is
-deliberately stricter than the kit — an anchor fraction outside 0..1, a
-duplicate beat name — the one-way divergence is declared in the verb's
-header instead of hiding as a mirror difference.
+phrase. Recorded red first on all four: `check` was green on three defects
+a driven page refuses (only one of which, a missing `size`, was a clean
+in-scope solver throw — an empty `SHOTS` crashed downstream on a TypeError
+and `subject: []` was a silent NaN box, per the next paragraph), and the
+kit was silent on the prototype-named beat `check` already refused. Green
+after. The subject, focus and rung refusals now quote the kit's own throw
+(`unknown subject: x`, `unknown size: x`), with the declared names
+appended; where `check` is deliberately stricter than the kit — among the
+cases: an anchor fraction outside 0..1, a duplicate beat name, out-of-order
+shots, `FRAME.px` disagreeing with `FRAME.aspect` — the divergence is
+one-way (the kit accepts and mis-renders, `check` refuses) and is declared
+in the verb's header as a class.
 
 **The kit refuses three silent-NaN shapes it used to accept.** `BEAT` is
 built on a null prototype, so a shot anchored to a prototype name

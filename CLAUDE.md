@@ -88,7 +88,10 @@ copy of a router is the exact failure this file keeps catching.
   file, where the decision is actually made
 - **Manifests, config and legal** — `.claude-plugin/marketplace.json` (the
   marketplace half of the version cascade; the plugin half is under `plugin/`),
-  `.postmortem.json` (pins where postmortems live), `.oxlintrc.json`,
+  `.postmortem.json` (pins where postmortems live), `.dev-conventions.json`
+  (mutes the generic TDD and doc-conventions blocks — superseded here by
+  invariant 6 plus the house claim-comment practice, and by this file's
+  freshness-marker convention under selfcheck), `.oxlintrc.json`,
   `.gitignore`, `LICENSE`, and
   [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md) (required, because
   three.js ships inside every scene — see invariant 1). One bullet on purpose:
@@ -271,7 +274,9 @@ the check.
 ## Conventions
 
 - **Session logs are TRACKED, in `internal/log/`, as of 2026-08-01** (owner's
-  call). Everything else under `internal/` stays local — the local prototype fixture, the
+  call), **and the day's log is updated before a session ends** — migrated
+  here 2026-08-03 from the dev-conventions doc block when that block was
+  muted for this repo, so the cadence survives the trim. Everything else under `internal/` stays local — the local prototype fixture, the
   prior-artifacts tree, `outside_comms/`, scratch renders. `.gitignore` excludes
   `internal/*` and re-includes only `internal/log/`, which is the form that
   works: git does not descend into an excluded *directory*, so ignoring

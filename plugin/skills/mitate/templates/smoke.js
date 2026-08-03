@@ -132,7 +132,9 @@ function loadFenceStore(dir) {
   catch (e) {
     console.error(`fence-store: cannot read ${dir} — ${e.code || e.message}. The canonical `
       + `fence store ships beside smoke.js; without it no fence can be checked, so refusing `
-      + `rather than scanning zero fences and reporting ok.`);
+      + `rather than scanning zero fences and reporting ok. If this workspace copied `
+      + `smoke.js on its own, copy the fences/ directory from the skill's templates/ so it `
+      + `sits beside the copy — smoke.js and fences/ move together.`);
     process.exit(1);
   }
   const expected = new Set(FENCES.map(n => `${n}.fence.txt`));
@@ -1384,12 +1386,15 @@ async function checkScene(browser, file) {
   // filtering one string out of argv — `--store dir` would leave `dir` in the
   // list and the store path would be treated as a scene to scan.
   const parityFix = argv.includes('--parity-fix');
-  let storeDir = null, sawStore = false, sawFrom = false;
+  let storeDir = null, sawStore = false, dupStore = false, sawFrom = false;
   let scenes = [];
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--parity-only' || a === '--parity-fix') continue;
-    if (a === '--store') { sawStore = true; storeDir = argv[++i] ?? null; continue; }
+    if (a === '--store') {
+      if (sawStore) dupStore = true;
+      sawStore = true; storeDir = argv[++i] ?? null; continue;
+    }
     if (a === '--from') { sawFrom = true; i++; continue; }
     scenes.push(a);
   }
@@ -1424,6 +1429,13 @@ async function checkScene(browser, file) {
   if (sawStore && storeDir == null) {
     refuseArgs('--store needs a directory argument. Without one the run would fall back to '
              + 'the default store and scan against fences the caller did not name.');
+  }
+  //   * --store twice: the same value-flag class one step over — last-wins is
+  //     a silent winner, and the run would scan against a store the reader of
+  //     the command did not pick.
+  if (dupStore) {
+    refuseArgs('--store was passed more than once. Only one store can be scanned against and '
+             + 'the winner would be chosen silently; name the store once.');
   }
   storeDir = storeDir ?? path.join(__dirname, 'fences');
 
@@ -1638,18 +1650,20 @@ async function checkScene(browser, file) {
         }
         const m = txt.match(RE);
         if (!m) continue;
-        // The tax, derived rather than remembered: every fenced line in every
-        // carrier that holds it. Summed over what was ACTUALLY READ, so a
-        // narrowed glob shrinks this number too instead of quietly reporting
-        // the old one.
-        heldLines += m[0].split('\n').length;
         if (m[0] !== fenceStore.get(name)) {
           kernelFail = true;
           console.log(`FAIL ${f} — ${name} does not match the canonical store (${storeDir}). `
                     + `If the change is intended, edit the store copy and run --parity-fix `
                     + `to regenerate every carrier; a scene that legitimately diverges `
                     + `removes its markers and leaves the parity set instead.`);
+          continue;
         }
+        // The tax, derived rather than remembered: every fenced line in every
+        // carrier that HELD — a drifted block's lines are not "held
+        // byte-identical" and counting them would overstate a red run's
+        // verdict. Summed over what was ACTUALLY READ, so a narrowed glob
+        // shrinks this number too instead of quietly reporting the old one.
+        heldLines += m[0].split('\n').length;
       }
     }
 

@@ -152,6 +152,15 @@ const SCAN_ARMS = [
   ['scan: states how many files it read',
     { 'a.html': FENCE, 'b.html': FENCE }, null, [],
     { code: 'zero', says: /2 file\(s\) scanned/ }],
+  // THE COUNT IS PART OF THE VERDICT, so it must be honest on a RED run too:
+  // a drifted fence's lines are not "held byte-identical to the canonical
+  // store" and must not be counted as if they were. The synthetic fence is 5
+  // lines; one clean carrier plus one drifted carrier must report 5 held, not
+  // 10. Delete this arm and the verdict line on every FAIL run can silently
+  // overstate what parity actually held.
+  ['scan: a FAIL run counts only the lines actually held',
+    { 'a.html': FENCE, 'b.html': DRIFTED }, null, [],
+    { code: 'nonzero', says: /FAILED \(2 file\(s\) scanned, 5 fenced line\(s\) held/ }],
   // A carrier with NO fences at all stays out of the parity set — removing
   // your markers is still how a scene legitimately diverges, and the store
   // must not drag it back in.
@@ -162,9 +171,14 @@ const SCAN_ARMS = [
   // --- store hygiene: every way the scan's new input can shrink it ----------
   // Each of these is a scope-silently-shrinks shape: without the refusal the
   // run reports green having compared fewer fences than the reader believes.
+  // The refusal must also NAME THE REMEDY: the person reading it is standing
+  // in a workspace that copied smoke.js without fences/ (the 0.17.0 class —
+  // gate.yml and SKILL.md's copy list both shipped that break), and "cannot
+  // read" without "copy fences/ from templates/" leaves them to rediscover
+  // the sibling rule from scratch.
   ['scan: refuses a store directory that does not exist',
     { 'a.html': FENCE }, 'absent', [],
-    { code: 'nonzero', says: /fence-store: cannot read/ }],
+    { code: 'nonzero', says: /fence-store: cannot read[\s\S]*copy the fences\/ directory/ }],
   ['scan: refuses a store missing one fence file',
     { 'a.html': FENCE }, files => { delete files['RIG.fence.txt']; }, [],
     { code: 'nonzero', says: /missing RIG\.fence\.txt/ }],
@@ -184,6 +198,13 @@ const SCAN_ARMS = [
   ['scan: refuses --store without a value',
     { 'a.html': FENCE }, null, 'store-flag-bare',
     { code: 'nonzero', says: /--store needs a directory/ }],
+  // Same value-flag hygiene class as the two above: two --store flags means
+  // one silently wins, and the run scans against a store the command's reader
+  // did not pick. Delete this arm and last-wins can come back with every
+  // other refusal arm still green, because every other arm passes it once.
+  ['scan: refuses a duplicate --store',
+    { 'a.html': FENCE }, null, 'store-flag-dup',
+    { code: 'nonzero', says: /--store was passed more than once/ }],
   // --from died with the named-carrier era; consuming it silently would eat
   // the next filename out of the scene list, the exact defect its old
   // combination guard existed for.
@@ -203,9 +224,11 @@ for (const [label, files, storeMutate, extraArgs, expect] of SCAN_ARMS) {
       : writeStore(dir, typeof storeMutate === 'function' ? storeMutate : undefined);
     const argv = extraArgs === 'store-flag-bare'
       ? ['--parity-only', ...Object.keys(files), '--store']
-      : extraArgs === 'from-flag'
-        ? ['--parity-only', '--store', storeDir, '--from', 'a.html', ...Object.keys(files)]
-        : ['--parity-only', '--store', storeDir, ...Object.keys(files), ...extraArgs];
+      : extraArgs === 'store-flag-dup'
+        ? ['--parity-only', '--store', storeDir, '--store', storeDir, ...Object.keys(files)]
+        : extraArgs === 'from-flag'
+          ? ['--parity-only', '--store', storeDir, '--from', 'a.html', ...Object.keys(files)]
+          : ['--parity-only', '--store', storeDir, ...Object.keys(files), ...extraArgs];
     let out = '', code = 0;
     try {
       out = execFileSync('bun', ['run', SMOKE, ...argv],
@@ -297,7 +320,7 @@ const FIX_ARMS = [
       rawArgs: ['--parity-fix', '--from', 'a.html', 'a.html', 'b.html'] }],
   ['fix: refuses a store directory that does not exist',
     { 'a.html': FENCE, 'b.html': DRIFTED }, 'absent',
-    { code: 'nonzero', b: 'unchanged', says: /fence-store: cannot read/ }],
+    { code: 'nonzero', b: 'unchanged', says: /fence-store: cannot read[\s\S]*copy the fences\/ directory/ }],
   // A mangled STORE is the new malformed-source: regenerating from it would
   // write the corruption into every carrier and report success doing it.
   ['fix: refuses a store whose fence is mangled',

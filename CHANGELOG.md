@@ -7,6 +7,26 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.17.3
+
+### fixed
+
+**Three parity findings from PR #9's post-merge review, each landed
+red-first as a new or tightened `bracket-parity.js` arm.** (1) A red
+`--parity-only` run counted a drifted fence's lines in its "held
+byte-identical to the canonical store" figure, so the verdict line on
+exactly the runs where the count matters most overstated what parity held;
+lines now count only when the block matches the store, and a FAIL-run arm
+pins the number. (2) A duplicate `--store` silently last-won — the same
+value-flag hygiene class the existing refusals close — and now refuses,
+naming the rule. (3) The store-refusal message for an unreadable `fences/`
+now names the remedy where the reader is standing: copy the `fences/`
+directory from the skill's templates/ so it sits beside the copied
+smoke.js — the 0.17.1 workspace class, taught at the point of failure
+instead of rediscovered from it. All three arms were recorded red against
+the pre-fix smoke.js (the duplicate-store arm exited 0, confirming
+last-wins) and green after, 33 arms total.
+
 ## 0.17.2
 
 ### fixed

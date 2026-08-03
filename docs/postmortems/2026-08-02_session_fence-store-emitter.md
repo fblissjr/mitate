@@ -197,3 +197,28 @@ gate (now `docs/plan.md`'s REP track).
    deleted when the last claim releases, absence meaning "no concurrent
    claims". Checkable: the next day with two live sessions either creates
    it or the convention was dropped.
+
+## ANNOTATION, same day — a peer sanity pass over this account
+
+The doc session checked this file's checkables against the record. The
+verdicts and the structural lessons all held; four counts and attributions
+did not, corrected here rather than edited above so the original account
+stays readable:
+
+- **"31 arms, each carrying a claim comment stating what its deletion would
+  un-prove" overstates.** One arm carries such a comment (the
+  default-store-path arm). The arm labels state what each scan asserts,
+  which is near the convention but is not it — either the comments get
+  added or this sentence reads as one arm's property.
+- **The piped-validator count and its citation disagree:** this file says
+  twice with both instances noted in the log; the log's third-session
+  section records one. One of the two numbers is wrong.
+- **"Two mutual hook blockades" is one blockade in the record** — the
+  emitter session's in-flight state blocking the doc session's commit,
+  resolved by the cascade landing. The reverse direction has no artifact
+  and the doc session did not experience one.
+- **The workspace class had two surfacing routes, not one:** gate.yml and
+  SKILL.md via the owner's `.github/` question and this session's scratch
+  reproduction (0.17.1); bracket-driver and bracket-noise via PR #9's gate
+  failing on the clean checkout, diagnosed and fixed by the doc session
+  (0.17.2). Section 2 credits only the first route.

@@ -51,10 +51,14 @@ there:
    - Changed invariants or conventions → `CLAUDE.md`, and check it against the
      code it claims to describe.
    - **Changed behaviour of any tool an agent describes → `.claude/agents/*`,
-     `.claude/rules/*`, and this file.** These are the blind spot: they carry no
+     `.claude/rules/*`, every `.claude/skills/*/SKILL.md`, and this file.**
+     These are the blind spot: they carry no
      freshness marker by design, `selfcheck.js` derives its set from files that
      do, so **nothing mechanical covers them at all** — this routing line is the
-     only control they have. It is not a theoretical gap. A review found
+     only control they have. (`verify-written-claims` joined the class
+     2026-08-03 quoting `derived-counts.js`'s exclusion list and check 13's
+     header — quotes that rot the day either changes, findable only from
+     here.) It is not a theoretical gap. A review found
      `doc-claim-auditor` teaching four capabilities as broken that the code had
      since fixed, this file asserting an instrument "is not built" three
      versions after it shipped, and `model-delegation` naming two agents that

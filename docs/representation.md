@@ -1,4 +1,4 @@
-last updated: 2026-08-02
+last updated: 2026-08-03
 
 # Representation: where data stops and code starts
 
@@ -206,7 +206,9 @@ record; the page is the argument.
    red-first on the corpus fixture.
 5. **The kit is emitted, not replicated** — direction adopted, gated on the
    emitter reproducing every carrier byte-identically before anything may
-   differ (the REP1 spike, `scripts/emit-spike.js`). The measured basis, method included because VISION
+   differ (the REP1 spike, `scripts/emit-spike.js` — retired 2026-08-03 once
+   the emitter shipped and its bracket superseded the spike's self-reported
+   arms). The measured basis, method included because VISION
    cites this file for it: menagerie's seven fence regions <!--count-mention-->
    classified line-by-line (2026-08-02) — 823 lines, of which 3 are
    declaration literals (the `SIZES` ladder and the cut table), 458 machinery

@@ -1,4 +1,4 @@
-last updated: 2026-08-02
+last updated: 2026-08-03
 
 # mitate: founding plan
 
@@ -982,9 +982,10 @@ bucket (e).
   assembler shipped, `--parity-fix` rewrites each carrier's fences from the
   store; the parity
   check inverts from "all copies agree" to "every carrier matches the
-  store"; `--parity-fix`'s job shrinks to "regenerate". Feasibility is
-  proven: `scripts/emit-spike.js` reassembles every carrier byte-identically
-  from film skeleton plus canonical fence store. **The site's
+  store"; `--parity-fix`'s job shrinks to "regenerate". Feasibility was
+  proven by a throwaway spike that reassembled every carrier
+  byte-identically from film skeleton plus canonical fence store (retired
+  2026-08-03, superseded by the bracketed emitter itself). **The site's
   source-equals-artifact wording ("the one scene file stays the source",
   "diffs like source") changes in this same phase** — it stops being true the
   day carriers become build products, and the site is downstream, so the

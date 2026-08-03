@@ -978,9 +978,11 @@ bucket (e).
   the deferral is recorded with its trigger. **MET 2026-08-02** (owner;
   `representation.md`).
 - **REP1 — single-source the kit (the emitter).** The fenced blocks move to
-  one canonical home and a build step assembles carriers from it; the parity
-  check inverts from "all copies agree" to "every carrier matches emitter
-  output"; `--parity-fix`'s job shrinks to "regenerate". Feasibility is
+  one canonical home, and regeneration in place IS the emitter — no separate
+  assembler shipped, `--parity-fix` rewrites each carrier's fences from the
+  store; the parity
+  check inverts from "all copies agree" to "every carrier matches the
+  store"; `--parity-fix`'s job shrinks to "regenerate". Feasibility is
   proven: `scripts/emit-spike.js` reassembles every carrier byte-identically
   from film skeleton plus canonical fence store. **The site's
   source-equals-artifact wording ("the one scene file stays the source",

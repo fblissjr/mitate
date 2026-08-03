@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
-# A one-line, model-facing, non-blocking reminder that fires at the moment
+# A one-line, model-facing, non-blocking reminder tied to the edits where
 # this repo's record says the failure happens: a claim about repo state being
 # written into summary prose from memory instead of re-derived. Wired as a
 # PreToolUse hook in .claude/settings.json; controlled by
 # scripts/bracket-claims-reminder.js (static.yml's glob runs it).
+#
+# DELIVERY SEMANTICS, stated so the evaluation judges the mechanism that
+# exists: PreToolUse additionalContext lands beside the tool result, so the
+# model reads it one half-step AFTER the edit — the closest legal
+# approximation to interrupting at the keystroke, in time to re-derive and
+# amend, not in time to prevent the write (peer review, 2026-08-03).
 #
 # WHY NOT hookify: hookify's `warn` action returns only `systemMessage`, which
 # the hooks contract sends to the USER'S TERMINAL AND NOT TO CLAUDE — a
@@ -30,10 +36,33 @@
 # in, this reminder is not working — delete it rather than tune it. And any
 # class here that becomes mechanically checkable gets a check instead, and
 # drops out of this classifier.
+#
+# BEFORE RULING, DISAMBIGUATE (peer review, 2026-08-03): an unchanged
+# correction rate has two readings — "delivered but did not change behavior"
+# (hypothesis wrong: delete) and "never actually delivered" (mechanism
+# broken: fix and restart the clock). The bracket verifies EMISSION, not
+# delivery. The cheap check: grep a few session transcripts for this file's
+# message text and confirm it appears as absorbed context rather than
+# surfaced to the terminal. Deleting on a delivery failure would bury the
+# hypothesis without testing it.
 
 set -euo pipefail
 
 IN="$(cat)"
+
+# --clear-session: the PostCompact mode. Compaction can summarize an already-
+# delivered reminder OUT of the model's context while the state file still
+# says "fired" — a long session's second half would then run unguarded, and
+# the three-week retirement measurement would count its corrections against a
+# reminder that was no longer in context (bias toward wrongful deletion).
+# Clearing state on PostCompact restores at most one more fire per class,
+# which the dedup math absorbs (peer review, 2026-08-03; PostCompact and
+# session_id persistence confirmed against the hooks docs the same day).
+if [ "${1:-}" = "--clear-session" ]; then
+  SESSION=$(printf '%s' "$IN" | python3 -c "import json,sys; print(json.load(sys.stdin).get('session_id','none'))" 2>/dev/null || echo none)
+  rm -rf "${TMPDIR:-/tmp}/claims-reminder.${SESSION}"
+  exit 0
+fi
 
 # One interpreter spawn, not four: this runs on every matched tool call, so
 # its latency is a tax on the whole session.
@@ -57,7 +86,11 @@ allow_silently() { printf '%s\n' '{"hookSpecificOutput":{"hookEventName":"PreToo
 # the bracket pin that, and go red if this widens by accident.
 CLASS=""
 case "$TOOL" in
-  Edit|Write|MultiEdit|NotebookEdit)
+  # NotebookEdit is deliberately absent: it sends notebook_path, not
+  # file_path, so listing it here would claim coverage this script does not
+  # deliver. No notebooks exist in this repo; if one ever does, read both
+  # keys rather than re-adding the name alone (peer review, 2026-08-03).
+  Edit|Write|MultiEdit)
     case "$FILE" in
       */CHANGELOG.md)                                   CLASS=changelog ;;
       */internal/log/*|*/docs/postmortems/*|*/internal/handoff*|*/snapshots/*)
@@ -76,11 +109,17 @@ mkdir -p "$STATE"
 [ -e "$STATE/$CLASS" ] && allow_silently
 : > "$STATE/$CLASS"
 
+# FACTUAL STATEMENTS, NOT COMMANDS, deliberately: the hooks guidance warns
+# that command-phrased injected text can trip prompt-injection defenses and
+# get surfaced to the user instead of absorbed as context — which would
+# silently turn this into the user-facing warn path the header rejects, and
+# the retirement measurement would read "never delivered" as "did not work"
+# (peer review, 2026-08-03).
 case "$CLASS" in
-  changelog) MSG='This CHANGELOG entry is summary prose about work you did. Every count, "red first" claim and refusal list in it must be re-derived now — run the bracket, read its tally — not written from the session. The 0.18.0 entry contradicted its own next paragraph and was corrected 40 minutes later in 38e3773. Run /verify-written-claims on the staged diff before committing.' ;;
-  record)    MSG='This is a dated record. Counts, statuses and attributions written here are outside every mechanical guard: scripts/derived-counts.js excludes CHANGELOG.md, internal/log/, docs/postmortems/ and the planning documents by design. Cite the command, not its output; label anything resting on session memory as (memory) and anything untracked as (local). /verify-written-claims has the procedure.' ;;
-  status)    MSG='You are writing a status claim into a live document — MET, landed, open, next, "deliberately not". A status has a validity window: log_2026-08-02 said invariant 2 was "deliberately NOT touched" and the same session landed it an hour later (1df1fbe). Re-read the stamp or run the command that decides the status, and when something lands later today, grep this file again for the framing it invalidated.' ;;
-  commit)    MSG='First commit of this session. The pre-commit hook covers the version cascade, links, freshness and fence parity — it does NOT check any count, status or attribution in CHANGELOG.md, internal/log/, docs/postmortems/ or the planning documents. If this commit or a later one touches those, run /verify-written-claims over the staged diff first.' ;;
+  changelog) MSG='CHANGELOG entries are summary prose, and counts, red-first claims and refusal lists written into them from session memory have failed here before: the 0.18.0 entry contradicted its own next paragraph and was corrected 40 minutes later in 38e3773. The deriving command for each claim class is listed in /verify-written-claims.' ;;
+  record)    MSG='This file is a dated record, outside every mechanical guard: scripts/derived-counts.js excludes CHANGELOG.md, internal/log/, docs/postmortems/ and the planning documents by design. The house rule for lines here is "cite the command, not its output" — or the label (memory), (local) or (reported) with an observation time. The procedure is /verify-written-claims.' ;;
+  status)    MSG='Status claims in live documents have a validity window: log_2026-08-02 recorded invariant 2 as "deliberately NOT touched" and the same session landed it an hour later (corrected in 1df1fbe). The stamp or command that decides a status is the current source, and same-day prose is the most likely to be invalidated by what lands next; /verify-written-claims includes the post-landing invalidation grep.' ;;
+  commit)    MSG='This is the session'"'"'s first git commit. The pre-commit hook covers the version cascade, links, freshness and fence parity; it checks no count, status or attribution in CHANGELOG.md, internal/log/, docs/postmortems/ or the planning documents. /verify-written-claims covers that gap for a staged diff.' ;;
 esac
 
 python3 - "$MSG" <<'PY'

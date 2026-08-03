@@ -39,7 +39,7 @@ const ARMS = [
   // Deleting this arm loses the only proof the reminder ever speaks at all.
   ['a CHANGELOG edit fires the changelog class',
     { tool_name: 'Edit', session_id: `${SID}-a`, tool_input: { file_path: '/x/CHANGELOG.md' } },
-    { speaks: /summary prose about work you did/ }],
+    { speaks: /contradicted its own next paragraph/ }],
   // THE DEDUP ARM. Without it, removing the state-file check leaves every arm
   // green while the reminder fires on every edit — the wallpaper failure the
   // whole design exists to avoid. Recorded red against a dedup-stripped copy
@@ -57,17 +57,30 @@ const ARMS = [
     { silent: true }],
   ['a record-set edit fires the record class',
     { tool_name: 'Write', session_id: `${SID}-c`, tool_input: { file_path: '/x/internal/log/log_2026-01-01.md' } },
-    { speaks: /Cite the command, not its output/ }],
+    { speaks: /cite the command, not its output/ }],
+  // A SECOND path per multi-path class, so accidental narrowing of the
+  // pattern list goes red somewhere: with only one path pinned, losing
+  // docs/postmortems/ from the record class or docs/README.md from the
+  // status class would leave every arm green (peer review, 2026-08-03).
+  ['a postmortem write fires the record class too',
+    { tool_name: 'Write', session_id: `${SID}-f`, tool_input: { file_path: '/x/docs/postmortems/2026-01-01_session_x.md' } },
+    { speaks: /cite the command, not its output/ }],
   ['a status-surface edit fires the status class',
     { tool_name: 'Edit', session_id: `${SID}-d`, tool_input: { file_path: '/x/docs/working-plan.md' } },
     { speaks: /validity window/ }],
+  ['a docs README edit fires the status class too',
+    { tool_name: 'Edit', session_id: `${SID}-g`, tool_input: { file_path: '/x/docs/README.md' } },
+    { speaks: /validity window/ }],
   ['the first git commit of a session fires once',
     { tool_name: 'Bash', session_id: `${SID}-e`, tool_input: { command: 'git commit -m "x"' } },
-    { speaks: /does NOT check any count, status or attribution/ }],
+    { speaks: /checks no count, status or attribution/ }],
   ['malformed stdin allows silently, exit 0',
     'this is not json',
     { silent: true }],
 ];
+
+// The PostCompact arm needs a three-step sequence (fire, clear, fire again),
+// which the table above cannot express — so it runs after the loop.
 
 let wrong = 0, ran = 0;
 try {
@@ -87,13 +100,39 @@ try {
       + `${ok ? '' : `  BRACKET FAILED (expected ${expect.speaks ? `to speak, matching ${expect.speaks}` : 'silence'}, allow, exit 0)`}`);
   }
 
+  // THE POST-COMPACT ARM: compaction can summarize a delivered reminder out
+  // of context while state says "fired", so --clear-session must restore one
+  // more fire — and without this arm, breaking the clear mode leaves every
+  // other arm green while long sessions run unguarded after compaction and
+  // the retirement measurement counts their corrections unfairly.
+  {
+    const sid = `${SID}-h`;
+    sessions.add(sid);
+    const p1 = run({ tool_name: 'Edit', session_id: sid, tool_input: { file_path: '/x/CHANGELOG.md' } });
+    const clr = spawnSync('bash', [HOOK, '--clear-session'],
+      { input: JSON.stringify({ session_id: sid }), encoding: 'utf8' });
+    const p2 = run({ tool_name: 'Edit', session_id: sid, tool_input: { file_path: '/x/CHANGELOG.md' } });
+    const spoke = o => { try { return JSON.parse(o.trim().split('\n').pop()).hookSpecificOutput.additionalContext !== undefined; } catch (e) { return false; } };
+    const ok = spoke(p1.out) && clr.status === 0 && spoke(p2.out);
+    ran++;
+    if (!ok) wrong++;
+    console.log(`${'post-compact state clear restores one fire'.padEnd(52)} `
+      + `${spoke(p1.out) ? 'SPOKE' : 'silent'}/clear ${clr.status}/${spoke(p2.out) ? 'SPOKE' : 'silent'}`
+      + `${ok ? '' : '  BRACKET FAILED (expected SPOKE, exit 0, SPOKE)'}`);
+  }
+
   // Arm: every commit sha the reminder's message text cites must resolve.
   // A message teaching from a dangling example reads as archaeology and
   // stops being believed — this is how the reminder itself rots.
   {
     const text = fs.readFileSync(HOOK, 'utf8');
+    // The digit requirement excludes pure-letter hex-lookalikes ("effaced");
+    // there is deliberately NO letter requirement, because an all-digit sha
+    // prefix (1232664 is a real one in this repo) is still a sha and still
+    // rots. A 7+ digit number in a message that is not a sha goes red here,
+    // and rephrasing the message is the correct fix (peer review, 2026-08-03).
     const shas = [...new Set(text.match(/\b[0-9a-f]{7,40}\b/g) || [])]
-      .filter(s => /[a-f]/.test(s) && /\d/.test(s));
+      .filter(s => /\d/.test(s));
     let bad = [];
     for (const s of shas) {
       const r = spawnSync('git', ['cat-file', '-e', `${s}^{commit}`], { cwd: path.join(__dirname, '..') });

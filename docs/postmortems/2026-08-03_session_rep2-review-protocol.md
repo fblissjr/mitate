@@ -194,3 +194,41 @@ owner's in-session asks.
    context builds a film from the docs alone; store-workflow confusion is
    the finding. Now also covers `/verify-written-claims` — a skill nobody
    has cold-run.
+
+## ANNOTATION, 2026-08-03 (same evening) — outside peer review, four fixes landed
+
+A reviewer session working on the skills marketplace repo read the reminder
+apparatus end to end and returned four findings plus three sharpenings; the
+hooks-doc claims among them were verified against the current official docs
+before acting (the injection-defense sentence exists verbatim; PostCompact
+exists; `session_id` persists across compaction and resume). What changed,
+same evening, all under the re-run bracket (12 arms, green; the additions
+follow the same red-provable design):
+
+- **Forward item 3's retirement test was conflating two failure modes, and
+  only one means delete.** The bracket verifies *emission*, not *delivery* —
+  and the reminder's imperative phrasing was exactly the shape the hooks
+  docs warn can trip injection defenses and bounce the text to the terminal.
+  All four messages rewritten as factual statements (citations kept), and
+  the ruling procedure now requires the disambiguation first: grep session
+  transcripts for the message text absorbed-vs-surfaced; delivery failure
+  means fix-and-restart-the-clock, not delete. The check is in the script
+  header beside the trigger it protects.
+- **Compaction biased the same measurement toward wrongful deletion**: a
+  summarized-away reminder plus surviving dedup state left long sessions'
+  second halves unguarded while their corrections counted against the
+  mechanism. A PostCompact `--clear-session` mode now restores at most one
+  fire per class, with its own bracket arm (fire, clear, fire again).
+- **The classifier claimed NotebookEdit coverage it did not deliver**
+  (`notebook_path` vs `file_path`) — dropped from the matcher and the
+  script, with the reason at the site. Two bracket gaps closed: the
+  sha-resolution arm now also covers all-digit sha prefixes (`1232664` is
+  one), and each multi-path class pins a second path so accidental
+  narrowing goes red somewhere.
+- **The delivery-semantics claim in this file's own apparatus description
+  was aspirational**: PreToolUse `additionalContext` lands beside the tool
+  result, so the model reads it one half-step *after* the edit — in time to
+  re-derive and amend, not to prevent the write. The script header now
+  states the mechanism that exists, so the three-week evaluation judges
+  that mechanism. (The in-vivo firings earlier today are consistent: each
+  reminder arrived attached to its tool result.)

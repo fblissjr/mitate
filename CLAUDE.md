@@ -166,9 +166,9 @@ for its red lines.
    this file stating it. **The canonical copy lives ONCE, in
    `plugin/skills/mitate/templates/fences/<NAME>.fence.txt` (0.17.0):** edit the
    store file, then `smoke.js --parity-fix` regenerates every carrier from it.
-   There is no `--from` any more — a named-carrier source is a second source of
-   truth, and a majority vote is how a drifted block rewrites the carriers that
-   were right. A malformed store or target refuses the whole run, and nothing is
+   There is no `--from` any more (a named-carrier source is a second source of
+   truth), and no majority vote either (that is how a drifted block rewrites
+   the carriers that were right). A malformed store or target refuses the whole run, and nothing is
    written until every file has validated. Never hand-edit a fence inside a
    carrier; a scene that legitimately diverges removes its markers and leaves
    the parity set. Parity compares each carrier against the store, so verify

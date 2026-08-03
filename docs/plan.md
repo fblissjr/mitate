@@ -1005,7 +1005,8 @@ bucket (e).
   `orientation.md`, was missed by that sweep entirely and caught by the
   post-stamp verification pass. Independently re-verified at stamp
   time: selfcheck, parity-against-store, the full bracket, and the spike,
-  each exit 0.
+  each exit 0. Session postmortem:
+  [`postmortems/2026-08-02_session_fence-store-emitter.md`](postmortems/2026-08-02_session_fence-store-emitter.md).
 - **REP2 — one source for semantics.** `build.js check` reads the canonical
   definitions the kit is built from instead of reimplementing beat
   accumulation and anchor resolution; the open reimplementation-divergence

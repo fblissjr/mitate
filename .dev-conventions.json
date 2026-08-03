@@ -1,3 +1,5 @@
 {
-  "directives": {}
+  "directives": {
+    "javascript": false
+  }
 }

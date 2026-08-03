@@ -98,12 +98,18 @@ copy of a router is the exact failure this file keeps catching.
 - **Manifests, config and legal** — `.claude-plugin/marketplace.json` (the
   marketplace half of the version cascade; the plugin half is under `plugin/`),
   `.postmortem.json` (pins where postmortems live), `.dev-conventions.json`
-  (the per-repo override surface — **it now mutes nothing**, because
-  dev-conventions 0.15.1 silences a generic block wherever this file already
-  covers its ground, and invariant 6 covers TDD while the freshness-marker and
-  session-log conventions cover docs. The silence is therefore a property of
-  **this file's own prose**: rewrite one of those rules past recognition and the
-  generic block comes back), `.oxlintrc.json`,
+  (the per-repo override surface. Under dev-conventions 0.15.2 a generic block
+  goes silent wherever this file's **prose** already covers its ground — fenced
+  code is not prose, so a documented command no longer counts — which means
+  invariant 6 silences the TDD block and the freshness-marker plus session-log
+  conventions silence the docs one. Those two silences are a property of **this
+  file's own wording**: rewrite either rule past recognition and the generic
+  block returns. The javascript block is **muted explicitly instead**, because
+  its content is manifest-management advice and this repo has no root manifest
+  — it runs `bun` as a runtime without being a bun package, and the one real
+  manifest is a gitignored fixture the enforcement hook already guards. Ask the
+  hook rather than reading this: `--explain <repo-root>` names the gate and the
+  matching line for every block), `.oxlintrc.json`,
   `.gitignore`, `LICENSE`, and
   [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md) (required, because
   three.js ships inside every scene — see invariant 1). One bullet on purpose:

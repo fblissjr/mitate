@@ -259,3 +259,40 @@ claims made in conversation — recommendations included — are guarded by the
 derive-at-write rule alone.** Cross-session peer review is currently the
 only control that has ever caught one. Filed as the apparatus's disclosed
 edge rather than a gap to wire, because a hook cannot read intentions.
+
+## ANNOTATION, 2026-08-03 (night) — the corpus episode, and the day's thesis run forward for once
+
+The corpus ruling (forward item 5's disposition) produced three findings
+that belong to this postmortem's argument, not just its queue:
+
+- **The central finding finally ran in the right direction.** Every drift
+  specimen above shares one order: work done, prose written, prose
+  corrected after. The corpus bracket inverted it — this session pitched
+  the owner a "must still fail the gate" design in conversation, then ran
+  one smoke command *before building*, and the measurement refuted the
+  premise (`fixtures/defect-corpus/after-hours.html` passes clean; its
+  defects are composition-class). The wrong artifact was never built.
+  Derive-before-design is the same rule as derive-at-write, applied one
+  step earlier, and this is its first recorded save. The conversation-
+  surface caveat from the previous annotation still held on the way in:
+  the smoke-detector pitch itself was an unverified conversational claim
+  about the repo's own apparatus, one command from being checked.
+- **Three days of tracked prose about the corpus's mechanism had never
+  been checked.** "Kept broken so a check that stops catching is noticed"
+  shipped with the corpus at 0.16.45 and was false the whole time — no
+  check catches those defects. The same-day-stale class extends backward:
+  founding-day framing is same-day prose that simply never got its same
+  day. Corrected in `f2ad67b` (CLAUDE.md's corpus bullet, the corpus
+  README) alongside the bracket that now pins what is actually true.
+- **The apparatus policed its own installer twice more.** The rewritten
+  changelog reminder fired on the 0.18.1 entry and was absorbed as
+  context (the factual phrasing delivering as redesigned), and the
+  assertion ratchet refused the corpus bracket's first commit — its
+  header said "measured" without naming a control, 54 then 53 against
+  budget 51, and the shipped wording is honest because the check rejected
+  the adjective (recorded in `f2ad67b`'s message). At sign-out the same
+  discipline caught the fresh handoff hand-writing three state values
+  (version, bracket count, unpushed-commit count) that had all rotted
+  within the hour — fixed by anchoring each to its deriving source
+  (handoff is `(local)`; the class is this file's finding 1, still alive
+  at day's end, still caught before publication).

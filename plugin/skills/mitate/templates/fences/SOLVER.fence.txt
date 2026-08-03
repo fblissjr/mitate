@@ -8,6 +8,9 @@
 const SIZES={EWS:{f:.20,a:.5},WS:{f:.50,a:.5},FSA:{f:.70,a:.5},FS:{f:.95,a:.5},
              MS:{f:1.6,a:.68},MCU:{f:2.4,a:.78},CU:{f:3.6,a:.84},ECU:{f:6,a:.88}};
 const LENS=STYLE.lens||42;
+/* An empty list died later and worse: setCamera read SHOTS[0], got undefined,
+   and the page fell over on a TypeError that named nothing the author wrote. */
+if(!SHOTS.length)throw new Error('SHOTS is empty — a 3D scene declares at least one shot, or the camera has nowhere to be');
 SHOTS.forEach((sh,i)=>{                 // the match-cut constraint — verified, not hoped
   if(!sh.match)return;
   const q=SHOTS[i-1]||{};
@@ -28,6 +31,10 @@ let shotFocus=12;
    that declares only h/w framed exactly as before. */
 function subjectExtent(name,t){
   const names=Array.isArray(name)?name:[name];
+  /* subject: [] built its union over nothing — an Infinity box, a NaN camera,
+     and a page that reached sceneReady rendering blank. Refuse it here, the
+     one place every subject lookup already flows through. */
+  if(!names.length)throw new Error('a shot must name at least one subject — its subject list is empty');
   let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity,z0=Infinity,z1=-Infinity,anyW=false;
   for(const n of names){
     const S=SUBJECTS[n];if(!S)throw new Error('unknown subject: '+n);

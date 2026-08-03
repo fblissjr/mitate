@@ -164,7 +164,11 @@ const noise1=(t,f=1,k=0)=>{const x=t*f,i=Math.floor(x),u=x-i,
    The a/b arguments are FRACTIONS of the beat, not seconds, so an effect
    keeps its place when the beat is retimed — which is also what lets
    narration-driven timing rewrite durations without breaking animate(). */
-const BEAT={};{let acc=0;for(const b of BEATS){BEAT[b.name]={...b,t0:acc,t1:acc+b.dur};acc+=b.dur;}}
+/* Null prototype, so an undeclared name is a MISS. With a plain {} a shot
+   anchored to 'toString' found Object.prototype.toString, beat() never threw,
+   and every span went NaN — a silently blank film. bracket-check-kit.js holds
+   the arm that keeps this refusal loud, in the page and in `check` alike. */
+const BEAT=Object.create(null);{let acc=0;for(const b of BEATS){BEAT[b.name]={...b,t0:acc,t1:acc+b.dur};acc+=b.dur;}}
 const TOTAL=BEATS.reduce((s,b)=>s+b.dur,0);
 function beat(name){const B=BEAT[name];if(!B)throw new Error('unknown beat: '+name);return B;}
 function span(name,a=0,b=1){const B=beat(name);return[B.t0+a*B.dur,B.t0+b*B.dur];}

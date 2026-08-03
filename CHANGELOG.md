@@ -7,6 +7,45 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.18.0
+
+### changed
+
+**`build.js check` executes the canonical fence store instead of mirroring
+it — REP2 on the representation track.** The KERNEL and SOLVER fences load
+from `fences/` beside the tools and run against the scene's extracted
+tables, so beat accumulation, anchor resolution, rung lookup and every
+solver refusal are now the kit's own code path. The 2026-08-02 review's
+thirteen open findings — `check` and the kit disagreeing in both directions,
+with nothing comparing them — close as a class: there is one model now, and
+a new bracket (`bracket-check-kit.js`) runs the review's four divergence
+cases through BOTH instruments and requires the same verdict with the same
+phrase. Recorded red first on all four: `check` was green on three defects
+a driven page refuses (only one of which, a missing `size`, was a clean
+in-scope solver throw — an empty `SHOTS` crashed downstream on a TypeError
+and `subject: []` was a silent NaN box, per the next paragraph), and the
+kit was silent on the prototype-named beat `check` already refused. Green
+after. The subject, focus and rung refusals now quote the kit's own throw
+(`unknown subject: x`, `unknown size: x`), with the declared names
+appended; where `check` is deliberately stricter than the kit — among the
+cases: an anchor fraction outside 0..1, a duplicate beat name, out-of-order
+shots, `FRAME.px` disagreeing with `FRAME.aspect` — the divergence is
+one-way (the kit accepts and mis-renders, `check` refuses) and is declared
+in the verb's header as a class.
+
+**The kit refuses three silent-NaN shapes it used to accept.** `BEAT` is
+built on a null prototype, so a shot anchored to a prototype name
+(`toString`) now throws `unknown beat` instead of resolving an inherited
+function into NaN spans; the solver refuses an empty `SHOTS` at load with
+its own message instead of dying later on an unhelpful TypeError; and
+`subjectExtent` refuses an empty subject list instead of building an
+Infinity box and rendering a blank film under a green boot. All three
+regenerated into every carrier from the store by `--parity-fix`.
+
+**A scene that throws while booting now fails the recorder immediately**
+(`shoot.js` races the `sceneReady` wait against the first page error)
+instead of sitting out the full 20s timeout to report a certainty.
+
 ## 0.17.3
 
 ### fixed

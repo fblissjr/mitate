@@ -198,11 +198,15 @@ const ROWS = [
   // `check`'s error tier: the tables cannot both be satisfied, so the verb owes
   // a non-zero exit. Each names the substring its own message carries, because
   // "exit 1" alone would let any one of these pass on another's finding.
-  ['(red) check subject',   ['check', BAD.subject],   { fails: 'is not in SUBJECTS' }],
-  ['(red) check focus',     ['check', BAD.focus],     { fails: 'focus "charts" is not in SUBJECTS' }],
+  // Since REP2 the subject, focus and rung refusals QUOTE THE KIT'S OWN THROW
+  // (check executes the canonical solver rather than mirroring it), so these
+  // arms assert the kit's words — the same words a driven page dies with,
+  // which bracket-check-kit.js pins from both sides.
+  ['(red) check subject',   ['check', BAD.subject],   { fails: 'unknown subject: chartt' }],
+  ['(red) check focus',     ['check', BAD.focus],     { fails: 'focus — unknown subject: charts' }],
   ['(red) check anchor',    ['check', BAD.anchor],    { fails: 'outside 0..1' }],
   ['(red) check beat name', ['check', BAD.beat],      { fails: 'which BEATS does not declare' }],
-  ['(red) check rung',      ['check', BAD.rung],      { fails: 'is not a rung in SIZES' }],
+  ['(red) check rung',      ['check', BAD.rung],      { fails: 'unknown size: FSX' }],
   ['(red) check shot order',['check', BAD.order],     { fails: 'before SHOTS[0]' }],
   // No shipped scene declares a flash, so this arm is the ONLY thing that ever
   // exercises that resolver. Without it the code path is prose.
@@ -277,6 +281,11 @@ try {
 
   fs.mkdirSync(DRIFT, { recursive: true });
   fs.copyFileSync(BUILD, DRIFT_BUILD);
+  // fences/ moves with the tools (the 0.17.1 workspace rule): since REP2 check
+  // executes the store before it reads smoke.js's constants, so a drift copy
+  // without fences/ would fail on the store refusal and this arm would pass on
+  // the wrong message.
+  fs.cpSync(path.join(__dirname, 'fences'), path.join(DRIFT, 'fences'), { recursive: true });
   fs.writeFileSync(path.join(DRIFT, 'smoke.js'),
     fs.readFileSync(SMOKE, 'utf8').split('CPS_WARN_THRESHOLD').join('CPS_RENAMED'));
 

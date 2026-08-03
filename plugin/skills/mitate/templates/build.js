@@ -913,6 +913,21 @@ function motion(scene, fps = 12) {
  * tool swappable across scenes. Same category as `smoke.js --parity-only`
  * (string work over files, no render) and as loop()'s CONFIG.sway warning.
  *
+ * SINCE REP2 THE SEMANTICS ARE THE KIT'S OWN, EXECUTED RATHER THAN MIRRORED.
+ * The KERNEL and SOLVER fences load from the canonical store beside this file
+ * and run against the scene's extracted tables, so beat accumulation, anchor
+ * resolution and every solver refusal below are the kit's own code path —
+ * `plan.md`'s "a control that rebuilds its subject verifies a reimplementation"
+ * was true of this verb until the 2026-08-02 review counted the divergences.
+ * bracket-check-kit.js holds `check` and a DRIVEN page to the same verdict on
+ * that review's divergence corpus. This does not change the paragraph above:
+ * still no browser, no seekTo, no runtime state — executing the kit's pure
+ * functions over authored tables is authoring-time work in the same category
+ * as evaluating the table literals themselves. Where this verb is deliberately
+ * STRICTER than the kit (an anchor fraction outside 0..1, a duplicate beat
+ * name), the divergence is one-way — the kit accepts and mis-renders, check
+ * refuses — and each such check says so at its site.
+ *
  * WHY STATIC RATHER THAN THROUGH THE CONTRACT, since the contract is this
  * repo's default answer. `window.SHOTS` is deliberately a projection —
  * `{t, cutEnd}`, for smoke's transition sampling — and SUBJECTS, SIZES and the
@@ -1095,11 +1110,60 @@ function smokeConst(name) {
   return Number(m[1]);
 }
 
+// The kit's semantics have ONE home: the canonical fence store beside this
+// file — the same store --parity-fix regenerates every carrier from. check
+// executes these fences rather than mirroring their arithmetic, because a
+// mirror is a reimplementation and the 2026-08-02 review found this file's
+// mirror disagreeing with the kit in both directions, with nothing comparing
+// them. Refusal over degradation, same as smoke.js's store loader: a check
+// that silently fell back to a private model would BE the old divergence.
+function kitFence(name) {
+  const p = path.join(__dirname, 'fences', `${name}.fence.txt`);
+  let raw;
+  try { raw = fs.readFileSync(p, 'utf8'); }
+  catch (e) {
+    throw new Error(`check: cannot read ${p} — ${e.code || e.message}. check derives its beat and `
+      + `solver semantics from the canonical fence store; copy the fences/ directory from the `
+      + `skill's templates/ so it sits beside build.js — the tools and fences/ move together.`);
+  }
+  const block = raw.endsWith('\n') ? raw.slice(0, -1) : raw;
+  // A pragmatic well-formedness gate, not a second parity check: parity owns
+  // "does every carrier match this store"; this only refuses to EXECUTE a file
+  // that is visibly not a single fence block, because running a mangled store
+  // would report the mangling as scene errors.
+  if (!block.startsWith(`/* ==== ${name}-START`) || !block.endsWith(`${name}-END ==== */`)) {
+    throw new Error(`check: ${p} is not a single well-formed ${name} block — re-copy fences/ from `
+      + `the skill's templates/, or run smoke.js --parity-only to diagnose the store.`);
+  }
+  return block;
+}
+
+// Execute a kit fence with the scene's extracted tables in scope. Identifiers
+// the caller does not supply resolve to the real globals (Math, Error, JSON),
+// so the fence runs the same code path it runs in the page — that identity is
+// the point, and bracket-check-kit.js is the control that holds it.
+function execKit(name, vars, wants) {
+  const scope = new Proxy(vars, {
+    has: () => true,
+    get(t, k) {
+      if (k === Symbol.unscopables) return undefined;
+      return k in t ? t[k] : globalThis[k];
+    },
+  });
+  return new Function('__scope', `with(__scope){\n${kitFence(name)}\n;return {${wants}};}`)(scope);
+}
+
 function check(scene) {
   const text = fs.readFileSync(scene, 'utf8');
   const found = {}, out = [], uncovered = [], covered = [];
   const add = (sev, msg) => out.push([sev, msg]);
-  for (const name of ['BEATS', 'SHOTS', 'SUBJECTS', 'SIZES', 'CONFIG', 'FRAME', 'KEYS']) {
+  // SIZES is NOT in this list any more: it lives inside the SOLVER fence, so
+  // since REP2 it comes from executing the canonical store's copy — parity is
+  // what guarantees the scene's own bytes agree with it. STYLE is extracted
+  // below but not reported on: it feeds the solver's defaults and is not
+  // itself judged, and the one shipped scene that assembles it from a bible
+  // (gearbox) would otherwise warn forever about a table check never reads.
+  for (const name of ['BEATS', 'SHOTS', 'SUBJECTS', 'CONFIG', 'FRAME', 'KEYS']) {
     const r = tableValue(text, name);
     found[name] = r.state === 'ok' ? r.value : null;
     if (r.state === 'ok') covered.push(name);
@@ -1116,19 +1180,28 @@ function check(scene) {
       uncovered.push(name);
     }
   }
+  // Quiet, per the note above the loop: the solver's inputs, not a judged table.
+  { const r = tableValue(text, 'STYLE'); found.STYLE = r.state === 'ok' ? r.value : null; }
   const beats = Array.isArray(found.BEATS) ? found.BEATS : null;
   if (!beats || !beats.length) {
     throw new Error(`check: no BEATS table found in ${path.basename(scene)} — every mitate scene `
       + `declares one, so either this is not a scene or the declaration is not top-level.`);
   }
 
-  // BEAT spans, accumulated exactly as the kit accumulates them. TOTAL is
-  // derived here for the same reason it is derived in the scene: a declared
-  // duration and an actual one cannot disagree if only one of them exists.
-  const span = {}; let acc = 0;
+  // BEAT spans and TOTAL come from the kit itself since REP2 — the canonical
+  // KERNEL fence executed against this scene's tables — so a declared duration
+  // and an actual one cannot disagree because only one accumulation exists.
+  // What is sanitized here is the INPUT, visibly, never the semantics: a dur
+  // the reader cannot resolve (or an invalid one, error'd below) enters the
+  // kit as 0, so the timeline is explicitly approximate rather than NaN from
+  // the first bad beat onward. Duplicate names stay a static ERROR even though
+  // the kit accepts them (last one wins its own name silently) — that is a
+  // one-way strictness, declared in the header.
+  const seenBeat = new Set();
   for (const b of beats) {
     if (typeof b.name !== 'string') { add(CHECK_ERR, `BEATS has an entry with no name`); continue; }
-    if (span[b.name]) add(CHECK_ERR, `BEATS declares "${b.name}" twice — every other table addresses beats by name, so the second is unreachable`);
+    if (seenBeat.has(b.name)) add(CHECK_ERR, `BEATS declares "${b.name}" twice — every other table addresses beats by name, so the second is unreachable`);
+    seenBeat.add(b.name);
     if (unresolved(b.dur)) {
       add(CHECK_WARN, `BEATS "${b.name}" has a dur this reader cannot resolve — it references something `
                     + `outside the table, which is legal authoring and beyond a literal reader. The timeline `
@@ -1143,46 +1216,49 @@ function check(scene) {
     if (!Number.isFinite(dur) && !unresolved(b.dur)) {
       add(CHECK_ERR, `BEATS "${b.name}" has dur ${JSON.stringify(b.dur)} — a beat is a positive number of seconds`);
     }
-    span[b.name] = [acc, acc + (Number.isFinite(dur) ? dur : 0)];
-    acc += Number.isFinite(dur) ? dur : 0;
   }
-  const TOTAL = acc;
-  const known = n => Object.prototype.hasOwnProperty.call(span, n);
-  // A beat name that resolves, and the absolute t an [beat, fraction] anchor
-  // addresses. `at` defaults to 0 in the kit's beatAt, so an omitted fraction
-  // is correct rather than missing — flagging it would condemn valid source.
-  const anchorAt = (bn, fr) => span[bn][0] + (fr === undefined ? 0 : fr) * (span[bn][1] - span[bn][0]);
+  const config = found.CONFIG && typeof found.CONFIG === 'object' ? found.CONFIG : {};
+  const kitBeats = beats.filter(b => typeof b.name === 'string')
+    .map(b => ({ ...b, dur: typeof b.dur === 'number' && b.dur > 0 ? b.dur : 0 }));
+  const kit = execKit('KERNEL', { CONFIG: config, BEATS: kitBeats, FRAME: found.FRAME || {} },
+    'BEAT,TOTAL,beat,span,beatAt,ss,lerp');
+  const TOTAL = kit.TOTAL;
+  // `at` defaults to 0 in the kit's beatAt, so an omitted fraction is correct
+  // rather than missing — flagging it would condemn valid source. A miss is
+  // reported with the kit's own throw quoted, because the driven page dies
+  // with those exact words and the two verdicts should read as one.
+  const beatMiss = n => { try { kit.beat(n); return null; } catch (e) { return e.message; } };
+  const known = n => beatMiss(n) === null;
 
   const subjects = found.SUBJECTS && typeof found.SUBJECTS === 'object' ? Object.keys(found.SUBJECTS) : null;
-  const sizes = found.SIZES && typeof found.SIZES === 'object' ? found.SIZES : null;
-  // WIDE RUNGS, DERIVED, not listed. A rung's `a` is a vertical anchor ON the
-  // subject — a body landmark, which is what makes MS "waist-up". A union box
-  // has no waist, so the rungs that are meaningful for one are exactly those
-  // that aim at the box centre. Deriving it means an edit to the ladder cannot
-  // leave a hand-written list behind.
-  const wide = sizes ? new Set(Object.keys(sizes).filter(k => sizes[k] && Math.abs(sizes[k].a - 0.5) < 1e-9)) : null;
   const shots = Array.isArray(found.SHOTS) ? found.SHOTS : null;
   const framings = new Map();
 
   if (shots) {
+    // The house idiom resolves each shot's t with the kit's own beatAt —
+    // `.map(sh=>({...sh,t:beatAt(sh.at[0],sh.at[1])}))` — so t is resolved
+    // here by the SAME function, and t1 the same way the scene assigns it.
+    const resolved = [];
     let prev = null;
     shots.forEach((s, i) => {
       const at = Array.isArray(s.at) ? s.at : null;
       const bn = at ? at[0] : null;
       const where = `SHOTS[${i}]` + (typeof bn === 'string' ? ` (${bn})` : '');
+      let t = NaN;
       if (!at || typeof bn !== 'string') {
         add(CHECK_ERR, `${where}: \`at\` must be [beatName, fraction] — got ${JSON.stringify(s.at)}`);
       } else if (!known(bn)) {
-        add(CHECK_ERR, `${where}: anchored to beat "${bn}", which BEATS does not declare`);
+        add(CHECK_ERR, `${where}: anchored to beat "${bn}", which BEATS does not declare (${beatMiss(bn)})`);
       } else {
         const fr = at[1];
         if (fr !== undefined && !(typeof fr === 'number' && fr >= 0 && fr <= 1)) {
           // The anchor is a FRACTION of the beat. 1.4 is not "late in the
           // beat", it is a shot that starts inside some later beat entirely —
-          // silently, because beatAt happily returns the number.
+          // silently, because beatAt happily returns the number. Deliberately
+          // STRICTER than the kit, one-way, per the header.
           add(CHECK_ERR, `${where}: anchor fraction ${JSON.stringify(fr)} is outside 0..1, so the shot does not start inside its own beat`);
         } else {
-          const t = anchorAt(bn, fr);
+          t = kit.beatAt(bn, fr);
           if (prev && t < prev.t) {
             add(CHECK_ERR, `${where}: starts at t=${t.toFixed(2)}s, before ${prev.where} at t=${prev.t.toFixed(2)}s — `
               + `a shot runs until the NEXT shot starts, so an out-of-order entry gives the earlier one a negative length`);
@@ -1190,24 +1266,57 @@ function check(scene) {
           prev = { t, where };
         }
       }
-      const named = Array.isArray(s.subject) ? s.subject : [s.subject];
-      if (subjects) {
-        for (const n of named) {
-          if (typeof n !== 'string') { add(CHECK_ERR, `${where}: subject ${JSON.stringify(n)} is not a name`); continue; }
-          // The lookup that throws at RUNTIME, and only on a frame where this
-          // shot is live — so a typo in a shot nobody seeks to is found by a
-          // viewer today. Here it costs no frame.
-          if (!subjects.includes(n)) add(CHECK_ERR, `${where}: subject "${n}" is not in SUBJECTS (${subjects.join(', ')})`);
-        }
-        if (typeof s.focus === 'string' && !subjects.includes(s.focus)) {
-          add(CHECK_ERR, `${where}: focus "${s.focus}" is not in SUBJECTS (${subjects.join(', ')})`);
-        }
-      }
-      if (sizes) {
-        for (const k of ['size', 'size2']) {
-          if (typeof s[k] === 'string' && !sizes[s[k]]) {
-            add(CHECK_ERR, `${where}: ${k} "${s[k]}" is not a rung in SIZES (${Object.keys(sizes).join(' ')})`);
+      resolved.push({ ...s, t: Number.isFinite(t) ? t : 0, where });
+      const key = JSON.stringify([s.subject, s.size, s.size2, s.angle, s.angle2, s.elev, s.fov, s.anchor, s.anchorX]);
+      if (!framings.has(key)) framings.set(key, []);
+      framings.get(key).push(i);
+    });
+    resolved.forEach((sh, i) => { sh.t1 = i < resolved.length - 1 ? resolved[i + 1].t : TOTAL; });
+
+    // THE SOLVER, EXECUTED RATHER THAN MIRRORED. Load-time is where the kit
+    // refuses an empty SHOTS and a broken match cut; solveShot is where it
+    // refuses an unknown subject, an unknown or missing size, and an empty
+    // subject list. Every ERROR below quotes the kit's own throw — the same
+    // words a driven page dies with, which is what bracket-check-kit.js pins.
+    const subjectsForKit = found.SUBJECTS && typeof found.SUBJECTS === 'object'
+      ? found.SUBJECTS
+      // SUBJECTS unreadable or absent: a stub that satisfies every lookup, so
+      // the size and match-cut refusals still run while subject names go
+      // unjudged — exactly the coverage the warnings above already declared.
+      : new Proxy({}, { get: () => ({ pos: () => [0, 0, 0], h: 1 }), has: () => true });
+    const style = found.STYLE && typeof found.STYLE === 'object' ? found.STYLE : {};
+    let solver = null;
+    try {
+      solver = execKit('SOLVER',
+        { STYLE: style, SHOTS: resolved, CONFIG: config, FRAME: found.FRAME || {},
+          SUBJECTS: subjectsForKit, ss: kit.ss, lerp: kit.lerp },
+        'SIZES,LENS,subjectExtent,solveShot,focusDist');
+    } catch (e) {
+      add(CHECK_ERR, `SHOTS: ${e.message}`);
+    }
+    if (solver) {
+      const sizes = solver.SIZES;
+      // WIDE RUNGS, DERIVED, not listed. A rung's `a` is a vertical anchor ON
+      // the subject — a body landmark, which is what makes MS "waist-up". A
+      // union box has no waist, so the rungs that are meaningful for one are
+      // exactly those that aim at the box centre. Deriving it means an edit to
+      // the ladder cannot leave a hand-written list behind.
+      const wide = new Set(Object.keys(sizes).filter(k => sizes[k] && Math.abs(sizes[k].a - 0.5) < 1e-9));
+      resolved.forEach(sh => {
+        try {
+          const c = solver.solveShot(sh, sh.t);
+          if (sh.focus !== undefined) {
+            try { solver.focusDist(sh, sh.t, c.p, c.E); }
+            catch (e) {
+              add(CHECK_ERR, `${sh.where}: focus — ${e.message}`
+                + (subjects ? ` — SUBJECTS declares (${subjects.join(', ')})` : ''));
+            }
           }
+        } catch (e) {
+          let help = '';
+          if (/unknown subject|at least one subject/.test(e.message) && subjects) help = ` — SUBJECTS declares (${subjects.join(', ')})`;
+          if (/unknown size/.test(e.message)) help = ` — SIZES declares (${Object.keys(sizes).join(' ')})`;
+          add(CHECK_ERR, `${sh.where}: ${e.message}${help}`);
         }
         // NARROWED, and the narrowing is the point. The flat rule "a union
         // takes wide rungs only" condemns a shipped two-shot in
@@ -1216,17 +1325,14 @@ function check(scene) {
         // An explicit anchor IS the landmark the union lacks, and the solver
         // prefers it over the rung's `a`, so a shot that supplies one is not
         // making the mistake this looks for.
-        if (Array.isArray(s.subject) && wide && typeof s.size === 'string' && sizes[s.size]
-            && !wide.has(s.size) && s.anchor === undefined) {
-          add(CHECK_WARN, `${where}: union of ${s.subject.length} subjects on rung ${s.size}, whose anchor `
-            + `${sizes[s.size].a} aims at a body landmark a union box does not have. Use a wide rung `
+        if (Array.isArray(sh.subject) && sh.subject.length && typeof sh.size === 'string' && sizes[sh.size]
+            && !wide.has(sh.size) && sh.anchor === undefined) {
+          add(CHECK_WARN, `${sh.where}: union of ${sh.subject.length} subjects on rung ${sh.size}, whose anchor `
+            + `${sizes[sh.size].a} aims at a body landmark a union box does not have. Use a wide rung `
             + `(${[...wide].join(' ')}) or set \`anchor\` explicitly.`);
         }
-      }
-      const key = JSON.stringify([s.subject, s.size, s.size2, s.angle, s.angle2, s.elev, s.fov, s.anchor, s.anchorX]);
-      if (!framings.has(key)) framings.set(key, []);
-      framings.get(key).push(i);
-    });
+      });
+    }
     for (const [key, idx] of framings) {
       if (idx.length < IDENTICAL_FRAMING_WARN) continue;
       const s = shots[idx[0]];
@@ -1242,30 +1348,31 @@ function check(scene) {
   if (Array.isArray(found.KEYS)) {
     found.KEYS.forEach((k, i) => {
       if (typeof k.beat !== 'string' || !known(k.beat)) {
-        add(CHECK_ERR, `KEYS[${i}]: anchored to beat ${JSON.stringify(k.beat)}, which BEATS does not declare`);
+        add(CHECK_ERR, `KEYS[${i}]: anchored to beat ${JSON.stringify(k.beat)}, which BEATS does not declare`
+          + (typeof k.beat === 'string' ? ` (${beatMiss(k.beat)})` : ''));
       } else if (k.at !== undefined && !(typeof k.at === 'number' && k.at >= 0 && k.at <= 1)) {
         add(CHECK_ERR, `KEYS[${i}] (${k.beat}): anchor fraction ${JSON.stringify(k.at)} is outside 0..1`);
       }
     });
   }
 
-  const config = found.CONFIG && typeof found.CONFIG === 'object' ? found.CONFIG : {};
   if (Array.isArray(config.flashes)) {
     config.flashes.forEach((f, i) => {
       if (typeof f.beat !== 'string' || !known(f.beat)) {
-        add(CHECK_ERR, `CONFIG.flashes[${i}]: anchored to beat ${JSON.stringify(f.beat)}, which BEATS does not declare`);
+        add(CHECK_ERR, `CONFIG.flashes[${i}]: anchored to beat ${JSON.stringify(f.beat)}, which BEATS does not declare`
+          + (typeof f.beat === 'string' ? ` (${beatMiss(f.beat)})` : ''));
       }
     });
   }
 
   // Captions, against the reading speed smoke.js already owns. A caption is
   // only fully legible between its fade-in and its fade-out, so the readable
-  // window is (dur - 2*capFade) and not the beat.
+  // window is (dur - 2*capFade) and not the beat. The span is the kit's own.
   const cps = smokeConst('CPS_WARN_THRESHOLD');
   const fade = typeof config.capFade === 'number' ? config.capFade : smokeConst('CAP_FADE_DEFAULT');
   for (const b of beats) {
     if (typeof b.cap !== 'string' || !b.cap) continue;
-    const rate = b.cap.length / Math.max((span[b.name] ? span[b.name][1] - span[b.name][0] : 0) - 2 * fade, 0.01);
+    const rate = b.cap.length / Math.max((known(b.name) ? kit.beat(b.name).dur : 0) - 2 * fade, 0.01);
     if (rate > cps) add(CHECK_WARN, `beat "${b.name}": caption reads at ${rate.toFixed(1)} cps against a ${cps} cps limit — "${b.cap}"`);
   }
 

@@ -1047,7 +1047,8 @@ bucket (e).
   pre-existing behavioral defects surfaced by the new adversarial
   instrument, plus wording — are queued as the 0.18.1 cascade in
   `working-plan.md`'s "What the REP2 review taught about review"
-  (2026-08-03); this stamp is MET, not finished-forever.
+  (2026-08-03); this stamp is MET, not finished-forever. Session postmortem:
+  [`postmortems/2026-08-03_session_rep2-review-protocol.md`](postmortems/2026-08-03_session_rep2-review-protocol.md).
 - **REP3 — close the open bags.** `STYLE`/`CONFIG` gain a key registry
   **derived from the kit's actual reads** (the mechanical enumeration behind
   `references/breakdown.md` becomes its source); `check` warns on unknown

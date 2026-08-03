@@ -1,6 +1,3 @@
 {
-  "directives": {
-    "tdd": false,
-    "doc-conventions": false
-  }
+  "directives": {}
 }

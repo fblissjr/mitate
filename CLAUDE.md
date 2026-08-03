@@ -98,9 +98,12 @@ copy of a router is the exact failure this file keeps catching.
 - **Manifests, config and legal** — `.claude-plugin/marketplace.json` (the
   marketplace half of the version cascade; the plugin half is under `plugin/`),
   `.postmortem.json` (pins where postmortems live), `.dev-conventions.json`
-  (mutes the generic TDD and doc-conventions blocks — superseded here by
-  invariant 6 plus the house claim-comment practice, and by this file's
-  freshness-marker convention under selfcheck), `.oxlintrc.json`,
+  (the per-repo override surface — **it now mutes nothing**, because
+  dev-conventions 0.15.1 silences a generic block wherever this file already
+  covers its ground, and invariant 6 covers TDD while the freshness-marker and
+  session-log conventions cover docs. The silence is therefore a property of
+  **this file's own prose**: rewrite one of those rules past recognition and the
+  generic block comes back), `.oxlintrc.json`,
   `.gitignore`, `LICENSE`, and
   [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md) (required, because
   three.js ships inside every scene — see invariant 1). One bullet on purpose:

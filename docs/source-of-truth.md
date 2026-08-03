@@ -1,4 +1,4 @@
-last updated: 2026-08-02
+last updated: 2026-08-03
 
 # Where truth lives
 
@@ -176,7 +176,19 @@ the front-door files surfaced five. `CHANGELOG.md`, the logs, the postmortems an
 the two planning documents are excluded as dated records. What remains uncovered
 is a noun outside the REGISTRY and anything inside an excluded record — a handoff
 listing four cached plugin versions where five exist is outside every guard here.
-**There the answer is not a check: cite the command, not its output.**
+**There the answer is not a check: cite the command, not its output** — and
+since 2026-08-03 that sentence has teeth: a line about repo state in those
+files either carries the command/commit that produced it, or is written in
+past tense with its observation time, or is labelled `(memory)`, `(local)`
+or `(reported)` (the vocabulary the postmortems and
+`snapshots/2026-08-02/history.md` already use). Adopted on measurement: an
+audit of three days of corrections found every drifted line uncited and
+every cited line surviving, at a base rate of roughly four failures per
+twenty-three confident same-sitting claims. `/verify-written-claims` is the
+procedure; `scripts/claims-reminder.sh` (bracketed, session-deduped) reminds
+at the edit. The refutation test travels with the rule: if a third of the
+next twenty corrected lines turn out to have carried citations, the
+discriminator is wrong and this paragraph reverts to its first sentence.
 
 ## The rules
 

@@ -45,9 +45,11 @@ copy of a router is the exact failure this file keeps catching.
 - **What happened and why** — `CHANGELOG.md`
 - **Repo tools** — `scripts/selfcheck.js`, `install-hooks.sh`,
   `stage-films.sh`, `derived-counts.js`, `diagnose-determinism.js`,
-  `sample-determinism.js`. `scripts/bracket-*.js` are their controls, and cover
-  `selfcheck.js`, `stage-films.sh` and `derived-counts.js` (through
-  `bracket-selfcheck.js`'s check 13 arms). **`diagnose-determinism.js`,
+  `sample-determinism.js`, `claims-reminder.sh` (the PreToolUse hook wired in
+  `.claude/settings.json`). `scripts/bracket-*.js` are their controls, and cover
+  `selfcheck.js`, `stage-films.sh`, `derived-counts.js` (through
+  `bracket-selfcheck.js`'s check 13 arms) and `claims-reminder.sh`
+  (`bracket-claims-reminder.js`). **`diagnose-determinism.js`,
   `sample-determinism.js` and `install-hooks.sh` are uncontrolled**, which
   invariant 6 wants visible rather than glossed. Named rather than counted, on
   purpose: this line read "cover two of the five" and adding one tool made both
@@ -78,7 +80,8 @@ copy of a router is the exact failure this file keeps catching.
   this line used to say "the twelve" while the tables held fourteen
 - **Repo-development agents and skills** — `.claude/agents/control-builder.md`,
   `doc-claim-auditor.md`, `.claude/skills/audit-claims/`,
-  `.claude/skills/extract-patterns/`. **No standing model-delegation rule**, by
+  `.claude/skills/extract-patterns/`, `.claude/skills/verify-written-claims/`
+  (plus `.claude/settings.json`, which wires the claims reminder). **No standing model-delegation rule**, by
   owner call 2026-08-01: the always-loaded tiering rule cost more than it bought,
   and `working-plan.md` had already filed "inline the intent or drop it, since
   that rule does not ship". Each agent states its own model reasoning in its own
@@ -300,12 +303,22 @@ the check.
   them**, and a review found four stale claims in one agent file, each of which
   would have made it report a working capability as drift. `/audit-claims` routes
   at them explicitly for that reason; it is their only control.
-- **Two controls exist to be used, not rediscovered.** `/audit-claims` dispatches
+- **These controls exist to be used, not rediscovered.** `/audit-claims` dispatches
   `doc-claim-auditor` at whatever the diff touched — the executable form of the
   drift rule in `source-of-truth.md`, which went unrun for this repo's whole life
-  despite being written down. `./scripts/install-hooks.sh` installs the pre-commit
+  despite being written down. `/verify-written-claims` re-derives the counts,
+  statuses and attributions a diff writes into the dated records and status
+  surfaces — the file set every mechanical guard excludes by design — and runs
+  the invalidation grep after anything lands. `./scripts/install-hooks.sh`
+  installs the pre-commit
   self-check and fence parity into the slot path-privacy leaves free; `.git/hooks/`
   is untracked, so that installer is the only reproducible copy of the hook.
+- **State claims cite or label.** A line about repo state in a dated record or
+  status surface carries the command or commit that produced it, or is written
+  in past tense with its observation time, or is labelled `(memory)`, `(local)`
+  or `(reported)`. The rule's home, its evidence and its refutation test live in
+  `docs/source-of-truth.md`; `scripts/claims-reminder.sh` reminds at the edit,
+  once per session per class, and its bracket keeps the reminder honest.
 - **Commit freely; never push.** Pushing is the owner's call, always. Validate
   before writing, and let the pre-commit hook gate the commit rather than
   deferring the commit itself (owner directive, 2026-07-29 — this line read

@@ -222,3 +222,38 @@ stays readable:
   reproduction (0.17.1); bracket-driver and bracket-noise via PR #9's gate
   failing on the clean checkout, diagnosed and fixed by the doc session
   (0.17.2). Section 2 credits only the first route.
+
+## ANNOTATION, same day — the emitter session's response, with measurements
+
+Point by point, verifying the annotation the same way it verified this file:
+
+- **Arm claims: the measured count is three, not one and not 31.**
+  `grep -n 'Delet\|delete this arm' bracket-parity.js` finds explicit
+  deletion claims on three arms (the clean-pass arm, the inversion's core
+  arm, the default-store arm). The original sentence overstated; the
+  correction undercounted. Taking the annotation's offered fork: the
+  sentence is corrected here rather than comments carpet-bombed onto 28
+  arms whose labels plus group comments already state their claims — the
+  convention's letter is one line per test, and this file now records that
+  the letter is not met while the claims remain recoverable per arm.
+- **Piped-validator: count stands at two, citation was wrong.** The log
+  records one instance; the second (a filter's exit status echoed after a
+  workspace reproduction) is session memory with no tracked artifact.
+  The finding should have read: once recorded, once unrecorded — and a
+  count resting half on memory should have said so when written.
+- **The second hook blockade happened, and the correction stands for the
+  record anyway.** The emitter session's first 0.17.1 commit attempt was
+  refused on two selfcheck failures raised by the doc session's
+  then-uncommitted `bracket-driver.js` edit (the assertion ratchet at 52,
+  and a `backend.js/build.js` comment cite that resolved nowhere); the
+  only tracked residue is that `dc6da60` ships that comment already
+  reworded. Session memory, labelled as such — "two mutual blockades" is
+  unverifiable from the record, and the record-based correction is the
+  right standing text.
+- **Two surfacing routes: accepted without amendment.** bracket-driver and
+  bracket-noise were surfaced by PR #9's gate on the clean checkout and
+  diagnosed by the doc session (`271c940`); section 2 credited only the
+  owner's `.github/` question. The miss attribution in section 2 gains a
+  half: this session's local verification missed the class, and so did
+  its scratch reproduction — the gate, running the full glob, did not.
+  Which is forward item 1 proving itself before the file was a day old.

@@ -15,7 +15,8 @@ you are deciding whether a green result means anything.
 > console-noise check was found broken on the default path and fixed. On
 > **2026-08-02** the `build.js check` section below was written against the verb
 > as shipped, and every row of its table was watched go red with its own check
-> neutralised before being written down. Most other
+> neutralised before being written down. Same day: parity re-verified against
+> the store-backed check (full bracket run green). Most other
 > brackets here were measured on the predecessor skill and
 > carry over, because they describe what a *check* can perceive, not what a
 > renderer draws. Anything the node stack invalidated has been re-measured or is
@@ -67,7 +68,7 @@ observation on both sides, or explicitly labelled unbracketed.
 | blank frame | **all** of 4 planned points, +up to 2 transition midpoints | a pipeline shooting empty frames | a frame that is dark but not empty |
 | shipped-frame spread | **max** over its own 4-point plan | a backend that ships nothing (half-dead adapter) | a register that is legitimately flat *and* correct |
 | live playback | 3+ `seekTo` calls, 2+ distinct `t`, on the one load without `?record=1` | a film that records perfectly and never moves for a viewer | whether the motion *reads*; a driver calling a captured reference instead of `window.seekTo` |
-| marker parity | file set × <!--derived:fences-->7<!--/derived--> fences | two scenes carrying different kits | drift inside a scene |
+| marker parity | file set × <!--derived:fences-->7<!--/derived--> fences, each against the canonical store | a carrier whose kit differs from the store — even if every carrier agrees | drift inside a scene |
 | framing invariance | 3 shapes × 3 fixed fractions | a scene that crops instead of containing | composition quality at any single shape |
 | caption speed / overflow | per beat | a caption too fast or too wide **for the frame** | canvas text; vertical collision; **text that fits but is too small to read** |
 | exposure | 3 fixed fractions, worst | washed out or crushed | whether the register intended it |
@@ -122,7 +123,14 @@ seventh — in a file that ships, so the count and the list disagreed with
 The `HTML` block uses HTML-comment markers rather than
 JS-comment ones, because it lives outside `<script>` — smoke's parity loop
 carries a second regex arm for it. A new shared block gets a fence at the third
-consumer, and the fence goes in this list or it is not enforced.
+consumer, and the fence goes in this list or it is not enforced. Since
+2026-08-02 each fence is compared against its canonical copy in
+`templates/fences/<NAME>.fence.txt` rather than across the carriers — so nine
+copies drifting *together* still fail, a single scanned scene is a real
+comparison, and `--parity-fix` regenerates carriers from the store instead of
+propagating from a named one. The store itself is validated first: missing,
+extra, or mangled store files refuse the whole scan (`bracket-parity.js` holds
+one arm per refusal).
 
 **The shipped-frame spread floor** is distinct from the exposure advisory and
 runs on a caption-stripped page: exposure takes the MIN over the plan (the

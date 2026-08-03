@@ -91,7 +91,17 @@ try {
       continue;
     }
     const name = tag.replace(/\W+/g, '_') + '.html';
-    fs.writeFileSync(path.join(dir, name), body);
+    // A patched fixture legitimately diverges from the canonical store, so it
+    // takes the documented exit: neutralize its fence markers and leave the
+    // parity set. Without this every mutation trips carrier-vs-store parity —
+    // in the 0.17.0 gate run one arm failed on it outright and two others went
+    // red for the parity reason rather than the one they measure. The
+    // unmodified arm keeps its markers on purpose: it doubles as proof that a
+    // pristine example still matches the store from inside a browser run.
+    const fixture = patch
+      ? body.replace(/==== ([A-Z]+)-(START|END) ====/g, '=OFF= $1 $2 =OFF=')
+      : body;
+    fs.writeFileSync(path.join(dir, name), fixture);
     let out, verdict;
     try {
       // The REAL smoke.js, invoked where it lives, so its own __dirname finds

@@ -196,7 +196,7 @@ fails a lookup) rather than where it is *expensive* (an extent that does not
 match its geometry passes silently). The second is the gap a compile step closes
 and a runtime cannot.
 
-### Where a declaration lives is not decided, and it is not a detail
+### Where a declaration lives — decided 2026-08-02, and never a detail
 
 The table says *what* you declare. It does not say where the declaration lives,
 and today the answer is: as JavaScript object literals inside the shipped

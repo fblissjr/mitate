@@ -49,17 +49,21 @@ jobs:
       - name: self-check
         run: bun run scripts/selfcheck.js
 
-      # Cross-directory: a per-directory green does not cover the
-      # template-to-example boundary, and drift there is silent (CLAUDE.md
-      # invariant 2). site/films/gearbox-neon.html WAS an argument here until
-      # 0.16.35 made that copy derived; dropping it loses no coverage, and that
-      # is MEASURED rather than assumed: the line the derivation seds
-      # (`const STYLE = BIBLES.workshop;`) sits at index 701, outside all five
-      # fences (HTML 5-66, KERNEL 725-877, RIG 879-963, SOLVER 1076-1190,
-      # DRIVER 1232-1344), so the variant's fences are byte-identical to
-      # gearbox.html's, which is in the set. Re-running parity with the neon
-      # included still reports ok. The comment here previously claimed to cover
-      # that file after the argument had already gone.
+      # Three globs so EVERY carrier directory is in the scan. Since 0.17.0
+      # each carrier is checked against the canonical store
+      # (templates/fences/), so the globs are scope, not comparison structure —
+      # the old rationale here ("a per-directory green does not cover the
+      # template-to-example boundary") described the cross-carrier check this
+      # step no longer runs. site/films/gearbox-neon.html WAS an argument here
+      # until 0.16.35 made that copy derived; dropping it loses no coverage,
+      # and that is MEASURED rather than assumed (re-verified 2026-08-02
+      # against every fence gearbox carries — six, CONTRACT included; the
+      # previous version of this comment listed five with hand-written line
+      # indexes, both stale): the one line the derivation seds
+      # (`const STYLE = BIBLES.workshop;`) sits outside every fence, so the
+      # variant's fences are byte-identical to gearbox.html's, which is
+      # scanned against the store. Re-running parity with the neon included
+      # still reports ok.
       - name: fence parity
         run: |
           bun run plugin/skills/mitate/templates/smoke.js --parity-only \

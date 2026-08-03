@@ -1,0 +1,289 @@
+/* ==== CHARACTER-START ==================================================
+   The character scaffold. ONE parametric skeleton family — a character is a
+   point in proportion space (propDefaults overrides) plus a shell/material
+   choice. Byte-identical in every scene that carries it; smoke.js
+   parity-checks this fence like KERNEL/SOLVER. Scenes without characters
+   simply do not carry it — the block costs nothing when absent.
+   Doctrine (the founding plan): scaffold-as-data, authored once, never a
+   runtime asset fetch. Every function below is a pure function of its
+   inputs — posing is closed-form (two-bone IK, distributed chain bends), so
+   seekTo purity is untouched. The IK and plant-grid gait are ports of the
+   predecessor's PROVEN walker (its measured lessons kept as comments).
+   ======================================================================= */
+
+/* ---------- proportions: the character IS this vector ----------
+   Lengths in world units, angles in degrees. Facing +X; sagittal plane XY;
+   z is lateral. "A bear", "a human", "the creature you just described" are
+   overrides of these defaults plus a material choice — see
+   references/characters.md for worked vectors. */
+function propDefaults(){
+  return {
+    hipH: 2.3,            // pelvis height at rest; hind legs must out-reach it
+    torsoLen: 2.0,        // pelvis -> chest along the spine
+    torsoTilt: 0,         // 0 = upright biped .. ~85 = horizontal quadruped
+    pelvisR: .8, chestR: .9,
+    neckLen: .55, neckSegs: 2, neckTilt: 0,   // tilt: degrees from vertical toward +X
+    headR: .6, muzzle: 0,                     // muzzle: box length ahead of the face, 0 = none
+    tailLen: 0, tailSegs: 0, tailR: .16, tailTilt: -20, // tilt<0 droops
+    // stance widths. shoulderW must clear the torso silhouette or hanging
+    // arms embed in it (seen on the first render of this template):
+    // shoulderW/2 >= chestR + foreR*~0.4.
+    shoulderW: 2.0, hipW: 1.25,
+    foreUpper: 1.05, foreLower: 1.0, foreR: .26,
+    hindUpper: 1.25, hindLower: 1.2, hindR: .3,
+    footLen: .8, footH: .26,
+    quadruped: false,     // true: forelimbs PLANT (gait) instead of hanging (arms)
+  };
+}
+
+/* ---------- skeleton + shells ----------
+   buildCharacter(P, matFor) -> rig. matFor(part) returns the material for
+   'torso'|'head'|'muzzle'|'limb'|'foot'|'tail' — the seam where shading
+   packs (toon, SSS, fur shells) plug in without touching the skeleton.
+   Structure: limbs hang off root at FIXED attach points; everything else
+   (torso shells, neck, head, tail) lives in rig.body, which scenes bob and
+   lean freely — the proven walker's trick: cosmetic body motion never moves
+   the IK attach frames, so planted feet stay planted. */
+const Cap=(r,len)=>new THREE.CapsuleGeometry(r,len,6,16);
+function buildLimb(parent,ax,ay,az,U,L,r,bend,mats,foot){
+  const attach=new THREE.Group();parent.add(attach);attach.position.set(ax,ay,az);
+  const ug=Cap(r,U);ug.translate(0,-U/2,0);mesh(ug,mats.limb,attach);
+  const mid=new THREE.Group();attach.add(mid);mid.position.y=-U;
+  const lg=Cap(r*.78,L);lg.translate(0,-L/2,0);mesh(lg,mats.limb,mid);
+  const end=new THREE.Group();mid.add(end);end.position.y=-L;
+  if(foot){const fg=B(foot[0],foot[1],r*1.7);fg.translate(foot[0]*.18,-foot[1]/2,0);mesh(fg,mats.foot,end);}
+  return{attach,mid,end,L1:U,L2:L,ax,ay,bend,phase:0,planted:false};
+}
+function buildCharacter(P,matFor){
+  const D=propDefaults();P=Object.assign(D,P||{});
+  const mats={torso:matFor('torso'),head:matFor('head'),muzzle:matFor('muzzle'),
+              limb:matFor('limb'),foot:matFor('foot'),tail:matFor('tail')};
+  // Loud reach checks, same spirit as the match-cut constraint: a leg that
+  // cannot reach the floor "solves" to a silent hyperextension every frame.
+  if(P.hindUpper+P.hindLower<=P.hipH)
+    throw new Error('character: hind legs cannot reach the ground (hindUpper+hindLower <= hipH)');
+  const tilt=P.torsoTilt*Math.PI/180;
+  const cx=Math.sin(tilt)*P.torsoLen, cy=P.hipH+Math.cos(tilt)*P.torsoLen;
+  if(P.quadruped&&P.foreUpper+P.foreLower<=cy)
+    throw new Error('character: forelegs cannot reach the ground (foreUpper+foreLower <= shoulder height)');
+  const root=new THREE.Group();scene.add(root);
+  const body=new THREE.Group();root.add(body);
+  // torso: ONE lathed profile — pelvis dome, eased waist, chest dome — not
+  // overlapping primitives: bulge spheres whose radii nearly match the
+  // capsule under them z-fight into jagged seams (seen on the first render
+  // of this template). Still capsule-hull territory, deliberately not a
+  // sculpt; silhouettes come from proportions.
+  const prof=[];
+  for(let i=0;i<=4;i++){const a2=i/4*Math.PI/2;
+    prof.push(new THREE.Vector2(Math.sin(a2)*P.pelvisR,-Math.cos(a2)*P.pelvisR));}
+  for(let i=1;i<10;i++){const u=i/10;
+    prof.push(new THREE.Vector2(lerp(P.pelvisR,P.chestR,ss(u,.12,.88))*(1-.07*Math.sin(Math.PI*u)),u*P.torsoLen));}
+  for(let i=0;i<=4;i++){const a2=i/4*Math.PI/2;
+    prof.push(new THREE.Vector2(Math.cos(a2)*P.chestR,P.torsoLen+Math.sin(a2)*P.chestR));}
+  const tg=new THREE.LatheGeometry(prof,24);tg.rotateZ(-tilt);
+  mesh(tg,mats.torso,body,0,P.hipH,0);
+  // neck chain: segments along local +y, base at the chest TOP surface (a
+  // base at the chest CENTER sank the head halfway into the torso), tilted
+  // toward +X by neckTilt
+  const neckChain=[];let np=new THREE.Group();body.add(np);
+  np.position.set(cx+Math.sin(tilt)*P.chestR*.8,cy+Math.cos(tilt)*P.chestR*.8,0);
+  np.rotation.z=-(P.neckTilt*Math.PI/180);
+  const nSeg=P.neckLen/Math.max(1,P.neckSegs);
+  for(let i=0;i<P.neckSegs;i++){
+    const g=new THREE.Group();np.add(g);if(i)g.position.y=nSeg;
+    const ng=Cap(P.headR*.42,nSeg);ng.translate(0,nSeg/2,0);mesh(ng,mats.torso,g);
+    neckChain.push(g);np=g;
+  }
+  const head=new THREE.Group();np.add(head);head.position.y=P.neckSegs?nSeg:0;
+  mesh(S(P.headR,24,18),mats.head,head,0,P.headR*.6,0);
+  if(P.muzzle>0){const mg=B(P.muzzle,P.headR*.75,P.headR*.85);
+    mg.translate(P.muzzle/2,0,0);mesh(mg,mats.muzzle,head,P.headR*.55,P.headR*.28,0);}
+  // tail chain: segments along local -y, base rotated to point behind (+tilt raises)
+  const tailChain=[];
+  if(P.tailSegs>0&&P.tailLen>0){
+    let tp=new THREE.Group();body.add(tp);tp.position.set(-P.pelvisR*.5,P.hipH,0);
+    tp.rotation.z=-(Math.PI/2+P.tailTilt*Math.PI/180);
+    const tSeg=P.tailLen/P.tailSegs;
+    for(let i=0;i<P.tailSegs;i++){
+      const g=new THREE.Group();tp.add(g);if(i)g.position.y=-tSeg;
+      const r=lerp(P.tailR,P.tailR*.35,i/Math.max(1,P.tailSegs-1));
+      const sg=Cap(r,tSeg);sg.translate(0,-tSeg/2,0);mesh(sg,mats.tail,g);
+      tailChain.push(g);tp=g;
+    }
+  }
+  // limbs: hind pair always plants; fore pair plants only when quadruped
+  const foot=[P.footLen,P.footH];
+  const limbs={
+    HL:buildLimb(root,0,P.hipH, P.hipW/2,P.hindUpper,P.hindLower,P.hindR, 1,mats,foot),
+    HR:buildLimb(root,0,P.hipH,-P.hipW/2,P.hindUpper,P.hindLower,P.hindR, 1,mats,foot),
+  };
+  if(P.quadruped){
+    limbs.FL=buildLimb(root,cx,cy, P.shoulderW/2,P.foreUpper,P.foreLower,P.foreR,-1,mats,foot);
+    limbs.FR=buildLimb(root,cx,cy,-P.shoulderW/2,P.foreUpper,P.foreLower,P.foreR,-1,mats,foot);
+    // lateral-sequence walk: HL, FL, HR, FR — each a quarter cycle apart
+    limbs.HL.phase=0;limbs.FL.phase=.25;limbs.HR.phase=.5;limbs.FR.phase=.75;
+    for(const k of['HL','HR','FL','FR'])limbs[k].planted=true;
+  }else{
+    // arms hang from the CHEST (they ride body lean); scenes swing them
+    limbs.FL=buildLimb(body,cx,cy, P.shoulderW/2,P.foreUpper,P.foreLower,P.foreR,-1,mats,null);
+    limbs.FR=buildLimb(body,cx,cy,-P.shoulderW/2,P.foreUpper,P.foreLower,P.foreR,-1,mats,null);
+    limbs.HL.phase=0;limbs.HR.phase=.5;
+    limbs.HL.planted=limbs.HR.planted=true;
+  }
+  // Framing estimates for SUBJECTS: height respects torso/neck tilt (a
+  // quadruped is much shorter than the sum of its part lengths — the first
+  // vertical-only formula made the camera frame empty air above a bear),
+  // length is nose-to-tail, for a quadruped subject's w.
+  const nR=P.neckTilt*Math.PI/180,tR2=P.tailTilt*Math.PI/180;
+  const height=Math.max(cy+Math.cos(tilt)*P.chestR*.8+Math.cos(nR)*P.neckLen+P.headR*2,
+                        P.hipH+P.pelvisR)+.1;
+  const fwd=cx+Math.sin(nR)*P.neckLen+P.headR+P.muzzle;   // nose, ahead of root
+  const back=P.pelvisR+Math.cos(tR2)*P.tailLen;           // tail, behind root
+  const length=fwd+back;
+  /* centerX: the body's visual center, RELATIVE TO THE ROOT. The root sits
+     at the pelvis, but a tilted torso puts most of the animal AHEAD of it —
+     a subject aimed at the root orbits the tail end and crops the head off
+     (measured: a quadruped FS rendered as a wall of rump). Subject pos:
+     [rootX + rig.centerX, rig.height/2, rootZ]. ~0 for upright bipeds. */
+  const centerX=(fwd-back)/2;
+  return{P,root,body,head,neckChain,tailChain,limbs,mats,
+         planted:Object.values(limbs).filter(l=>l.planted),height,length,centerX};
+}
+
+/* ---------- analytic two-bone IK (ported, proven) ----------
+   Closed form in the sagittal plane — law of cosines gives the mid joint,
+   the end counter-rotates flat. bend +1 = knee-forward (hind legs, human);
+   bend -1 = elbow-back (quadruped forelegs). dx,dy are the target RELATIVE
+   TO THE ATTACH point (root space). */
+function solveLimb(l,dx,dy){
+  const d=clamp(Math.hypot(dx,dy),Math.min(.2,l.L1+l.L2-.02),l.L1+l.L2-.01); // floor may not exceed reach (insect-scale rigs)
+  const phi=Math.atan2(dx,-dy);
+  const a=Math.acos(clamp((l.L1*l.L1+d*d-l.L2*l.L2)/(2*l.L1*d),-1,1));
+  const g=Math.acos(clamp((l.L1*l.L1+l.L2*l.L2-d*d)/(2*l.L1*l.L2),-1,1));
+  l.attach.rotation.z=phi+l.bend*a;
+  l.mid.rotation.z=-l.bend*(Math.PI-g);
+  l.end.rotation.z=-(l.attach.rotation.z+l.mid.rotation.z);
+}
+
+/* ---------- plant-grid gait (ported, proven) ----------
+   Everything derives from DISTANCE TRAVELLED s, never wall time — feet
+   freeze mid-plant when the body stops. Each planted limb alternates
+   stance/swing over a 2-stride cycle; its plant point is a pure function of
+   the cycle index. The grid anchors at the walk's START (anchored at the
+   origin, the first frame's target sat a film-width ahead and the IK swung
+   both legs horizontal — shipped once, caught on the contact sheet).
+   Per-limb, the plant column rides the limb's own attach x, which is what
+   makes the SAME grid serve a foreleg planting a torso-length ahead. */
+function footTarget(s,phase,stride,swingH){
+  const cyc=s/(2*stride)+phase;
+  const n=Math.floor(cyc),u=cyc-n;
+  const x0=(n-phase)*2*stride;
+  if(u<.55)return[x0,0];
+  const w=ss(u,.55,1);
+  return[x0+2*stride*w,Math.sin(w*Math.PI)*swingH];
+}
+/* gaitPose(rig, s, vAmp, opts): solve every planted limb of the rig.
+   s     distance travelled since the walk began (world units, >= 0)
+   vAmp  motion envelope 0..1 — blend to a rest stance as it dies, or the
+         last cycle leaves the feet mid-stride (measured lesson)
+   opts  {start: world x where the walk began (default 0),
+          stride, swingH, rootX: rig.root.position.x by default}
+   Scenes own all EXPRESSION (bob, lean, arm swing, hops): gaitPose plants
+   feet, nothing else. For a hop, bypass it and call solveLimb with tucked
+   targets — targets, not pose freezing. gaitBob is the shared phase. */
+function gaitBob(s,stride){return Math.sin(Math.PI*s/stride);}
+function gaitPose(rig,s,vAmp,o={}){
+  const P=rig.P;
+  const stride=o.stride!==undefined?o.stride:(P.hindUpper+P.hindLower)*.62;
+  const swingH=o.swingH!==undefined?o.swingH:.28*stride;
+  const start=o.start||0;
+  /* rootX is REQUIRED, and that is the whole point of this line. It used to
+     default to `rig.root.position.x` — MUTABLE SCENE-GRAPH STATE — and was
+     correct only because every caller assigned root.position.x on the line
+     above. That is an ordering dependence inside animate, not an argument, and
+     it is exactly what a bake trips over: a baked track replays poses with no
+     scene graph to read back from. Loud rather than defaulted, because the
+     silent failure is NaN foot targets — a film that renders and is subtly
+     wrong, which is the class this project spends its budget avoiding. */
+  if(o.rootX===undefined) throw new Error('gaitPose: rootX is required — pass the same pure-function-of-t value you assign to root.position.x');
+  const rootX=o.rootX;
+  for(const l of rig.planted){
+    let[fx,fy]=footTarget(s,l.phase,stride,swingH);
+    fx+=start+l.ax;                                  // plant column under the attach
+    const rest=rootX+l.ax+(l.phase>=.5?-.18:.13)*stride; // staggered rest stance
+    fx=lerp(rest,fx,clamp(vAmp*2.5,0,1));
+    fy=fy*vAmp;
+    solveLimb(l,fx-rootX-l.ax,fy-l.ay);
+  }
+  return stride;
+}
+
+/* ---------- fur: shell layers ----------
+   addFur(meshObj, opts) grows L concentric shells as CHILDREN of the mesh
+   (they ride every transform the IK moves). Each shell is the same geometry
+   displaced along its own normals — real shell fur, not a scale hack — with
+   a TSL noise coverage that thins toward the tips and darkens toward the
+   roots. Alpha-test discard, NOT transparency: fur stays on the opaque
+   pipeline, so it never joins the sortObjects=false transparency-ordering
+   bill (materials.md). Deterministic: coverage is a pure function of local
+   position; nothing reads time. Shadows are off per shell — L shadow casters
+   per part is noise for the map and pays nothing on screen.
+   opts: {layers:8, len:.18, freq:16, cover:.72, color, roughness:.85}
+   cover is the fraction of the surface still furred at the TIP layer. */
+function addFur(meshObj,o={}){
+  const L=o.layers||8,len=o.len===undefined?.18:o.len;
+  const freq=o.freq||16,cover=o.cover===undefined?.72:o.cover;
+  const col=new THREE.Color(o.color!==undefined?o.color:(meshObj.material.color||0x808080));
+  // ONE program for all L shells. The shell index rides instanceIndex, so the
+  // root-to-tip gradient is an expression evaluated per instance instead of L
+  // separately-compiled node graphs. This is not a micro-optimisation: each
+  // distinct noise-carrying program was measured at ~1-1.6s of driver compile
+  // time, and this function used to mint L of them per furred mesh.
+  const u=THREE.float(THREE.instanceIndex).add(1).div(L);
+  // Displacement moves out of a JS per-vertex loop into the vertex stage. Noise
+  // samples the DISPLACED point, which is what the pre-displaced geometry did —
+  // sampling the undisplaced position would change the strand pattern.
+  const pos=THREE.positionLocal.add(THREE.normalLocal.mul(len).mul(u));
+  const m=new THREE.MeshStandardNodeMaterial({roughness:o.roughness===undefined?.85:o.roughness});
+  m.positionNode=pos;
+  const noise=THREE.mx_fractal_noise_float(pos.mul(freq),2,2.0,.5,1.0).mul(.5).add(.5);
+  // strand coverage: keep where noise clears a floor that rises with u
+  m.opacityNode=THREE.step(THREE.mix(THREE.float(1-cover*.9),THREE.float(1-cover*.25),u.oneMinus()),noise);
+  m.alphaTestNode=THREE.float(.5);            // node slot, not the property — the reliable interface
+  m.colorNode=THREE.color(col.getHex()).mul(THREE.mix(THREE.float(.55),THREE.float(1.05),u));  // dark roots, lit tips
+  const sh=new THREE.InstancedMesh(meshObj.geometry,m,L);
+  const I=new THREE.Matrix4();                // identity: the shell offset lives in positionNode
+  for(let i=0;i<L;i++)sh.setMatrixAt(i,I);
+  sh.instanceMatrix.needsUpdate=true;
+  sh.castShadow=false;sh.receiveShadow=false;sh.frustumCulled=false;
+  meshObj.add(sh);
+  return [sh];
+}
+
+/* furCharacter(rig, parts, opts): fur every mesh of the named parts —
+   identified by their shared per-part material instance, so scene add-ons
+   (eyes, props) are never furred by accident. Collect first, then fur:
+   addFur adds children mid-walk. Fur color defaults to each part's own. */
+function furCharacter(rig,parts,o={}){
+  const wanted=new Set(parts.map(p=>rig.mats[p]));
+  const targets=[];
+  rig.root.traverse(m=>{if(m.isMesh&&wanted.has(m.material))targets.push(m);});
+  const out=[];
+  for(const m of targets)out.push(...addFur(m,{color:m.material.color.getHex(),...o}));
+  return out;
+}
+
+/* ---------- chains: the spine/tail/neck vocabulary ----------
+   All closed-form, all RESTATE (assignment, never +=). Axes for a chain
+   built by buildCharacter: z = curl (sagittal), x = wag (lateral), y = twist.
+   chainCurl distributes a total bend evenly; chainWave is phase-lagged
+   follow-through — procedural secondary motion, a pure function of its
+   phase argument (drive it from s while moving, from t while idling). */
+function chainCurl(chain,totalRad,axis){
+  const per=totalRad/Math.max(1,chain.length);
+  for(const g of chain)g.rotation[axis||'z']=per;
+}
+function chainWave(chain,phase,amp,lag,axis){
+  chain.forEach((g,i)=>{g.rotation[axis||'x']=amp*Math.sin(phase-i*(lag===undefined?.7:lag));});
+}
+/* ==== CHARACTER-END ==== */

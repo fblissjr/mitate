@@ -23,7 +23,10 @@ description: >
 > against `templates/` and `references/` — including the Environment section,
 > re-checked against `build.js`'s encoder call sites after Track E1 moved the
 > review verbs off ffmpeg. Step 3's `build.js check` line added 2026-08-02 and
-> run against every shipped example and template before being written.
+> run against every shipped example and template before being written. Fence
+> parity re-verified 2026-08-02 after the check inverted to compare carriers
+> against the canonical store in `templates/fences/` (bracket-parity.js, all
+> arms, plus a byte-identical regeneration over all nine carriers).
 
 **What it makes:** one self-contained HTML file that plays an animated scene in
 any browser, and renders frame-exact to MP4, AVIF or WebP. No player, no build
@@ -98,11 +101,14 @@ ends up unable to swap bibles.
 | `scene2d.template.html` | flat vector, Canvas2D | no, born self-contained |
 
 ```bash
-cp "${CLAUDE_SKILL_DIR}"/templates/{scene.template.html,shoot.js,build.js,smoke.js,backend.js} .
+cp -R "${CLAUDE_SKILL_DIR}"/templates/{scene.template.html,shoot.js,build.js,smoke.js,backend.js,fences} .
 mv scene.template.html <name>.html
 bun add three@0.185.1 playwright-core@1.61.1
 bun run build.js vendor <name>.html
 ```
+
+`fences/` is the canonical fence store and travels with `smoke.js`, which
+refuses to run without it rather than silently checking zero fences.
 
 `vendor` embeds three into the scene. Every `build.js` command re-embeds
 automatically, so skipping it is recoverable there — but a direct `shoot.js` run
@@ -179,7 +185,9 @@ bun run smoke.js                     # all scenes in the directory
 
 Checks that each scene loads clean, exposes the contract, is byte-deterministic
 at the same `t` **and across a reload**, actually plays without `?record=1`,
-ships a non-empty frame, and that fenced blocks are byte-identical across scenes.
+ships a non-empty frame, and that fenced blocks byte-match the canonical fence
+store (`templates/fences/`, beside `smoke.js`) — one scene is a real comparison,
+because the store is always the other side.
 Run it before any full shoot. `--parity-only` is the no-browser subset.
 
 ### 6. Deliver — the HTML file IS the deliverable
@@ -208,7 +216,8 @@ bun run build.js all    <name>.html        # .mp4 — the only container that co
 ```
 
 WebP costs per pixel changed, so it constrains the camera — set `CONFIG.sway = 0`
-before shooting one. Whatever ships, the scene file stays the single source.
+before shooting one. Whatever ships, every recording derives from the one scene
+file.
 `references/recordings.md` owns the format tradeoffs; `references/delivery.md`
 owns the case where you ship no recording at all, which is most of them.
 
@@ -230,9 +239,11 @@ Not style — each was measured, and each fails quietly rather than loudly.
   makes the scene accumulate — which breaks purity, and is the single thing that
   would put a ceiling on duration. Hide with scale or `visible`, do not create
   and destroy.
-- **Fenced blocks are byte-identical across every scene that carries them**
+- **Fenced blocks byte-match the canonical store** in `templates/fences/`
   (`KERNEL`, and in 3D also `SOLVER`/`RIG`/`DRIVER`/`HTML`, plus `CHARACTER`).
-  Edit a fence in all of them or in none.
+  Never hand-edit a fence inside a scene: edit the store copy and run
+  `smoke.js --parity-fix` to regenerate every carrier, or remove the markers
+  to diverge deliberately and leave the parity set.
 - **One scene = one file.** three is embedded, never a CDN, never a sibling
   `.js`, never `type="module"` — module imports are CORS-blocked over `file://`,
   and opening the file from disk is the point.

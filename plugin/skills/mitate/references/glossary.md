@@ -8,7 +8,9 @@ The words this skill uses as if you already knew them.
 > tracked corpus: `register` appeared 98 times in 16 files and was defined
 > nowhere, `parity set` 4 times and nowhere, and `install cache` 11 times *inside
 > this subtree* with its only definition outside it, where a reader holding the
-> subtree cannot follow.
+> subtree cannot follow. The `parity set` entry re-verified 2026-08-02 against
+> `smoke.js` after parity inverted to compare carriers against the canonical
+> fence store.
 >
 > **Not here.** How to do any of it → `method.md`; what a check can and cannot
 > see → `instruments.md`; shot grammar → `film-language.md`.
@@ -52,10 +54,12 @@ this sentence named six until 0.16.64, which is the third file to carry that
 exact omission. Read the array; do not trust a restatement of it, including this
 one.
 
-**the parity set** — the files a given fence is actually compared across on one
-run. A file whose fence is malformed *leaves the set*, which is how the check
-twice went quiet while printing `ok`; `smoke.js` now fails loudly instead, and
-`bracket-parity.js` proves it.
+**the parity set** — the files whose copy of a given fence is actually compared
+against the canonical store (`templates/fences/`) on one run. One file is a
+real comparison, because the store is always the other side. A file whose fence
+is malformed *leaves the set*, which is how the check twice went quiet while
+printing `ok`; `smoke.js` now fails loudly instead, and `bracket-parity.js`
+proves it.
 
 **bracket** — a control that proves a check can fail. It builds its own broken
 fixtures, states the verdict each arm MUST produce, and exits non-zero when an

@@ -108,6 +108,13 @@ jobs:
         run: |
           mkdir -p ws
           cp plugin/skills/mitate/templates/{shoot.js,build.js,smoke.js,backend.js} ws/
+          # The fence store travels WITH smoke.js (0.17.0): parity checks every
+          # carrier against it, and smoke refuses to scan without it rather
+          # than checking zero fences and reporting ok. A workspace that copies
+          # smoke.js and not fences/ dies on the store refusal before the
+          # first scene — reproduced in a scratch workspace the day the store
+          # landed, which is why this line exists.
+          cp -R plugin/skills/mitate/templates/fences ws/
           cp plugin/skills/mitate/templates/*.template.html ws/
           cp plugin/skills/mitate/examples/*.html ws/
           cd ws && bun add three@0.185.1 playwright-core@1.61.1

@@ -34,8 +34,10 @@ copy of a router is the exact failure this file keeps catching.
 - **Why, and in what order** — `VISION.md`. **The most important document in this
   repo**, and the one to read before deciding anything structural: determinism as
   the instrument rather than the point, `t` as a coordinate and `state` as the
-  intermediate layer, the declarative layers and the open question of where a
-  declaration lives, and the shape a primitive has to have. It carries success
+  intermediate layer, the declarative layers and why where-a-declaration-lives
+  mattered — **that question is DECIDED (2026-08-02); the decision is recorded
+  in `docs/representation.md`'s decision section**, which VISION points at —
+  and the shape a primitive has to have. It carries success
   criteria the project currently **fails**, on purpose
 - **The skill that ships** — `plugin/skills/mitate/SKILL.md`, plus
   `references/` (start with `glossary.md` — the words this project uses as if you
@@ -161,13 +163,17 @@ for its red lines.
    `CHARACTER`, `HTML`)
    is carried by both 3D templates and every example — more files than it looks,
    and the count grows with the corpus, so `--parity-only` reports it rather than
-   this file stating it. **Editing them by hand is no longer the only option:**
-   `smoke.js --parity-fix --from <canonical>` propagates a block from a source
-   you NAME (never a majority — that is how a drifted block rewrites the two
-   carriers that were right), refuses a malformed source or target, and writes
-   nothing until every file has validated. Edit every carrier together, then
-   verify **cross-directory** — a per-directory green does not cover the
-   template↔example boundary, and drift there is silent:
+   this file stating it. **The canonical copy lives ONCE, in
+   `plugin/skills/mitate/templates/fences/<NAME>.fence.txt` (0.17.0):** edit the
+   store file, then `smoke.js --parity-fix` regenerates every carrier from it.
+   There is no `--from` any more (a named-carrier source is a second source of
+   truth), and no majority vote either (that is how a drifted block rewrites
+   the carriers that were right). A malformed store or target refuses the whole run, and nothing is
+   written until every file has validated. Never hand-edit a fence inside a
+   carrier; a scene that legitimately diverges removes its markers and leaves
+   the parity set. Parity compares each carrier against the store, so verify
+   **cross-directory** — the three-glob scan is what keeps every carrier
+   directory in the set:
 
    ```
    bun run plugin/skills/mitate/templates/smoke.js --parity-only \

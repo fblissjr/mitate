@@ -46,9 +46,9 @@ Do not re-litigate these. Each has a home; the home wins.
 
 > **Status, 2026-08-02:** item 1 is decided — see the decision section.
 > Item 2 is half-decided: the kit half (emit from one canonical source) is
-> adopted behind the R1 byte-identity gate; the film-declaration half is
+> adopted behind the REP1 byte-identity gate (plan.md's representation track owns the gates); the film-declaration half is
 > deliberately deferred and stays open. Item 3 follows the kit decision:
-> fences become build products once R1's gate is green, comments carried in
+> fences become build products once REP1's gate is green, comments carried in
 > the canonical copy. Item 4 is decided as strangler, never big-bang.
 
 **1. Where does data stop and code start?**
@@ -191,6 +191,9 @@ record; the page is the argument.
    instance, a primitive on a second consumer, a fence on a third, a
    vocabulary change when a film is blocked or reliably wrong. The permanent
    residue is affirmed: the hand-rolled case never migrates, by design.
+   `plan.md`'s own caveat rides along with the adoption: every trigger in that
+   table is unfireable without a count, and counting is manual until REP5
+   instruments it — the rule is adopted, not yet operational.
 3. **Three kinds, not two.** Authored data; **derived data** (never authored,
    always regenerable, deriving command named where the artifact lives —
    `BEAT{}`, `TOTAL`, staged films, future bakes); code.
@@ -199,11 +202,11 @@ record; the page is the argument.
    never a bare number folded in. This follows the recorded evidence
    (hand-declared extents wrong three of five in `plan.md`'s promotion
    worked-examples; ledger count 6) over the declare-and-compare
-   alternative. Implementation is R4 on the exploration page's roadmap,
+   alternative. Implementation is REP4 on plan.md's representation track,
    red-first on the corpus fixture.
 5. **The kit is emitted, not replicated** — direction adopted, gated on the
    emitter reproducing every carrier byte-identically before anything may
-   differ (the R1 spike). The measured basis, method included because VISION
+   differ (the REP1 spike, `scripts/emit-spike.js`). The measured basis, method included because VISION
    cites this file for it: menagerie's seven fence regions <!--count-mention-->
    classified line-by-line (2026-08-02) — 823 lines, of which 3 are
    declaration literals (the `SIZES` ladder and the cut table), 458 machinery
@@ -213,7 +216,7 @@ record; the page is the argument.
 6. **The harness stays in the JS family.** Every language boundary is a
    reimplementation boundary, and the thirteen open `check` findings are what
    that costs even *within* one language. TypeScript at the seams is decided
-   during R2, where the canonical source is written anyway; other languages
+   during REP2, where the canonical source is written anyway; other languages
    enter only behind derived-data boundaries (a wasm bake is the eligible
    case).
 7. **Strategic frame: durable foundation.** The engine, primitives and
@@ -236,14 +239,14 @@ recurrence trigger (the defect `plan.md` names). A one-time reframe of
 geometry and motion into declarations (no trigger has fired; the movement
 rules exist so that one can). Declare-and-compare extents (against the
 three-of-five record — revisit if the intent-channel hybrid proves
-unworkable in R4). Leaving the harness language open (rejected as a standing
+unworkable in REP4). Leaving the harness language open (rejected as a standing
 question; reopens only on the wrong-if below).
 
 **What would make it wrong.** The exploration page's Wrong-if section is the
 full list; the load-bearing ones: the decidability test fails to sort a full
 scene inventory; the shipped holes prove unrepresentative (surroundings that
 cannot validate without calling the hole); a deliberate reframe becomes the
-actual strategic aim; R2's shared-semantics approach proves impossible even
+actual strategic aim; REP2's shared-semantics approach proves impossible even
 within JS, which reopens the harness question; the fence-composition
 measurement fails to replicate on other carriers, which reopens the
 two-programs split.

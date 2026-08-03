@@ -1,4 +1,4 @@
-last updated: 2026-08-02
+last updated: 2026-08-03
 
 # Working plan: instruments, routing, and the viewer
 
@@ -2756,6 +2756,85 @@ commits produces pure filler. There is no slice of this history where it pays.
 author**. A fixed-vocabulary mandate has a much stronger case in a
 multi-contributor repo, and nothing here speaks to that. Revisit on a second
 contributor, or if a verification claim omits its environment twice more.
+
+---
+
+## What the REP2 review taught about review (2026-08-03)
+
+PR #10 (REP2, 0.18.0) got a four-pass review before merge: red reproduced
+from a clean worktree, CI arbitration read from the logs rather than the
+badge, an adversarial pass told to *construct* disagreements between `check`
+and a driven page, and two claim-vs-code audits. Yield matched the recorded
+ordering (`postmortems/2026-08-02_session_audit-of-one-days-output.md`):
+the diff read found a nit, the claim audits found wording drift, and the
+adversarial pass found all three behavioral defects — every one pre-existing,
+surfaced by the new instrument rather than introduced by it. Three design
+conclusions came out of it; each is an item here, not a mood.
+
+### The declared-substitution rule → the 0.18.1 queue
+
+Every place an instrument substitutes or approximates an input — a stub, a
+sanitized value, an unresolved read — must either refuse or **declare the
+substitution in its verdict**. This is "a verdict states its scope" applied
+at input boundaries instead of per-site by memory, and the adversarial pass
+found all three of its violations at once:
+
+- `check`'s quiet `STYLE → {}` stub: a scene using the shipped
+  `const STYLE = BIBLES.x` idiom plus a `match:true` shot with an explicit
+  `fov` equal to the solver default gets a fully green check while the
+  driven page dies at boot on the solver's own match-cut throw — same fence
+  code, two verdicts, because check fed it a different STYLE.
+- The anchor-fraction validator never got the `unresolved()` exemption the
+  dur path got in 0.16.70: `at:['title', SOME_CONST]` is a false ERROR
+  quoting `undefined`, the exact quoted-a-value-the-source-never-wrote
+  shape that comment names, one field over.
+- `mutatedAfterDeclaration` catches `.push()` and bracket-assignment but
+  not dot-assignment, so `SUBJECTS.legend = {...}` after the literal makes
+  check read the stale table **while claiming coverage** and error on a
+  scene that drives fine.
+
+**Queued as one red-first cascade (0.18.1):** the three fixes above, each
+with a new bracket arm (the STYLE case lands as a declared-coverage warn
+plus a sixth `bracket-check-kit.js` arm pinning it — the stub cannot know
+the lens, so honesty, not agreement, is the achievable property there);
+`execKit`'s `k in t` → `Object.hasOwn` (prototype-chain lookup, the same
+bug shape the KERNEL fix killed one layer down); `instruments.md`'s check
+section corrected (SIZES now comes from the store, sound only because
+parity holds, plus the environment-mirror limit: an undeclared identifier
+is a ReferenceError in a page and `undefined` in `execKit`); and the
+build.js / bracket-check-kit header rewordings the claim audits flagged.
+
+### The execute-don't-mirror queue
+
+REP1 deleted a nine-copy review obligation; REP2 deleted the
+reimplementation that produced the highest-yield review this repo ever ran
+(fifteen findings) — by making the comparison unnecessary rather than by
+running it again. The generalization: **every remaining mirror is a
+standing review obligation, and the review that permanently pays is the
+one that converts into a deletion or a control.** The mirrors still
+standing, each with the trigger that converts it:
+
+| mirror | what it re-derives | converted when |
+|---|---|---|
+| `bracket-determinism.js`'s reload logic | the driver's reload-determinism check (plan.md already names this trap at its site) | the next divergence finding in it, or the next review that must compare it to the driver |
+| `tableValue` in `build.js` | a mini-reader of JS declaration syntax (slicer, comment-skipper, mutation scanner) | **already fired** — this row said "a third false-verdict finding" and a same-day audit corrected the count: the record holds at least four (loop-built silent green, 0.16.68; the dur-const false ERROR and the unparseable silent green, both 0.16.70; then the fraction and dot-assignment findings above). What blocks conversion is design, not evidence: "execute the subject" has no obvious meaning for a static source reader — the candidate shapes (evaluate the scene's declaration prefix in a sandbox; widen the contract to export the tables and give up the static premise) trade away things `check`'s header currently promises. Queued behind 0.18.1 as a design question, filed here so nobody waits for a fifth finding |
+| `smoke.js`'s console classifier | which page output means which failure | the next classifier-vs-reality finding (`bracket-noise.js` measures it; its claims-webgpu arm is already a filed environment gap) |
+
+Not scheduled work — a routing rule for where the next review points
+before it points anywhere else.
+
+### Probe-assertion specs for authored scene code — trigger-gated
+
+The one surface with no test-first instrument is authored scene code
+(`animate()` and friends), and the representation decision accepts that
+deliberately: holes are opaque to static instruments. If TDD-shaped
+coverage ever expands there, the natural form is per-film probe
+assertions — "at `t=secAt('roll',.3)`, hammer and block are touching" as a
+recorded, re-runnable claim, built on `build.js probe`'s existing
+exception. **Trigger:** a film blocked or reliably wrong on contacts
+twice, in the pattern-ledger's counted sense. Deliberately not before: the
+caught-defect record runs roughly 4 product against ~25 meta, and a
+per-film spec suite is real per-film cost aimed at the smaller class.
 
 ---
 

@@ -1043,11 +1043,21 @@ bucket (e).
   own argument — between the store and the carriers whose bytes it IS.
   Typed holes keep their discipline as declared signatures in the fence
   comments. Recorded by the implementing session; the merge review is the
-  ratification.
+  ratification. *Post-merge:* the four-pass review's findings — three
+  pre-existing behavioral defects surfaced by the new adversarial
+  instrument, plus wording — are queued as the 0.18.1 cascade in
+  `working-plan.md`'s "What the REP2 review taught about review"
+  (2026-08-03); this stamp is MET, not finished-forever.
 - **REP3 — close the open bags.** `STYLE`/`CONFIG` gain a key registry
   **derived from the kit's actual reads** (the mechanical enumeration behind
   `references/breakdown.md` becomes its source); `check` warns on unknown
-  keys; film-private keys get an explicit marker. *Gate:* a misspelled kit key
+  keys; film-private keys get an explicit marker. REP3 also carries the
+  **declared-substitution rule** (2026-08-03, from the REP2 review): every
+  input an instrument substitutes or approximates — a stub, a sanitized
+  value, an unresolved read — refuses or declares itself in the verdict.
+  The unknown-key warns are one instance of that rule; its first three
+  violations and their fixes are the 0.18.1 queue in `working-plan.md`.
+  *Gate:* a misspelled kit key
   warns naming the near-miss; every shipped scene is warning-clean after
   annotation; the registry is derived or controlled, never hand-held.
   *Refuted if:* the registry cannot be derived from the reads — then it is

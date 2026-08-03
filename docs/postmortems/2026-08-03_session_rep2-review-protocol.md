@@ -232,3 +232,18 @@ follow the same red-provable design):
   states the mechanism that exists, so the three-week evaluation judges
   that mechanism. (The in-vivo firings earlier today are consistent: each
   reminder arrived attached to its tool result.)
+
+## ANNOTATION, 2026-08-03 (late) — the apparatus's uncovered surface, demonstrated same-day
+
+A second peer round caught this session recommending a capability that does
+not exist: `/dev-conventions:configure` was offered as able to mute the
+plugin's SessionStart directive blocks per-repo, an operational claim
+inferred from the skill's description line and never verified against its
+hook (which selects blocks by project marker only — confirmed by reading it
+after the peer's report; `internal/log/log_2026-08-03.md` carries the
+account). The class extends finding 2's structural version to a surface no
+mechanism reaches: **the reminder's classifier fires on file edits, so
+claims made in conversation — recommendations included — are guarded by the
+derive-at-write rule alone.** Cross-session peer review is currently the
+only control that has ever caught one. Filed as the apparatus's disclosed
+edge rather than a gap to wire, because a hook cannot read intentions.

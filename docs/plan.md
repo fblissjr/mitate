@@ -1022,6 +1022,26 @@ bucket (e).
   item 5) is permanently superseded by the structural path. Recorded here
   and annotated on the forward item itself, so a reader arriving from
   either side finds the disposition.
+  **MET 2026-08-03** (0.18.0, branch `r2-check-reads-store`): `check`
+  executes the store's KERNEL and SOLVER fences against the scene's
+  extracted tables — real `BEAT`/`beatAt`, real `SIZES`/`solveShot`, every
+  solver refusal the kit's own throw, quoted. The gate is held by a
+  control rather than a stamp: `bracket-check-kit.js` runs all four
+  divergence cases through `check` AND a driven page and requires the same
+  verdict carrying the same phrase — recorded red on all four against the
+  pre-REP2 pair (the kit silently NaN'd two of them, so the kit gained
+  three refusals in the same phase, regenerated into every carrier by the
+  emitter), green after; every shipped scene still checks clean and
+  drives. Where `check` stays deliberately stricter than the kit (anchor
+  fraction outside 0..1, duplicate beat names), the verb's header declares
+  the one-way divergence. **Decision point 6, resolved with the
+  implementation: the canonical source stays plain JS.** Executing the
+  store verbatim is what closes the divergence class; a TS seam would
+  reinsert a transpile boundary — a reimplementation boundary by point 6's
+  own argument — between the store and the carriers whose bytes it IS.
+  Typed holes keep their discipline as declared signatures in the fence
+  comments. Recorded by the implementing session; the merge review is the
+  ratification.
 - **REP3 — close the open bags.** `STYLE`/`CONFIG` gain a key registry
   **derived from the kit's actual reads** (the mechanical enumeration behind
   `references/breakdown.md` becomes its source); `check` warns on unknown

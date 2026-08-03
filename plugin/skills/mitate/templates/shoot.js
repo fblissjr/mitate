@@ -121,8 +121,18 @@ function beatsManifest({ synthetic, beats }) {
 async function openScenePage(browser, sceneFile) {
   const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
   // Surface scene errors instead of shooting 600 silently-broken frames. A
-  // renamed three API is the usual cause and fails quietly otherwise.
-  page.on('pageerror', e => console.error('scene error: ' + e.message));
+  // renamed three API is the usual cause and fails quietly otherwise. An error
+  // BEFORE sceneReady also fails the boot wait immediately: a page that threw
+  // while booting is not going to become ready, and the old path sat out the
+  // full 20s timeout to report a certainty (the kit's own refusals — an
+  // unknown beat, an empty SHOTS — all take this exit).
+  let bootFail;
+  const bootFailed = new Promise((resolve, reject) => { bootFail = reject; });
+  bootFailed.catch(() => {});   // a post-boot pageerror must not become an unhandled rejection
+  page.on('pageerror', e => {
+    console.error('scene error: ' + e.message);
+    bootFail(new Error('scene threw while booting — ' + e.message));
+  });
   page.on('console', m => { if (m.type() === 'error') console.error('console: ' + m.text()); });
   // SCENE_QUERY lets a review pass ask the scene for a variant of itself --
   // today `strip=text`, which made the semantics pass a standing one instead of
@@ -130,8 +140,12 @@ async function openScenePage(browser, sceneFile) {
   // backend-dependent — references/method.md owns that.
   const q = process.env.SCENE_QUERY ? '&' + process.env.SCENE_QUERY : '';
   await page.goto(url.pathToFileURL(path.resolve(sceneFile)).href + '?record=1' + q);
-  await page.waitForFunction('window.sceneReady === true', { timeout: 20000 })
-    .catch(() => { throw new Error('scene never set window.sceneReady — check the errors above'); });
+  const ready = page.waitForFunction('window.sceneReady === true', { timeout: 20000 });
+  ready.catch(() => {});        // if the boot throw wins the race, this one loses unobserved
+  await Promise.race([ready, bootFailed]).catch(e => {
+    throw new Error(/scene threw while booting/.test(e && e.message ? e.message : '')
+      ? e.message : 'scene never set window.sceneReady — check the errors above');
+  });
   // The scene declares the frame it was authored for; the recorder follows it.
   // This is the whole mechanism behind non-16:9 output -- a scene that sets
   // FRAME.px = [1080,1920] records vertical with no flag and no other edit.

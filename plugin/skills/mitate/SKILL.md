@@ -107,8 +107,10 @@ bun add three@0.185.1 playwright-core@1.61.1
 bun run build.js vendor <name>.html
 ```
 
-`fences/` is the canonical fence store and travels with `smoke.js`, which
-refuses to run without it rather than silently checking zero fences.
+`fences/` is the canonical fence store and travels with the tools: `smoke.js`
+refuses to run without it rather than silently checking zero fences, and
+`build.js check` executes it to get the kit's own beat and solver semantics
+rather than mirroring them.
 
 `vendor` embeds three into the scene. Every `build.js` command re-embeds
 automatically, so skipping it is recoverable there — but a direct `shoot.js` run

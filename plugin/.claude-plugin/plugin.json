@@ -1,6 +1,6 @@
 {
   "name": "mitate",
-  "version": "0.19.1",
+  "version": "0.19.2",
   "description": "Turn any input — a document, a codebase, a mechanism, a joke — into a deterministic animated scene. Films of any register (explainer, game cutscene, meme, character short) on the three.js node stack (WebGPURenderer with WebGL2 fallback, TSL node materials, MaterialX procedural noise) plus a Canvas2D backend, delivered as self-contained HTML, frame-exact MP4, or animated WebP/AVIF. 見立て: to see one thing as another.",
   "author": {
     "name": "Fred Bliss"

@@ -50,6 +50,14 @@ write-ups are what this ledger counts. One real instance exists so far — the
 unrelated next-session handoff memo was retired, so one word stops meaning two
 things.)
 
+The report's form follows the builder's record: a session log section, a
+postmortem, or a note delivered with a commission all count, and no separate
+file is mandated. As of 2026-08-04 the producer side is the method's own
+closing step (`references/method.md`, "The last step of a film"), so a builder
+following the method produces one without being asked; the executable consumer
+is `/extract-patterns`, which reads finished work and proposes rows here. The
+builder reports; this file and its maintainers grade.
+
 ## The ledger
 
 Count is *independent solutions of the same shape*, not usages. Disposition

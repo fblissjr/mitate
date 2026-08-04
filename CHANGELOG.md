@@ -7,6 +7,30 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.19.2
+
+### added
+
+**The method gains its closing step: the film field report.** `method.md`
+ends with "The last step of a film" — after shipping, the builder writes
+three honest bullets into whatever record they keep: what they built
+twice, what they re-derived, and what they copied out of an example scene
+(and what for). The convention existed as exactly one hand-arranged
+instance (the 2026-07-25 report) under a name that collided with the
+retired next-session memo and with no producer-side home, which is why it
+happened once. Now it is a step of the written method, so a builder
+following the method produces one without being asked — capture as a side
+effect of making a film, which is VISION's own phrasing for the flywheel.
+`method.md`'s heading map gains the section and drops its hand-written
+section count; the map's own rot warning applied to itself.
+
+Upstream records aligned in the same motion: `pattern-ledger.md` states
+the report's form follows the builder's record (no mandated file) and
+names `/extract-patterns` as the executable consumer; `VISION.md`'s
+"the mechanism is unbuilt" corrected to half-built — capture is now the
+method's step, extraction is the repo-side skill, and what remains
+unproven is the loop actually turning, which only films can demonstrate.
+
 ## 0.19.1
 
 ### changed

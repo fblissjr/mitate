@@ -6,6 +6,11 @@
 > disagree, audit before trusting either — then fix the stale one.
 >
 > **Not here.** node-stack specifics → `webgpu-stack.md`; what each check can and cannot see → `instruments.md`.
+>
+> **Amended 2026-08-04**: the method gains its closing step — the film field
+> report, at the end of this file. The step existed as a one-off practice
+> (one report, 2026-07-25) and was never part of the written method, which
+> is why it happened once.
 
 
 The backend-agnostic core: the three failure axes, the beats discipline, the
@@ -27,7 +32,7 @@ The companion references hold what this file deliberately does not:
 - `recordings.md` — the lossy-copy path, for GitHub only: format tradeoffs,
   encoder settings, the content-type mechanism and its evidence chain.
 
-**Map.** Six top-level sections. Deliberately unlinked — a heading map
+**Map.** The top-level sections, in reading order. Deliberately unlinked — a heading map
 costs nothing and cannot dangle, where hand-written anchors ship into an install
 cache unverified. Two outside reviews called this file monolithic; it is long, but
 the shape below is the answer to *where do I read*, and it was previously
@@ -51,6 +56,8 @@ added lines — a number describing the file it lives in cannot help but rot.)
 - **Framing rules** and **Determinism rules** — the hard ones; breaking either
   breaks video/HTML parity. Includes: mutating a shared material is pure only if
   you restate it · where you will be tempted to break this
+- **The last step of a film** — the film field report: name what you built
+  twice, re-derived, or copied out of an example
 
 ## Three ways a sequence fails
 
@@ -1018,3 +1025,29 @@ HTML loop and the MP4 disagreeing on the second pass.
 Note the interaction with the continuity axis: the closed form that keeps you
 deterministic is also the one that keeps velocity continuous across a beat
 boundary. Summed per-beat ramps satisfy determinism and still stall.
+
+# The last step of a film: name what you built twice
+
+The film is shipped and reviewed. Before you close out, add a few lines to
+whatever working record you keep — a session log, the notes you deliver with a
+commission, a plain text file beside the scene. This is the **film field
+report**, and it is a step of the method, not optional bookkeeping:
+
+- **What you built twice.** Anything you solved that you are fairly sure you
+  or someone else has solved before — a presence gate, a contact fix, a
+  layout trick.
+- **What you re-derived from scratch.** A technique you worked out by hand
+  that felt like it should have been written down somewhere.
+- **What you copied out of an example scene, and what for.** Reaching into an
+  example to learn a technique means a reference failed to teach it. Name the
+  scene and the pattern; that is the bug report.
+
+Why this earns a place in the method: the examples demonstrate finished films
+and the references teach patterns, and the only way the gap between them gets
+found is a builder naming it at the moment it costs them. In the mitate repo
+these lines feed a pattern ledger whose counts decide what gets promoted into
+the kit and the references — the "second instance" and "third consumer"
+triggers cannot fire if nobody records instances. You do not grade your own
+candidates and you do not need the ledger to write the report; three honest
+bullets at ship time are the whole job, and they are worth more written in
+the five minutes after the film lands than in any review afterward.

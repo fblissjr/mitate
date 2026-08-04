@@ -1,4 +1,4 @@
-last updated: 2026-08-02
+last updated: 2026-08-04
 
 # Why this exists, and why in this order
 
@@ -291,9 +291,12 @@ wrote it down — `film-language.md` is shot grammar someone kept re-deciding,
 
 **So capturing a pattern should be a side effect of making a film, not an act of
 discipline afterwards** — a flywheel where each film leaves the engine better
-equipped for the next one. The mechanism is unbuilt and the argument for it is in
-[`docs/pattern-ledger.md`](docs/pattern-ledger.md), which counts how often a
-shape gets rebuilt and has no way to extract one.
+equipped for the next one. The mechanism is half-built as of 2026-08-04: capture
+became the method's own closing step (the film field report,
+`references/method.md`), and extraction exists as a repo-side skill that reads
+finished work and proposes promotions. What remains unproven is the loop
+actually turning, which only films can demonstrate. The argument and the counts
+are in [`docs/pattern-ledger.md`](docs/pattern-ledger.md).
 
 The cost of not having it is on record: a cookbook of shape recipes was written
 once, cited from two shipped files as though it had been carried over, was not

@@ -1,4 +1,4 @@
-last updated: 2026-08-02
+last updated: 2026-08-04
 
 # Pattern ledger: how many times have we built this
 
@@ -40,9 +40,15 @@ So:
 > log it here rather than only solving it.
 
 That log is the input the promotion triggers consume, and it is already being
-produced: every film handoff names what its author built twice. What was missing
-is that nobody aggregated them. The reports lived in gitignored `internal/` until
-0.16.33; the distilled ones are now in [`postmortems/`](postmortems/).
+produced by the **film field report**: after building a film, the builder
+writes up what they had to build twice or re-derive from scratch, and those
+write-ups are what this ledger counts. One real instance exists so far — the
+2026-07-25 report from the circus-film build, distilled into
+[`postmortems/`](postmortems/); the raw reports lived in gitignored
+`internal/` until 0.16.33. What was missing is that nobody aggregated them.
+(Older records call this a "film handoff" — renamed here 2026-08-04 when the
+unrelated next-session handoff memo was retired, so one word stops meaning two
+things.)
 
 ## The ledger
 
@@ -66,7 +72,7 @@ The two 6s are the finding. Both were **past every trigger the promotion model
 sets**, both had a fix specified, and both were still unbuilt — one of them with
 a shipped code comment asserting the check existed. A count that nobody
 maintains is the same as no count, which is why this file is tracked while the
-handoff reports that feed it are not.
+field reports that feed it are not.
 
 A shape sitting at 1 is not a failure. It is the ledger working: the entry costs
 a row, and the row is what makes the *second* instance visible as a second
@@ -94,7 +100,7 @@ nobody else can run.
 
 ## Maintaining it
 
-- A film handoff that names what its author built twice → add or increment a row.
+- A film field report that names what its author built twice → add or increment a row.
 - Copying a pattern out of an example scene → add or increment a row, and say
   which scene. That is the borrow record; without it the count is unrecoverable
   and the next author starts from zero.

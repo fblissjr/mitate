@@ -152,10 +152,13 @@ Where it likely strikes next, measured:
   CLAUDE.md pointed at it — a session had to be told it existed); and it
   grew the untracked obligation in section 3. The convention it replaced
   is the one that stays: orientation is `docs/README`'s work-next row
-  plus the day's log, both tracked and guarded. The FILM handoff report
+  plus the day's log, both tracked and guarded. The film field report
   ("names what its author built twice", `pattern-ledger.md`'s input) is a
-  different convention and is untouched. *Disposition: done — memo
-  deleted, unique content graduated, memory notes updated.*
+  different convention and lives on — called a "film handoff" in older
+  records, renamed and defined at its home 2026-08-04 after the owner
+  reasonably asked what it even was. *Disposition: done — memo deleted,
+  unique content graduated, the surviving convention named and defined,
+  memory notes updated.*
 
 ## 5. Over-implemented, or soon to add little
 

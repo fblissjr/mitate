@@ -229,7 +229,8 @@ inflating a number.
 
 One qualifier, from `CLAUDE.md`'s postmortem convention: an in-corpus instance
 whose artifact is local-only (`internal/`, gitignored) may be counted, but the
-row must rest on a **tracked** record of it — a postmortem or a handoff — and
+row must rest on a **tracked** record of it — a postmortem or a film field
+report (pattern-ledger.md defines it) — and
 label the artifact `(local)`. A count resting on a gitignored file is
 unrecoverable, which is the failure the ledger's closing section is about.
 

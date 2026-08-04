@@ -1260,8 +1260,8 @@ Two consequences:
 > "Second instance" and "third consumer" presume someone is counting, and nobody
 > was — the same defect earn-in had, whose "a film was blocked" bar could not fire
 > for a shape that is *not blocked, reliably wrong*. The count lives in
-> [pattern-ledger.md](pattern-ledger.md), fed by the handoff reports that already
-> name what each film built twice.
+> [pattern-ledger.md](pattern-ledger.md), fed by the film field reports that
+> already name what each film built twice.
 
 The ledger's two entries at **6** are the proof: contact-measurement and declared
 extents were both far past every trigger here, both had a fix specified, and both
@@ -1281,9 +1281,10 @@ while the reasoning behind it is not.
 One consequence worth stating: **this section is maintainer-facing and lives in
 `docs/`, which SKILL.md may never cite** (invariant 3). An author working from an
 installed plugin cannot be routed here, and should not need to be — their job is
-to *report* candidates, not to grade them. The handoff-document convention
-already does that: the 2026-07-25 field report named everything its author built
-twice, which is exactly the input this section consumes.
+to *report* candidates, not to grade them. The film field report convention
+(defined in pattern-ledger.md) already does that: the 2026-07-25 report named
+everything its author built twice, which is exactly the input this section
+consumes.
 
 ## Anti-template principle
 

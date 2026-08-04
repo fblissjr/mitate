@@ -23,6 +23,10 @@ the honest answer is usually *nothing*.
 > shipped examples — which is the ordinary result of writing code against a spec
 > rather than reading one.
 >
+> **Not here.** How to author a film → `method.md`; shot grammar and what `h`
+> means → `film-language.md`; look packs → `bibles.md`; character vectors →
+> `characters.md`; what a check can and cannot see → `instruments.md`.
+>
 > **Amended 2026-08-04** (0.19.0, REP3): the `STYLE` and `CONFIG` sections'
 > "validated: nothing" verdicts are closed — `check` now warns on declared
 > keys that nothing reads, with the kit vocabulary derived from the fence
@@ -35,10 +39,6 @@ the honest answer is usually *nothing*.
 > records what the code does, and a wrong-but-consistent semantic would survive
 > it. Field descriptions are copied from the templates' own comments where those
 > exist.
->
-> **Not here.** How to author a film → `method.md`; shot grammar and what `h`
-> means → `film-language.md`; look packs → `bibles.md`; character vectors →
-> `characters.md`; what a check can and cannot see → `instruments.md`.
 
 ## The shape of the layer
 

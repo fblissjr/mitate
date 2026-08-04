@@ -7,6 +7,17 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.19.1
+
+### changed
+
+**`breakdown.md`'s "Not here" edge moved above the amendment paragraphs**,
+directly after the founding provenance. Same failure class as
+`instruments.md`'s this morning: dated amendments accumulate above the
+edge and push it past selfcheck's fixed header window — breakdown's sat
+325 bytes from the boundary (measured 2026-08-04), one amendment from
+red. Structure only; no wording changed.
+
 ## 0.19.0
 
 ### added

@@ -346,6 +346,14 @@ the check.
   before writing, and let the pre-commit hook gate the commit rather than
   deferring the commit itself (owner directive, 2026-07-29 — this line read
   "never auto-commit" and no longer matches how the repo is worked).
+- **A conflict is a finding, never a detour.** Two documents disagreeing, a
+  label that reads two ways, a queue contradicting a stamp, a rule that has
+  stopped making sense: say it to the owner and log it, then fix it or file
+  it — do not silently pick a side and route around. Precedence rules exist
+  (VISION wins on intent, a postmortem outranks a log, a newer stamp outranks
+  older prose) but precedence only resolves the READ; the losing document is
+  still the thing to fix. Building or changing any check or control goes
+  through [`docs/controls.md`](docs/controls.md) first.
 - **The future is a marker, not a memory.** An obligation that must survive
   session boundaries ("prune X when Y is gone", "run Z on date D") is a
   `<!--due: <date-or-when-absent> | action-->` line in the document it

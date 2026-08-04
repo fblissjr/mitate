@@ -1,4 +1,4 @@
-last updated: 2026-08-02
+last updated: 2026-08-04
 
 # Zero-context orientation
 
@@ -62,10 +62,19 @@ the two rules above exist and what they are *for*. Read it before proposing
 anything structural; where another file conflicts with it about intent, it wins.
 
 [`docs/README.md`](README.md) routes question → file. Start there rather than
-guessing. `CLAUDE.md` carries the invariants and the full map of scripts,
+guessing — **its work-next row is the state of the board: current, near-term,
+and what sits behind, with the label key for the three track namings.**
+`CLAUDE.md` carries the invariants and the full map of scripts,
 workflows and agents. `plugin/skills/mitate/references/glossary.md` defines the
 words this project uses as if you already knew them — `register`, `fence`, the
-parity set, the install cache.
+parity set, the install cache. Touching a check, bracket, hook, or threshold?
+[`controls.md`](controls.md) first.
+
+**A conflict is a finding, never a detour** (`CLAUDE.md` owns the rule): if
+what you find on the tree contradicts the router, a stamp, or this file —
+or a label reads two ways — raise it and log it rather than silently picking
+a side. The board stays trustworthy only because sessions report where it
+stopped making sense.
 
 **One hazard worth knowing before it costs you an hour:** the installed plugin
 and the working tree are different artifacts at different versions. Say which one

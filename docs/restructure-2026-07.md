@@ -43,8 +43,13 @@ last updated: 2026-08-04
 > `DURATION`" **is not a check that can exist**, since `TOTAL` is derived from
 > `BEATS`. The work-list carried both for as long as it existed.
 >
-> **Still open in R5:** item 1's unpromoted half (`hide`, `subjectFromObject`)
-> and item 4, the kinematic-body amendment to the bake proposal.
+> **Still open in R5:** item 4, the kinematic-body amendment to the bake
+> proposal — the last work item. Item 1's unpromoted half (`hide`,
+> `subjectFromObject`) is CLOSED BY RATIFICATION: the owner ratified the
+> evidence-based declination on 2026-08-04, so it satisfies the gate as a
+> recorded disposition rather than as shipped code. When item 4 lands, this
+> file deletes itself per its own rule, which fires working-plan's pruning
+> obligation.
 >
 > **Phase R's first unit is also done** (0.16.61, separate PR) — the determinism
 > trio, including the `!fails.length` guard this plan had recorded as blocked on
@@ -1949,4 +1954,3 @@ Delete this file when R5's gate is green. The CHANGELOG entries are the record;
 a completed migration plan left in `docs/` is one more thing a future session
 has to read to discover it does not matter.
 
-<!--due: 2026-08-08 | close R5 remnant: the kinematic-body amendment to physics-bake-proposal.md (item 4); the hide/subjectFromObject declination is owner-ratified 2026-08-04. Then this file deletes itself per its own rule, which fires the pruning obligation in working-plan.md-->

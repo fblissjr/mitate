@@ -181,3 +181,8 @@ day's log the same evening it was written.
 - **When the next version lands, run the invalidation grep on the version
   token itself** across all tracked prose, not on a remembered surface list.
   Checkable: the next landing's log records the grep and its hit list.
+  *(Annotation, 2026-08-04, later the same day: practiced and recorded —
+  the 0.18.1-token grep ran the same afternoon and its two working-plan
+  hits are in the day's log; a 0.19.x-token sweep at end of day found
+  zero stale pointers, only dated past-tense mentions. The practice held
+  through four landings.)*

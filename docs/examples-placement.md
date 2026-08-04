@@ -17,7 +17,6 @@ demonstration. Until the first film lands, the current policy stands: scenes
 live in gitignored `internal/` until owner-approved into
 `plugin/skills/mitate/examples/` ([plan.md](plan.md), examples policy).
 
-<!--due: when-absent docs/brainstorm-2026-08-04.md | the brainstorm consumed itself; check whether the first portfolio film has landed — if it has and option E has not been executed, this decision is overdue: execute the move or re-date with the reason-->
 
 
 The question is whether the *approved* destination should be the shipping plugin

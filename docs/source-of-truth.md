@@ -217,7 +217,17 @@ memo proved that future obligations kept in prose evaporate, and because
     <!--due: when-absent <repo-relative-path> | the action-->
 
 (both shown with placeholder brackets so this documentation is not itself a
-marker; a real one carries a bare date or path) in the document it governs. `scripts/selfcheck.js` (check 15, controlled by
+marker; a real one carries a bare date or path) in the document it governs.
+
+**A date in a marker must be load-bearing** (owner, 2026-08-04): a
+pre-registered measurement window (frozen at registration, never re-dated
+after) or a real external deadline. An invented "check back by Friday" date
+is a queue item wearing a deadline costume — it goes in the deferred table
+or the router's queue with a trigger, not in a marker, because an arbitrary
+red trains route-around and serial re-dating is the snooze button that kills
+the mechanism's authority. Likewise every `when-absent` action must be
+completable in all its branches — a marker that can go red with no
+satisfiable action is a permanent alarm, which is worse than none. `scripts/selfcheck.js` (check 15, controlled by
 `bracket-selfcheck.js`) goes red the moment one falls due — at the next
 commit or push, whichever comes first — naming the file and the action.
 Completing or deferring is an edit to the marker, so the disposition is in

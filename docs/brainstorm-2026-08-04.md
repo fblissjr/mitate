@@ -119,7 +119,14 @@ picks); REP4 follows; C's amendment lands whenever convenient.
   lines (its own header). The mitigation is gated on
   `restructure-2026-07.md` deleting itself, which is gated on R5's
   remnant. *Disposition: no new item — one more argument for closing R5,
-  which section 2C already carries.*
+  which section 2C already carries.* *Later the same day, twice: first the
+  guarantee became mechanical (the pruning is a `when-absent` marker in
+  working-plan that fires the moment the restructure doc self-deletes);
+  then the owner's load-bearing-dates rule removed the invented 2026-08-08
+  date that had briefly sat on R5's closure — the closure is the router's
+  near-term queue item, its ratification recorded in the restructure doc's
+  current-position block, and the only dates left in markers are ones
+  where the date itself is the instrument.*
 
 ## 4. Drift found this span, and where it strikes next
 
@@ -175,7 +182,13 @@ Candidates examined honestly; most of the apparatus survives the look.
   Delete-don't-tune on 2026-08-24 if the correction rate is unchanged
   (script header; postmortem forward item 3). Nothing to do early —
   judging it now would repeat the emission≠delivery≠effect collapse the
-  record warns about.
+  record warns about. *Amended later the same day (the skills repo's
+  second denominator memo): the comparison as first registered was
+  calendar-normalized — the underpowered-zero flaw in retirement
+  clothing. Now corrections-per-opportunity, classifiers frozen, minimum
+  exposure 10 per window or the checkpoint extends. The procedure's home
+  is the script header; the retirement checklist it instantiates is in
+  `controls.md`.*
 - **`bracket-noise`'s claims-webgpu arm is a standing local red** on
   WebGPU-native machines (filed, CHANGELOG 0.17.2). A permanently red
   arm on developer hardware trains exactly the route-around behavior the
@@ -248,4 +261,3 @@ Candidates examined honestly; most of the apparatus survives the look.
 5. Everything else here either already happened (breakdown's edge,
    0.19.1) or dies with this file.
 
-<!--due: 2026-08-11 | re-review this brainstorm: is every item dispositioned? If yes, delete both renderings and the router row; if not, re-date this marker and say why in the day log-->

@@ -26,7 +26,13 @@ description: >
 > run against every shipped example and template before being written. Fence
 > parity re-verified 2026-08-02 after the check inverted to compare carriers
 > against the canonical store in `templates/fences/` (bracket-parity.js, all
-> arms, plus a byte-identical regeneration over all nine carriers).
+> arms, plus a byte-identical regeneration over all nine carriers). A full
+> claim audit against 0.19.2 ran 2026-08-04 before the first cold-start build:
+> the fence list gained `CONTRACT` (it was one of seven, listed as one of
+> six), the two WebGPU flag hazards were re-separated (hand-rolled flags fail
+> deterministic-black; `WEBGPU=swiftshader` fails non-deterministic and is
+> refused), and the workflow gained step 8, the film field report — the
+> method's closing step, which the numbered sequence previously never reached.
 
 **What it makes:** one self-contained HTML file that plays an animated scene in
 any browser, and renders frame-exact to MP4, AVIF or WebP. No player, no build
@@ -223,6 +229,15 @@ file.
 `references/recordings.md` owns the format tradeoffs; `references/delivery.md`
 owns the case where you ship no recording at all, which is most of them.
 
+### 8. Close out — the film field report
+
+The method's last step, not optional bookkeeping: before you finish, write
+three honest bullets into whatever record you keep — what you built twice,
+what you re-derived from scratch, and what you copied out of an example scene
+(and what for). `references/method.md`'s closing section owns the step and the
+why; the five minutes after the film lands are worth more than any review
+later.
+
 ## Rules that silently break a film
 
 Not style — each was measured, and each fails quietly rather than loudly.
@@ -241,8 +256,11 @@ Not style — each was measured, and each fails quietly rather than loudly.
   makes the scene accumulate — which breaks purity, and is the single thing that
   would put a ceiling on duration. Hide with scale or `visible`, do not create
   and destroy.
-- **Fenced blocks byte-match the canonical store** in `templates/fences/`
-  (`KERNEL`, and in 3D also `SOLVER`/`RIG`/`DRIVER`/`HTML`, plus `CHARACTER`).
+- **Fenced blocks byte-match the canonical store** in `templates/fences/` —
+  the set is `smoke.js`'s own `FENCES` list, not this bullet: `CONTRACT` and
+  `KERNEL` in every scene (yes, the block carrying the four `window.*` exports
+  is itself a fence — do not hand-edit it either), and in 3D also
+  `SOLVER`/`RIG`/`DRIVER`/`HTML`, plus `CHARACTER`.
   Never hand-edit a fence inside a scene: edit the store copy and run
   `smoke.js --parity-fix` to regenerate every carrier, or remove the markers
   to diverge deliberately and leave the parity set.
@@ -269,10 +287,12 @@ move.)
 **Backend:** with no env vars you get the WebGL2 fallback, which is universal and
 CI-safe. `WEBGPU=metal` opts into macOS hardware and is measurably faster.
 Frames are **not** byte-identical across backends, so pin the backend on both
-sides of any comparison. Never hand-roll WebGPU Chromium flags: the wrong
-combination ships flat frames and exits 0. In particular `WEBGPU=swiftshader`
-renders pure black, silently — `shoot.js` refuses it outright.
-`ANGLE_BACKEND` selects the GL backend on the fallback path.
+sides of any comparison. Two distinct flag hazards, and they fail differently:
+hand-rolled WebGPU Chromium flags (`--enable-unsafe-webgpu` without
+`--use-angle=metal`) ship pure-black frames, deterministically, exit 0; the
+configured `WEBGPU=swiftshader` path ships flat frames NON-deterministically,
+warmth-dependent — and `shoot.js` refuses it outright. `ANGLE_BACKEND` selects
+the GL backend on the fallback path.
 `references/webgpu-stack.md` owns all of it.
 
 ## References

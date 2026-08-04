@@ -7,6 +7,37 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.19.3
+
+### fixed
+
+**Five drifts across the two documents about to become load-bearing,
+found by a fresh-eyes claim audit the day before the first cold-start
+build.** Two auditors ran against 0.19.2; every finding was re-verified
+against the code before the fix.
+
+`SKILL.md` (the cold session's entire teaching surface): the fence list
+omitted `CONTRACT` — one of seven parity-checked fences, and the block
+carrying the four `window.*` exports the same file calls load-bearing —
+so a cold reader could hand-edit it believing it sat outside the parity
+set; the two WebGPU flag hazards had merged into one wrong sentence
+(hand-rolled flags fail deterministic-black; `WEBGPU=swiftshader` fails
+NON-deterministic, warmth-dependent, and is refused — `backend.js` and
+`webgpu-stack.md` agree, the old line attributed each mode's symptom to
+the other's cause); and the numbered workflow ended at step 7, so the
+method's closing step — the film field report added in 0.19.2 — was
+unreachable by construction for a reader following SKILL.md's own
+routing. It is now step 8.
+
+`plugin/agents/film-reviewer.md` (used the moment the next film ships,
+last touched at 0.16.32): its definition of "smoke passed" omitted the
+blank-frame check, shipped-frame spread, and live playback — the check
+built because everything else was blind to a frozen film — and named two
+of seven fences; and its semantics instruction dropped `method.md`'s
+explicit caveat that `nocap` cannot strip mesh-built 3D labels, on the
+two-of-three templates where that matters most. Both lines now carry the
+full sets and point at their owners.
+
 ## 0.19.2
 
 ### added

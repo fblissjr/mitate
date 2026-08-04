@@ -66,11 +66,23 @@ its ramp parks there unless gated off.
 **Semantics** — every frame is right and the film still explains nothing. Cover
 **everything except the geometry** (the `nocap` sheet removes the DOM caption
 *and* every word drawn through `txt()`), then ask what each beat is about. A beat
-that only works with its words is a slideshow with a 3D background.
+that only works with its words is a slideshow with a 3D background. **On a 3D
+film that pass is incomplete by construction**: `txt()` exists only in the 2D
+template, so mesh-built labels survive `nocap` — find and cover those by hand
+before trusting the result. `method.md` owns the caveat and `instruments.md`
+the measured miss behind it; this line dropped both for four versions, which is
+exactly the drift class an agent file with no freshness marker accumulates.
 
-**Contract** — `bun run smoke.js <scene>.html` must pass: contract, determinism
-(ALL-quantified over a sample plan), kernel and solver parity, framing
-invariance, plus advisory lints.
+**Contract** — `bun run smoke.js <scene>.html` must pass, and the hard-fail set
+is wider than this line once claimed: zero page errors, the contract names,
+determinism (ALL-quantified over a sample plan), a non-blank frame,
+shipped-frame spread, **live playback** (the rAF loop actually driving `seekTo`
+on the only path a human viewer takes — the check built because every other one
+was blind to a frozen film), fence parity against the canonical store (every
+fence the scene carries, plus template integrity), and framing invariance.
+Caption speed, overflow and the exposure lint's advisory branch stay warnings.
+`smoke.js`'s own header and `instruments.md` own the authoritative list; where
+this line and they disagree, they win.
 
 ## How to report
 

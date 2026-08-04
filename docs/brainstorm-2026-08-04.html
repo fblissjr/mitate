@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brainstorm: the state of the board, 2026-08-04</title>
+<style>
+:root {
+  --bg: #fdfdfc; --fg: #1c1c1a; --muted: #6b6b66; --rule: #e2e2dd;
+  --accent: #7a5c2e; --panel: #f5f4f0;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #16161a; --fg: #e6e6e1; --muted: #9a9a94; --rule: #2e2e34;
+    --accent: #d9b978; --panel: #1f1f25;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 3rem 1.25rem 6rem; background: var(--bg); color: var(--fg);
+  font: 16px/1.65 ui-serif, Georgia, "Times New Roman", serif;
+  -webkit-text-size-adjust: 100%;
+}
+main { max-width: 46rem; margin: 0 auto; }
+h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 1.5rem; letter-spacing: -0.01em; }
+h2 {
+  font-size: 1.15rem; margin: 2.75rem 0 0.85rem; padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--rule); letter-spacing: -0.005em;
+}
+p { margin: 0 0 1rem; }
+code {
+  font: 0.86em/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: var(--panel); padding: 0.12em 0.34em; border-radius: 3px;
+  word-break: break-word;
+}
+.meta {
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 6px;
+  padding: 1rem 1.25rem; margin: 0 0 2.5rem;
+  font: 0.92rem/1.6 ui-sans-serif, system-ui, sans-serif;
+}
+.meta p { margin: 0 0 0.6rem; }
+.meta p:last-child { margin: 0; }
+.path {
+  border-left: 3px solid var(--accent); background: var(--panel);
+  padding: 0.85rem 1.1rem; margin: 0 0 1rem; border-radius: 0 6px 6px 0;
+}
+.path h3 { margin: 0 0 0.4rem; font-size: 1rem; }
+.disposition { color: var(--muted); font-style: italic; }
+ul, ol { margin: 0 0 1rem; padding-left: 1.35rem; }
+li { margin: 0.45rem 0; }
+strong { letter-spacing: 0.002em; }
+@media (max-width: 34rem) { body { padding: 2rem 1rem 4rem; } }
+</style>
+</head>
+<body>
+<main>
+<h1>Brainstorm: the state of the board, 2026-08-04</h1>
+
+<div class="meta">
+  <p><strong>A working document, and it settles nothing.</strong> The problem/opportunity as the working
+  session sees it, the paths and their tradeoffs, gaps in the plans, drift found and likely,
+  over-implementation, and where future problems arise. Every state claim was verified against the
+  tree on 2026-08-04, with the command or source named — nothing is recalled from conversation.</p>
+  <p><strong>The graduate-or-die rule</strong>, borrowed from <code>restructure-2026-07.md</code>: each item
+  either graduates into its proper home (<code>working-plan.md</code>, <code>plan.md</code>, an owner
+  decision) with a disposition noted beside it, or dies here. When every item is dispositioned, this
+  file is deleted. A brainstorm that lingers becomes a second copy of the plans it fed.</p>
+  <p><strong>The markdown is canonical.</strong> This page is a rendering of
+  <code>docs/brainstorm-2026-08-04.md</code> as written on 2026-08-04; dispositions land in the
+  markdown, and where the two disagree the markdown wins.</p>
+</div>
+
+<section>
+<h2>1. The problem/opportunity, in one paragraph</h2>
+<p>The apparatus has outrun the product. Zero new example films have shipped in the repo's life —
+every file in <code>plugin/skills/mitate/examples/</code> was added by the single 2026-07-24
+migration commit (<code>git log --diff-filter=A -- plugin/skills/mitate/examples/</code>, one
+commit) — while the caught-defect record runs roughly 4 product to ~25 meta
+(<code>docs/representation.md</code>, "Where defects actually come from"). Meanwhile REP1&ndash;REP3
+landed on three consecutive days (plan.md stamps: 0.17.0, 0.18.0, 0.19.0), so the instruments are
+the strongest they have ever been and a film is the cheapest it has ever been to make
+<em>correctly</em>. The opportunity is that the next film is simultaneously: product evidence, the
+first end-to-end exercise of the REP work, fuel for the pattern ledger (REP5's gate is unfireable
+without films shipping), and — if built by a fresh session from the docs alone — the deferred
+VISION criterion test ("a session arriving with no context can find what it needs and act
+correctly"). The risk of not taking it: VISION's flywheel ("capturing a pattern should be a side
+effect of making a film") has had nothing to grind for eleven days.</p>
+</section>
+
+<section>
+<h2>2. The paths, and their tradeoffs</h2>
+<p>Three live candidates, not mutually exclusive — the real question is ordering.</p>
+
+<div class="path">
+<h3>A. REP4 (derived extents) first</h3>
+<p><strong>For:</strong> the highest recorded product defect class (hand-declared extents wrong 3 of
+5 in plan.md's promotion worked-examples; ledger count 6; breakdown.md calls it "the layer's most
+expensive gap"); the red-first fixture already exists and is already pinned
+(<code>bracket-corpus.js</code> row 11 arm, green in today's gate).
+<strong>Against:</strong> another meta phase on top of eleven meta days, and it carries the track's
+hardest design tension — deriving extents means measuring geometry, measuring geometry is
+<code>probe</code>'s territory, and <code>probe</code>'s exception to the prime directive lapses if
+it enters "a pipeline that produces an artifact" (CLAUDE.md). A derivation step that writes extents
+into <code>SUBJECTS</code> walks up to that line. The binding terms are in
+<code>representation.md</code> decision point 4; the design session reads those first.</p>
+</div>
+
+<div class="path">
+<h3>B. A film first</h3>
+<p><strong>For:</strong> everything in section 1. A Phase-3/4 portfolio film
+(<code>the-briefing</code>, <code>rube-goldberg</code> — plan.md's test-case portfolio) or a small
+commission-register short. Run it as the cold-start variant and it doubles as the deferred
+docs-only test (postmortem 2026-08-03, forward item 6).
+<strong>Against:</strong> the extent-defect class REP4 exists for is still unguarded, so the film
+will likely hit it — though hitting it under instruments that can <em>measure</em> it (probe) is
+also exactly the motivating evidence REP4's design wants fresh.</p>
+</div>
+
+<div class="path">
+<h3>C. Phase 4 via R5's remnant</h3>
+<p>The owner's standing capability priority (plan.md: "Phase 4 moves ahead of Phase 3"). The cheap
+first step is R5 item 4, the kinematic-body amendment to <code>physics-bake-proposal.md</code> (a
+document edit), which also moves <code>restructure-2026-07.md</code> toward its self-deletion gate —
+R5's open items are that amendment plus the deliberately-unpromoted
+<code>hide</code>/<code>subjectFromObject</code> half (restructure current-position block).
+<strong>Against:</strong> the bake is the project's biggest build; starting it with zero films
+shipped on the new instrument stack means its acceptance film (<code>rube-goldberg</code>) is also
+the first film through everything else.</p>
+</div>
+
+<p><strong>The lean, stated as a lean:</strong> B, then A, then C — with C's document amendment (R5
+item 4) done any time it is convenient, since it is small and unblocking. A film first converts the
+meta investment into observed value, feeds REP4's design with a fresh motivating instance, and
+tests the docs cold. The counter-argument (ship the guard before the film that needs it) is real;
+it is the owner's call, which is why this is a brainstorm item and not a working-plan edit.</p>
+</section>
+
+<section>
+<h2>3. Gaps in plan / working-plan, verified</h2>
+<ul>
+<li><strong>VISION's failing "determinism magnitude" criterion has no owning item.</strong>
+VISION.md names it a criterion and says plainly it is still false ("a determinism failure reports
+that it happened, not how large it was or where"). Grep for <code>magnitude</code> in
+<code>docs/plan.md</code> and <code>docs/working-plan.md</code> (2026-08-04): zero relevant hits. A
+recorded failing success-criterion with no queue slot is a criterion on its way to being quietly
+dropped — the exact failure VISION's own list warns about.
+<span class="disposition">Proposed disposition: a working-plan deferred-table row with a trigger
+(e.g., "the next determinism red anyone has to diagnose by hand"), not scheduled work.</span></li>
+<li><strong>The 2026-08-24 muted-blocks count lives only in a local file.</strong> The
+claims-reminder evaluation half is tracked (postmortem 2026-08-03, forward item 3; procedure in
+<code>scripts/claims-reminder.sh</code>'s header). The second half — counting violations of what
+the muted dev-conventions blocks used to say, which decides an ambient-tier question in the skills
+repo — appears in no tracked file (grep <code>muted</code> across postmortems and working-plan,
+2026-08-04: nothing). It exists only in <code>internal/handoff_next-session.md</code>, a file whose
+own rule is that it gets replaced.
+<span class="disposition">Proposed disposition: one dated line in working-plan beside the reminder
+checkpoint.</span></li>
+<li><strong>Working-plan has no pruning plan for itself.</strong> 3,413 lines (<code>wc -l</code>,
+2026-08-04), with superseded sections guarded by header warnings — the recorded cost is a fresh
+session reading 460 superseded lines (its own header). The mitigation is gated on
+<code>restructure-2026-07.md</code> deleting itself, which is gated on R5's remnant.
+<span class="disposition">Disposition: no new item — one more argument for closing R5, which
+section 2C already carries.</span></li>
+</ul>
+</section>
+
+<section>
+<h2>4. Drift found this span, and where it strikes next</h2>
+<p>Found and fixed across 2026-08-03..04 (receipts in the span postmortem and today's log):
+version-token staleness (plan.md twice, working-plan twice, docs/README once — all said "0.18.1"
+for work that landed as 0.18.2) and control-existence claims (static.yml asserting
+<code>bracket-corpus.js</code> unbuilt after it shipped; instruments.md's SIZES sentence). Two
+transferable classes, both now carried by a control or a procedure: grep the moved version token
+itself across all tracked prose (postmortem forward item), and <code>.github/workflows/*.yml</code>
+added to audit-claims' blind-spot routing.</p>
+<p>Where it likely strikes next, measured:</p>
+<ul>
+<li><strong>The provenance-window class has a queue.</strong> References accumulate dated
+amendments above their "Not here" edge until the edge leaves selfcheck's 2500-byte header window.
+instruments.md hit it this morning (fixed by moving the edge up); breakdown.md sat 325 bytes from
+the boundary this afternoon (byte-offset scan over every reference, 2026-08-04) and was moved
+preemptively in 0.19.1. Every other reference sits under 1,700 bytes. The structural fix — edge
+directly after the founding provenance paragraph, amendments below it — is now the shape of the two
+files that matter; adopt it opportunistically when a reference gains its next amendment.
+<span class="disposition">Disposition: convention, not machinery; noted here and in the two fixed
+files' structure.</span></li>
+<li><strong>Gate cost is creeping.</strong> gate.yml's comment says ~6m30s (measured 2026-08-02,
+dated, so not false). The last four green runs took 7m01s&ndash;7m48s (<code>gh run list</code>
+timestamps, 2026-08-04), with <code>bracket-corpus.js</code> disclosing ~2min of that at its own
+site. The repo's own doctrine says a slow gate is one people route around.
+<span class="disposition">Proposed disposition: a watch threshold, not work — revisit the gate's
+composition when a green run first exceeds 10 minutes.</span></li>
+<li><strong>The handoff memo rots by design.</strong> Its predecessor "rotted four times in one
+day" (its own header). It is local, replaced per session, and this session owes it a replacement at
+close. <span class="disposition">Disposition: standing session hygiene, no new item.</span></li>
+</ul>
+</section>
+
+<section>
+<h2>5. Over-implemented, or soon to add little</h2>
+<p>Candidates examined honestly; most of the apparatus survives the look.</p>
+<ul>
+<li><strong>The claims-reminder machinery already carries its own sunset.</strong> Delete-don't-tune
+on 2026-08-24 if the correction rate is unchanged (script header; postmortem forward item 3).
+Nothing to do early — judging it now would repeat the emission&ne;delivery&ne;effect collapse the
+record warns about.</li>
+<li><strong><code>bracket-noise</code>'s claims-webgpu arm is a standing local red</strong> on
+WebGPU-native machines (filed, CHANGELOG 0.17.2). A permanently red arm on developer hardware
+trains exactly the route-around behavior the corpus doctrine names ("a gate red for a correct
+reason is one people learn to route around"). Candidate: skip-with-stated-reason on hardware-WebGPU
+machines while CI keeps the real arm — but that edit touches signal honesty and deserves its own
+red-first pass. <span class="disposition">Proposed disposition: small working-plan item, low
+priority.</span></li>
+<li><strong>Working-plan's superseded bulk</strong> — value already declared decaying; covered by
+section 3 above.</li>
+<li><strong>Not over-implemented, checked:</strong> every bracket has a failing exit path
+(selfcheck asserts it, and owns the count) and each names a defect it caught or pins; none reads as
+decorative. The doc mass outside working-plan is either dated record (fine by class) or
+routed.</li>
+</ul>
+</section>
+
+<section>
+<h2>6. Future problems and opportunities not yet on a queue</h2>
+<ul>
+<li><strong>Install-cache growth just changed slope.</strong> Examples are ~5.5 MB of a ~5.8 MB
+plugin subtree (plan.md's examples policy, re-measured 2026-07-25), and <code>plugin install</code>
+caches per-version. Three cached versions measured 18 MB when releases were occasional; 0.17.0
+&rarr; 0.19.1 landed in three days. Daily releases multiply cached copies of the same 5.5 MB of
+films. The deferred <code>examples-placement.md</code> option E is blocked on exactly one thing:
+the owner's fixture-vs-example call (working-plan deferred table). <em>This decision's price went
+up this week; worth a fresh look.</em></li>
+<li><strong>REP5 is film-starved by construction.</strong> Its gate ("a migration proposal arrives
+with its trigger evidence attached, without a human going looking") requires films recurring
+shapes — see section 1.</li>
+<li><strong>Shared-checkout coordination remains manual.</strong> An uncommitted
+<code>.gitignore</code> edit (<code>.archive/</code>) from another session sat in the tree today
+and was nearly swept into a release commit by <code>git add -A</code> (caught, unstaged, left in
+place per the by-path etiquette). The etiquette held, but only because the diff was read.
+<span class="disposition">Disposition: none proposed — the "stage by path" rule is the control;
+this is its incident log entry.</span></li>
+<li><strong>The label collision (R0&ndash;R5 / Phase R / REP0&ndash;REP6) has a demonstrated
+cost</strong> — the orientation postmortem records the owner losing the plot as its live instance —
+and a declared ceiling (the router's label key). Renaming would churn more record than it
+clarifies. <span class="disposition">Dies here unless a second confusion instance argues
+otherwise.</span></li>
+</ul>
+</section>
+
+<section>
+<h2>7. What this document proposes, compressed</h2>
+<ol>
+<li>Owner picks the section-2 ordering (lean: film, then REP4, with R5's kinematic amendment
+whenever convenient).</li>
+<li>Two one-line working-plan additions: the determinism-magnitude deferred row, and the
+2026-08-24 muted-blocks count line.</li>
+<li>One small filed item: the bracket-noise local-red ergonomics.</li>
+<li>One refreshed owner decision: examples-placement, repriced under daily releases.</li>
+<li>Everything else here either already happened (breakdown's edge, 0.19.1) or dies with this
+file.</li>
+</ol>
+</section>
+
+</main>
+</body>
+</html>

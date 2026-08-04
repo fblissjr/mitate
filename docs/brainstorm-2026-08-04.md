@@ -84,6 +84,11 @@ the docs cold. The counter-argument (ship the guard before the film that
 needs it) is real; it is the owner's call, which is why this is a
 brainstorm item and not a working-plan edit.
 
+**DECIDED 2026-08-04 (owner): B — diverse scenes from the test-case
+portfolio first.** The router's work-next row carries the queue
+(`market-crash`, `boss-intro`, the 2D-explainer rung as the in-reach
+picks); REP4 follows; C's amendment lands whenever convenient.
+
 ## 3. Gaps in plan / working-plan, verified
 
 - **VISION's failing "determinism magnitude" criterion has no owning
@@ -93,9 +98,11 @@ brainstorm item and not a working-plan edit.
   `docs/working-plan.md` (2026-08-04): zero relevant hits. A recorded
   failing success-criterion with no queue slot is a criterion on its way
   to being quietly dropped — the exact failure VISION's own list warns
-  about. *Proposed disposition: a working-plan deferred-table row with a
-  trigger (e.g., "the next determinism red anyone has to diagnose by
-  hand"), not scheduled work.*
+  about. *Disposition: FILED 2026-08-04, with the owner's same-day
+  clarification recorded in the row and in VISION — determinism exists so
+  the tooling itself can be evaluated across versions, which needs
+  "roughly the same" to be checkable, and magnitude-with-location is the
+  instrument for "roughly".*
 - **The 2026-08-24 muted-blocks count lives only in a local file.** The
   claims-reminder evaluation half is tracked (postmortem 2026-08-03,
   forward item 3; procedure in `scripts/claims-reminder.sh`'s header).
@@ -199,6 +206,8 @@ Candidates examined honestly; most of the apparatus survives the look.
 - **REP5 is film-starved by construction.** Its gate ("a migration
   proposal arrives with its trigger evidence attached, without a human
   going looking") requires films recurring shapes — see section 1.
+  *Resolved by the section-2 decision: films first, each ending in the
+  method's field report.*
 - **Shared-checkout coordination remains manual.** An uncommitted
   `.gitignore` edit (`.archive/`) from another session sat in the tree
   today and was nearly swept into a release commit by `git add -A`
@@ -210,15 +219,25 @@ Candidates examined honestly; most of the apparatus survives the look.
   cost** — the orientation postmortem records the owner losing the plot
   as its live instance — and a declared ceiling (the router's label
   key). Renaming would churn more record than it clarifies. *Dies here
-  unless a second confusion instance argues otherwise.*
+  unless a second confusion instance argues otherwise.* **The second
+  instance arrived the same day** (owner, 2026-08-04: "did we actually
+  finish the R(x)'s from representation.md?" — the R-gates belong to the
+  restructure plan, not the representation track, and the two tracks
+  never block each other). *Revised disposition: still no rename — the
+  cheaper resolution is closing R5's remnant, which lets
+  `restructure-2026-07.md` delete itself and retires the R-label from
+  the live doc set entirely. The router's work-next row now says so.*
 
 ## 7. What this document proposes, compressed
 
 1. Owner picks the section-2 ordering (lean: film, then REP4, with R5's
-   kinematic amendment whenever convenient).
+   kinematic amendment whenever convenient). (DECIDED 2026-08-04: films
+   first, from the test-case portfolio.)
 2. Two one-line working-plan additions: the determinism-magnitude
-   deferred row (still awaiting the owner's yes), and the 2026-08-24
-   muted-blocks count line (DONE — landed with the handoff retirement).
+   deferred row (DONE 2026-08-04, with the owner's clarification), and
+   the 2026-08-24 muted-blocks count line (DONE — landed with the
+   handoff retirement, then amended with the skills repo's denominator
+   memo: violations over opportunities, per class, minimum exposure 10).
 3. One small filed item: the bracket-noise local-red ergonomics (DONE —
    filed in working-plan's deferred table, 2026-08-04).
 4. One refreshed owner decision: examples-placement, repriced under

@@ -132,6 +132,10 @@ since it is small and unblocks other things. A film first converts the tooling i
 observed value, gives REP4's design a fresh motivating case, and tests the docs cold. The
 counterargument, ship the guard before the film that needs it, is real. It is the owner's call,
 which is why this stays a brainstorm item instead of a working-plan edit.</p>
+<p><strong>Decided 2026-08-04 (owner):</strong> B, diverse scenes from the test-case portfolio
+first. The router's work-next row carries the queue (<code>market-crash</code>,
+<code>boss-intro</code>, and the 2D-explainer rung are the in-reach picks); REP4 follows; C's
+amendment lands whenever convenient.</p>
 </section>
 
 <section>
@@ -143,8 +147,10 @@ it happened, not how large it was or where"). A grep for <code>magnitude</code> 
 <code>docs/plan.md</code> and <code>docs/working-plan.md</code> (2026-08-04) finds nothing relevant.
 A recorded failing criterion with no queue slot is a criterion on its way to being quietly dropped,
 which is the exact failure VISION's own list warns about.
-<span class="disposition">Proposed disposition: a working-plan deferred-table row with a trigger,
-such as "the next determinism failure anyone has to diagnose by hand". Not scheduled work.</span></li>
+<span class="disposition">Disposition: filed 2026-08-04, with the owner's same-day clarification
+recorded in the row and in VISION. Determinism exists so the tooling itself can be evaluated
+across versions, which needs "roughly the same" to be checkable, and magnitude-with-location is
+the instrument for "roughly".</span></li>
 <li>The 2026-08-24 muted-blocks count lived only in a local file. The claims-reminder evaluation
 half is tracked (postmortem 2026-08-03, forward item 3; procedure in
 <code>scripts/claims-reminder.sh</code>'s header). The second half, counting violations of what the
@@ -238,7 +244,8 @@ owner's fixture-versus-example call (working-plan deferred table). That decision
 this week and deserves a fresh look.</li>
 <li>REP5 is film-starved by construction. Its gate ("a migration proposal arrives with its trigger
 evidence attached, without a human going looking") needs films producing recurring shapes. See
-section 1.</li>
+section 1. <span class="disposition">Resolved by the section-2 decision: films first, each ending
+in the method's field report.</span></li>
 <li>Shared-checkout coordination remains manual. An uncommitted <code>.gitignore</code> edit
 (<code>.archive/</code>) from another session sat in the tree today, and <code>git add -A</code>
 nearly swept it into a release commit. It was caught, unstaged, and left in place per the
@@ -248,8 +255,13 @@ is its incident log entry.</span></li>
 <li>The label collision (R0&ndash;R5, Phase R, REP0&ndash;REP6) has a demonstrated cost: the
 orientation postmortem records the owner losing the plot as its live instance. It also has a
 declared ceiling, the label key in the router. Renaming now would churn more of the record than it
-clarifies. <span class="disposition">Dies here unless a second confusion argues
-otherwise.</span></li>
+clarifies. <span class="disposition">Dies here unless a second confusion argues otherwise.</span>
+The second confusion arrived the same day: the owner asked whether "the R(x)'s from
+representation.md" were finished, and the R-gates belong to the restructure plan, not the
+representation track. <span class="disposition">Revised disposition: still no rename. The cheaper
+resolution is closing R5's remnant, which lets <code>restructure-2026-07.md</code> delete itself
+and retires the R-label from the live doc set entirely. The router's work-next row now says
+so.</span></li>
 </ul>
 </section>
 
@@ -257,10 +269,11 @@ otherwise.</span></li>
 <h2>7. What this document proposes, compressed</h2>
 <ol>
 <li>Owner picks the section-2 order. The lean: film, then REP4, with R5's kinematic amendment
-whenever convenient.</li>
-<li>Two one-line working-plan additions: the determinism-magnitude deferred row (still awaiting
-the owner's yes), and the 2026-08-24 muted-blocks count line (done; it landed with the handoff
-retirement).</li>
+whenever convenient. (Decided 2026-08-04: films first, from the test-case portfolio.)</li>
+<li>Two one-line working-plan additions: the determinism-magnitude deferred row (done 2026-08-04,
+with the owner's clarification), and the 2026-08-24 muted-blocks count line (done; landed with the
+handoff retirement, then amended with the skills repo's denominator memo: violations over
+opportunities, per class, minimum exposure 10).</li>
 <li>One small filed item: the bracket-noise local-red ergonomics (done; filed in working-plan's
 deferred table, 2026-08-04).</li>
 <li>One refreshed owner decision: examples-placement, repriced under daily releases.</li>

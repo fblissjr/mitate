@@ -85,6 +85,13 @@ solver version will not be, and that is not a determinism failure — it is wher
 tolerance-shaped oracle becomes the right instrument. The bake proposal already
 treats re-bake identity as its own question rather than assuming it.
 
+**And it measures the toolmaker, not only the scene** (owner, 2026-08-04):
+rebuild the same scene under new tooling and compare — better, worse, cheaper,
+slower. That comparison needs "roughly the same" to be checkable, which a bare
+pass/fail cannot express; the magnitude guard below is that instrument, and
+physics is roughly where "slightly different" becomes legitimate rather than
+alarming.
+
 **The guard against dogma is a magnitude.** A check that reports only pass or
 fail cannot tell a scene that renders a *different film* from one that moved a
 single pixel by a single bit — and treated as equal, the second spends the

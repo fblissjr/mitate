@@ -229,6 +229,7 @@ which is what guarantees the scene's own bytes agree with the store's.
 | `KEYS[].beat` and `CONFIG.flashes[].beat` resolve | error | — |
 | `FRAME.px` describes `FRAME.aspect` | error | whether either is the frame you wanted |
 | a union shot on a rung whose anchor is a body landmark, with no `anchor` override | warn | whether the composition reads |
+| a `STYLE`/`CONFIG` key that nothing reads — not the carried fences, not the scene's own code (near-miss named within two edits) | warn | whether a key that IS read does what its name says; a key consumed only indirectly (no shipped carrier does this, measured 2026-08-04) |
 | a caption above `smoke.js`'s reading-speed limit | warn | legibility at the size it is viewed — see below |
 | three or more shots sharing one framing | warn | whether the repetition is a motif |
 

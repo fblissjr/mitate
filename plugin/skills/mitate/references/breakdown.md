@@ -23,6 +23,14 @@ the honest answer is usually *nothing*.
 > shipped examples — which is the ordinary result of writing code against a spec
 > rather than reading one.
 >
+> **Amended 2026-08-04** (0.19.0, REP3): the `STYLE` and `CONFIG` sections'
+> "validated: nothing" verdicts are closed — `check` now warns on declared
+> keys that nothing reads, with the kit vocabulary derived from the fence
+> store at check time. The derivation's first run found a real dead key in a
+> shipped template — `scene2d` declared `faint` and nothing read it — now
+> deleted, which is the "what validates it" column earning its keep on the
+> file that defined it.
+>
 > **Not audited:** whether each documented semantic is *correct* — this file
 > records what the code does, and a wrong-but-consistent semantic would survive
 > it. Field descriptions are copied from the templates' own comments where those
@@ -108,11 +116,17 @@ from a template sees only what the template declares.
 **Film-private** — read by an example but by no template: `dotIn`, `dotOut`,
 `floor`, `fogFar`, `gearIn`, `gearOut`, `markerGlow`.
 
-**`STYLE` is an open bag, not a schema.** Nothing distinguishes a key the kit
-reads from one a film invented, nothing rejects a misspelled key, and a film-
+**`STYLE` is an open bag, not a schema** — a film may invent keys, and a film-
 private name that a future kit key collides with would silently change meaning.
-**Validated: nothing.** An unknown key is ignored without a warning; a
-misspelled `exposure` renders at the default and looks like an authoring choice.
+**Validated since 0.19.0: consumption.** `build.js check` warns on any declared
+key that nothing reads — not the fences the scene carries, not the scene's own
+code — naming the nearest known key when one is within two edits, so a
+misspelled `exposure` is a named near-miss instead of a silent render at the
+default. The kit vocabulary is derived from the canonical fence store's own
+reads at check time, never listed (a hand-held registry is another copy of the
+code); consumption is decided by the scene's own text, which is what lets a
+film-private key pass without any annotation. What this does not validate:
+whether a key that IS read does what its name says.
 
 ## `CONFIG` — neither timing nor look
 
@@ -131,10 +145,12 @@ misspelled `exposure` renders at the default and looks like an authoring choice.
 | `flashWidth` | **all three** templates — it lives in the `DRIVER` fence | `.25` (per-flash `w` overrides) |
 | `cameraFloor` | **both 3D** templates — it lives in the `SOLVER` fence, which 2D has no copy of | off. Opt-in, world units — clamps the camera's `y` |
 
-**Validated: one key.** `build.js check` resolves each `flashes[].beat` against
-`BEATS` — the only exercise that resolver gets, since no shipped scene declares a
-flash. Everything else here is unvalidated, same as `STYLE`: a misspelled
-`capFade` still renders at the default and reads as a choice.
+**Validated: the beat resolution, and consumption.** `build.js check` resolves
+each `flashes[].beat` against `BEATS` — the only exercise that resolver gets,
+since no shipped scene declares a flash — and since 0.19.0 the same
+unknown-key warn as `STYLE` covers this bag: a misspelled `capFade` draws a
+warn naming the near-miss instead of rendering at the default and reading as
+a choice.
 
 ## `FRAME` — the one declared reference frame
 

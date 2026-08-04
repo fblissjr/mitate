@@ -141,7 +141,7 @@ const DRIFT_BUILD = path.join(DRIFT, 'build.js');
 for (const t of ['subject', 'focus', 'anchor', 'beat', 'rung', 'order', 'flash', 'frame',
                  'union', 'anchored-union', 'caption', 'repeat', 'notascene',
                  'imperative', 'nonliteral', 'durconst', 'fracconst', 'dotassign',
-                 'unreadable']) badPath(t);
+                 'unreadable', 'misskey', 'privatekey']) badPath(t);
 
 const run = (args, cwd, build) => {
   try {
@@ -227,6 +227,8 @@ const ROWS = [
   ['(warn) check dur from a const',['check', BAD['durconst']],   { stdout: 'cannot resolve', absent: 'ERROR' }],
   ['(warn) check anchor from a const',['check', BAD['fracconst']], { stdout: 'cannot resolve', absent: 'ERROR' }],
   ['(warn) check dot-assigned SUBJECTS',['check', BAD['dotassign']], { stdout: 'SUBJECTS is declared but assembled', absent: 'ERROR' }],
+  ['(warn) check misspelled kit key',  ['check', BAD['misskey']],   { stdout: 'did you mean "exposure"', absent: 'ERROR' }],
+  ['(warn) check private key, read, quiet',['check', BAD['privatekey']], { stdout: 'check: ok', absent: 'nothing reads' }],
   ['(red) check unreadable SHOTS',  ['check', BAD['unreadable']], { stdout: 'SHOTS is declared but could not be read' }],
   ['(red) check call-built SHOTS',  ['check', BAD['nonliteral']], { stdout: 'SHOTS is declared but assembled' }],
   ['(warn) check caption cps',   ['check', BAD.caption],          { stdout: 'cps against a' }],
@@ -278,6 +280,12 @@ try {
   mutate('dotassign',   [["};\n// One locked, head-on shot",
                           "};\nSUBJECTS.legend={pos:t=>[0,GRID_CY,0],h:1};\n// One locked, head-on shot"],
                          [SHOT, "  {at:['title',0], subject:'legend', size:'FS', angle:0, elev:0},"]]);
+  // REP3's unknown-key pair, same discipline as union/anchored-union: the rule
+  // must fire on a misspelled kit key AND stay quiet on a film-private key the
+  // scene's own code reads, or it is not a rule about dead keys.
+  mutate('misskey',     [["  exposure: 1.0,", "  exposur: 1.0,"]]);
+  mutate('privatekey',  [["const STYLE = {", "const STYLE = {\n  chartGlow: 0x101010,"],
+                         ["const SUBJECTS={", "void STYLE.chartGlow;\nconst SUBJECTS={"]]);
   // A 3D scene whose SHOTS literal cannot be SLICED must say so. Until 0.16.70
   // every malformed-literal path returned null, which means "this scene has no
   // SHOTS" -- so a broken table printed `no SHOTS (2D)` under a clean green.

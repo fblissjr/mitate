@@ -1147,6 +1147,42 @@ function kitFence(name) {
   return block;
 }
 
+// REP3: the kit's key vocabulary for STYLE and CONFIG, derived from the
+// canonical store's own reads. Derived, never listed — a hand-held registry
+// is another copy of the code, which is the phase's recorded refuted-if.
+// This set serves the near-miss suggestion and the carried-fence distinction
+// in the unknown-key warns below; CONSUMPTION is decided by the scene's own
+// text, because every carrier embeds its fences, so "the kit reads it" and
+// "this scene's bytes read it" are the same test wherever the scene actually
+// carries the reading fence.
+let KIT_KEYS = null;
+function kitKeys() {
+  if (KIT_KEYS) return KIT_KEYS;
+  KIT_KEYS = { STYLE: new Set(), CONFIG: new Set() };
+  // No refusal here: kitFence() above owns the missing-store refusal, and
+  // check executes the KERNEL before any key scan can run.
+  let names = [];
+  try { names = fs.readdirSync(path.join(__dirname, 'fences')).filter(n => n.endsWith('.fence.txt')); }
+  catch (e) { return KIT_KEYS; }
+  for (const n of names) {
+    const src = fs.readFileSync(path.join(__dirname, 'fences', n), 'utf8');
+    for (const bag of ['STYLE', 'CONFIG'])
+      for (const m of src.matchAll(new RegExp('(?:^|[^\\w$.])' + bag + '\\s*\\.\\s*([A-Za-z_$][\\w$]*)', 'g')))
+        KIT_KEYS[bag].add(m[1]);
+  }
+  return KIT_KEYS;
+}
+// Bounded Levenshtein for the near-miss naming. Keys are short and the
+// vocabulary is small; 2 edits is where "typo" stops being the likely story.
+function editDist(a, b) {
+  const dp = Array.from({ length: a.length + 1 }, (_, i) => { const r = new Array(b.length + 1).fill(0); r[0] = i; return r; });
+  for (let j = 0; j <= b.length; j++) dp[0][j] = j;
+  for (let i = 1; i <= a.length; i++)
+    for (let j = 1; j <= b.length; j++)
+      dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return dp[a.length][b.length];
+}
+
 // Execute a kit fence with the scene's extracted tables in scope. Identifiers
 // the caller does not supply resolve to the real globals (Math, Error, JSON),
 // so the fence runs the same code path it runs in the page — that identity is
@@ -1168,7 +1204,7 @@ function execKit(name, vars, wants) {
 
 function check(scene) {
   const text = fs.readFileSync(scene, 'utf8');
-  const found = {}, out = [], uncovered = [], covered = [];
+  const found = {}, out = [], uncovered = [], covered = [], states = {};
   const add = (sev, msg) => out.push([sev, msg]);
   // SIZES is NOT in this list any more: it lives inside the SOLVER fence, so
   // since REP2 it comes from executing the canonical store's copy — parity is
@@ -1179,6 +1215,7 @@ function check(scene) {
   for (const name of ['BEATS', 'SHOTS', 'SUBJECTS', 'CONFIG', 'FRAME', 'KEYS']) {
     const r = tableValue(text, name);
     found[name] = r.state === 'ok' ? r.value : null;
+    states[name] = r.state;
     if (r.state === 'ok') covered.push(name);
     // Declared and unreadable is a hole in THIS tool, not a verdict on the
     // scene, and it is said out loud: an instrument that quietly checks less
@@ -1201,6 +1238,44 @@ function check(scene) {
   if (!beats || !beats.length) {
     throw new Error(`check: no BEATS table found in ${path.basename(scene)} — every mitate scene `
       + `declares one, so either this is not a scene or the declaration is not top-level.`);
+  }
+
+  // REP3: unknown-key warns for the two open bags. breakdown.md's finding —
+  // STYLE and CONFIG validate nothing, so a misspelled kit key renders at
+  // the default and reads as an authoring choice. What is decidable without
+  // running the scene: a declared key is CONSUMED if the scene's own text
+  // reads it (the embedded fences count, which is how the kit's keys pass),
+  // and a key read by nothing is dead weight or a typo — warned, with the
+  // nearest known key named when one is within two edits. A key that IS kit
+  // vocabulary but unread here gets the sharper message: the fence that
+  // reads it is not one this scene carries. Indirect consumption
+  // (destructuring, Object.keys, computed access) is deliberately
+  // unhandled, and the gap is self-announcing: a scene that consumes a bag
+  // indirectly draws false warns on exactly the keys it consumes, and that
+  // first false warn is the trigger for an explicit film-private marker —
+  // not built before then. The dated scan behind the deferral lives in the
+  // CHANGELOG's 0.19.0 entry, where a dated record belongs.
+  for (const bag of ['STYLE', 'CONFIG']) {
+    if ((bag === 'STYLE' ? styleRead.state : states[bag]) !== 'ok') continue;
+    const v = found[bag];
+    if (!v || typeof v !== 'object' || Array.isArray(v)) continue;
+    const reads = new Set([...text.matchAll(new RegExp('(?:^|[^\\w$.])' + bag + '\\s*\\.\\s*([A-Za-z_$][\\w$]*)', 'g'))].map(m => m[1]));
+    for (const m of text.matchAll(new RegExp(bag + "\\[['\"]([A-Za-z_$][\\w$]*)['\"]\\]", 'g'))) reads.add(m[1]);
+    for (const k of Object.keys(v)) {
+      if (reads.has(k)) continue;
+      if (kitKeys()[bag].has(k)) {
+        add(CHECK_WARN, `${bag} declares "${k}", a kit key — but the fence that reads it is not one this `
+          + `scene carries, so it has no effect here.`);
+        continue;
+      }
+      let near = null, best = 3;
+      for (const c of new Set([...kitKeys()[bag], ...reads])) {
+        const d = editDist(k.toLowerCase(), c.toLowerCase());
+        if (d > 0 && d < best) { best = d; near = c; }
+      }
+      add(CHECK_WARN, `${bag} declares "${k}" and nothing reads it — not the fences this scene carries, `
+        + `not its own code. ` + (near ? `did you mean "${near}"?` : `A key nothing reads is dead weight or a typo.`));
+    }
   }
 
   // BEAT spans and TOTAL come from the kit itself since REP2 — the canonical

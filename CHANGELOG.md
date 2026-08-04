@@ -7,6 +7,39 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.19.0
+
+### added
+
+**REP3: the open bags police their own keys.** `build.js check` warns on
+any `STYLE` or `CONFIG` key that nothing reads — not the fences the scene
+carries, not the scene's own code — naming the nearest known key when one
+is within two edits, so a misspelled `exposure` is a named near-miss
+instead of a silent render at the default (`breakdown.md`'s founding
+finding for these two tables). The kit vocabulary is derived from the
+canonical fence store's reads at check time, never listed — a hand-held
+registry is another copy of the code, which is the phase's recorded
+refuted-if — and consumption is decided by the scene's own text, which is
+what lets a film-private key pass with zero annotation and keeps the
+verdict correct for a 2D scene declaring a SOLVER-read key (warned as
+carried-by-no-fence, not passed on vocabulary).
+
+One deliberate deviation from the phase text, taken on measurement: the
+film-private marker was not built. No carrier consumes these bags
+indirectly (destructuring, `Object.keys`, computed access — measured
+2026-08-04 over all 8 scenes plus the corpus fixture), so the first scene
+that needs indirect consumption is the marker's trigger.
+
+Recorded red first (`bracket-commands.js` gained the pair: misspelled
+`exposur` must fire naming `exposure`; a declared key the scene reads must
+stay quiet), and the derivation's first run over the shipped corpus found
+a real defect: `scene2d.template.html` declared `STYLE.faint` ("not-yet-
+active linework") and nothing read it — dead since it was written, its
+value hardcoded nowhere. Deleted. After that deletion, all 8 scenes check
+warning-clean, which is REP3's gate. Verified locally 2026-08-04:
+bracket-commands 40/40, bracket-check-kit 6/6, bracket-corpus 3/3,
+selfcheck and parity green.
+
 ## 0.18.2
 
 ### fixed

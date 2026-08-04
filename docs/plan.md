@@ -1066,6 +1066,23 @@ bucket (e).
   annotation; the registry is derived or controlled, never hand-held.
   *Refuted if:* the registry cannot be derived from the reads — then it is
   another copy of the code.
+  **MET 2026-08-04** (0.19.0): the vocabulary is derived from the canonical
+  fence store's reads at check time, and CONSUMPTION is decided by the
+  scene's own text — a carrier embeds its fences, so "the kit reads it" and
+  "this scene's bytes read it" are one test, and it is the version that
+  stays correct for a 2D scene declaring a SOLVER-read key (warned as
+  carried-by-no-fence rather than passed on vocabulary). One deliberate
+  deviation from the phase text above, taken on measurement: the
+  film-private MARKER was not built. No carrier consumes STYLE/CONFIG
+  indirectly (destructuring, `Object.keys`, computed access — measured
+  2026-08-04 over all 8 scenes plus the corpus fixture), so a film-private
+  key is recognized by the scene's own read of it with zero annotations;
+  the first scene needing indirect consumption is the marker's trigger.
+  Gate held by the `bracket-commands.js` pair — misspelled `exposur` fires
+  naming `exposure`, a declared key the scene reads stays quiet — recorded
+  red first, and the derivation found one real dead key in a shipped
+  template on its first run (`scene2d`'s `faint`, declared and read by
+  nothing; deleted), after which all 8 scenes check warning-clean.
 - **REP4 — extents.** Implements decision point 4, whose binding terms —
   including what is forbidden — live in `representation.md` and are not
   copied here. *Gate:* the corpus fixture gains a

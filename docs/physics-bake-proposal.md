@@ -1,4 +1,4 @@
-last updated: 2026-07-23
+last updated: 2026-08-04
 
 # physics bake proposal (mitate Phase 4, owner-prioritized)
 
@@ -62,6 +62,39 @@ not asked for it.
 - v1 scope: rigid bodies and props. Characters stay closed-form (IK/gait
   on top of, or independent of, baked roots). No baked joints, no cloth,
   no fluids in v1.
+
+## The kinematic-body option (amendment, 2026-08-04)
+
+Recorded as an option the Phase 4 build must weigh, deliberately without a
+schedule — it does not have to be built now, and nothing here fires on a date.
+
+**The gap it closes.** As written above, the declared impulse
+(`{beat:'hit', at:.3, impulse:[...]}`) is a literal restatement of the
+hand-matched constant it was meant to replace: the author still names the
+force by hand. The bake computes the hive's *consequence* correctly and
+still cannot tell anyone the bear's nose was there — the contact class this
+project keeps re-measuring (`pattern-ledger.md`, "contact measured, not
+inferred") stays un-computed at the one layer that could finally compute it.
+
+**The option.** Drive the closed-form character into the sim as a
+**kinematic body**: position-driven at each sim step from the same closed
+forms that play back, colliding but not integrated. Rapier then computes the
+contact, and the impulse falls out of the collision instead of being
+declared. "Did they touch" becomes a computed fact rather than an authored
+claim.
+
+**Still tier 1, checkably.** The sim still runs once at build time and the
+character's driving signal is itself pure in `t`; playback interpolates
+baked tracks exactly as above. No runtime simulator (red line 1), no
+cross-frame state at playback (2), no gate weakening (3), no wall-clock or
+unseeded randomness (4). All four red lines hold unchanged.
+
+**Scope note, recorded so v1 is interpreted rather than tripped over.** A
+hive on a rope **is a joint**, and v1 above says no baked joints — so the
+example corpus's flagship contact beat (`bear-and-bees`' hive) sits exactly
+at the v1 scope line. Before that beat can be baked, v1 needs an
+interpretation: either the joint enters scope, or the rope stays
+closed-form and only the contact is computed.
 
 ## Eval criteria (measured, per method.md — no vibes)
 

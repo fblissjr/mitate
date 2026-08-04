@@ -203,7 +203,8 @@ memo proved that future obligations kept in prose evaporate, and because
   `snapshots/`. Append or annotate only; never pruned, never a tiebreaker.
   No permission needed to append; rewriting history is forbidden for anyone.
 - **In-motion documents** — `working-plan.md`'s queue and status sections,
-  `restructure-2026-07.md` while it lives, any dated brainstorm. Consumed by
+  any dated brainstorm, and the class's worked example: `restructure-2026-07.md`,
+  which lived as one until it deleted itself 2026-08-04. Consumed by
   design: items graduate, sections get pruned, the file may delete itself.
   **Tactical edits here need no owner input (owner, 2026-08-04)** — queue
   updates, dispositions, landings recorded, superseded sections marked. What

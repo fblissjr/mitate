@@ -1,4 +1,4 @@
-last updated: 2026-08-02
+last updated: 2026-08-04
 
 # mitate
 
@@ -164,8 +164,9 @@ Phases 0–2 are complete and gated: the node-stack templates, recorder, and
 instruments on both backends; the material packs and style bibles; the character
 scaffold, demonstrated by `menagerie` and delivered by `bear-and-bees`. A chart
 tier sits below the films for isolating shader primitives. Phase 4, the physics
-bake, is next by phase priority — though the repo is currently mid-migration and
-[`docs/restructure-2026-07.md`](docs/restructure-2026-07.md) is the live queue.
+bake, is next by phase priority; the 2026-07 restructure migration completed and
+its plan retired itself, so the live queue is [`docs/README.md`](docs/README.md)'s
+work-next row — films from the test-case portfolio first.
 Architecture and phase gates in
 [`docs/plan.md`](docs/plan.md); the current ranked work — instruments, doc
 routing, and what is deliberately deferred with the trigger that revives it — in

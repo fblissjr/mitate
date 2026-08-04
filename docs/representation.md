@@ -1,4 +1,4 @@
-last updated: 2026-08-03
+last updated: 2026-08-04
 
 # Representation: where data stops and code starts
 
@@ -6,8 +6,9 @@ last updated: 2026-08-03
 goes afterwards.** That ordering is deliberate and is the first thing this file
 is for: the same discussion happened on 2026-07-30, produced a real owner
 position, and was **recorded nowhere** — it survived only because a later pass
-went looking for it. `restructure-2026-07.md` files that as its worked example of
-knowledge evaporating. This file exists so the outcome has a home before it is
+went looking for it. `restructure-2026-07.md` filed that as its worked example of
+knowledge evaporating (the migration plan, completed and deleted 2026-08-04 per
+its own retirement rule). This file exists so the outcome has a home before it is
 reached.
 
 **The decision below is now recorded (2026-08-02, owner).** The sections above

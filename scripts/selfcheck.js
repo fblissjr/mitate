@@ -38,7 +38,11 @@ const R = f => fs.readFileSync(f, 'utf8');
 // 6d, differing only in what they collected and what they skipped -- which is
 // the same duplicate-with-a-small-difference shape this file exists to catch,
 // in this file.
-const SKIP = /^(\.git|node_modules|internal)$/;
+// .archive is in SKIP by owner rule (2026-08-04): archived means withdrawn
+// from the record, so no check may read it — and it is gitignored, so reading
+// it would also make an accept-set environment-dependent, the defect the
+// staged-films arm documents.
+const SKIP = /^(\.git|node_modules|internal|\.archive)$/;
 const walkFiles = (dir, onFile) => {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     if (SKIP.test(e.name)) continue;
@@ -1231,6 +1235,44 @@ const toolJs = new Map([
                + `(${DESCRIPTION_LIMIT - value.length} to spare)`);
     }
   }
+}
+
+/* ---- 15. standing obligations fire on their due condition -----------------
+ * In-motion documents (docs/source-of-truth.md classes them) carry future
+ * obligations as markers rather than memories:
+ *
+ *   <!--due: 2026-08-24 | run the muted-blocks count-->
+ *   <!--due: when-absent <a-self-deleting-plan>.md | prune what it superseded-->
+ *
+ * A date is due once today reaches it; `when-absent <path>` is due once that
+ * file is gone. A due obligation is a RED check naming its action, which is
+ * the mechanism that replaced the retired handoff memo's job of remembering
+ * the future (owner, 2026-08-04). Completing or deferring is an edit to the
+ * marker — remove it or move its date — so the disposition is visible in git.
+ * An unparseable marker fails outright: an obligation the check cannot read
+ * is one it would silently never fire.
+ */
+{
+  let standing = 0, due = 0;
+  const today = new Date().toISOString().slice(0, 10);
+  walkFiles(ROOT, (f) => {
+    if (!f.endsWith('.md')) return;
+    const rel = path.relative(ROOT, f);
+    for (const m of R(f).matchAll(/<!--due:\s*([^|>]+?)\s*\|\s*([^>]+?)\s*-->/g)) {
+      const when = m[1].trim(), action = m[2].trim();
+      const absent = when.match(/^when-absent\s+(\S+)$/);
+      if (absent) {
+        if (!fs.existsSync(path.join(ROOT, absent[1]))) { due++; fail(`${rel}: obligation is due (${absent[1]} is gone) — ${action}`); }
+        else standing++;
+      } else if (/^\d{4}-\d{2}-\d{2}$/.test(when)) {
+        if (today >= when) { due++; fail(`${rel}: obligation is due (${when} has arrived) — ${action}`); }
+        else standing++;
+      } else {
+        fail(`${rel}: unparseable due-marker "${when}" — use a YYYY-MM-DD date or \`when-absent <repo-relative-path>\``);
+      }
+    }
+  });
+  if (!due) notes.push(`${standing} standing obligation(s), none due`);
 }
 
 for (const n of notes) console.log('  ok   ' + n);

@@ -244,3 +244,5 @@ Candidates examined honestly; most of the apparatus survives the look.
    daily releases.
 5. Everything else here either already happened (breakdown's edge,
    0.19.1) or dies with this file.
+
+<!--due: 2026-08-11 | re-review this brainstorm: is every item dispositioned? If yes, delete both renderings and the router row; if not, re-date this marker and say why in the day log-->

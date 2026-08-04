@@ -1,11 +1,24 @@
-last updated: 2026-08-01
+last updated: 2026-08-04
 
 # Should scenes live in `examples/` or `internal/`?
 
 An open decision, written down so the reasoning survives the session that
-produced it. **Nothing here is decided.** The current policy stands: scenes live
-in gitignored `internal/` until owner-approved into `plugin/skills/mitate/examples/`
-([plan.md](plan.md), examples policy).
+produced it. ~~**Nothing here is decided.**~~ **DECIDED 2026-08-04 (owner):
+option E, executed together with the first new portfolio film.** `gearbox`
+stays in the shipped subtree as the teaching baseline and the fixture the
+browser brackets hardcode; the other films move out of `plugin/`; new
+films land outside the plugin by default, with the site as their public face.
+The trigger that finally priced it: releases went daily (0.17.0 → 0.19.2 in
+four days) and `plugin install` caches ~5.5 MB of films per version. Batched
+with the first film so the SKILL's teaching pointers are rewritten once.
+One refinement carried from the same conversation: once a 2D example exists,
+one 2D scene joins gearbox in-tree so both shipped templates have a worked
+demonstration. Until the first film lands, the current policy stands: scenes
+live in gitignored `internal/` until owner-approved into
+`plugin/skills/mitate/examples/` ([plan.md](plan.md), examples policy).
+
+<!--due: when-absent docs/brainstorm-2026-08-04.md | the brainstorm consumed itself; check whether the first portfolio film has landed — if it has and option E has not been executed, this decision is overdue: execute the move or re-date with the reason-->
+
 
 The question is whether the *approved* destination should be the shipping plugin
 subtree at all, or whether films should stay internal with the showcase site as

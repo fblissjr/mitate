@@ -346,6 +346,13 @@ the check.
   before writing, and let the pre-commit hook gate the commit rather than
   deferring the commit itself (owner directive, 2026-07-29 — this line read
   "never auto-commit" and no longer matches how the repo is worked).
+- **The future is a marker, not a memory.** An obligation that must survive
+  session boundaries ("prune X when Y is gone", "run Z on date D") is a
+  `<!--due: <date-or-when-absent> | action-->` line in the document it
+  governs; `scripts/selfcheck.js` goes red when one falls due. Which
+  documents may be pruned, by whom, and when is
+  [`docs/source-of-truth.md`](docs/source-of-truth.md)'s lifecycle section —
+  tactical edits to in-motion docs need no owner input; doctrine changes do.
 - Every fact has one home — code comment, reference, SKILL.md, or CLAUDE.md —
   and everything else points at it. Before writing the same thing in two
   places, read [`docs/source-of-truth.md`](docs/source-of-truth.md).

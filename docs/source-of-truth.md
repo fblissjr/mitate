@@ -1,4 +1,4 @@
-last updated: 2026-08-03
+last updated: 2026-08-04
 
 # Where truth lives
 
@@ -189,6 +189,40 @@ procedure; `scripts/claims-reminder.sh` (bracketed, session-deduped) reminds
 at the edit. The refutation test travels with the rule: if a third of the
 next twenty corrected lines turn out to have carried citations, the
 discriminator is wrong and this paragraph reverts to its first sentence.
+
+## Document lifecycle: three classes, and who may edit what
+
+Added 2026-08-04 (owner session), because the retired next-session handoff
+memo proved that future obligations kept in prose evaporate, and because
+"when may a session prune a document" had no written answer.
+
+- **Doctrine** — `VISION.md`, `plan.md`, `representation.md`, `CLAUDE.md`,
+  the shipped references. Changed by decision, never pruned. Drift control is
+  `/audit-claims`. **Changes here need the owner.**
+- **Dated records** — `CHANGELOG.md`, `internal/log/`, `docs/postmortems/`,
+  `snapshots/`. Append or annotate only; never pruned, never a tiebreaker.
+  No permission needed to append; rewriting history is forbidden for anyone.
+- **In-motion documents** — `working-plan.md`'s queue and status sections,
+  `restructure-2026-07.md` while it lives, any dated brainstorm. Consumed by
+  design: items graduate, sections get pruned, the file may delete itself.
+  **Tactical edits here need no owner input (owner, 2026-08-04)** — queue
+  updates, dispositions, landings recorded, superseded sections marked. What
+  DOES need the owner: changing a decision the document records, or deleting
+  content that is not superseded.
+
+**A future obligation is a marker, not a memory.** Any "do X when Y" or
+"run X on date D" that must survive session boundaries is written as
+
+    <!--due: <YYYY-MM-DD> | the action, stated so a stranger can do it-->
+    <!--due: when-absent <repo-relative-path> | the action-->
+
+(both shown with placeholder brackets so this documentation is not itself a
+marker; a real one carries a bare date or path) in the document it governs. `scripts/selfcheck.js` (check 15, controlled by
+`bracket-selfcheck.js`) goes red the moment one falls due — at the next
+commit or push, whichever comes first — naming the file and the action.
+Completing or deferring is an edit to the marker, so the disposition is in
+git. This replaced the handoff memo's job of remembering the future; a
+mechanism that fires beats a memo that rots.
 
 ## The rules
 

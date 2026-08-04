@@ -58,6 +58,23 @@ const withCascade = (mutateSkill) => () => {
 const ARMS = [
   ['clean tree', () => () => {}, null],
 
+  // The due-marker mechanism (owner, 2026-08-04): in-motion docs carry
+  // standing obligations as markers, and selfcheck must go red when one
+  // falls due — the replacement for the retired handoff memo's job of
+  // remembering the future. Both fixtures are .md because the check scans
+  // markdown only, so a plain literal in THIS .js file is inert.
+  ['a due-marker whose date has passed', () => {
+    const f = path.join(ROOT, 'docs', '_bracket_fixture_due.md');
+    fs.writeFileSync(f, '<!--due: 2020-01-01 | bracket fixture: this obligation is overdue-->\n');
+    return () => fs.rmSync(f, { force: true });
+  }, 'obligation is due'],
+
+  ['a due-marker that does not parse', () => {
+    const f = path.join(ROOT, 'docs', '_bracket_fixture_duebad.md');
+    fs.writeFileSync(f, '<!--due: someday | a condition selfcheck cannot evaluate-->\n');
+    return () => fs.rmSync(f, { force: true });
+  }, 'unparseable due-marker'],
+
   ['bare seek before a capture', () => {
     // The pre-fix bracket-determinism.js, recovered from history: it seeked and
     // screenshotted with no readback between. That is the exact shape 0.16.28

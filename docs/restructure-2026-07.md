@@ -1948,3 +1948,5 @@ beat byte-identical or above the 70 dB bar on the three canonical edits
 Delete this file when R5's gate is green. The CHANGELOG entries are the record;
 a completed migration plan left in `docs/` is one more thing a future session
 has to read to discover it does not matter.
+
+<!--due: 2026-08-08 | close R5 remnant: the kinematic-body amendment to physics-bake-proposal.md (item 4); the hide/subjectFromObject declination is owner-ratified 2026-08-04. Then this file deletes itself per its own rule, which fires the pruning obligation in working-plan.md-->

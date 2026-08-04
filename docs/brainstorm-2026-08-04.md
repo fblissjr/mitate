@@ -176,7 +176,8 @@ Candidates examined honestly; most of the apparatus survives the look.
   learn to route around"). Candidate: skip-with-stated-reason on
   hardware-WebGPU machines while CI keeps the real arm — but that edit
   touches signal honesty and deserves its own red-first pass.
-  *Proposed disposition: small working-plan item, low priority.*
+  *Disposition: FILED 2026-08-04 — a working-plan deferred-table row,
+  revived by the next bracket-noise edit or a second same-week bite.*
 - **Working-plan's superseded bulk** — value already declared decaying;
   covered by 3 above.
 - **Not over-implemented, checked:** every bracket has a failing exit
@@ -218,7 +219,8 @@ Candidates examined honestly; most of the apparatus survives the look.
 2. Two one-line working-plan additions: the determinism-magnitude
    deferred row (still awaiting the owner's yes), and the 2026-08-24
    muted-blocks count line (DONE — landed with the handoff retirement).
-3. One small filed item: the bracket-noise local-red ergonomics.
+3. One small filed item: the bracket-noise local-red ergonomics (DONE —
+   filed in working-plan's deferred table, 2026-08-04).
 4. One refreshed owner decision: examples-placement, repriced under
    daily releases.
 5. Everything else here either already happened (breakdown's edge,

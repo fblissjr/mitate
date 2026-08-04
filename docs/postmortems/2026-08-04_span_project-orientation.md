@@ -166,11 +166,18 @@ day's log the same evening it was written.
   execute-don't-mirror and measure-first, revive trigger "a false verdict
   from this reader reaches a shipped film." Checkable: the mirrors-table row
   in `docs/working-plan.md` names all three dispositions and the trigger.
+  *(Annotation, 2026-08-04, later the same day: done — the row carries all
+  three dispositions and the trigger; landed in the handoff-retirement
+  commit.)*
 - **REP3 derivation-source question is open with one measurement in hand:**
   the fence store reads 7 of the 12 kit STYLE keys (log_2026-08-04); the
   other 5 are read by template code outside fences. Checkable: the registry
   design names its derivation source and covers all 12, or records why the
-  boundary moved.
+  boundary moved. *(Annotation, 2026-08-04, later the same day: answered by
+  0.19.0 — consumption is decided by the scene's own text and the store
+  supplies the near-miss vocabulary, so all 12 are covered through the two
+  sources; the design and its measured basis are in plan.md's REP3 MET
+  stamp.)*
 - **When the next version lands, run the invalidation grep on the version
   token itself** across all tracked prose, not on a remembered surface list.
   Checkable: the next landing's log records the grep and its hit list.

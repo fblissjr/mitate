@@ -75,6 +75,25 @@ const ARMS = [
     return () => fs.rmSync(f, { force: true });
   }, 'unparseable due-marker'],
 
+  // Adversarial round (owner, 2026-08-04: "verify the mechanisms actually do
+  // what we think"). The naturally-spaced spelling was INVISIBLE to the first
+  // regex — no fire, no error, the silent-miss class — and a when-absent
+  // target that exists but is untracked gives CI and a laptop different
+  // verdicts, the environment-dependent accept-set defect one tier up.
+  ['a spaced due-marker, past due', () => {
+    const f = path.join(ROOT, 'docs', '_bracket_fixture_duespace.md');
+    fs.writeFileSync(f, '<!-- due: 2020-01-01 | bracket fixture: spaced spelling must still fire -->\n');
+    return () => fs.rmSync(f, { force: true });
+  }, 'obligation is due'],
+
+  ['a when-absent target that exists but is untracked', () => {
+    const target = path.join(ROOT, 'docs', '_bracket_fixture_untracked_target.md');
+    const f = path.join(ROOT, 'docs', '_bracket_fixture_dueenv.md');
+    fs.writeFileSync(target, 'present on this machine, absent in any clone\n');
+    fs.writeFileSync(f, '<!--due: when-absent docs/_bracket_fixture_untracked_target.md | bracket fixture: environment-dependent condition-->\n');
+    return () => { fs.rmSync(target, { force: true }); fs.rmSync(f, { force: true }); };
+  }, 'environment-dependent'],
+
   ['bare seek before a capture', () => {
     // The pre-fix bracket-determinism.js, recovered from history: it seeked and
     // screenshotted with no readback between. That is the exact shape 0.16.28

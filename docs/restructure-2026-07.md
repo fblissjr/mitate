@@ -1,4 +1,4 @@
-last updated: 2026-08-02
+last updated: 2026-08-04
 
 # Restructure plan, 2026-07
 

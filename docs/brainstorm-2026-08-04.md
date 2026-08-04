@@ -202,7 +202,9 @@ Candidates examined honestly; most of the apparatus survives the look.
   same 5.5 MB of films. The deferred `examples-placement.md` option E is
   blocked on exactly one thing: the owner's fixture-vs-example call
   (working-plan deferred table). *This decision's price went up this
-  week; worth a fresh look.*
+  week; worth a fresh look.* *Disposition: DECIDED 2026-08-04 (owner) —
+  option E, executed with the first new portfolio film; full terms and
+  the due-marker guard live in `examples-placement.md`.*
 - **REP5 is film-starved by construction.** Its gate ("a migration
   proposal arrives with its trigger evidence attached, without a human
   going looking") requires films recurring shapes — see section 1.
@@ -241,7 +243,8 @@ Candidates examined honestly; most of the apparatus survives the look.
 3. One small filed item: the bracket-noise local-red ergonomics (DONE —
    filed in working-plan's deferred table, 2026-08-04).
 4. One refreshed owner decision: examples-placement, repriced under
-   daily releases.
+   daily releases. (DECIDED 2026-08-04: option E, with the first film —
+   recorded in `examples-placement.md`.)
 5. Everything else here either already happened (breakdown's edge,
    0.19.1) or dies with this file.
 

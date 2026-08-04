@@ -1255,14 +1255,29 @@ const toolJs = new Map([
 {
   let standing = 0, due = 0;
   const today = new Date().toISOString().slice(0, 10);
-  walkFiles(ROOT, (f) => {
+  // Tracked set for the when-absent guard below: a target that exists but is
+  // untracked would make the condition environment-dependent — standing on
+  // the laptop that has the file, due in every clone and in CI. That is the
+  // accept-set defect the staged-films arm documents, one tier up.
+  const tracked = new Set(execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' }).trim().split('\n'));
+  const scanDue = (f) => {
     if (!f.endsWith('.md')) return;
     const rel = path.relative(ROOT, f);
-    for (const m of R(f).matchAll(/<!--due:\s*([^|>]+?)\s*\|\s*([^>]+?)\s*-->/g)) {
+    // Whitespace- and case-tolerant on purpose, adversarially earned: the
+    // first regex required `<!--due:` exactly, so the naturally-spaced
+    // `<!-- due:` spelling was INVISIBLE — no fire, no error, the silent-miss
+    // class this repo keeps finding. Accept the variants rather than policing
+    // them; the bracket's spaced arm pins it.
+    for (const m of R(f).matchAll(/<!--\s*due:\s*([^|>]+?)\s*\|\s*([^>]+?)\s*-->/gi)) {
       const when = m[1].trim(), action = m[2].trim();
       const absent = when.match(/^when-absent\s+(\S+)$/);
       if (absent) {
         if (!fs.existsSync(path.join(ROOT, absent[1]))) { due++; fail(`${rel}: obligation is due (${absent[1]} is gone) — ${action}`); }
+        else if (!tracked.has(absent[1])) {
+          fail(`${rel}: due-marker has an environment-dependent condition — ${absent[1]} exists here but is `
+             + `not tracked, so this obligation would read standing on this machine and due in every clone. `
+             + `Point it at a tracked file.`);
+        }
         else standing++;
       } else if (/^\d{4}-\d{2}-\d{2}$/.test(when)) {
         if (today >= when) { due++; fail(`${rel}: obligation is due (${when} has arrived) — ${action}`); }
@@ -1271,7 +1286,14 @@ const toolJs = new Map([
         fail(`${rel}: unparseable due-marker "${when}" — use a YYYY-MM-DD date or \`when-absent <repo-relative-path>\``);
       }
     }
-  });
+  };
+  walkFiles(ROOT, scanDue);
+  // internal/ is deliberately outside walkFiles, but internal/log/ is TRACKED
+  // narration — a marker written there must fire rather than silently never
+  // being scanned. (Obligations BELONG in in-motion docs per source-of-truth;
+  // scanning the logs is the safety net, not an endorsement.)
+  const logDir = path.join(ROOT, 'internal', 'log');
+  if (fs.existsSync(logDir)) for (const e of fs.readdirSync(logDir)) scanDue(path.join(logDir, e));
   if (!due) notes.push(`${standing} standing obligation(s), none due`);
 }
 

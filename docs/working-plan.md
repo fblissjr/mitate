@@ -3123,7 +3123,10 @@ the #1 recommendation in two internal documents, costed at one afternoon and no
 code, and ranked in none. The NaN question is one of the things a specification
 would have to take a position on, which is the argument for doing R5.2 **before**
 answering (1) rather than after: a policy written against an unenumerated language
-will cover the parts someone happened to remember.
+will cover the parts someone happened to remember. *(Since shipped:
+`references/breakdown.md` landed as 0.16.65 on 2026-08-02 — the restructure
+plan's item R5.2, retired with that plan 2026-08-04. The before-ordering argument
+held, and the NaN question above remains open.)*
 
 ---
 

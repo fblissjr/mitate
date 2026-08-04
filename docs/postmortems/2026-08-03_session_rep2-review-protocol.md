@@ -177,7 +177,16 @@ owner's in-session asks.
 3. **The claims reminder carries its own retirement date.** Checkable on
    2026-08-24: count correction commits of the `38e3773`/`625ac32` shape
    since install; if the rate matches the three weeks prior, delete the
-   hook per its own header rather than tuning it.
+   hook per its own header rather than tuning it. *(Annotation,
+   2026-08-04, pre-registered before the window closes: the comparison as
+   first written was calendar-normalized, which deletes the control on
+   quiet-window evidence that could not have shown it working — the same
+   underpowered-zero flaw the muted-blocks checkpoint was amended for the
+   same day. The rule is now corrections-per-opportunity with both
+   classifiers frozen and a minimum exposure of 10 per window, below
+   which the checkpoint extends rather than decides. The amended
+   procedure's home is `scripts/claims-reminder.sh`'s header; source: the
+   skills repo's second denominator memo, relayed by the owner.)*
 4. **The cite-or-label rule carries its refutation test.** Checkable: of
    the next 20 corrected state-claim lines, record how many carried a
    citation when written; a third or more means the discriminator is wrong

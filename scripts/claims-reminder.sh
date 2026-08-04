@@ -37,6 +37,23 @@
 # class here that becomes mechanically checkable gets a check instead, and
 # drops out of this classifier.
 #
+# AMENDED 2026-08-04, pre-registered before the window closes (the skills
+# repo's second denominator memo, relayed by the owner): the comparison is
+# EXPOSURE-normalized, not calendar-normalized — two quiet windows would
+# read "rate matches, delete" when the honest reading is "no exposure, no
+# information", and that deletes a control on evidence that could not have
+# shown it working. Both classifiers are FROZEN NOW so the day brings no
+# freedom: a CORRECTION is a commit whose message or diff corrects a
+# previously-committed state claim (the 38e3773/625ac32 shape); an
+# OPPORTUNITY is a commit in the window that touched any surface this
+# script's own path classifier matches (record surfaces, status surfaces,
+# CHANGELOG — read the matcher below, not a paraphrase). Compare
+# corrections-per-opportunity across the two windows, derived in one pass
+# per window from the same diff ranges; if either window holds fewer than
+# 10 opportunities, the checkpoint EXTENDS to the next one instead of
+# deciding. Report both ratios either way, separately from the
+# muted-blocks count, which shares the date and nothing else.
+#
 # BEFORE RULING, DISAMBIGUATE (peer review, 2026-08-03): an unchanged
 # correction rate has two readings — "delivered but did not change behavior"
 # (hypothesis wrong: delete) and "never actually delivered" (mechanism

@@ -920,13 +920,17 @@ function motion(scene, fps = 12) {
  * `plan.md`'s "a control that rebuilds its subject verifies a reimplementation"
  * was true of this verb until the 2026-08-02 review counted the divergences.
  * bracket-check-kit.js holds `check` and a DRIVEN page to the same verdict on
- * that review's divergence corpus. This does not change the paragraph above:
+ * that review's divergence corpus — and where a stand-in makes agreement
+ * unachievable (a STYLE this reader cannot slice), to a DECLARED divergence
+ * rather than a silent one. This does not change the paragraph above:
  * still no browser, no seekTo, no runtime state — executing the kit's pure
  * functions over authored tables is authoring-time work in the same category
  * as evaluating the table literals themselves. Where this verb is deliberately
- * STRICTER than the kit (an anchor fraction outside 0..1, a duplicate beat
- * name), the divergence is one-way — the kit accepts and mis-renders, check
- * refuses — and each such check says so at its site.
+ * STRICTER than the kit, the divergence is one-way — the kit accepts and
+ * mis-renders, check refuses — and each such check says so at its site. That
+ * is a CLASS, not the two examples an earlier draft listed as if exhaustive:
+ * an anchor fraction outside 0..1 and a duplicate beat name are instances,
+ * and so are out-of-order shots and FRAME.px against FRAME.aspect.
  *
  * WHY STATIC RATHER THAN THROUGH THE CONTRACT, since the contract is this
  * repo's default answer. `window.SHOTS` is deliberately a projection —
@@ -985,12 +989,17 @@ const UNPARSEABLE = Symbol('unparseable');
 // A literal that later lines push into is a literal this reader captured BEFORE
 // the film finished writing it. Scanned rather than parsed, and narrow on
 // purpose: only mutations that change membership, only on the bare table name.
-// `.map()` is absent from this list because the templates all end their table
-// with one and it returns a new array the declaration binds — that is the house
-// idiom, not a mutation of the captured value.
+// Three spellings: the mutating array methods, bracket-assignment, and
+// dot-assignment — the last learned late, because `SUBJECTS.legend = {...}`
+// after the literal made check read the stale table WHILE claiming coverage
+// and error on a scene that drives fine. `.map()` is absent from this list
+// because the templates all end their table with one and it returns a new
+// array the declaration binds — that is the house idiom, not a mutation of
+// the captured value; a method CALL is not an assignment, so the
+// dot-assignment alternative does not match it either.
 function mutatedAfterDeclaration(text, name) {
   const re = new RegExp('(?:^|[^\\w.])' + name +
-    '(?:\\s*\\.\\s*(?:push|unshift|splice|pop|shift)\\s*\\(|\\s*\\[[^\\]]*\\]\\s*=[^=])', 'm');
+    '(?:\\s*\\.\\s*(?:push|unshift|splice|pop|shift)\\s*\\(|\\s*\\[[^\\]]*\\]\\s*=[^=]|\\s*\\.\\s*[A-Za-z_$][\\w$]*\\s*=[^=])', 'm');
   return re.test(text);
 }
 function tableSource(text, name) {
@@ -1147,7 +1156,11 @@ function execKit(name, vars, wants) {
     has: () => true,
     get(t, k) {
       if (k === Symbol.unscopables) return undefined;
-      return k in t ? t[k] : globalThis[k];
+      // hasOwn, not `in`: `in` walks the prototype chain, so a fence reading
+      // `constructor` or `toString` would get Object.prototype's instead of
+      // the page global it gets in a browser — the same inherited-lookup
+      // shape the KERNEL's null-prototype BEAT fix killed one layer down.
+      return Object.hasOwn(t, k) ? t[k] : globalThis[k];
     },
   });
   return new Function('__scope', `with(__scope){\n${kitFence(name)}\n;return {${wants}};}`)(scope);
@@ -1180,8 +1193,10 @@ function check(scene) {
       uncovered.push(name);
     }
   }
-  // Quiet, per the note above the loop: the solver's inputs, not a judged table.
-  { const r = tableValue(text, 'STYLE'); found.STYLE = r.state === 'ok' ? r.value : null; }
+  // Quiet, per the note above the loop: the solver's inputs, not a judged
+  // table. The state is kept because the stand-in below must declare itself.
+  const styleRead = tableValue(text, 'STYLE');
+  found.STYLE = styleRead.state === 'ok' ? styleRead.value : null;
   const beats = Array.isArray(found.BEATS) ? found.BEATS : null;
   if (!beats || !beats.length) {
     throw new Error(`check: no BEATS table found in ${path.basename(scene)} — every mitate scene `
@@ -1251,7 +1266,16 @@ function check(scene) {
         add(CHECK_ERR, `${where}: anchored to beat "${bn}", which BEATS does not declare (${beatMiss(bn)})`);
       } else {
         const fr = at[1];
-        if (fr !== undefined && !(typeof fr === 'number' && fr >= 0 && fr <= 1)) {
+        if (unresolved(fr)) {
+          // The 0.16.70 exemption, one field over — and it took the same false
+          // ERROR to reach here: a fraction from a scene constant is ordinary
+          // authoring this reader cannot resolve, and the proxy stringifies as
+          // `undefined`, so the ERROR below quoted a value the source never
+          // wrote. The start time is unknown, so what goes unchecked is said.
+          add(CHECK_WARN, `${where}: anchor fraction references something outside the table this reader `
+            + `cannot resolve — legal authoring, beyond a literal reader. The shot's start time is unknown `
+            + `here, so its ordering against its neighbours is not checked.`);
+        } else if (fr !== undefined && !(typeof fr === 'number' && fr >= 0 && fr <= 1)) {
           // The anchor is a FRACTION of the beat. 1.4 is not "late in the
           // beat", it is a shot that starts inside some later beat entirely —
           // silently, because beatAt happily returns the number. Deliberately
@@ -1285,6 +1309,20 @@ function check(scene) {
       // unjudged — exactly the coverage the warnings above already declared.
       : new Proxy({}, { get: () => ({ pos: () => [0, 0, 0], h: 1 }), has: () => true });
     const style = found.STYLE && typeof found.STYLE === 'object' ? found.STYLE : {};
+    // THE STAND-IN DECLARES ITSELF (the declared-substitution rule). A STYLE
+    // assembled from a bible is beyond a literal reader, so the solver below
+    // runs against an empty stand-in whose defaults — the lens above all —
+    // replace the scene's. Shots that never touch the lens are judged the
+    // same either way; a shot carrying `match` or an explicit `fov` is judged
+    // against the stand-in's lens, so its verdict here can disagree with a
+    // driven page in both directions. The stand-in cannot know the lens; what
+    // it can do is say so. bracket-check-kit.js pins the saying.
+    if (styleRead.state !== 'ok' && styleRead.state !== 'absent'
+        && shots.some(s => s && typeof s === 'object' && (s.match !== undefined || s.fov !== undefined))) {
+      add(CHECK_WARN, `STYLE is declared but could not be read here, so the solver ran with an empty stand-in — `
+        + `its lens default replaces the scene's. Shots carrying \`match\` or \`fov\` are judged against that `
+        + `stand-in, so a match cut that passes here can still refuse in the page, and vice versa.`);
+    }
     let solver = null;
     try {
       solver = execKit('SOLVER',
@@ -1350,6 +1388,10 @@ function check(scene) {
       if (typeof k.beat !== 'string' || !known(k.beat)) {
         add(CHECK_ERR, `KEYS[${i}]: anchored to beat ${JSON.stringify(k.beat)}, which BEATS does not declare`
           + (typeof k.beat === 'string' ? ` (${beatMiss(k.beat)})` : ''));
+      } else if (unresolved(k.at)) {
+        // Same exemption as the SHOTS fraction above; the 2D spelling.
+        add(CHECK_WARN, `KEYS[${i}] (${k.beat}): anchor fraction references something outside the table `
+          + `this reader cannot resolve — legal authoring, beyond a literal reader; this key's time is unchecked.`);
       } else if (k.at !== undefined && !(typeof k.at === 'number' && k.at >= 0 && k.at <= 1)) {
         add(CHECK_ERR, `KEYS[${i}] (${k.beat}): anchor fraction ${JSON.stringify(k.at)} is outside 0..1`);
       }

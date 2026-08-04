@@ -16,12 +16,16 @@ you are deciding whether a green result means anything.
 > **2026-08-02** the `build.js check` section below was written against the verb
 > as shipped, and every row of its table was watched go red with its own check
 > neutralised before being written down. Same day: parity re-verified against
-> the store-backed check (full bracket run green). Most other
+> the store-backed check (full bracket run green). On **2026-08-04** the
+> `check` section was re-verified against the 0.18.2 verb (SIZES-from-store,
+> the executor seam, declared substitutions — each arm red first). Most other
 > brackets here were measured on the predecessor skill and
 > carry over, because they describe what a *check* can perceive, not what a
 > renderer draws. Anything the node stack invalidated has been re-measured or is
 > labelled. Where a number is inherited and not re-verified on this stack, it
 > says so.
+>
+> **Not here.** the method itself → `method.md`; backend policy → `webgpu-stack.md`.
 >
 > **Three kinds of claim live in this repo and only one of them rots.** An
 > *incident record* ("this reached `git add` once") is history and stays true. An
@@ -35,8 +39,6 @@ you are deciding whether a green result means anything.
 > preserved and absent from the tree. That ratio is the size of the class. It is
 > not a to-do list; it is the reason to distrust an unsourced number here,
 > including the ones below.
->
-> **Not here.** the method itself → `method.md`; backend policy → `webgpu-stack.md`.
 
 **Map.** Deliberately unlinked — a heading map costs nothing and cannot dangle,
 where hand-written anchors ship into an install cache unverified.
@@ -211,9 +213,13 @@ not the check.
 
 The only instrument here that reads no pixels and loads no page. It
 cross-references the declarative tables `breakdown.md` enumerates — `BEATS`,
-`SHOTS`, `SUBJECTS`, `SIZES`, `CONFIG`, `FRAME`, `KEYS` — against each other, in
-the scene's source text, and every finding is decidable before a frame renders
-or the page loads at all.
+`SHOTS`, `SUBJECTS`, `CONFIG`, `FRAME`, `KEYS`, read as literals out of the
+scene's source text — against each other and against the kit's own semantics,
+and every finding is decidable before a frame renders or the page loads at all.
+`SIZES` is the exception in that list since REP2 (0.18.0): it lives inside the
+SOLVER fence, so `check` gets it by EXECUTING the canonical fence store's copy
+beside the tools, not by reading the scene — sound only because parity holds,
+which is what guarantees the scene's own bytes agree with the store's.
 
 | it decides | severity | what it cannot see |
 |---|---|---|
@@ -256,7 +262,33 @@ One blind spot remains and is quieter: a table whose values are computed from
 geometry built at runtime evaluates to `NaN` rather than to a number. The
 cross-references that compare it still fire — a `NaN` anchor fails the `0..1`
 range test, a `NaN` `dur` fails the positive test, both verified — but a `NaN`
-that no comparison reaches passes unremarked.
+that no comparison reaches passes unremarked. A value that is a BARE reference
+to a scene constant is the recognized case: it reads as unresolved and draws a
+warning naming what goes unchecked, rather than an error quoting a value the
+source never wrote (`dur` since 0.16.70, anchor fractions since 0.18.2).
+Arithmetic ON such a reference collapses to `NaN` and rejoins the paragraph
+above.
+
+**Substitutions are declared, not silent (0.18.2).** Where `check` cannot read
+an input it runs on a stand-in, and the verdict says so: an unreadable or
+runtime-assembled table is named along with what it un-covers, and a `STYLE`
+assembled from a bible runs the solver against an empty stand-in and warns
+whenever shots carry `match` or `fov` — the one place the stand-in's lens
+default can flip a verdict against the driven page's. The warn is honesty, not
+agreement: the stand-in cannot know the scene's lens, so `check` and a driven
+page can legitimately disagree there, and the sixth `bracket-check-kit.js` arm
+pins that the disagreement is declared on screen rather than silent.
+
+**The fences execute in a mirrored environment, and the mirror has one seam.**
+Since REP2 `check` runs the canonical KERNEL and SOLVER fences with the scene's
+extracted tables in scope, and identifiers the tables do not supply fall
+through to the process's real globals, so the fence takes the same code path it
+takes in a page. The seam: an identifier declared in NEITHER place is a
+`ReferenceError` in a page and `undefined` in the executor, because the scope
+proxy answers every lookup. A fence defect of exactly that shape would die in
+the page and pass here; `bracket-check-kit.js` holds the two instruments to one
+verdict on the known divergence corpus, and this seam is what that green cannot
+promise about unknown ones.
 
 **The threshold to know about is the repeated-framing warning.** Three is the
 floor, and it has an observation on each side: `gearbox` and `menagerie` each

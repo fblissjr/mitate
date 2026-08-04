@@ -140,7 +140,8 @@ const DRIFT = path.join(work, 'drift');
 const DRIFT_BUILD = path.join(DRIFT, 'build.js');
 for (const t of ['subject', 'focus', 'anchor', 'beat', 'rung', 'order', 'flash', 'frame',
                  'union', 'anchored-union', 'caption', 'repeat', 'notascene',
-                 'imperative', 'nonliteral', 'durconst', 'unreadable']) badPath(t);
+                 'imperative', 'nonliteral', 'durconst', 'fracconst', 'dotassign',
+                 'unreadable']) badPath(t);
 
 const run = (args, cwd, build) => {
   try {
@@ -224,6 +225,8 @@ const ROWS = [
   ['(warn) check union anchored',['check', BAD['anchored-union']], { absent: 'union of' }],
   ['(red) check loop-built SHOTS',  ['check', BAD['imperative']], { stdout: 'SHOTS is declared but assembled' }],
   ['(warn) check dur from a const',['check', BAD['durconst']],   { stdout: 'cannot resolve', absent: 'ERROR' }],
+  ['(warn) check anchor from a const',['check', BAD['fracconst']], { stdout: 'cannot resolve', absent: 'ERROR' }],
+  ['(warn) check dot-assigned SUBJECTS',['check', BAD['dotassign']], { stdout: 'SUBJECTS is declared but assembled', absent: 'ERROR' }],
   ['(red) check unreadable SHOTS',  ['check', BAD['unreadable']], { stdout: 'SHOTS is declared but could not be read' }],
   ['(red) check call-built SHOTS',  ['check', BAD['nonliteral']], { stdout: 'SHOTS is declared but assembled' }],
   ['(warn) check caption cps',   ['check', BAD.caption],          { stdout: 'cps against a' }],
@@ -262,6 +265,19 @@ try {
   // redded main.
   mutate('durconst',    [["const BEATS = [", "const HOLD = 2.5;\nconst BEATS = ["],
                          ["{name: 'title', dur: 2.4}", "{name: 'title', dur: HOLD}"]]);
+  // The same authoring shape ONE FIELD OVER: an anchor FRACTION from a scene
+  // constant. The 0.16.70 exemption never reached this validator, so the
+  // unresolved proxy stringified as `undefined` and check ERRORED on a scene
+  // that drives — quoting a value the source never wrote.
+  mutate('fracconst',   [["const BEATS = [", "const FRAC = 0.5;\nconst BEATS = ["],
+                         [SHOT, "  {at:['title',FRAC], subject:'chart', size:'FS', angle:0, elev:0},"]]);
+  // Dot-assignment after the literal changes MEMBERSHIP, and the mutation
+  // scanner knew .push() and bracket-assignment but not this spelling: check
+  // read the stale literal WHILE claiming coverage, and errored `unknown
+  // subject` on a scene that drives fine.
+  mutate('dotassign',   [["};\n// One locked, head-on shot",
+                          "};\nSUBJECTS.legend={pos:t=>[0,GRID_CY,0],h:1};\n// One locked, head-on shot"],
+                         [SHOT, "  {at:['title',0], subject:'legend', size:'FS', angle:0, elev:0},"]]);
   // A 3D scene whose SHOTS literal cannot be SLICED must say so. Until 0.16.70
   // every malformed-literal path returned null, which means "this scene has no
   // SHOTS" -- so a broken table printed `no SHOTS (2D)` under a clean green.

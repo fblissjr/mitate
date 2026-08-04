@@ -7,6 +7,63 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.18.2
+
+### fixed
+
+**The REP2 review's three behavioral findings, closed as one red-first
+cascade — the shared root was silent input substitution, and the fix in
+every case is that the substitution now says so.** Each landed with its arm
+watched red against the pre-fix verb before the change:
+
+- **An anchor fraction written as a scene constant no longer errors on a
+  value the source never wrote.** `at:['beat', SOME_CONST]` hit the
+  0.16.70 class one field over: the unresolved-reference proxy stringifies
+  as `undefined`, so `check` exited 1 quoting it on a scene that drives.
+  Both spellings (a shot's `at` fraction and a 2D `KEYS[].at`) now warn as
+  unresolved, naming what goes unchecked — the shot's start time, so its
+  ordering. New `bracket-commands.js` arm beside the `durconst` one it
+  mirrors; arithmetic ON such a constant still collapses to `NaN` and
+  errors, which `instruments.md` now states.
+- **`mutatedAfterDeclaration` learns dot-assignment.** The scanner knew
+  `.push()` and bracket-assignment but not `SUBJECTS.legend = {...}`, so
+  `check` read the stale literal WHILE claiming coverage and errored
+  `unknown subject` on a scene that drives fine. The new spelling matches
+  no shipped carrier (grepped templates, examples and the corpus,
+  2026-08-04); its arm proves the fixture now draws the declared
+  assembled-at-runtime warn instead of the false ERROR.
+- **The STYLE stand-in declares itself.** A `STYLE` assembled from a bible
+  (`const STYLE = BIBLES.x`) is beyond the literal reader, so the solver
+  ran against a quiet `{}` whose lens default satisfied a match cut the
+  scene's real lens makes a driven page refuse at boot — same fence code,
+  two verdicts, green on the broken one. `check` now warns whenever STYLE
+  is declared-but-unreadable and shots carry `match`/`fov`. Agreement is
+  not achievable there (the stand-in cannot know the lens), so the sixth
+  `bracket-check-kit.js` arm pins honesty instead: a new declared-divergence
+  arm form requires `check` to exit 0 SAYING the stand-in while the driven
+  page refuses with the match-cut throw.
+
+**`execKit` tests scene tables with `Object.hasOwn`, not `in`** — the
+review's diff-pass nit: `in` walks the prototype chain, the same
+inherited-lookup shape the KERNEL's null-prototype `BEAT` fix killed one
+layer down.
+
+### changed
+
+**The reference and the headers say what the review measured.**
+`instruments.md`'s check section no longer claims `SIZES` is read from the
+scene's source text — it comes from executing the canonical fence store,
+sound only because parity holds — and gains the executor's environment
+seam (an identifier declared nowhere is a `ReferenceError` in a page and
+`undefined` in `execKit`) plus the declared-substitution behaviors.
+`build.js`'s header marks its one-way-strictness examples as a class, not
+a list (the `38e3773` correction, applied to the file that still had the
+old shape), and `bracket-check-kit.js`'s header scopes its identity claim
+to inputs `check` can actually read. Verified locally 2026-08-04:
+`bracket-commands.js` all 38 rows, `bracket-check-kit.js` all 6 arms,
+parity 9 files / 5,796 held lines, `check` clean over all 8 scenes,
+selfcheck green.
+
 ## 0.18.1
 
 ### added

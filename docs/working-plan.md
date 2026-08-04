@@ -1,4 +1,4 @@
-last updated: 2026-08-03
+last updated: 2026-08-04
 
 # Working plan: instruments, routing, and the viewer
 
@@ -2793,16 +2793,21 @@ found all three of its violations at once:
   check read the stale table **while claiming coverage** and error on a
   scene that drives fine.
 
-**Queued as one red-first cascade (the next plugin version):** the three fixes above, each
-with a new bracket arm (the STYLE case lands as a declared-coverage warn
-plus a sixth `bracket-check-kit.js` arm pinning it — the stub cannot know
-the lens, so honesty, not agreement, is the achievable property there);
-`execKit`'s `k in t` → `Object.hasOwn` (prototype-chain lookup, the same
-bug shape the KERNEL fix killed one layer down); `instruments.md`'s check
-section corrected (SIZES now comes from the store, sound only because
-parity holds, plus the environment-mirror limit: an undeclared identifier
-is a ReferenceError in a page and `undefined` in `execKit`); and the
-build.js / bracket-check-kit header rewordings the claim audits flagged.
+**LANDED as 0.18.2 (2026-08-04), one red-first cascade** — the three fixes
+above, each with its arm watched red against the pre-fix verb first: the
+fraction and dot-assignment arms joined `bracket-commands.js` beside the
+`durconst` arm they mirror, and the STYLE case landed as a declared-coverage
+warn plus a sixth `bracket-check-kit.js` arm in a new declared-divergence
+form (check exits 0 SAYING the stand-in, the page refuses — the stub cannot
+know the lens, so honesty, not agreement, was the achievable property, and
+that is what the arm pins). Also in the cascade: `execKit`'s `k in t` →
+`Object.hasOwn` (prototype-chain lookup, the same bug shape the KERNEL fix
+killed one layer down); `instruments.md`'s check section corrected (SIZES
+comes from the store, sound only because parity holds, plus the
+environment-mirror limit: an undeclared identifier is a ReferenceError in a
+page and `undefined` in `execKit`); and the build.js / bracket-check-kit
+header rewordings the claim audits flagged. Receipts in the 0.18.2
+CHANGELOG entry.
 
 ### The execute-don't-mirror queue
 

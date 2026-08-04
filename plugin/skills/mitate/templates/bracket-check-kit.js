@@ -2,16 +2,22 @@
  *
  * `build.js check` derives its semantics from the canonical fence store (the
  * same KERNEL and SOLVER the kit is built from), so a defect the kit refuses
- * must fail `check` statically AND fail a DRIVEN page, with the same message.
- * Before REP2 the two disagreed in both directions and nothing compared them:
+ * from inputs `check` can actually read must fail `check` statically AND fail
+ * a DRIVEN page, with the same message. The scope qualifier is load-bearing:
+ * an input beyond the literal reader (a STYLE assembled from a bible) is a
+ * place agreement cannot be promised, and the adversarial review proved it
+ * with a green check on a scene the page refuses. Before REP2 the two
+ * disagreed in both directions and nothing compared them:
  * `check` passed what the solver throws on (a missing `size`, an empty SHOTS,
  * `subject: []`) and the kit silently accepted what `check` errors on (a shot
  * anchored to a prototype-named beat resolved BEAT['toString'] to an inherited
  * function and rendered NaN spans). Those four cases are the 2026-08-02
- * review's divergence list, and each arm here runs BOTH instruments on one
- * fixture and requires the same verdict carrying the same phrase — the
- * "resolve identically in check and in a driven page" gate, made a control
- * instead of a stamp.
+ * review's divergence list. Each arm here runs BOTH instruments on one
+ * fixture: the refusal arms require the same verdict carrying the same phrase
+ * — the "resolve identically in check and in a driven page" gate, made a
+ * control instead of a stamp — and the stand-in arm requires the divergence
+ * DECLARED in check's own output, because where identity is unachievable the
+ * achievable property is honesty.
  *
  * The pristine arm is the negative control: an unmodified copy of the real
  * scene must pass `check` AND drive to a poster, or every refusal arm above it
@@ -39,9 +45,15 @@ const SHOT = "  {at:['title',0], subject:'chart', size:'FS', angle:0, elev:0},";
 const LIT_SHOTS = "const SHOTS=[\n  {at:['title',0], subject:'chart', size:'FS', angle:0, elev:0},\n].map(sh=>({...sh,t:beatAt(sh.at[0],sh.at[1])}));";
 
 // [label, mutation pairs | null, phrase]
-//   null mutation = the pristine control (check ok + poster written).
-//   phrase        = the substring BOTH verdicts must carry on a refusal. One
-//                   phrase, two instruments: that identity IS the claim.
+//   null mutation    = the pristine control (check ok + poster written).
+//   phrase (string)  = the substring BOTH verdicts must carry on a refusal. One
+//                      phrase, two instruments: that identity IS the claim.
+//   phrase (object)  = a DECLARED divergence: {check, driven}. check must exit
+//                      0 carrying phrase.check, the driven page must refuse
+//                      carrying phrase.driven. Agreement is not achievable on
+//                      these — check's stand-in cannot know what it stands in
+//                      for — so what this arm pins is honesty: the substitution
+//                      is said in the verdict, never silent.
 const CASES = [
   ['pristine scene: check ok and page drives', null, null],
   // The kit throws 'unknown size: undefined' in solveShot on the first driven
@@ -64,6 +76,18 @@ const CASES = [
   ['prototype-named beat fails both, same phrase',
     [[SHOT, "  {at:['toString',0], subject:'chart', size:'FS', angle:0, elev:0},"]],
     'unknown beat'],
+  // The largest of the adversarial pass's three silent-substitution findings:
+  // a STYLE assembled from a bible is beyond check's literal reader, so its
+  // solver ran against a quiet `{}` whose lens default (42) satisfied a match
+  // cut the scene's real lens (35 here) makes the page refuse at boot — same
+  // fence code, two verdicts, GREEN on the broken one. The fix is not
+  // agreement (the stand-in cannot know the lens): check must SAY the
+  // stand-in whenever shots carry `match`/`fov`, and this arm pins the saying.
+  ['non-literal STYLE: check declares its stand-in, page refuses',
+    [["const STYLE = {", "const STYLE_BASE = {\n  lens: 35,"],
+     ["/* ---------- CONFIG:", "const STYLE = STYLE_BASE;\n\n/* ---------- CONFIG:"],
+     [SHOT, SHOT + "\n  {at:['mxrow',0], subject:'chart', size:'FS', angle:0, elev:0, match:true, fov:42},"]],
+    { check: 'empty stand-in', driven: 'match cut into SHOTS[1]' }],
 ];
 
 const run = argv => {
@@ -102,6 +126,12 @@ try {
       ok = chk.code === 0 && /check: ok/.test(chk.out)
         && drv.code === 0 && fs.existsSync(poster);
       why = `check exit ${chk.code}, poster exit ${drv.code}`;
+    } else if (phrase && typeof phrase === 'object') {
+      const chkOk = chk.code === 0 && chk.out.includes(phrase.check);
+      const drvOk = drv.code !== 0 && drv.out.includes(phrase.driven);
+      ok = chkOk && drvOk;
+      why = `check exit ${chk.code}${chkOk ? '' : ` MISSING "${phrase.check}"`}`
+          + `, driven exit ${drv.code}${drvOk ? '' : ` MISSING "${phrase.driven}"`}`;
     } else {
       const chkOk = chk.code !== 0 && chk.out.includes(phrase);
       const drvOk = drv.code !== 0 && drv.out.includes(phrase);

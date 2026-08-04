@@ -1148,8 +1148,8 @@ const toolJs = new Map([
  * explicit rather than inferred.
  *
  * WHAT IT DOES NOT COVER, said plainly: a count in a noun not in the REGISTRY,
- * and any count in CHANGELOG.md, the logs, the postmortems or the two planning
- * documents. Those are dated records. A handoff that lists four cached plugin
+ * and any count in the files derived-counts.js's HISTORICAL list names -- the
+ * changelog, logs, postmortems and planning records. A handoff that lists four cached plugin
  * versions where five exist is outside every guard here -- the answer there is
  * to cite the command, not its output. */
 {

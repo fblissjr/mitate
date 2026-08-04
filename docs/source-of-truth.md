@@ -173,7 +173,10 @@ in `.claude/skills/`, which nothing mechanical had ever covered.
 **The bare-count half is best-effort by admission**, scoped by measurement:
 scanning every tracked file surfaced 71 hits, essentially all legitimate history;
 the front-door files surfaced five. `CHANGELOG.md`, the logs, the postmortems and
-the two planning documents are excluded as dated records. What remains uncovered
+the planning records in `derived-counts.js`'s HISTORICAL list are excluded as
+dated records (the list is named by pattern there, not counted here — a "two
+planning documents" phrasing went stale the day the restructure plan deleted
+itself). What remains uncovered
 is a noun outside the REGISTRY and anything inside an excluded record — a handoff
 listing four cached plugin versions where five exist is outside every guard here.
 **There the answer is not a check: cite the command, not its output** — and

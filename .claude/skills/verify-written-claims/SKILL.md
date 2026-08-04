@@ -14,8 +14,8 @@ planning documents as dated records, and says so in
 `scripts/selfcheck.js`'s check-13 header —
 
 > WHAT IT DOES NOT COVER, said plainly: a count in a noun not in the
-> REGISTRY, and any count in CHANGELOG.md, the logs, the postmortems or the
-> two planning documents.
+> REGISTRY, and any count in the files derived-counts.js's HISTORICAL list
+> names -- the changelog, logs, postmortems and planning records.
 
 `docs/source-of-truth.md` already names the corrective for that gap and
 leaves it to a human: *"There the answer is not a check: cite the command,

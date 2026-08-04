@@ -93,18 +93,19 @@ const REGISTRY = {
 };
 
 /* ---- WHICH FILES CARRY LIVE CLAIMS -- also data.
- * A count is only dangerous where it describes the repo AS IT IS. CHANGELOG.md,
- * the session logs, the postmortems and the two planning documents are dated
- * records whose whole job is to say what was true THEN, and they are dense with
- * it: scanning them surfaced 71 hits, essentially all legitimate. Scanning only
- * the front-door files surfaced five. That ratio is the entire argument for this
- * list, and it was measured before the check was written, not after. */
+ * A count is only dangerous where it describes the repo AS IT IS. The files
+ * below are dated records or dense with dated rows -- their whole job is to say
+ * what was true THEN: scanning them surfaced 71 hits, essentially all
+ * legitimate. Scanning only the front-door files surfaced five. That ratio is
+ * the entire argument for this list, and it was measured before the check was
+ * written, not after. (The list is named by pattern, never counted in prose --
+ * a "two planning documents" phrasing went stale the day one of them deleted
+ * itself.) */
 const HISTORICAL = [
   /^CHANGELOG\.md$/,
   /^internal\/log\//,
   /^docs\/postmortems\//,
   /^docs\/predecessor-record\.md$/,
-  /^docs\/restructure-2026-07\.md$/,
   /^docs\/working-plan\.md$/,
   /^docs\/source-of-truth\.md$/,
 ];

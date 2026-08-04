@@ -37,6 +37,17 @@
 # class here that becomes mechanically checkable gets a check instead, and
 # drops out of this classifier.
 #
+# WHY 2026-08-24, since an unexplained date invites the question (owner
+# asked, 2026-08-04): install date (2026-08-03) plus the 21-day window named
+# at registration. The 21 days was a cadence judgment, not physics — what is
+# load-bearing is that it was fixed BEFORE any data existed, so nobody picks
+# the window after seeing results. It moves only by the extension rule below.
+# The owner's question also surfaced a defect the amendment below absorbs:
+# the registered baseline ("the three weeks prior") exceeds the repo's life —
+# first commit 2026-07-24, so the repo was ten days old at registration and
+# a calendar-symmetric baseline never existed. Per-opportunity comparison
+# needs no symmetric calendar, only sufficient opportunities per window.
+#
 # AMENDED 2026-08-04, pre-registered before the window closes (the skills
 # repo's second denominator memo, relayed by the owner): the comparison is
 # EXPOSURE-normalized, not calendar-normalized — two quiet windows would

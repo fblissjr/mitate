@@ -102,10 +102,10 @@ brainstorm item and not a working-plan edit.
   The second half — counting violations of what the muted dev-conventions
   blocks used to say, which decides an ambient-tier question in the
   skills repo — appears in no tracked file (grep `muted` across
-  postmortems and working-plan, 2026-08-04: nothing). It exists only in
-  `internal/handoff_next-session.md`, a file whose own rule is that it
-  gets replaced. *Proposed disposition: one dated line in working-plan
-  beside the reminder checkpoint.*
+  postmortems and working-plan, 2026-08-04: nothing). It existed only in
+  `internal/handoff_next-session.md`, a file whose own rule was that it
+  gets replaced. *Disposition: GRADUATED same day — a dated row in
+  working-plan's deferred table, filed when the handoff was retired.*
 - **Working-plan has no pruning plan for itself.** 3,413 lines
   (`wc -l`, 2026-08-04), with superseded sections guarded by header
   warnings — the recorded cost is a fresh session reading 460 superseded
@@ -146,10 +146,16 @@ Where it likely strikes next, measured:
   repo's own doctrine says a slow gate is one people route around.
   *Proposed disposition: a watch threshold, not work — revisit the
   gate's composition when a green run first exceeds 10 minutes.*
-- **The handoff memo rots by design.** Its predecessor "rotted four
-  times in one day" (its own header). It is local, replaced per session,
-  and this session owes it a replacement at close. *Disposition:
-  standing session hygiene, no new item.*
+- **The handoff memo rots by design — RETIRED 2026-08-04 (owner).** Its
+  predecessor "rotted four times in one day" (its own header); it failed
+  spine rule 0 (gitignored, so unreachable from any clone, and nothing in
+  CLAUDE.md pointed at it — a session had to be told it existed); and it
+  grew the untracked obligation in section 3. The convention it replaced
+  is the one that stays: orientation is `docs/README`'s work-next row
+  plus the day's log, both tracked and guarded. The FILM handoff report
+  ("names what its author built twice", `pattern-ledger.md`'s input) is a
+  different convention and is untouched. *Disposition: done — memo
+  deleted, unique content graduated, memory notes updated.*
 
 ## 5. Over-implemented, or soon to add little
 
@@ -207,7 +213,8 @@ Candidates examined honestly; most of the apparatus survives the look.
 1. Owner picks the section-2 ordering (lean: film, then REP4, with R5's
    kinematic amendment whenever convenient).
 2. Two one-line working-plan additions: the determinism-magnitude
-   deferred row, and the 2026-08-24 muted-blocks count line.
+   deferred row (still awaiting the owner's yes), and the 2026-08-24
+   muted-blocks count line (DONE — landed with the handoff retirement).
 3. One small filed item: the bracket-noise local-red ergonomics.
 4. One refreshed owner decision: examples-placement, repriced under
    daily releases.

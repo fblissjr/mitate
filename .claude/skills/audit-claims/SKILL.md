@@ -65,6 +65,16 @@ there:
      never existed. A briefing that primes an auditor with stale claims makes
      every downstream verdict wrong, so these files are worth *more* scrutiny
      than an ordinary doc, not less.
+   - **Changed brackets, smoke, check, or anything CI runs →
+     `.github/workflows/*.yml`.** The workflows are the same uncovered class
+     as `.claude/`: heavy load-bearing comment prose, no freshness markers,
+     nothing mechanical reads them — and their comments assert what controls
+     exist, which is the claim kind that rots silently in both directions.
+     Not theoretical: `static.yml` asserted `bracket-corpus.js` was "still
+     unbuilt" and the corpus fixture "executed in a browser by nothing" for a
+     day after 0.18.1 shipped both, found 2026-08-04 by a hand-run pass —
+     the founding shape of this skill, repeating on a surface this routing
+     list did not name until then.
    - **Changed capability, or a claim about one → `site/index.html`.** The site
      is a claim surface and was out of scope until 0.16.30. A page telling the
      public what the code does is exactly what this agent is for, and it is the

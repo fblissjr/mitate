@@ -98,14 +98,19 @@ jobs:
       # nothing and runs on every push instead of on the filtered set.
       #
       # THE CORPUS FIXTURE IS INCLUDED. The fence-parity step above has read it
-      # as text since its third glob arm landed (0.16.45); what THIS step is
-      # first at is evaluating its declarative tables -- gate.yml copies
-      # templates/ and examples/ into its workspace and not fixtures/, so
-      # `after-hours.html` is still executed in a browser by nothing. Be honest about what that buys: `check` exits 0
-      # on a warning, and the corpus's one finding IS a warning, so this gives
-      # visibility in the log and not a gate. `bracket-corpus.js` -- assert the
-      # EXPECTED verdict, fail when it moves in either direction -- is still the
-      # real fix and is still unbuilt.
+      # as text since its third glob arm landed (0.16.45); what THIS step buys
+      # is its declarative tables evaluated on every push. Be honest about the
+      # size of that: `check` exits 0 on a warning, and the corpus's
+      # check-visible signature IS a warning (row 10b's repeat framing), so
+      # this is visibility in the log, not a gate. The gate is
+      # templates/bracket-corpus.js (0.18.1): it runs in gate.yml's bracket
+      # loop, walks up from the workspace to fixtures/, drives after-hours.html
+      # through a full smoke run, and pins the VERIFIED rows' signatures --
+      # the expected verdict asserted, red when it moves in either direction.
+      # Until 2026-08-04 this comment said that bracket was "still unbuilt"
+      # and the fixture was "executed in a browser by nothing" -- both false
+      # from the evening 0.18.1 landed. A comment asserting a control's
+      # absence rots exactly like one asserting its presence.
       #
       # One scene per invocation, so it is a loop; `set -e` would stop at the
       # first failure and hide the rest, which is the defect run-brackets.sh

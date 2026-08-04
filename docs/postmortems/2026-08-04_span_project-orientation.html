@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Postmortem: project-orientation</title>
+<style>
+:root {
+  --bg: #fdfdfc; --fg: #1c1c1a; --muted: #6b6b66; --rule: #e2e2dd;
+  --accent: #7a5c2e; --panel: #f5f4f0;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #16161a; --fg: #e6e6e1; --muted: #9a9a94; --rule: #2e2e34;
+    --accent: #d9b978; --panel: #1f1f25;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 3rem 1.25rem 6rem; background: var(--bg); color: var(--fg);
+  font: 16px/1.65 ui-serif, Georgia, "Times New Roman", serif;
+  -webkit-text-size-adjust: 100%;
+}
+main { max-width: 44rem; margin: 0 auto; }
+h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 1.5rem; letter-spacing: -0.01em; }
+h2 {
+  font-size: 1.15rem; margin: 2.75rem 0 0.85rem; padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--rule); letter-spacing: -0.005em;
+}
+p { margin: 0 0 1rem; }
+code {
+  font: 0.86em/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: var(--panel); padding: 0.12em 0.34em; border-radius: 3px;
+  word-break: break-word;
+}
+.meta {
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 6px;
+  padding: 1rem 1.25rem; margin: 0 0 2.5rem;
+  font: 0.86rem/1.6 ui-sans-serif, system-ui, sans-serif;
+}
+.meta .summary {
+  font: 1rem/1.55 ui-serif, Georgia, serif; margin: 0 0 0.9rem;
+  padding-bottom: 0.85rem; border-bottom: 1px solid var(--rule);
+}
+.meta dl { display: grid; grid-template-columns: max-content 1fr; gap: 0.3rem 1rem; margin: 0; }
+.meta dt { color: var(--muted); }
+.meta dd { margin: 0; }
+.meta .artifacts { margin: 0.85rem 0 0; padding-top: 0.85rem; border-top: 1px solid var(--rule); }
+.meta .artifacts ul { margin: 0.35rem 0 0; padding-left: 1.1rem; }
+.meta .artifacts li { margin: 0.15rem 0; }
+.nothing { color: var(--muted); font-style: italic; }
+table { border-collapse: collapse; width: 100%; margin: 0 0 1rem; font-size: 0.94rem; }
+th, td { text-align: left; vertical-align: top; padding: 0.55rem 0.7rem; border-bottom: 1px solid var(--rule); }
+th { font: 600 0.82rem/1.4 ui-sans-serif, system-ui, sans-serif; color: var(--muted);
+     text-transform: uppercase; letter-spacing: 0.04em; }
+.annotation {
+  border-left: 3px solid var(--accent); background: var(--panel);
+  padding: 0.75rem 1rem; margin: 0 0 1rem; font-size: 0.94rem;
+}
+.annotation strong { color: var(--accent); }
+ul, ol { margin: 0 0 1rem; padding-left: 1.35rem; }
+li { margin: 0.3rem 0; }
+@media (max-width: 34rem) {
+  body { padding: 2rem 1rem 4rem; }
+  .meta dl { grid-template-columns: 1fr; gap: 0.1rem; }
+  .meta dt { margin-top: 0.5rem; }
+}
+</style>
+</head>
+<body>
+<main>
+<h1>Postmortem: project orientation — the whole vs the representation track vs the plans, over 2026-08-03..04</h1>
+
+<header class="meta">
+  <p class="summary">The two days advanced one thing, the checkability of the declared layer (REP2 landed, its review's three defects closed as 0.18.2); the plan/working-plan pair is genuinely maintained by declared precedence rather than merged content, and its one live gap is two stale "0.18.1 cascade" pointers in plan.md's REP stamps, found by this postmortem's own evidence pass.</p>
+  <dl>
+    <dt>Mode</dt><dd>span</dd>
+    <dt>Scope</dt><dd>project-orientation</dd>
+    <dt>Written</dt><dd>2026-08-04</dd>
+    <dt>Range</dt><dd><code>2026-08-03..2026-08-04 (1232664..92bf0e0)</code></dd>
+  </dl>
+  <div class="artifacts">
+    Artifacts examined:
+    <ul>
+      <li><code>VISION.md</code></li>
+      <li><code>docs/representation.md</code></li>
+      <li><code>docs/plan.md</code></li>
+      <li><code>docs/working-plan.md</code></li>
+      <li><code>docs/README.md</code></li>
+      <li><code>docs/restructure-2026-07.md</code></li>
+      <li><code>docs/postmortems/2026-08-03_session_rep2-review-protocol.md</code></li>
+      <li><code>internal/log/log_2026-08-03.md</code></li>
+      <li><code>internal/log/log_2026-08-04.md</code></li>
+      <li><code>CHANGELOG.md</code></li>
+      <li><code>6f656c1</code>, <code>e5d73e9</code>, <code>f2ad67b</code>, <code>e4cd60f</code>, <code>4cee16e</code>, <code>9f94ab2</code></li>
+    </ul>
+  </div>
+</header>
+
+<p>Written to answer an orientation question, so the map comes first and the
+findings hang off it.</p>
+
+<p><strong>The layers, from the top.</strong> <code>VISION.md</code> owns why: an engine that turns any
+input into a deterministic scene, where determinism is the measuring
+instrument, and "declarative" is a claim about structure, not authoring style.
+<code>docs/representation.md</code> owns the 2026-08-02 decision that operationalizes
+that claim: data is what is decidable without running the scene, every end of
+decidability is a declared hole, and the kit is emitted from one source.
+<code>docs/plan.md</code> owns the architecture and the gates, including the REP0&ndash;REP6
+track that implements the representation decision phase by phase.
+<code>docs/working-plan.md</code> owns the tactical layer: cross-phase tracks, deferred
+items with revival triggers, and the day-to-day queue. <code>docs/README.md</code> routes
+between all of them.</p>
+
+<p><strong>The difference between plan and working-plan is declared in both files, in
+both directions.</strong> <code>docs/plan.md</code> (line 13): "This file owns the architecture
+and the phase gates. The current <em>tactical</em> plan &hellip; lives in working-plan.md.
+Most of that work is cross-phase: it serves every phase and belongs to none."
+<code>docs/working-plan.md</code> (line 17) points back: "plan.md is the founding
+architecture and its phase gates. This is the consolidated <em>tactical</em> plan,"
+and its mapping table sends each tactical track to the phase whose gate
+governs it, on the stated principle that "an item that maps to a phase
+inherits that phase's gate." So the pair is not two versions of one document;
+it is strategy-with-gates and queue-with-triggers, coherent by declared
+precedence rather than by content synchronization.</p>
+
+<p><strong>Is it maintained? Yes, measurably.</strong> Both files carry freshness markers
+current to the range (<code>plan.md</code> 2026-08-03, <code>working-plan.md</code> 2026-08-04).
+<code>working-plan.md</code>'s header carries a verified status column added after its
+own annotation asserted a state that was false. REP stamps in <code>plan.md</code> were
+written at landing time on both days (REP2's stamp on 08-03, with its
+post-merge queue pointer). The queue section in <code>working-plan.md</code> was updated
+to LANDED within hours of 0.18.2 shipping (<code>internal/log/log_2026-08-04.md</code>).
+Corrections are logged rather than silent: <code>9f94ab2</code> corrected a hand-written
+count in the day's log the same evening it was written.</p>
+
+<section>
+  <h2>1. What went well</h2>
+  <ul>
+    <li><strong>The whole span was one coherent motion on the representation track.</strong>
+      08-03 morning: 0.17.3 parity findings closed red-first. 08-03 midday: REP2
+      landed (<code>6f656c1</code>, merged as PR #10 at <code>e5d73e9</code>) &mdash; <code>check</code> executes the
+      canonical fence store instead of mirroring it, gate held by
+      <code>bracket-check-kit.js</code> running four divergence cases through both
+      instruments. 08-03 evening: the corpus bracket landed as 0.18.1 (<code>f2ad67b</code>).
+      08-04: the review's three behavioral findings closed as 0.18.2 (<code>e4cd60f</code>),
+      every fix's arm recorded red first. Each step is the representation
+      decision's point 1 (declared holes) or point 5 (kit emitted once) becoming
+      enforcement rather than prose.</li>
+    <li><strong>The review protocol converted directly into shipped fixes.</strong> The 08-03
+      four-pass review found all three behavioral defects via its adversarial
+      pass (<code>docs/postmortems/2026-08-03_session_rep2-review-protocol.md</code>); they
+      were deliberately kept out of the merge, queued with mechanisms in
+      <code>working-plan.md</code>, and closed within 20 hours as 0.18.2. Report and repair
+      in separate motions, both fully recorded.</li>
+    <li><strong>The plan pair absorbed the churn without drifting apart.</strong> REP2's stamp,
+      the working-plan queue section, the router's work-next row, the site's
+      REP card, and the CHANGELOG were all updated at their own landing moments
+      across the span &mdash; five surfaces, one version of events. The single miss
+      is filed under Escapes.</li>
+    <li><strong>VISION's honestly-failing criterion moved.</strong> <code>VISION.md</code>'s "a declaration
+      can be validated before a frame is rendered" is recorded as only partly
+      true, and both days strengthened exactly that criterion: REP2 made the
+      validator run the kit's real semantics, and 0.18.2 made every remaining
+      substitution declare itself (<code>internal/log/log_2026-08-04.md</code>). The
+      criterion's honest boundary (extents need runtime geometry) is unchanged
+      and stated in <code>VISION.md</code> itself.</li>
+    <li><strong>An unplanned rule earned its adoption on measurement.</strong> The cite-or-label
+      rule (<code>4cee16e</code>) was adopted mid-span after the 08-03 review measured the
+      session's own summary prose as its least reliable artifact &mdash; seven drift
+      findings on hour-old writing. Its reminder hook fired on 08-04's record
+      surfaces and caught a claim written before it was true
+      (<code>internal/log/log_2026-08-04.md</code>, the "selfcheck green" incident).</li>
+  </ul>
+</section>
+
+<section>
+  <h2>2. What did not go well</h2>
+  <ul>
+    <li><strong>The invalidation sweep after 0.18.2 missed the architecture document.</strong>
+      The 08-04 landing updated <code>docs/README.md</code>, <code>site/index.html</code>, and
+      <code>working-plan.md</code>, but <code>docs/plan.md</code> lines 1048 and 1060 still call the
+      landed cascade "the 0.18.1 cascade" / "the 0.18.1 queue" &mdash; stale the moment
+      0.18.1 was assigned to the corpus bracket instead (<code>f2ad67b</code>), and found only
+      by this postmortem's evidence pass. Structural version: <strong>a version number
+      written into a stamp is a state claim; when the number moves, every stamp
+      naming it is invalidated, and only a grep for the number itself &mdash; not a
+      memorized list of status surfaces &mdash; finds them all.</strong></li>
+    <li><strong>The superseded-parts hazard in working-plan is managed, not solved.</strong> Its
+      own header records a fresh session reading 460 superseded lines before
+      discovering the restructure plan wins (<code>docs/working-plan.md</code> header). The
+      mitigation is a warning block plus the router; the actual fix is
+      <code>docs/restructure-2026-07.md</code> deleting itself when its last gate is green,
+      which has not happened yet (R5 remnants remain open).</li>
+    <li><strong>The label collision is a standing comprehension tax.</strong> One letter means
+      three things &mdash; R0&ndash;R5 (restructure gates), Phase R (plan.md's restructuring
+      phase), REP0&ndash;REP6 (representation track) &mdash; and <code>docs/README.md</code>'s work-next
+      row carries a "label key" precisely because of it. The orientation question
+      that prompted this postmortem is the cost showing up live. Inference, not
+      measurement: renaming now would churn more record than it clarifies; the
+      key in the router is likely the right ceiling.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>3. Deviations from the plan</h2>
+  <table>
+    <thead><tr><th>Planned</th><th>Shipped</th><th>Verdict</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>REP2 gate: the review's four divergence cases resolve identically in <code>check</code> and a driven page (<code>docs/plan.md</code>, REP2)</td>
+        <td>0.18.0 (<code>6f656c1</code>), gate held by a standing control (<code>bracket-check-kit.js</code>), recorded red on all four first</td>
+        <td>met, and as a control rather than a stamp</td>
+      </tr>
+      <tr>
+        <td>Review findings queued as "the 0.18.1 cascade" (<code>docs/plan.md</code> REP2 stamp)</td>
+        <td>landed as 0.18.2 (<code>e4cd60f</code>); 0.18.1 went to the corpus bracket by owner ruling the night before (<code>f2ad67b</code>)</td>
+        <td>shipped under a different number; the stamp's pointer is now stale (see Escapes)</td>
+      </tr>
+      <tr>
+        <td>Corpus bracket: a forward item with a "before the next corpus change" trigger</td>
+        <td>landed 08-03 night, and the wiring corrected the doctrine: the corpus passes smoke, so its purpose was restated from gate-bait to calibration target (<code>f2ad67b</code>, <code>CHANGELOG.md</code> 0.18.1)</td>
+        <td>better than planned &mdash; the measurement fixed a false premise</td>
+      </tr>
+      <tr>
+        <td>Declared-substitution rule: assigned to REP3 (<code>docs/plan.md</code>, REP3)</td>
+        <td>its first three violations fixed and bracketed in 0.18.2, ahead of REP3 proper; REP3's registry work started (fence-store read enumeration, <code>internal/log/log_2026-08-04.md</code>)</td>
+        <td>partially delivered early</td>
+      </tr>
+      <tr>
+        <td>cite-or-label rule: not planned at span start</td>
+        <td>adopted 08-03 on the review's measurement (<code>4cee16e</code>), wired as a hook with its own bracket</td>
+        <td>unplanned addition, evidence-driven</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>4. Escapes (tests)</h2>
+  <ul>
+    <li><strong>The three 0.18.2 defects were green-but-blind escapes of <code>check</code>'s own
+      arm suite.</strong> <code>bracket-commands.js</code> had arms for every property <code>check</code>
+      claimed to decide, but no arm exercised a bible STYLE with match/fov, an
+      unresolved anchor fraction, or a dot-assigned table &mdash; so <code>check</code> was green
+      while wrong in three ways. Caught by the adversarial review pass instead
+      (<code>docs/postmortems/2026-08-03_session_rep2-review-protocol.md</code>). Each now
+      has an arm, and each arm was watched red against the pre-fix verb
+      (<code>internal/log/log_2026-08-04.md</code>).</li>
+    <li><strong>The stale plan.md pointers are a process escape from 08-04's own
+      invalidation grep.</strong> The grep enumerated status surfaces from memory
+      instead of grepping for the moved token ("0.18.1") across all tracked
+      prose. No mechanical check covers version pointers inside planning prose,
+      and that is by design (<code>scripts/derived-counts.js</code> excludes the planning
+      documents), so the control is the procedure, and the procedure's scope was
+      the defect. Fixed in the follow-up to this postmortem.</li>
+    <li>Tests added in the span carry recorded claims: the six
+      <code>bracket-check-kit.js</code> arms and the two new <code>bracket-commands.js</code> arms each
+      state what they pin, and <code>CHANGELOG.md</code> 0.18.2 records the red-first runs.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>5. Forward items</h2>
+  <ul>
+    <li><strong>Fix <code>docs/plan.md:1048</code> and <code>:1060</code></strong> to say the cascade landed as
+      0.18.2. Checkable: <code>grep -n "0.18.1 cascade\|0.18.1 queue" docs/plan.md</code>
+      returns nothing. (Done in the same commit as this postmortem, along with
+      two more hits the token-grep found in <code>docs/working-plan.md</code>.)</li>
+    <li><strong>Write the tableValue row expansion</strong> agreed on 08-04: conversions
+      declined on representation decision points 1 and 2, parser declined on
+      execute-don't-mirror and measure-first, revive trigger "a false verdict
+      from this reader reaches a shipped film." Checkable: the mirrors-table row
+      in <code>docs/working-plan.md</code> names all three dispositions and the trigger.</li>
+    <li><strong>REP3 derivation-source question is open with one measurement in hand:</strong>
+      the fence store reads 7 of the 12 kit STYLE keys
+      (<code>internal/log/log_2026-08-04.md</code>); the other 5 are read by template code
+      outside fences. Checkable: the registry design names its derivation source
+      and covers all 12, or records why the boundary moved.</li>
+    <li><strong>When the next version lands, run the invalidation grep on the version
+      token itself</strong> across all tracked prose, not on a remembered surface list.
+      Checkable: the next landing's log records the grep and its hit list.</li>
+  </ul>
+</section>
+
+</main>
+</body>
+</html>

@@ -1,4 +1,4 @@
-last updated: 2026-08-03
+last updated: 2026-08-04
 
 # mitate: founding plan
 
@@ -1045,7 +1045,8 @@ bucket (e).
   comments. Recorded by the implementing session; the merge review is the
   ratification. *Post-merge:* the four-pass review's findings — three
   pre-existing behavioral defects surfaced by the new adversarial
-  instrument, plus wording — are queued as the 0.18.1 cascade in
+  instrument, plus wording — closed as the 0.18.2 cascade (2026-08-04,
+  red-first per finding) in
   `working-plan.md`'s "What the REP2 review taught about review"
   (2026-08-03); this stamp is MET, not finished-forever. Session postmortem:
   [`postmortems/2026-08-03_session_rep2-review-protocol.md`](postmortems/2026-08-03_session_rep2-review-protocol.md).
@@ -1057,7 +1058,9 @@ bucket (e).
   input an instrument substitutes or approximates — a stub, a sanitized
   value, an unresolved read — refuses or declares itself in the verdict.
   The unknown-key warns are one instance of that rule; its first three
-  violations and their fixes are the 0.18.1 queue in `working-plan.md`.
+  violations were fixed as 0.18.2 (2026-08-04), each behind a bracket arm
+  recorded red first — the landing record is in `working-plan.md`'s
+  2026-08-03 section.
   *Gate:* a misspelled kit key
   warns naming the near-miss; every shipped scene is warning-clean after
   annotation; the registry is derived or controlled, never hand-held.

@@ -19,6 +19,9 @@
 internal/*
 !internal/log/
 
+# Archived
+.archive/
+
 # Editors / IDEs
 .vscode/
 .idea/

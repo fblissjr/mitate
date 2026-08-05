@@ -166,7 +166,7 @@ that is `probe`, below.
 
 ```bash
 bun run build.js sheet <name>.html                # one frame per beat
-bun run build.js sheet <name>.html 480 0.6 nocap  # captions hidden — the semantics pass
+bun run build.js sheet <name>.html 480 0.6 nocap  # semantics pass — writes <name>.nocap.sheet.jpg, NOT <name>.sheet.jpg
 bun run build.js strip <name>.html <t0> <t1>      # consecutive frames — continuity
 bun run build.js aspect <name>.html 8.5           # one moment, four window shapes
 bun run build.js probe <name>.html "beatAt('hit',.5)" 'sep(a, b)'
@@ -252,6 +252,12 @@ what you re-derived from scratch, and what you copied out of an example scene
 (and what for). `references/method.md`'s closing section owns the step and the
 why; the five minutes after the film lands are worth more than any review
 later.
+
+**If you keep a task list for the build, this step is a task in it.** The
+first cold build mirrored steps 3–7 into its list, left this one out, then
+announced the report at delivery and never wrote it — once the last listed
+task closed, nothing remained to prompt the step. A "nothing to report" line
+still counts; silence does not.
 
 ## Rules that silently break a film
 

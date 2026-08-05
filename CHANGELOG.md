@@ -7,6 +7,29 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.19.6
+
+### fixed
+
+**Three corrections from the cold build's transcript-derived timeline**
+(the independent reconstruction is `docs/scene-analyses/`' first record;
+this repo, not the plugin, carries it):
+
+- `instruments.md`'s inert-expression entry no longer says the blink
+  "shipped invisibly" — the transcript shows it caught pre-delivery, by
+  incidental hand-inspection during the continuity pass. The wording had
+  inherited the builder postmortem's own frontmatter drift; the corrected
+  line states what is true and still damning: invisible to every
+  instrument, caught by nothing in the toolkit.
+- SKILL.md step 8 now says a build task list must carry the field report
+  as a task. The cold session mirrored steps 3–7 into its list, omitted
+  step 8, announced the report at delivery, and never wrote it — the
+  omission in its own planning structure is the traced cause.
+- SKILL.md step 4's nocap command now names its output file
+  (`<name>.nocap.sheet.jpg`) — the different filename cost the cold
+  session four recovery calls, including reading a stale sheet and
+  grepping the tool's source to check its own arguments had taken.
+
 ## 0.19.5
 
 ### changed

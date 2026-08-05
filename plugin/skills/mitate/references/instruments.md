@@ -449,9 +449,10 @@ Recorded honestly, because these are where films actually ship broken:
   written as `sin(quant(t,2)*π*2)` is exactly constant — every sample lands on
   a sine node — and every instrument reports clean: still pure in `t`, so smoke
   is green; no discontinuity, so no strip shows a pop; far too small a region
-  for `motion`'s whole-frame delta. One shipped invisibly on the first
-  cold-start build with this skill and was found only by incidental
-  hand-inspection. The countermeasure is `probe`: sample the expression at 4-5
+  for `motion`'s whole-frame delta. On the first cold-start build with this
+  skill one sat invisible through every instrument from first draft to the
+  continuity pass — caught pre-delivery, but by incidental hand-inspection
+  while investigating something else, never by anything in this toolkit. The countermeasure is `probe`: sample the expression at 4-5
   `t` values; fewer than two distinct outputs means the animation does not
   exist. `method.md` ("A composed periodic can be constant") owns the rule.
 - **Whether a beat is funny, warm, or tense.** No still answers it.

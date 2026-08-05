@@ -7,6 +7,50 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.20.0
+
+### changed
+
+**Examples-placement option E, executed** (decided 2026-08-04; batch
+condition fired when the first portfolio film landed). The install cache
+now carries ONE example film — `gearbox.html`, the teaching baseline and
+bracket fixture — instead of five; `bear-and-bees`, `menagerie`,
+`materials` and `noise-chart` moved to `scenes/` at the repo root:
+tracked, CI-smoked, fence-parity carriers, staged onto the site by
+`stage-films.sh` (which now stages both directories; its bracket ran
+green before and after the edit), just not shipped. Every pointer moved
+in the same batch: CLAUDE.md's Map, invariant 2's parity command (four
+globs) and invariant 4's wording, the pre-commit hook generator
+(reinstalled), all three workflows (a film leaving the plugin does NOT
+leave the gate), SKILL.md's Examples section, both READMEs, the plugin
+README, and the line-anchored citations in `docs/addressing.md` and the
+extract-patterns skill.
+
+**The full smoke run now states its parity scope on green** — the same
+`N file(s) scanned, M fenced line(s) held byte-identical` line
+`--parity-only` prints. The first cold build had its scene's fences
+compared three times with no way to know; the string is built once for
+both modes, its derivation is controlled by `bracket-parity`'s scan arms
+(all 33 green after the change), and the full-run print's uncontrolled
+edge is disclosed in the code comment beside it.
+
+### added
+
+**`scenes/crash.html`** — the market-crash film, revised per the
+`film-reviewer` pass that was the shipped agent's first real exercise
+(verdict: promote after fixing). The middle beats now draw the causal
+loop the captions assert (call-lines candle→marker, sell-streaks
+marker→book with a stepped, impact-flashed ask ladder, feedback bolts
+book→tape through the cascade); the reveal keeps a strictly positive
+print rate across phase boundaries instead of the summed-ramps stall;
+the outro fades the world down so the loop lands bg-to-bg; the break
+crack is sized to survive a thumbnail; plus a poster still. **It is in
+the corpus, not the shipped examples** — the owner held the 2D
+teaching-baseline promotion on the n=1 principle: more portfolio scenes
+get built and reviewed before that slot is filled. The cold-built
+original stays untouched under `internal/` as the scene-analysis
+fixture.
+
 ## 0.19.6
 
 ### fixed

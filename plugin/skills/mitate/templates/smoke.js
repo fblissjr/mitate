@@ -1688,15 +1688,23 @@ async function checkScene(browser, file) {
     }
   }
 
+  // THE COUNT IS PART OF THE VERDICT. The guard above catches an unmatched
+  // glob that arrives as a literal; it structurally CANNOT catch the other
+  // half — under `nullglob` the argument is removed from argv before smoke
+  // runs, so a scan that was meant to cover three directories covers two and
+  // nothing here knows a third was intended. A green line that states its own
+  // scope is the only thing that makes that visible, and it costs one number.
+  // Built ONCE and printed by BOTH modes (0.20.0): the full run enforced
+  // parity from the start but its green said nothing about it — a session
+  // could watch three green smokes and have no way to know its scene's fences
+  // were ever compared (the first cold build did exactly that). The string's
+  // derivation is controlled by bracket-parity's scan arms via the
+  // --parity-only verdict below; the full-run PRINT of it has no bracket
+  // (browser-free arms cannot reach the full run) — disclosed here, and
+  // visible on every gate log instead.
+  const scanned = `${sceneCount} file(s) scanned, ${heldLines} fenced line(s) held `
+                + `byte-identical to the canonical store`;
   if (parityOnly) {
-    // THE COUNT IS PART OF THE VERDICT. The guard above catches an unmatched
-    // glob that arrives as a literal; it structurally CANNOT catch the other
-    // half — under `nullglob` the argument is removed from argv before smoke
-    // runs, so a scan that was meant to cover three directories covers two and
-    // nothing here knows a third was intended. A green line that states its own
-    // scope is the only thing that makes that visible, and it costs one number.
-    const scanned = `${sceneCount} file(s) scanned, ${heldLines} fenced line(s) held `
-                  + `byte-identical to the canonical store`;
     console.log(kernelFail ? `\nparity/integrity: FAILED (${scanned})`
                            : `\nparity/integrity: ok — ${scanned}`);
     process.exit(kernelFail ? 1 : 0);
@@ -1771,6 +1779,7 @@ async function checkScene(browser, file) {
   await browser.close();
   try { fs.unlinkSync(vendorCache); } catch (e) {}
   console.log(failed ? `\n${failed} check(s) failed` : '\nall scenes pass');
+  console.log(`parity/integrity: ${kernelFail ? 'FAILED' : 'ok'} — ${scanned}`);
   console.log(`${warned} advisory warning(s)`);
   process.exit(failed ? 1 : 0);
 })();

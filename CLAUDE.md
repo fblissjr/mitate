@@ -1,4 +1,4 @@
-last updated: 2026-08-04
+last updated: 2026-08-05
 
 # mitate
 
@@ -70,6 +70,13 @@ copy of a router is the exact failure this file keeps catching.
   it runs every bracket even when one is red, and **fails when its glob matches
   nothing**, because a green step that ran zero controls is indistinguishable
   from one that ran five.
+- **The tracked film corpus** — `scenes/` (repo root), the films that are
+  tracked but NOT shipped: full repo members — smoke-checked in CI, fence
+  parity carriers, staged onto the site by `stage-films.sh` — but absent from
+  every install cache. Examples-placement option E, executed 2026-08-05: the
+  shipped subtree keeps one teaching baseline per template under
+  `plugin/skills/mitate/examples/`, and everything else lives here. Its
+  README carries the per-film sections the examples README used to hold
 - **The defect corpus** — `fixtures/defect-corpus/`, scenes kept with KNOWN
   COMPOSITION DEFECTS as calibration targets for the review instruments.
   **They pass the smoke gate by design** — the defects are visual (sliding
@@ -201,12 +208,16 @@ for its red lines.
    bun run plugin/skills/mitate/templates/smoke.js --parity-only \
      plugin/skills/mitate/templates/*.html \
      plugin/skills/mitate/examples/*.html \
+     scenes/*.html \
      fixtures/defect-corpus/*.html
    ```
 
-   **Three globs, not two.** `fixtures/defect-corpus/` is the ninth carrier as of
-   0.16.45, and this line printed the two-glob command after it joined — so two
-   tracked files prescribed different commands for the same check. The
+   **Four globs, not three.** `fixtures/defect-corpus/` joined as a carrier
+   directory at 0.16.45 and `scenes/` at 0.20.0 (option E moved most films
+   out of the shipped subtree without moving them out of the parity set) —
+   and an earlier version of this line printed the two-glob command after
+   the third directory joined, so two tracked files prescribed different
+   commands for the same check. The
    authoritative copy is `scripts/install-hooks.sh`'s `HOOK_BODY`, which
    `selfcheck.js` check 8 compares the installed hook against; this is a reading
    copy and the run now states its own scope (`ok — 9 file(s) scanned`), so a
@@ -227,15 +238,19 @@ for its red lines.
    the subtree with an absolute repo URL, which resolves from the cache, a clone,
    and GitHub alike.
 
-4. **Films are tracked once.** The scenes live in
-   `plugin/skills/mitate/examples/`; `scripts/stage-films.sh` copies them into
-   `site/films/` at build, which `site/.gitignore` ignores wholesale
-   (`films/*.html`) so a new example needs no edit there.
-   **There are no exceptions.** `gearbox-neon.html` is DERIVED by
-   `stage-films.sh`, not stored. Poster stills live once in `site/posters/`, and
-   the skill's `examples/README.md` embeds them by **absolute raw URL** — never a
-   relative path, which climbs out of the install cache and breaks for every
-   installed user. Never re-introduce a second copy of either.
+4. **Films are tracked once.** A film lives in exactly one of two tracked
+   homes — `plugin/skills/mitate/examples/` (the shipped teaching baselines,
+   one per template) or `scenes/` (the tracked, unshipped corpus) — and
+   `scripts/stage-films.sh` copies BOTH into `site/films/` at build, which
+   `site/.gitignore` ignores wholesale (`films/*.html`) so a new film needs
+   no edit there. **There are no exceptions.** `gearbox-neon.html` is DERIVED
+   by `stage-films.sh`, not stored. Poster stills live once in
+   `site/posters/`, and the skill's `examples/README.md` embeds them by
+   **absolute raw URL** — never a relative path, which climbs out of the
+   install cache and breaks for every installed user (`scenes/README.md` is
+   not under that constraint — it never ships — but keeps the same URLs so
+   sections move between the two without churn). Never re-introduce a second
+   copy of either.
 
 5. **Byte comparison is valid only within one backend.** WebGPU-Metal and the
    WebGL2 fallback do not produce byte-identical frames — that is expected, not

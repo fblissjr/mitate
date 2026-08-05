@@ -117,6 +117,10 @@ jobs:
           cp -R plugin/skills/mitate/templates/fences ws/
           cp plugin/skills/mitate/templates/*.template.html ws/
           cp plugin/skills/mitate/examples/*.html ws/
+          # scenes/ is tracked-but-unshipped (option E, 0.20.0) — moving a film
+          # out of the plugin moved it out of the install cache, NOT out of the
+          # gate. Same smoke, same workspace, same coverage as before the move.
+          cp scenes/*.html ws/
           cd ws && bun add three@0.185.1 playwright-core@1.61.1
 
       # No WEBGPU. No ANGLE_BACKEND. This is the path that was broken.

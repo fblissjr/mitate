@@ -1,4 +1,4 @@
-last updated: 2026-08-04
+last updated: 2026-08-05
 
 # mitate
 
@@ -34,10 +34,11 @@ models can do all of this on their own.
 
 Those six are what it makes today, playing in the browser at
 **[mitate.microapp.me](https://mitate.microapp.me)** — free and MIT-licensed, and
-the site is just the films. The same scenes are in
-[`plugin/skills/mitate/examples/`](plugin/skills/mitate/examples/): open one from
-disk and you get the real artifact, at full resolution and frame rate, rather than
-a compressed recording of it. It's an early version — this is the current output,
+the site is just the films. The same scenes are tracked in
+[`scenes/`](scenes/) (the film corpus) and
+[`plugin/skills/mitate/examples/`](plugin/skills/mitate/examples/) (the shipped
+teaching baselines): open one from disk and you get the real artifact, at full
+resolution and frame rate, rather than a compressed recording of it. It's an early version — this is the current output,
 not the ceiling.
 
 *mitate* (見立て): to see one thing as another — the Japanese aesthetic of
@@ -153,9 +154,11 @@ so treat it as untested rather than supported.**
 | [`plugin/`](plugin/) | The skill itself — manifest, `skills/mitate/` with SKILL.md, references, templates, examples. See [`plugin/README.md`](plugin/README.md) |
 | [`site/`](site/) | The static showcase site behind [mitate.microapp.me](https://mitate.microapp.me) — one hand-authored page, no framework |
 | [`docs/`](docs/) | [`plan.md`](docs/plan.md) (founding plan, architecture, phase gates), [`physics-bake-proposal.md`](docs/physics-bake-proposal.md), and [`predecessor-record.md`](docs/predecessor-record.md) (the frozen predecessor's measured findings, inherited) |
-| [`scripts/`](scripts/) | `stage-films.sh` — copies the skill's examples into `site/films/` at build time |
+| [`scenes/`](scenes/) | The tracked film corpus — full repo members (CI-smoked, parity-checked, on the site), not shipped in the plugin |
+| [`scripts/`](scripts/) | `stage-films.sh` — copies the shipped examples AND `scenes/` into `site/films/` at build time |
 
-The scene HTML files are tracked once, as `plugin/skills/mitate/examples/`, and
+Each scene HTML file is tracked once — in `scenes/`, or in
+`plugin/skills/mitate/examples/` if it is a shipped teaching baseline — and
 staged into `site/films/` at deploy. Edit them where they live.
 
 ## Status

@@ -1,4 +1,4 @@
-last updated: 2026-08-02
+last updated: 2026-08-05
 
 # Addressing: what `t` is, and what the position-encoding literature does and does not lend us
 
@@ -113,7 +113,7 @@ timestamp"
 example, no `ss(t, <literal>, <literal>)` or `bump(t, <literal>, <literal>)`
 call exists in scene code. Every temporal anchor routes through the beat table.
 The one apparent exception, `ss(t, e0+di, e0+di+.15)` at
-`plugin/skills/mitate/examples/bear-and-bees.html:1591`, derives `e0` from
+`scenes/bear-and-bees.html:1591`, derives `e0` from
 `beatAt('erupt',.05)` on line 1588 and offsets it by a physical stagger. That is
 frame 3 spelled out longhand, not a raw timestamp.
 
@@ -164,7 +164,7 @@ again.
 ```
 const T_HIT=beatAt('boop',.55);       // the pendulum's latch anchor
 ```
-(`plugin/skills/mitate/examples/bear-and-bees.html:1536`)
+(`scenes/bear-and-bees.html:1536`)
 
 and the hive's response is a physical ringdown evaluated in seconds since that
 anchor:
@@ -174,7 +174,7 @@ const L=latch(t,T_HIT),L2=latch(t,beatAt('button',.45));
 hivePiv.rotation.z=.32*Math.sin(4.4*L)*Math.exp(-.42*L)
                   +.05*Math.sin(5*L2)*Math.exp(-.9*L2);
 ```
-(`plugin/skills/mitate/examples/bear-and-bees.html:1582-1584`, with the
+(`scenes/bear-and-bees.html:1582-1584`, with the
 companion `rotation.x` and `position.y` terms on `:1585-1586`)
 
 This is the correct composite and worth naming precisely, because it is the
@@ -225,10 +225,10 @@ follower:
 ```
 const swarmXAt=t=>lerp(HIVE_C[0],bearXAt(t-.5)-1.2, ...)
 ```
-(`plugin/skills/mitate/examples/bear-and-bees.html:1380`)
+(`scenes/bear-and-bees.html:1380`)
 
 and per-bee, `const cx=bearXAt(t-lag)-1.0-.05*i` with `lag=.25+.06*i`
-(`plugin/skills/mitate/examples/bear-and-bees.html:1596-1597`). This is a domain
+(`scenes/bear-and-bees.html:1596-1597`). This is a domain
 translation, the operation whose invariance RoPE is built to secure. Note what it
 is measured in: absolute seconds, applied to a function whose interior is
 beat-fraction addressed. Retiming `flee` rescales `bearXAt`'s shape while the
@@ -250,7 +250,7 @@ const bearXAt=t=>lerp(WALK_START,STOP_X,ss(t,beatAt('title',.45),beatAt('amble',
                +(FLEE_END-STOP_X)*ramp(t,'flee',.09,.98)
                -.38*pulse(t,'erupt',.12,1);
 ```
-(`plugin/skills/mitate/examples/bear-and-bees.html:1377-1379`)
+(`scenes/bear-and-bees.html:1377-1379`)
 
 The duck that must keep the bear's head clear of the hive underside as it passes
 is **beat-seconds** addressed:
@@ -260,7 +260,7 @@ is **beat-seconds** addressed:
 // x-span ~0.3s before the old duck had amplitude ...)
 const duck=pulseS(t,'flee',-.12,1.35);   // scuttle low UNDER the hive
 ```
-(`plugin/skills/mitate/examples/bear-and-bees.html:1560-1562`)
+(`scenes/bear-and-bees.html:1560-1562`)
 
 The comment is the evidence. This exact desynchronization shipped once, was
 caught on review as a measured clip, and was repaired by moving the duck's onset
@@ -271,7 +271,7 @@ and left the encoding mismatch in place.
 
 Measured 2026-07-30. Method: the kernel's `ss` and `bump` copied verbatim,
 `STOP_X = -1.2`, `FLEE_END = 15`
-(`plugin/skills/mitate/examples/bear-and-bees.html:1374-1376`), hive centre
+(`scenes/bear-and-bees.html:1374-1376`), hive centre
 `x = 2.95` (`:1249`, `:1253`), head offset `+3.3` from the root (`:1383`). The
 pass event is defined as the first `t` at which the head's x reaches the hive's
 x, holding everything else fixed and varying only the `flee` duration from its
@@ -310,7 +310,7 @@ retiming cheap is the property that makes this defect reachable.
 ### 4.2 How common is the mismatch?
 
 I ran a per-beat encoding classifier over the scene code of
-`plugin/skills/mitate/examples/bear-and-bees.html` (lines past the vendored
+`scenes/bear-and-bees.html` (lines past the vendored
 bundle), tagging each beat name by whether it is addressed through the
 fraction family (`ramp`, `pulse`, `during`, `beatAt`, `span`, `rampE`) or the
 seconds family (`rampS`, `pulseS`, `secAt`). Three of the film's eight beats are
@@ -424,7 +424,7 @@ Under scaling of a single beat's duration:
 - A beat-seconds term is **invariant**: it keeps its physical size and moves its
   proportional place.
 - A film-absolute term (`Math.sin(1.3*t)`, at
-  `plugin/skills/mitate/examples/bear-and-bees.html:1579`) is invariant in rate
+  `scenes/bear-and-bees.html:1579`) is invariant in rate
   but has its phase shifted at every later beat, since durations accumulate.
 - A distance-travelled term is invariant in shape and covariant in rate, because
   `s` is derived from position rather than from time.
@@ -462,7 +462,7 @@ has. `TOTAL` is a hard clamp with identical fidelity at `t = 0.001` and
 a capital expense. Extending `TOTAL` means adding a beat to `BEATS`, and every
 derived quantity follows automatically: `DURATION`, the caption schedule, the
 shot list's final `t1`
-(`plugin/skills/mitate/examples/bear-and-bees.html:1404`), the recorder's frame
+(`scenes/bear-and-bees.html:1404`), the recorder's frame
 count. The clamp is not a capacity limit, it is a **declaration**, and the
 toolchain's dependence on it is the feature (`shoot.js:146-150` refuses a scene
 that does not declare it rather than defaulting).
@@ -541,7 +541,7 @@ in the vocabulary of its own subsystem and never as one idea.
    frame's foot target a film-width ahead (`:546-548`). Both halves are the same
    move: pick an origin that means something. `bear-and-bees` constructs it as
    `const s=x-WALK_START;` with the comment "gait rides distance, never t"
-   (`plugin/skills/mitate/examples/bear-and-bees.html:1540`).
+   (`scenes/bear-and-bees.html:1540`).
 4. **Baked physics impulses.** Impulses anchor to beats,
    `{beat:'hit', at:.3, impulse:[...]}`, "so retiming a beat re-bakes cleanly
    instead of silently desynchronizing" (`docs/physics-bake-proposal.md:56-58`).
@@ -621,7 +621,7 @@ property access. This is the precondition for R1 and it is the strongest
 argument.
 
 **One producer per frame.** `s` is computed at
-`plugin/skills/mitate/examples/bear-and-bees.html:1540` and consumed by
+`scenes/bear-and-bees.html:1540` and consumed by
 `gaitPose`, `gaitBob`, and `tailWag`. That is fine at one consumer per scene and
 becomes a drift surface at several, which is the same failure the SOLVER fence
 exists to prevent (`CLAUDE.md`, invariant 2).
@@ -751,7 +751,7 @@ and correct, the second because it reparameterises the coordinate without
 reparameterising the address table.
 
 **Two line citations were slightly off.** The flee travel is at
-`plugin/skills/mitate/examples/bear-and-bees.html:1378` as given, but the duck is
+`scenes/bear-and-bees.html:1378` as given, but the duck is
 at `:1562` (not `:1560`; 1560 is the first line of its two-line comment). Minor,
 and noted only because this paper's own citations should be checkable.
 

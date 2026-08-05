@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Mitate 2D Scene</title>
+<style>
+  /* Overlay text lives in the DOM, not the canvas: it stays crisp in screenshots
+     and restyles without touching the scene. Same overlay contract as the 3D
+     template — smoke.js measures #cap at the shipping viewport for both. */
+  :root{--fx:0px;--fy:0px;--fw:1920px;--fh:1080px;}
+  html,body{margin:0;padding:0;overflow:hidden;background:#f4efe7;width:100%;height:100%;}
+  #c{display:block;width:100vw;height:100vh;}
+  #cap{position:fixed;left:calc(var(--fx) + var(--fw)/2);bottom:calc(var(--fy) + var(--fh)*.055);transform:translateX(-50%);
+    font:600 calc(var(--fw)*.015625)/1.3 "Avenir Next","Segoe UI",system-ui,sans-serif;
+    color:#fff;background:rgba(38,34,28,.78);padding:calc(var(--fw)*.00729167) calc(var(--fw)*.01770833);border-radius:999px;
+    white-space:nowrap;opacity:0;border:1px solid rgba(255,255,255,.18);}
+  #title{position:fixed;left:calc(var(--fx) + var(--fw)/2);top:calc(var(--fy) + var(--fh)*.07);transform:translateX(-50%);text-align:center;
+    font-family:"Avenir Next","Segoe UI",system-ui,sans-serif;color:#26221c;opacity:0;}
+  #title h1{font-size:calc(var(--fw)*.02291667);margin:0;font-weight:800;}
+  #title p{font-size:calc(var(--fw)*.0125);margin:calc(var(--fw)*.003125) 0 0;font-weight:500;opacity:.75;}
+  /* will-change pins these as compositor layers. Without it Chrome re-rasterizes
+     the text with a different AA mode after opacity round-trips through 0, so the
+     same t can differ by a few pixels depending on seek ORDER -- which breaks the
+     frames-shot-in-any-order guarantee for any frame containing overlay text. */
+  #cap,#title{will-change:opacity;}
+  #flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="title"><h1></h1><p></p></div>
+<div id="cap"></div>
+<div id="flash"></div>
+<!-- No vendored library: a Canvas2D scene is born self-contained. `build.js
+     bundle` correctly reports "no vendor tag" and the source file IS the
+     single-file artifact. Every other tool (shoot, sheet, strip, motion,
+     smoke, loop, avif, video) works unchanged — they talk to the window
+     contract, never to the renderer.
+     Provenance: forked from the frozen explainer-video plugin's 2D template
+     (identical at fork time). That plugin is bugfix-only; a bugfix landing
+     in either copy must be mirrored to the other by hand — nothing checks
+     across the two plugins. -->
+<script>
+"use strict";
+/* ==== CONTRACT-START ==================================================
+   CONTRACT (do not rename): window.seekTo(t), window.DURATION,
+   window.stopPlayback(), window.sceneReady.
+   Everything on screen is a pure function of t — no Math.random(),
+   no Date.now(), no accumulated state. That is what lets a frame be
+   re-rendered at any t, in any order, and compared against itself —
+   the property every instrument here rests on. (It does NOT mean an
+   exported recording matches live playback: frames are not
+   byte-identical across backends, and export is a lossy copy.)
+   ======================================================================= */
+/* ==== CONTRACT-END ==== */
+
+/* ============================================================
+   BEATS — the single source of timing truth. Durations, not
+   absolute times: they accumulate, so lengthening one beat
+   shifts every later beat instead of silently overlapping it.
+   NOTHING else in this file may contain a literal timestamp.
+   ============================================================ */
+const BEATS = [
+  {name: 'title',          dur: 2.5},
+  {name: 'uptrend',        dur: 4.5, cap: "Price climbs — order flow favors buyers"},
+  {name: 'topping',        dur: 3.5, cap: "Momentum stalls near the top"},
+  {name: 'break',          dur: 3.5, cap: "The trend breaks"},
+  {name: 'marginCalls',    dur: 4.0, cap: "Falling prices trigger margin calls"},
+  {name: 'forcedSelling',  dur: 4.0, cap: "Forced selling pushes price down further"},
+  {name: 'cascade',        dur: 4.5, cap: "Liquidations cascade, feeding the drop"},
+  {name: 'circuitBreaker', dur: 3.5, cap: "Price hits the circuit-breaker threshold"},
+  {name: 'halt',           dur: 4.5, cap: "Trading halts"},
+  {name: 'outro',          dur: 2.5},
+];
+
+/* ---------- STYLE: everything that is the LOOK. ----------
+   Split from CONFIG so a style pack swaps this block and nothing else.
+   Timing lives in BEATS; the palette, linework and type live here.
+   Trading-terminal register: dark panel, monospace, bull/bear/warn accents. */
+const STYLE = {
+  bg:      '#0a0d12',
+  ink:     '#aab4c0',
+  accents: ['#2ecc71', '#ff4757', '#f5b942'],  // [bull, bear, warn]
+  fontFamily: '"SF Mono","Roboto Mono",Consolas,monospace',
+  stroke:  0.35,
+  titleInk:'#e8edf2',
+};
+const BULL = STYLE.accents[0], BEAR = STYLE.accents[1], WARN = STYLE.accents[2];
+
+/* ---------- CONFIG: everything that is neither timing nor look. ---------- */
+const CONFIG = {
+  title: "MARKET CRASH",
+  subtitle: "the mechanics of a cascade",
+  flashes: [{beat: 'halt', at: 0, w: .12}],   // punctuate the circuit-breaker trip
+  seed: 20260722,                     // change to reshuffle all seeded randomness
+  sway: 0,                            // camera drift. 2D scenes usually ship as
+                                      // inline loops, and sway moves every pixel
+                                      // every frame — expensive in WebP. Off by
+                                      // default here, unlike the 3D template.
+  capFade: 0.35,                      // caption fade inset from each beat edge, seconds
+};
+
+/* ---------- FRAME: the one declared reference frame ----------
+   Everything composes and measures against this and nothing else. `aspect` is
+   the design frame the scene is authored for; `px` is what shoot.js renders at
+   (it reads window.FRAME.px, so changing this here is the ONLY edit needed to
+   ship 9:16 vertical or 1:1 square -- the tooling follows).
+
+   Before this existed the skill measured against ten different implicit frames:
+   the canvas scaled by window height, captions sized in fixed CSS px against
+   the window, the shot ladder against frame height, smoke's overflow check
+   against a hardcoded 1920. They disagreed the moment a window was not 16:9. */
+const FRAME = { aspect: 16/9, px: [1920, 1080] };
+
+/* ==== KERNEL-START ====================================================
+   The shared kit. This block is byte-identical in every scene template —
+   smoke.js FAILS the run if two checked files carry different kernels.
+   Edit it in ALL templates or in none; it is the seed of a future
+   extracted kernel file, kept inline so scenes stay single-file.
+   ======================================================================= */
+/* ---------- deterministic kit ---------- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+const rng=mulberry32(CONFIG.seed);
+const R=[];for(let i=0;i<4000;i++)R.push(rng());     // frozen random pool — index it, never re-draw
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const lerp=(a,b,u)=>a+(b-a)*u;
+// Zero-width span would be 0/0 -> NaN, which propagates silently into a
+// position (mesh vanishes) or an opacity string. Guard rather than poison.
+const ss=(t,t0,t1)=>{if(t1===t0)return t>=t0?1:0;const u=clamp((t-t0)/(t1-t0),0,1);return u*u*(3-2*u);};   // smooth 0→1
+// bump() is rise-AND-FALL: it is 0 at BOTH ends and peaks in the middle. Correct
+// for "flash and go"; wrong for "grow and stay" — a burst scaled by bump(u,0,1)
+// shrinks back to nothing exactly when it should be at full size, which shipped
+// once. Use ss() when the effect should arrive and remain.
+const bump=(t,t0,t1)=>{if(t1===t0)return 0;const u=clamp((t-t0)/(t1-t0),0,1);return Math.sin(u*Math.PI);}; // rise+fall
+
+/* ---------- easing personalities (still pure functions) ----------
+   ss() is the neutral register. These are the other temperaments a style can
+   speak in — all closed forms, all safe anywhere a 0..1 u is in hand:
+   compose them with the beat addressing below, e.g. backOut(ramp(t,'one',0,.4)).
+   backOut(u)    : arrives with ~10% overshoot, then settles. Snappy, cartoonish.
+   elasticOut(u) : overshoots and rings down. Bigger personality than backOut —
+                   budget it for payoffs; EVERY arrival ringing reads as jelly.
+   quant(t,n)    : stop-motion. Quantize TIME before deriving a pose (n poses
+                   per second) and motion reads hand-made. Still deterministic —
+                   the quantized t is a pure function of t. Quantize per-object,
+                   never inside seekTo itself.
+   noise1(t,f,k) : seeded 1-D value noise in [-0.5,0.5] at frequency f Hz, from
+                   the frozen R pool. Same k = same track. DIFFERENT k IS NOT
+                   ALWAYS INDEPENDENT: stride 997 into a 4000-draw pool, and
+                   4*997 = -12 (mod 4000), so k and k+4 are the SAME wobble
+                   lagged 12 index samples -- 6.3s at f=1.9, inside a normal
+                   film. Never pick two k differing by a multiple of 4. Shipped
+                   scenes are clear (3D solver 11-14, 2D 1-2), and selfcheck
+                   fails any scene whose LITERAL k values collide; a computed k
+                   is past what a static check can see, which is why this says
+                   it. Handheld/idle wobble; keep amplitudes small.
+   GATE ON THE RAW RAMP u, NEVER ON AN EASED VALUE: backOut(0) carries positive
+   floating-point residue (~2e-16), so `if(eased<=0)` leaks one frame where
+   scaled geometry is invisible but anything unscaled beside it renders. */
+const backOut=(u,s=1.70158)=>{u=clamp(u,0,1);const v=u-1;return 1+(s+1)*v*v*v+s*v*v;};
+const elasticOut=(u,p=.3)=>{u=clamp(u,0,1);return u===0||u===1?u:Math.pow(2,-10*u)*Math.sin((u-p/4)*(2*Math.PI)/p)+1;};
+const quant=(t,n)=>Math.floor(t*n)/n;
+const noise1=(t,f=1,k=0)=>{const x=t*f,i=Math.floor(x),u=x-i,
+  g=j=>R[((j%R.length)+R.length)%R.length]-.5,s=u*u*(3-2*u);
+  return g(i+k*997)+(g(i+1+k*997)-g(i+k*997))*s;};
+
+/* ---------- beat addressing (use these, never raw timestamps) ----------
+   Resolve durations into absolute spans once, then address them by name.
+   The a/b arguments are FRACTIONS of the beat, not seconds, so an effect
+   keeps its place when the beat is retimed — which is also what lets
+   narration-driven timing rewrite durations without breaking animate(). */
+/* Null prototype, so an undeclared name is a MISS. With a plain {} a shot
+   anchored to 'toString' found Object.prototype.toString, beat() never threw,
+   and every span went NaN — a silently blank film. bracket-check-kit.js holds
+   the arm that keeps this refusal loud, in the page and in `check` alike. */
+const BEAT=Object.create(null);{let acc=0;for(const b of BEATS){BEAT[b.name]={...b,t0:acc,t1:acc+b.dur};acc+=b.dur;}}
+const TOTAL=BEATS.reduce((s,b)=>s+b.dur,0);
+function beat(name){const B=BEAT[name];if(!B)throw new Error('unknown beat: '+name);return B;}
+function span(name,a=0,b=1){const B=beat(name);return[B.t0+a*B.dur,B.t0+b*B.dur];}
+const ramp =(t,name,a=0,b=1)=>{const[x,y]=span(name,a,b);return ss(t,x,y);};    // 0→1 ramp
+const pulse=(t,name,a=0,b=1)=>{const[x,y]=span(name,a,b);return bump(t,x,y);};  // rise+fall
+// during() is a hard boolean at the beat edges, so any expression gated by it MUST be zero at both edges
+// or it steps discontinuously in one frame and reads as a pop. Safe use: toggling .visible on something
+// with scale already reaching 0. Adding a nonzero offset to a rotation inside if(during(...)) is the exact
+// shape that produced a visible 20-degree arm snap in a real scene. Reach for ramp() or pulse() first.
+const during=(t,name)=>t>=beat(name).t0&&t<beat(name).t1;
+const beatAt=(name,at=0)=>span(name,at,at)[0];                                  // absolute t
+
+/* Seconds-from-beat-start variants. Use these when a duration is PHYSICAL and
+   must not stretch when the beat is retimed: a 0.25s flash, a 0.06s world cut,
+   a fixed settle time. Stretching a cut window with its beat would uncover the
+   cut — which is the one bug method.md says already cost a re-render. Fractions
+   for "across this part of the beat", seconds for "this many seconds". */
+const secAt  =(name,s=0)=>beat(name).t0+s;
+const rampS  =(t,name,s0,s1)=>ss(t,secAt(name,s0),secAt(name,s1));
+const pulseS =(t,name,s0,s1)=>bump(t,secAt(name,s0),secAt(name,s1));
+
+/* ---------- rampE: the eased value AND the raw gate, together ----------
+   The kit's warning says "GATE ON THE RAW RAMP u, NEVER ON AN EASED VALUE",
+   because backOut(0) carries ~2e-16 of positive residue and `if(eased<=0)` leaks
+   a frame where scaled geometry is invisible but anything unscaled beside it
+   renders at full size. The warning is correct and it does not work: the idiom
+   the kit offers is the single expression backOut(ramp(...)), and gating right
+   means splitting it. Three separate authors gated on the eased value HAVING
+   READ THIS WARNING. So hand back both and make the correct path the easy one.
+     const {u, e} = rampE(t,'beat',0,.4, backOut);
+     if (u <= 0) return;              // gate on the raw ramp
+     box.scale.setScalar(e);          // animate on the eased one            */
+const rampE=(t,name,a=0,b=1,ease=null)=>{const u=ramp(t,name,a,b);
+  return{u,e:ease?ease(u):u};};
+
+/* ---------- latch: when did the previous link hand over? ----------
+   ramp/pulse/during all answer "where am I inside this beat". A chain answers a
+   different question — "start when THAT finished, and then stay" — and the
+   difference is not cosmetic. Driving B from A's own expression is right for a
+   SUSTAINED coupling and wrong for an IMPULSIVE one: measured on a domino chain,
+   a hammer's post-impact ringdown retracted the driver by 54% of a contact width
+   and the entire fallen row stood back up and fell again. Derivation propagates
+   ONSET; it does not propagate PERSISTENCE.
+   latch gives you the onset as a TIME — monotone in t by construction, so it
+   cannot run backwards — and you then evaluate the link's own closed form from
+   there. `at` is the absolute second the driver crossed; everything after is the
+   link's business.
+     const t0 = latch(t, secAt('roll',.30));   // 0 before, seconds-since after
+     block.rotation.z = TH * ss(t0, 0, FALL_T);                              */
+const latch=(t,at)=>t<at?0:t-at;
+
+/* ---------- warp: a monotone reparameterisation of t ----------
+   Deferred once, deliberately, as "no film is blocked on it" — and then a film
+   was: a fight wants real slow-motion the instant a hit lands. It is one of the
+   cheapest things the architecture can do and nothing exposed it, because the
+   kit could say WHERE you are in a beat and never HOW FAST time runs there.
+
+   Segments slow (rate<1) or speed (rate>1) a window of REAL seconds; outside
+   them the clock runs 1:1. Strictly monotone for rate>0, and a pure function of
+   t, so seekTo purity is untouched — this is a lens on the clock, not a state
+   machine. Drive PHYSICS through it and leave BEATS on raw t, so cuts and
+   captions keep their real-time pacing while the action stretches:
+     const HITS=[{at:secAt('clash',.9), dur:.5, rate:.18}];
+     const T = warp(t, HITS);        // use T for bodies, t for beats/camera  */
+const warp=(t,segs=[])=>{
+  const S=[...segs].sort((x,y)=>x.at-y.at);
+  let out=0,cur=0;
+  for(const s of S){
+    const a=Math.max(s.at,cur),b=s.at+s.dur;
+    if(t<=a)break;
+    out+=a-cur;cur=a;
+    out+=(Math.min(t,b)-a)*(s.rate===undefined?1:s.rate);
+    cur=Math.min(t,b);
+    if(t<=b)return out;
+  }
+  return out+(t-cur);
+};
+
+/* ---------- the frame rect: composition and overlays share one basis ----------
+   The largest FRAME.aspect rect inside the viewport, centred -- which is exactly
+   the region the contained scene fills, on both backends. Publishing it as CSS
+   vars puts the DOM overlays in the SAME coordinate system as the geometry, so a
+   caption is a fixed fraction of the frame instead of a fixed number of window
+   pixels. Identity at the design aspect; the vars simply track the frame. */
+function frameRect(){
+  const W=innerWidth,H=innerHeight;
+  const w=Math.min(W,H*FRAME.aspect),h=w/FRAME.aspect;
+  return{x:(W-w)/2,y:(H-h)/2,w,h};
+}
+function applyFrameVars(){
+  const r=frameRect(),s=document.documentElement.style;
+  s.setProperty('--fx',r.x+'px');s.setProperty('--fy',r.y+'px');
+  s.setProperty('--fw',r.w+'px');s.setProperty('--fh',r.h+'px');
+}
+/* ==== KERNEL-END ==== */
+
+/* ---------- renderer: one full repaint per frame ----------
+   The whole frame is cleared and redrawn from scratch inside draw(t), so the
+   canvas holds no state between frames — "restate, never adjust" is satisfied
+   by construction. ctx settings (fillStyle, lineWidth, transform) are assigned
+   before every use, never trusted to persist. */
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
+function resize(){canvas.width=innerWidth;canvas.height=innerHeight;applyFrameVars();}
+addEventListener('resize',resize);resize();
+
+/* ---------- world space + camera rail ----------
+   World units: the design space is 90 units tall (about 160 wide at 16:9),
+   y down, (0,0) at the center of the home view. Drawing in world units keeps
+   the scene resolution-independent; the shipping render is whatever viewport
+   shoot.js opens. The camera is {x,y,zoom} keyframes anchored to beats —
+   the simple rail the 3D template replaced with its SHOTS[] solver; 2D
+   keeps keyframes because a flat frame has no cinematography to solve. */
+const VIEW_H=90, VIEW_W=VIEW_H*FRAME.aspect;   // design frame, single-sourced from FRAME
+/* Camera rail: establishing (empty terminal) -> tracks the leading candle as
+   the tape prints, offset left-of-center so the tape has room to run into ->
+   punches in for the break and the cascade -> pulls back wide to reveal the
+   whole frozen chart under the halt banner. x values are candle-space X(idx)
+   minus a look-ahead offset, computed once below once X() exists. */
+const KEYS=[
+  {beat:'title',          at:0,  x:-40, y:-2, zoom:.85},
+  {beat:'uptrend',        at:1,  x:-56.5,y:0,  zoom:1.0},
+  {beat:'topping',        at:1,  x:-37,  y:-2, zoom:1.0},
+  {beat:'break',          at:1,  x:-26.5,y:2,  zoom:1.3},
+  {beat:'marginCalls',    at:1,  x:-12.5,y:5,  zoom:1.1},
+  {beat:'forcedSelling',  at:1,  x:1.5,  y:8,  zoom:1.15},
+  {beat:'cascade',        at:1,  x:19,   y:11, zoom:1.3},
+  {beat:'circuitBreaker', at:1,  x:26,   y:14, zoom:1.45},
+  {beat:'halt',           at:.35,x:-18,  y:6,  zoom:.8},   // pull back settles in the first third of the beat...
+  {beat:'halt',           at:1,  x:-18,  y:6,  zoom:.8},   // ...then holds still for the rest of it — the freeze needs a hold, not a beat-long pan
+  {beat:'outro',          at:1,  x:-18,  y:6,  zoom:.8},
+].map(k=>({...k,t:beatAt(k.beat,k.at)}));
+function applyCamera(t){
+  let a=KEYS[0],b=KEYS[KEYS.length-1];
+  for(let i=0;i<KEYS.length-1;i++)if(t>=KEYS[i].t&&t<=KEYS[i+1].t){a=KEYS[i];b=KEYS[i+1];break;}
+  const u=ss(t,a.t,b.t),sw=CONFIG.sway;
+  const cx=lerp(a.x,b.x,u)+noise1(t,.5,1)*sw*8;
+  const cy=lerp(a.y,b.y,u)+noise1(t,.5,2)*sw*5;
+  const zoom=lerp(a.zoom,b.zoom,u);
+  // CONTAIN the design frame on both axes. Scaling by height alone made the
+  // visible world WIDTH = VIEW_H*aspect, so any window narrower than 16:9
+  // silently cropped the sides -- while shoot.js pins 1920x1080 and therefore
+  // never showed it. Identity at 16:9; narrower windows letterbox instead.
+  const s=Math.min(canvas.width/VIEW_W,canvas.height/VIEW_H)*zoom;
+  ctx.setTransform(s,0,0,s,canvas.width/2-cx*s,canvas.height/2-cy*s);
+  // Restated every frame (never adjusted): the screen-space causal pass below
+  // needs world->screen for the SAME camera this frame was drawn with.
+  CAM.s=s;CAM.cx=cx;CAM.cy=cy;
+}
+const CAM={s:1,cx:0,cy:0};
+const worldToScreen=(wx,wy)=>[canvas.width/2+(wx-CAM.cx)*CAM.s,canvas.height/2+(wy-CAM.cy)*CAM.s];
+
+/* ---------- draw helpers (world units; set style, then draw) ---------- */
+function rrect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function dot(x,y,r){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.closePath();}
+// One measurement for the polyline pair below — drawOn and alongPath are
+// documented as a pair riding the same u, and each used to re-derive these
+// segment lengths independently.
+function segLens(pts){
+  let total=0;const seg=[];
+  for(let i=1;i<pts.length;i++){const d=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);seg.push(d);total+=d;}
+  return{seg,total};
+}
+// Partial polyline: draws the first `u` (0..1) of the path's total length.
+// This is the 2D draw-on idiom — u comes from ramp(), so the line grows with
+// the beat and anything derived from the SAME u (a travelling dot) is
+// phase-locked to it by construction, which is what makes causality read.
+function drawOn(pts,u){
+  u=clamp(u,0,1);if(u===0)return;
+  const{seg,total}=segLens(pts);
+  let left=u*total;ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);
+  for(let i=1;i<pts.length;i++){
+    if(left<=0)break;
+    const d=seg[i-1],f=Math.min(1,left/d);
+    ctx.lineTo(lerp(pts[i-1][0],pts[i][0],f),lerp(pts[i-1][1],pts[i][1],f));
+    left-=d;
+  }
+  ctx.stroke();
+}
+// Point at fraction u along the same polyline — pair with drawOn's u.
+function alongPath(pts,u){
+  u=clamp(u,0,1);
+  const{seg,total}=segLens(pts);
+  let left=u*total;
+  for(let i=1;i<pts.length;i++){
+    const d=seg[i-1];
+    if(left<=d)return[lerp(pts[i-1][0],pts[i][0],d?left/d:0),lerp(pts[i-1][1],pts[i][1],d?left/d:0)];
+    left-=d;
+  }
+  return pts[pts.length-1].slice();
+}
+/* ---------- scene text ----------
+   `label()` was centre-align only, fixed weight, and had no way to measure —
+   so every 2D film rewrote it within minutes of starting, and the blueprint pack
+   documents primitives (hatching, drawn-on boxes, aligned labels) the template
+   never shipped. `txt()` is that helper.
+
+   It is ALSO the semantics instrument. `?strip=text` makes every draw routed
+   through here a no-op, which is what turns "cover everything except the
+   geometry" from a hand-built copy of the scene into a standing pass — and it
+   only works because the helper is worth using. Route scene text through txt()
+   and you get the review pass for free; hand-roll fillText and you opt out of it.
+
+     txt('COMPRESSOR', x, y, 4.2, {align:'left', weight:700, alpha:.8})
+     const w = txtWidth('COMPRESSOR', 4.2)      // measure, in world units      */
+const STRIP_TEXT=location.search.includes('strip=text');
+function txt(s,x,y,size,o={}){
+  if(STRIP_TEXT)return;
+  ctx.save();
+  ctx.font=`${o.weight||600} ${size}px ${o.family||STYLE.fontFamily}`;
+  ctx.textAlign=o.align||'center';ctx.textBaseline=o.baseline||'middle';
+  if(o.alpha!==undefined)ctx.globalAlpha=o.alpha;
+  if(o.color)ctx.fillStyle=o.color;
+  ctx.fillText(s,x,y);
+  ctx.restore();
+}
+function txtWidth(s,size,o={}){
+  ctx.save();ctx.font=`${o.weight||600} ${size}px ${o.family||STYLE.fontFamily}`;
+  const w=ctx.measureText(s).width;ctx.restore();return w;
+}
+/* ============================================================
+   SCENE — the mechanics of a market crash, told entirely through
+   a candlestick tape, its order book and its own HUD readouts.
+   No characters: the data is the scenery.
+   ============================================================ */
+
+/* ---------- price series: a pure function of candle index, built once ----------
+   Phases carry the narrative shape (rally, top, break, forced-selling spiral,
+   circuit-breaker plunge); noise inside each phase comes from the frozen R[]
+   pool, indexed once per candle so nothing is re-drawn. */
+const PHASES=[
+  {name:'uptrend',        n:18, startP:100, endP:128, ease:u=>u,        noise:1.6},
+  {name:'topping',        n:10, startP:128, endP:124, ease:u=>u,        noise:2.4, choppy:true},
+  {name:'break',          n:6,  startP:124, endP:98,  ease:u=>u*u,      noise:1.4},
+  {name:'marginCalls',    n:8,  startP:98,  endP:74,  ease:u=>u*u,      noise:1.6},
+  {name:'forcedSelling',  n:8,  startP:74,  endP:50,  ease:u=>u*u,      noise:1.8},
+  {name:'cascade',        n:10, startP:50,  endP:30,  ease:u=>u*u*u,    noise:1.8},
+  {name:'circuitBreaker', n:5,  startP:30,  endP:18,  ease:u=>u*u*u,    noise:1.0},
+];
+const CAND_COUNT={};for(const ph of PHASES)CAND_COUNT[ph.name]=ph.n;
+const LIMIT_PRICE=18;                                // where the halt freezes
+function buildPrices(){
+  const arr=[];let gi=0;
+  for(const ph of PHASES){
+    for(let k=0;k<ph.n;k++,gi++){
+      const u=ph.n===1?1:k/(ph.n-1);
+      let p=lerp(ph.startP,ph.endP,ph.ease(u));
+      if(ph.choppy)p+=Math.sin(k*1.3)*2.6;
+      p+=(R[gi*5]-.5)*ph.noise*2;
+      arr.push(p);
+    }
+  }
+  return arr;
+}
+const PRICES=buildPrices();
+const N=PRICES.length;                               // 65 candles
+function ohlcAt(i){
+  const open=i===0?PRICES[0]-1:PRICES[i-1], close=PRICES[i];
+  const wU=R[i*5+1]*1.8+.4, wD=R[i*5+2]*1.8+.4;
+  return{open,close,high:Math.max(open,close)+wU,low:Math.min(open,close)-wD};
+}
+const PHASE_VOLMUL={uptrend:1,topping:1.15,break:1.9,marginCalls:2.1,forcedSelling:2.7,cascade:3.6,circuitBreaker:3.1};
+function phaseOf(i){let acc=0;for(const ph of PHASES){if(i<acc+ph.n)return ph;acc+=ph.n;}return PHASES[PHASES.length-1];}
+function volAt(i){
+  const o=ohlcAt(i),mv=PHASE_VOLMUL[phaseOf(i).name];
+  return(2.2+Math.abs(o.close-o.open)*.9+R[i*5+3]*1.6)*mv;
+}
+
+/* liquidation events: candle indices where a forced-sale marker fires. Density
+   rises through the phases so the cascade visibly accelerates. */
+const LIQ_EVENTS=[36,39,41, 43,45,47,49, 51,52,54,55,57,58,59];
+
+/* ---------- world layout ---------- */
+const STEP=1.75, START_X=-74;
+const X=idx=>START_X+idx*STEP;
+const MIN_P=10, MAX_P=135, Y_TOP=-30, Y_BOT=18;       // price plot band
+const priceToY=p=>lerp(Y_BOT,Y_TOP,(p-MIN_P)/(MAX_P-MIN_P));
+const VOL_Y0=21, VOL_H=9;                             // volume band, below price
+
+/* revealIndex(t): cumulative candle count printed so far. Each term is 0
+   before its beat, 1 after — summing them is exactly the running total, and
+   it is what the camera rail, the candle reveal and the liquidation counter
+   all derive from, so they can never drift out of phase with each other.
+   The per-phase easing BLENDS linear with smoothstep instead of using ss()
+   alone: pure ss() has zero slope at both ends, so the tape decelerated to a
+   dead stop at all six interior phase boundaries — the summed-per-beat-ramps
+   stall method.md's continuity axis opens with, measured in review at ~0.35
+   candles/s across a boundary against 3.0 mid-beat. The linear component
+   keeps the print rate strictly positive while a phase is live. */
+function revealIndex(t){
+  let acc=0;
+  for(const ph of PHASES){
+    const[x,y]=span(ph.name,0,1);
+    const ul=clamp((t-x)/(y-x),0,1);
+    const us=ul*ul*(3-2*ul);
+    acc+=(ul*.45+us*.55)*ph.n;
+  }
+  return acc;
+}
+
+/* ---------- order book: bid/ask depth as one global imbalance ----------
+   Asks flood and bids thin across the same window the margin-call/forced-
+   selling/cascade phases occupy — the order-flow half of the feedback loop,
+   driven by the identical progress variable as the price collapse itself. */
+const ASK_BASE=[3,4,5,6], BID_BASE=[6,5,4,3];
+/* Staged, not one ramp (review finding: a single continuous ss() spanning all
+   three middle beats cannot articulate stages by construction). A light tilt
+   while margin calls fire, then a visible STEP as each forced sale ARRIVES in
+   the book — arrival is the sell-streak landing, `lead` two candles past the
+   event, so the bar that jumps and the streak that hits it share one cause —
+   saturating through the cascade as the steps pile up. */
+const SELL_EVENTS=LIQ_EVENTS.filter(e=>e>=43);        // forcedSelling onward
+function bookImbalance(t){
+  const lead=revealIndex(t);
+  let imb=.18*ramp(t,'marginCalls',0,1);
+  for(const e of SELL_EVENTS)imb+=(0.82/SELL_EVENTS.length)*ss(lead-e,2.0,2.4);
+  return clamp(imb,0,1);
+}
+/* Per-arrival flash on the ask stack — the step made visible as an impact. */
+function bookHitPulse(lead){
+  let p=0;for(const e of SELL_EVENTS)p=Math.max(p,bump(lead-e,2.0,3.0));
+  return p;
+}
+
+function draw(t){
+  // Full restate: background in screen space, then the camera transform.
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.fillStyle=STYLE.bg;ctx.fillRect(0,0,canvas.width,canvas.height);
+  applyCamera(t);
+  ctx.lineJoin='round';ctx.lineCap='round';
+
+  const lead=revealIndex(t);
+
+  // Faint background gridlines, price bands every 25 units — texture, not data.
+  ctx.globalAlpha=.14;ctx.strokeStyle=STYLE.ink;ctx.lineWidth=STYLE.stroke*.6;
+  for(let p=25;p<=125;p+=25){
+    const y=priceToY(p);
+    ctx.beginPath();ctx.moveTo(START_X-6,y);ctx.lineTo(X(N-1)+8,y);ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+
+  // Rising trend/support line across the rally and the top — the thing that
+  // "breaks". Drawn on with the same idiom as the template's connectors, then
+  // faded out exactly as the break beat crosses it, with a small crack flash
+  // at the break point, phase-locked to the same ramp that fades the line.
+  const trendA=[X(0),priceToY(PRICES[0]-2)], trendB=[X(27),priceToY(124)+3];
+  const uTrend=ramp(t,'uptrend',.08,1);
+  const breakFade=1-ramp(t,'break',.15,.55);
+  if(uTrend>0){
+    ctx.globalAlpha=breakFade;
+    ctx.strokeStyle=WARN;ctx.lineWidth=STYLE.stroke*1.1;ctx.setLineDash([1.6,1.2]);
+    drawOn([trendA,trendB],Math.min(uTrend,1));
+    ctx.setLineDash([]);ctx.globalAlpha=1;
+  }
+  // Crack sized to its narrative load (review: at ~4 world units it was
+  // invisible at squint and both sheet fractions missed its window — the
+  // pivotal "trend breaks" gesture needs to survive a thumbnail).
+  const crackU=pulse(t,'break',.12,.55);
+  if(crackU>0){
+    const[cx,cy]=trendB;
+    ctx.globalAlpha=crackU;ctx.strokeStyle=BEAR;ctx.lineWidth=STYLE.stroke*2.6;
+    ctx.beginPath();ctx.moveTo(cx-3.6,cy-5.4);ctx.lineTo(cx-.6,cy-1);
+    ctx.lineTo(cx-3.2,cy+1.6);ctx.lineTo(cx+1,cy+6.6);ctx.stroke();
+    ctx.globalAlpha=1;
+  }
+
+  // Circuit-breaker limit line — fades in once price is close to it, spans the
+  // full plotted width so it reads as a hard floor the tape is falling toward.
+  const limitU=ramp(t,'circuitBreaker',0,.35);
+  if(limitU>0){
+    const ly=priceToY(LIMIT_PRICE);
+    ctx.globalAlpha=limitU*.9;
+    ctx.strokeStyle=BEAR;ctx.lineWidth=STYLE.stroke*1.2;ctx.setLineDash([2.4,1.6]);
+    ctx.beginPath();ctx.moveTo(START_X-6,ly);ctx.lineTo(X(N-1)+8,ly);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle=BEAR;txt('LIMIT DOWN',START_X-4,ly-2.6,3.4,{align:'left',alpha:limitU*.9});
+    ctx.globalAlpha=1;
+  }
+
+  // Candles + volume. vis(i) is the SAME revealIndex driving the camera, so a
+  // candle prints exactly as the leading edge reaches it — no independent timer.
+  for(let i=0;i<N;i++){
+    const vis=clamp(lead-i,0,1);
+    if(vis<=0)break;                                  // candles beyond the tape: nothing later is visible either
+    const o=ohlcAt(i),bull=o.close>=o.open,col=bull?BULL:BEAR;
+    const x=X(i),yO=priceToY(o.open),yC=priceToY(o.close),yH=priceToY(o.high),yL=priceToY(o.low);
+    const yMid=(yO+yC)/2,bodyH=Math.max(.3,Math.abs(yC-yO))*Math.min(vis*3,1);
+    ctx.globalAlpha=Math.min(vis*3,1);
+    ctx.strokeStyle=col;ctx.lineWidth=STYLE.stroke*.8;
+    ctx.beginPath();ctx.moveTo(x,yH);ctx.lineTo(x,yL);ctx.stroke();
+    ctx.fillStyle=col;
+    ctx.fillRect(x-STEP*.32,yMid-bodyH/2,STEP*.64,bodyH);
+    // volume, same reveal, same column.
+    const vol=volAt(i),volH=Math.min(vol,VOL_H*1.4)*Math.min(vis*3,1);
+    ctx.globalAlpha=Math.min(vis*3,1)*.85;
+    ctx.fillRect(x-STEP*.32,VOL_Y0,STEP*.64,volH);
+    ctx.globalAlpha=1;
+
+    // Liquidation marker: a small downward warning triangle, popping the
+    // instant its own candle finishes printing — derived from that candle's
+    // OWN vis, so the trigger and the marker are locked to the same cause.
+    if(LIQ_EVENTS.includes(i)){
+      const mU=ss(vis,.55,1);
+      if(mU>0){
+        const my=yH-3.4-mU*1.2,ms=1.1*mU;
+        // The call-line: a dashed amber connector drawn on from the candle's
+        // high up to its marker, so the price event and the margin call it
+        // fires are LINKED by geometry, not by adjacency (review: the middle
+        // beats were three captions over one continuous fall — each stage of
+        // the loop now draws its own link, and this is the first).
+        ctx.globalAlpha=mU*.85;
+        ctx.strokeStyle=WARN;ctx.lineWidth=STYLE.stroke*.7;ctx.setLineDash([.7,.6]);
+        drawOn([[x,yH-.6],[x,my+1.4]],mU);
+        ctx.setLineDash([]);
+        ctx.globalAlpha=mU;
+        ctx.fillStyle=WARN;
+        ctx.beginPath();ctx.moveTo(x,my-ms);ctx.lineTo(x-ms,my+ms);ctx.lineTo(x+ms,my+ms);ctx.closePath();ctx.fill();
+        ctx.globalAlpha=1;
+      }
+    }
+  }
+
+  // ---------- HUD: screen space, drawn over the world, fixed like a terminal panel ----------
+  ctx.setTransform(1,0,0,1,0,0);
+  const r=frameRect();
+  const fpx=v=>r.x+v*r.w, fpy=v=>r.y+v*r.h, fu=v=>v*r.w;   // frame-relative placement, so the HUD holds its position at any window shape
+  // One layout object, because TWO passes anchor to the ask stack now: the
+  // ladder itself, and the causal tracers that hit it.
+  const BOOK={x:fpx(.80),topY:fpy(.12),rowH:fu(.026),barMax:fu(.11)};
+  const askAnchor=[BOOK.x+BOOK.barMax*.45,BOOK.topY+BOOK.rowH*1.5];
+
+  // ---------- the causal loop, drawn (review finding 1) ----------
+  // The middle beats used to be three captions over one continuous fall. Each
+  // stage now draws its own link, all derived from the same `lead`:
+  //   candle -> triangle   the call-line, in the world pass above;
+  //   triangle -> book     a sell-streak: each forced sale travels from its
+  //                        marker into the ask stack, and the book STEPS on
+  //                        arrival (bookImbalance) with an impact flash;
+  //   book -> tape         the cascade's feedback bolt: each arrived sale
+  //                        fires back from the book to the tape's leading
+  //                        edge — selling feeding the next leg down. Cascade
+  //                        events are dense, so the loop visibly accelerates.
+  // All three ride `lead`, not wall time: travel is "the tape advances ~1.2
+  // candles", so the chain slows and freezes exactly when the tape does.
+  {
+    for(const e of SELL_EVENTS){
+      const sU=ss(lead-e,1.0,2.2);
+      if(sU<=0||sU>=1)continue;
+      const o=ohlcAt(e);
+      const[sx,sy]=worldToScreen(X(e),priceToY(o.high)-4.6);
+      const mid=[(sx+askAnchor[0])/2,Math.min(sy,askAnchor[1])-fu(.05)];
+      const path=[[sx,sy],mid,askAnchor];
+      ctx.strokeStyle=WARN;ctx.lineWidth=fu(.0022);ctx.globalAlpha=.75;
+      drawOn(path,sU);
+      const[hx,hy]=alongPath(path,sU);
+      ctx.fillStyle=WARN;ctx.globalAlpha=.95;dot(hx,hy,fu(.004));ctx.fill();
+      ctx.globalAlpha=1;
+    }
+    for(const e of SELL_EVENTS){
+      if(e<51)continue;                                // cascade beat: the loop closes
+      const rU=ss(lead-e,2.6,3.8);
+      if(rU<=0||rU>=1)continue;
+      const li=Math.min(N-1,Math.floor(lead));
+      const lo=ohlcAt(li);
+      const[tx,ty]=worldToScreen(X(li),priceToY(lo.close));
+      const mid=[(askAnchor[0]+tx)/2,(askAnchor[1]+ty)/2+fu(.07)];
+      const path=[askAnchor,mid,[tx,ty]];
+      ctx.strokeStyle=BEAR;ctx.lineWidth=fu(.0026);ctx.globalAlpha=.8;
+      drawOn(path,rU);
+      const[hx,hy]=alongPath(path,rU);
+      ctx.fillStyle=BEAR;ctx.globalAlpha=.95;dot(hx,hy,fu(.0045));ctx.fill();
+      ctx.globalAlpha=1;
+    }
+  }
+
+  // Ticker: symbol, live price, % change from open — reads off the SAME
+  // continuous lead index the candles and camera use.
+  {
+    const idxf=clamp(lead,0,N-1),i0=Math.floor(idxf),frac=idxf-i0;
+    const price=lerp(PRICES[i0],PRICES[Math.min(N-1,i0+1)],frac);
+    const pct=(price-PRICES[0])/PRICES[0]*100;
+    const col=pct>=0?BULL:BEAR;
+    txt('IDX·500',fpx(.035),fpy(.10),fu(.016),{align:'left',baseline:'alphabetic',weight:600,color:STYLE.ink});
+    txt(price.toFixed(2),fpx(.035),fpy(.145),fu(.028),{align:'left',baseline:'alphabetic',weight:700,color:col});
+    txt((pct>=0?'+':'')+pct.toFixed(1)+'%',fpx(.035),fpy(.175),fu(.014),{align:'left',baseline:'alphabetic',weight:600,color:col});
+  }
+
+  // Order book ladder, top-right — 4 asks over a spread row over 4 bids. The
+  // ask stack flashes as each sell-streak lands (bookHitPulse rides the same
+  // arrival window bookImbalance steps on, so the flash and the step agree).
+  {
+    const imb=bookImbalance(t);
+    const hit=bookHitPulse(lead);
+    const askD=ASK_BASE.map(v=>v*lerp(1,3.4,imb));
+    const bidD=BID_BASE.map(v=>v*lerp(1,.22,imb));
+    const{x:panelX,rowH,barMax,topY}=BOOK;
+    txt('ORDER BOOK',panelX,topY-rowH*.9,fu(.011),{align:'left',baseline:'middle',weight:600,color:STYLE.ink,alpha:.85});
+    for(let k=0;k<4;k++){
+      const y=topY+k*rowH,w=Math.min(barMax,barMax*askD[3-k]/askD[3]*.9+barMax*.08);
+      ctx.fillStyle=BEAR;ctx.globalAlpha=Math.min(1,.28+.5*(askD[3-k]/(ASK_BASE[3]*3.4))+hit*.35);
+      ctx.fillRect(panelX,y-rowH*.32,w,rowH*.64);
+      ctx.globalAlpha=1;
+    }
+    const spreadY=topY+4*rowH;
+    ctx.fillStyle=STYLE.ink;ctx.globalAlpha=.6;ctx.fillRect(panelX,spreadY-1,barMax,2);ctx.globalAlpha=1;
+    for(let k=0;k<4;k++){
+      const y=topY+(5+k)*rowH,w=Math.max(fu(.004),barMax*bidD[k]/BID_BASE[0]*.9);
+      ctx.fillStyle=BULL;ctx.globalAlpha=.3+.5*(bidD[k]/BID_BASE[0]);
+      ctx.fillRect(panelX,y-rowH*.32,w,rowH*.64);
+      ctx.globalAlpha=1;
+    }
+  }
+
+  // Liquidation counter — appears once margin calls begin, ticks with the
+  // SAME lead index the on-chart markers use, so the number and the marks
+  // that produced it can never disagree.
+  {
+    const showU=ramp(t,'marginCalls',0,.2);
+    if(showU>0){
+      const count=LIQ_EVENTS.filter(idx=>idx<=lead).length;
+      txt('LIQUIDATIONS  '+count,fpx(.035),fpy(.90),fu(.015),{align:'left',baseline:'alphabetic',weight:700,color:WARN,alpha:showU});
+    }
+  }
+
+  // Halt banner — a diagonal-striped stamp across the frame once the circuit
+  // breaker trips. A slow pulse keeps it alive without being frantic; the
+  // whole tape beneath it has already frozen, because revealIndex saturates.
+  {
+    const showU=ramp(t,'halt',0,.15);
+    if(showU>0){
+      ctx.save();
+      ctx.beginPath();ctx.rect(r.x,r.y,r.w,r.h);ctx.clip();
+      const bandY=fpy(.5),bandH=fu(.09);
+      ctx.globalAlpha=showU*.94;
+      ctx.fillStyle='#1a0d0d';ctx.fillRect(r.x,bandY-bandH/2,r.w,bandH);
+      ctx.save();ctx.beginPath();ctx.rect(r.x,bandY-bandH/2,r.w,bandH);ctx.clip();
+      ctx.strokeStyle=WARN;ctx.globalAlpha=showU*.5;ctx.lineWidth=fu(.006);
+      for(let sx=-bandH;sx<r.w+bandH;sx+=fu(.03)){
+        ctx.beginPath();ctx.moveTo(r.x+sx,bandY-bandH);ctx.lineTo(r.x+sx+bandH,bandY+bandH);ctx.stroke();
+      }
+      ctx.restore();
+      const blink=.82+.18*Math.sin(t*3.4);   // slow breathing pulse, not a hard blink — reads as "live" without competing with the pull-back
+      txt('TRADING HALTED',r.x+r.w/2,bandY,fu(.032),{weight:800,color:BEAR,alpha:showU*blink});
+      txt('CIRCUIT BREAKER — LIMIT DOWN',r.x+r.w/2,bandY+bandH*.75,fu(.013),{weight:600,color:STYLE.ink,alpha:showU*.85});
+      ctx.restore();
+    }
+  }
+
+  // Outro: the world fades back down to the empty terminal, so the HTML loop
+  // lands bg-to-bg — t=TOTAL and t=0 are both a bare dark frame — instead of
+  // snapping from the film's densest frame to its emptiest (review finding 3:
+  // the outro previously did no outro work and the seam was an uncovered cut).
+  {
+    const fadeU=ramp(t,'outro',.15,.85);
+    if(fadeU>0){
+      ctx.setTransform(1,0,0,1,0,0);
+      ctx.globalAlpha=fadeU;
+      ctx.fillStyle=STYLE.bg;ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.globalAlpha=1;
+    }
+  }
+}
+
+/* ---------- overlay (captions, title, flashes) — identical to 3D ---------- */
+const capEl=document.getElementById('cap');
+const titleEl=document.getElementById('title');
+titleEl.querySelector('h1').textContent=CONFIG.title;
+titleEl.querySelector('p').textContent=CONFIG.subtitle;
+titleEl.style.color=STYLE.titleInk;          // once, at load — STYLE owns the look
+document.body.style.background=STYLE.bg;     // page bg matches before first draw
+const flashEl=document.getElementById('flash');
+const NOCAP=location.search.includes('nocap')||STRIP_TEXT;
+/* Flashes anchor to beats ({beat,at}), resolved ONCE to absolute seconds with
+   their half-widths: per-flash `w`, else CONFIG.flashWidth, else the
+   historical 0.25 (it was hardcoded once, which made the shortest expressible
+   flash 0.5s — longer than an entire beat in one film). Both the renderer in
+   setOverlay and the window.FLASHES contract export consume THIS list, so the
+   render and the tooling cannot disagree about flash windows — the resolution
+   used to be written twice and could drift. */
+const FLASHES=(CONFIG.flashes||[]).map(m=>({t:beatAt(m.beat,m.at||0),
+  w:m.w===undefined?(CONFIG.flashWidth===undefined?.25:CONFIG.flashWidth):m.w}));
+function setOverlay(t){
+  const T=BEAT[BEATS[0].name];
+  titleEl.style.opacity=(NOCAP?0:ss(t,T.t0+.2,T.t0+.8)*(1-ss(t,T.t1-.6,T.t1))).toFixed(3);
+  const F=CONFIG.capFade;
+  let capText="",op=0;   // NOT `txt` — that name is the scene-text helper, and shadowing it here read as a bug in review
+  for(const b of BEATS){
+    if(!b.cap)continue;
+    const B=BEAT[b.name];
+    if(t>=B.t0&&t<=B.t1){capText=b.cap;op=ss(t,B.t0,B.t0+F)*(1-ss(t,B.t1-F,B.t1));break;}
+  }
+  if(capText)capEl.textContent=capText;
+  capEl.style.opacity=(NOCAP?0:op).toFixed(3);
+  // Flashes: from the ONE resolved list above.
+  let f=0;for(const m of FLASHES)f=Math.max(f,bump(t,m.t-m.w,m.t+m.w));
+  flashEl.style.opacity=(f*.98).toFixed(3);
+}
+
+/* ---------- driver (the recorder contract) ---------- */
+window.DURATION=TOTAL;
+window.BEATS=BEATS;
+// The declared frame is part of the contract: shoot.js sizes its viewport from
+// FRAME.px and smoke.js measures overlay fit against FRAME.aspect. A scene that
+// does not export it renders at the historical 1920x1080 default.
+window.FRAME=FRAME;
+// Flash midpoints, resolved to absolute seconds. Part of the contract because a
+// tool cannot read them otherwise: CONFIG is a `const` in a classic script, so
+// it never becomes a window property, and smoke.js's flash-avoidance was
+// silently avoiding nothing. Same shape as why window.BEATS exists — when a tool
+// is tempted to parse scene internals, the contract is missing an export.
+window.FLASHES=FLASHES;
+// Caption fade, resolved, same rule — smoke's reading-speed lint needs it and
+// used to probe CONFIG (scene internals) against a mirrored default.
+window.CAPFADE=CONFIG.capFade;
+window.seekTo=function(t){t=clamp(t,0,TOTAL);draw(t);setOverlay(t);};
+let playing=true,t0=null;
+function loop(now){if(!playing)return;if(t0===null)t0=now;window.seekTo(((now-t0)/1000)%TOTAL);requestAnimationFrame(loop);}
+window.stopPlayback=function(){playing=false;};
+window.sceneReady=true;
+if(!location.search.includes('record'))requestAnimationFrame(loop);else window.seekTo(0);
+</script>
+</body>
+</html>

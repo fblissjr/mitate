@@ -131,7 +131,7 @@ misses the half the references were mostly built out of.
 
 ### The worked pair, twenty-four lines apart in one file
 
-**General — propose it.** `plugin/skills/mitate/examples/bear-and-bees.html:1284`:
+**General — propose it.** `scenes/bear-and-bees.html:1284`:
 
 ```
 // meadow clutter from the frozen R pool, clear of the walk lane (|z|<1.6)
@@ -246,7 +246,7 @@ unrecoverable, which is the failure the ledger's closing section is about.
    'CONTRACT-START' <scene>` gives the body start; read and grep from there
    (`sed -n '<start>,$p' <scene> | grep -n …`, adding the offset back to report
    absolute lines). An unrestricted `grep -n` for `.001` on
-   `plugin/skills/mitate/examples/bear-and-bees.html` returned 568 KB, nearly all
+   `scenes/bear-and-bees.html` returned 568 KB, nearly all
    of it vendored bundle (measured 2026-07-31). On an outside scene with no
    marker, anchor on `window.seekTo`, `const BEATS`, or the first line under
    ~500 characters after the bundle.
@@ -315,10 +315,10 @@ read     <body ranges actually read, e.g. bear-and-bees.html:651-1766>
 ### P1 — travel over a bare ground plane reads as a treadmill
 
 form      craft rule — one paragraph (docs/plan.md cost table)
-evidence  plugin/skills/mitate/examples/bear-and-bees.html:1284
+evidence  scenes/bear-and-bees.html:1284
           `// travel needs parallax (menagerie review: a bare plane made an
            11-unit walk read as a treadmill)`
-          borrow site: plugin/skills/mitate/examples/menagerie.html:1260
+          borrow site: scenes/menagerie.html:1260
 general   substitution leaves "a travel shot over an untextured ground plane
           reads as a treadmill; scatter parallax markers clear of the
           subject's lane" — no noun of this film survives. Named failure mode

@@ -1,6 +1,6 @@
 # mitate
 
-last updated: 2026-07-30
+last updated: 2026-08-05
 
 Turn any input — a document, a codebase, a mechanism, a joke — into a
 deterministic animated scene of any register: an explainer, a game cutscene, a
@@ -55,7 +55,7 @@ Every fact has exactly one home. This README points; it does not restate.
 | formats, encoders, file size, inline on GitHub | `skills/mitate/references/recordings.md` |
 | what each check can and cannot see | `skills/mitate/references/instruments.md` |
 | materials, characters, style bibles | the correspondingly named `references/*.md` |
-| worked films you can open and read | `skills/mitate/examples/` |
+| worked films you can open and read | `skills/mitate/examples/` (the shipped baselines); the full corpus is tracked at https://github.com/fblissjr/mitate/tree/main/scenes |
 
 ## Status
 

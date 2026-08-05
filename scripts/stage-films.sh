@@ -22,6 +22,10 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # product and the site is a showcase of it. With these, the bracket builds a
 # throwaway fixture instead and nothing tracked is ever written.
 examples="${MITATE_EXAMPLES:-$root/plugin/skills/mitate/examples}"
+# The tracked-but-unshipped corpus (option E, 0.20.0): staged onto the site
+# exactly like the shipped examples — the site is the corpus's public face.
+# Tolerated absent so the bracket's throwaway fixtures need not fake it.
+scenes="${MITATE_SCENES:-$root/scenes}"
 films="${MITATE_FILMS:-$root/site/films}"
 
 if [ ! -d "$examples" ]; then
@@ -45,6 +49,14 @@ for f in "$examples"/*.html; do
   cp "$f" "$films/"
   n=$((n + 1))
 done
+
+if [ -d "$scenes" ]; then
+  for f in "$scenes"/*.html; do
+    [ -e "$f" ] || continue
+    cp "$f" "$films/"
+    n=$((n + 1))
+  done
+fi
 
 # The neon bible variant, derived. Measured 2026-07-30: the stored copy differed
 # from gearbox.html by the STYLE line and nothing else.

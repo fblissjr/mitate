@@ -64,6 +64,7 @@ jobs:
           mkdir -p ws
           cp plugin/skills/mitate/templates/backend.js ws/   # all the sampler requires
           cp plugin/skills/mitate/examples/*.html ws/
+          cp scenes/*.html ws/
           cd ws && bun add playwright-core@1.61.1
 
       - name: chromium

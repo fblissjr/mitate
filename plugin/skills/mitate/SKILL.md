@@ -57,8 +57,8 @@ with length. **The HTML file is the same size for a five-hour film as for a
 twelve-second one**, because the duration is a number in `BEATS`. That is the
 opposite of how video behaves, and it is the point.
 
-60s across 31 beats has been built. The shipped examples are 12-21s because they
-are examples — **never quote that as a limit.**
+60s across 31 beats has been built. The shipped example is 16.5s because it is
+an example — **never quote that as a limit.**
 
 What does scale is narrower than it sounds: *recording* time is linear in frames,
 and authoring and review effort grow with the number of beats, so budget review
@@ -336,10 +336,16 @@ Cited above at the step that needs them. In full:
 
 ## Examples
 
+One teaching baseline per template ships in `examples/`:
+
 | file | what it demonstrates |
 |---|---|
-| `gearbox.html` | the baseline film, and the committed `workshop`/`neon` bible pair |
-| `menagerie.html` | three creatures from one `buildCharacter` — bear, human, invented strider |
-| `bear-and-bees.html` | comedic timing; the gag reads with no captions |
-| `materials.html` | the cel, subsurface and glass packs in one film |
-| `noise-chart.html` | the chart tier — one primitive per cell. New shader primitives land here before any film uses them |
+| `gearbox.html` | the baseline 3D film, and the committed `workshop`/`neon` bible pair |
+
+The rest of the film corpus — characters, comedy, materials, the chart
+tier — is tracked in the repo but not shipped:
+https://github.com/fblissjr/mitate/tree/main/scenes (absolute URL because
+this file ships into an install cache). Those are finished films, not
+pattern references: a technique worth copying out of one belongs in a
+reference, and needing to read one to learn it is a gap worth reporting in
+the field report (step 8).

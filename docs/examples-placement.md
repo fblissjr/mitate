@@ -1,4 +1,4 @@
-last updated: 2026-08-04
+last updated: 2026-08-05
 
 # Should scenes live in `examples/` or `internal/`?
 
@@ -16,6 +16,9 @@ one 2D scene joins gearbox in-tree so both shipped templates have a worked
 demonstration. Until the first film lands, the current policy stands: scenes
 live in gitignored `internal/` until owner-approved into
 `plugin/skills/mitate/examples/` ([plan.md](plan.md), examples policy).
+**The first film landed 2026-08-04** (`market-crash`, built cold outside the
+tree by an installed-plugin session), so the batch condition is met and E's
+execution is queued — `docs/README.md`'s work-next row carries it.
 
 
 
@@ -193,6 +196,17 @@ a non-maintainer agent following the docs, and its handoff named everything the
 author had to invent — travel, built type, presence gating, layout. Four reference
 gaps, from a run where examples *were* available. That is weak evidence the
 examples were not doing much teaching to begin with.
+
+**The experiment effectively ran on 2026-08-04, and the answer supports E.**
+The first cold-start build (`market-crash`, an installed-plugin session on
+0.19.3, no repo context) had every shipped example available in its install
+cache and **read none of them** — its transcript (a local transcript database,
+local) shows exactly two reference reads (`method.md`, `bibles.md`) plus the
+2D template before the whole scene was written, and zero example opens at any
+point. It shipped in one pass. For the 2D register at least, the references
+carry the teaching alone, which is the condition the option-D worry needed
+disproven. One build, one register — the 3D/character registers are untested
+and are where the examples' teaching claim was always strongest.
 
 ---
 

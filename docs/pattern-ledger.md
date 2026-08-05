@@ -1,4 +1,4 @@
-last updated: 2026-08-04
+last updated: 2026-08-05
 
 # Pattern ledger: how many times have we built this
 
@@ -49,6 +49,18 @@ write-ups are what this ledger counts. One real instance exists so far — the
 (Older records call this a "film handoff" — renamed here 2026-08-04 when the
 unrelated next-session handoff memo was retired, so one word stops meaning two
 things.)
+
+A second, partial firing on 2026-08-04 is worth grading precisely (the
+market-crash cold build; transcript a local transcript database, local). The step
+**fired by name** — the session announced "let's do the film field report"
+unprompted, first evidence the 0.19.2 closing step reaches a builder who never
+read this repo — but what it then wrote was a delivery note (what the film
+shows, how to retime it), not the three bullets: no built-twice, re-derived,
+or copied-from-example line, not even as an explicit "nothing to report". The
+content would likely have been near-empty (the build read no example scene at
+all), but "fired in name, form not followed" is the honest grade, and no row
+increments from it. One datapoint on the step's wording; the next film is the
+second.
 
 The report's form follows the builder's record: a session log section, a
 postmortem, or a note delivered with a commission all count, and no separate

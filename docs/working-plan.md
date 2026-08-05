@@ -3098,6 +3098,43 @@ machinery. Before hunting fur shells and solver traffic, assert the resolved
 browser binary is identical across the failing and passing runs — it is one line
 of logging and it retires or promotes an entire suspect class.
 
+### Open question: inject three.js at build time instead of tracking it per film (2026-08-05, owner-raised)
+
+Explore for a coming session — the owner's ask, verbatim in intent: stop
+adding ~1.1 MB of the same vendored three.js IIFE to every film that lands
+in a public GitHub repository, and inject it at build time instead.
+Measured basis (`ls`, 2026-08-05): `scenes/` is 4.5 MB for five films, and
+~4.4 MB of that is four copies of the identical embedded library —
+`crash.html`, the one 2D film, is 43 KB. The examples-placement pass had
+already measured the same shape when the films lived in `plugin/`
+(~95% of example bytes = the same IIFE), and VISION's declaration-lives
+section already argues the direction: the replicated surface is kit
+machinery, which "argues for emitting the kit from one source".
+
+**The distinction that makes this explorable at all: tracked SOURCE versus
+delivered ARTIFACT.** Invariant 1 (one scene = one self-contained HTML
+file) is a claim about what a user receives, and it stands. The question
+is only whether the *tracked* copy must carry the embed — and the repo
+already runs the answer in one place: templates are tracked with their
+`<script src>` tag and auto-bundled into throwaway copies by every
+`build.js` verb and by smoke. The exploration is whether films can live
+the same way: tracked lean, bundled at stage/gate/delivery time.
+
+**The recorded warning this must engage rather than route around** (this
+file, the option E row): "do not reach for the unvendoring variant — it
+breaks invariant 1, fails `build.js bundle`'s own self-containment
+assertion, and hangs every bracket." That warning is about *shipping*
+unvendored files and it is still right; the exploration's burden is to
+show the tracked-lean form never reaches a user or a bracket unbundled.
+Known edges to design against: the shipped example (`gearbox` must reach
+installed users runnable with no toolchain — `plugin install` is a copy,
+no build step exists to inject at); the brackets that drive
+`../examples/gearbox.html` directly; `stage-films.sh` (would bundle
+instead of `cp`); the gate workspace; fence parity (the 3D fences live
+inside what would change); and git history, where the four embedded
+copies already exist forever — this stops the growth, it does not shrink
+the past.
+
 ### Open question: NaN has no policy, and the kit has become a DSL (2026-08-01, owner-raised)
 
 Two questions, raised together because they are the same question at two

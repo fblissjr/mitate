@@ -43,6 +43,14 @@ bun-debug.log*
 # Machine-local tooling config (holds absolute paths — never commit)
 .path-privacy.local.json
 
+# The local flavor of the Claude Code settings. `.claude/settings.json` IS
+# tracked and stays that way — it wires the claims reminder, which is a repo
+# control and has to exist for every checkout. This file is its opposite half:
+# per-machine skill overrides and permissions, one `git add -A` from a commit.
+# It was ignored only by a global gitignore until now, so the guarantee held on
+# one machine and nowhere else.
+.claude/settings.local.json
+
 # Env / secrets
 .env
 .env.local

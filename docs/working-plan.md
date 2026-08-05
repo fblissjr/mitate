@@ -2836,16 +2836,16 @@ landed. The reasoning is worth keeping; the conclusion is not.*
    *filmable*, and it will be false for some shipped films.
 4. **Does the 2D template get pan/zoom or a documented opt-out?** It has no
    solver, so the seam has no meaning there.
-5. **`SKILL.md` step 4 says "Delegate this to the `film-reviewer` agent" — the
-   first cold-start session did not, and shipped fine.** (2026-08-05, from the
-   2026-08-04 market-crash transcript, `(local)`.) The session ran the whole
-   three-axis review inline — instruments, image reads, fixes — with zero tool
-   errors and two real defects caught, and never invoked the agent that ships
-   for exactly this. So the agent has still never been exercised by an
-   installed user, and the instruction demonstrably does not bind. Strengthen
-   it, soften it to "delegate or run the instruments yourself" (which is what
-   happened and worked), or leave it and accept the agent is a maintainer-side
-   tool in practice. One datapoint; the next film's session is the second.
+5. **RESOLVED 2026-08-05 (owner): softened, landed as 0.19.5.** `SKILL.md`
+   step 4 said "Delegate this to the `film-reviewer` agent"; the first
+   cold-start session never did — it ran the whole three-axis review inline
+   (instruments, image reads, fixes), caught real defects, and shipped (the
+   2026-08-04 market-crash transcript, `(local)`). The instruction now names
+   both paths and pins the real requirement — the images get read; delegation
+   guarantees fresh eyes rather than gatekeeping the review. The agent's
+   first real exercise is separately queued: the owner's crash-promotion
+   call (same day) has `film-reviewer` review `crash.html` before it is
+   promoted in the option E batch.
 
 ---
 

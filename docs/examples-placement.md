@@ -19,6 +19,10 @@ live in gitignored `internal/` until owner-approved into
 **The first film landed 2026-08-04** (`market-crash`, built cold outside the
 tree by an installed-plugin session), so the batch condition is met and E's
 execution is queued — `docs/README.md`'s work-next row carries it.
+**Refinement decided 2026-08-05 (owner):** `crash.html` is the 2D scene that
+joins gearbox in-tree, **after a `film-reviewer` pass** — which is also that
+agent's first real exercise — and the promotion happens inside the E batch,
+not before it.
 
 
 

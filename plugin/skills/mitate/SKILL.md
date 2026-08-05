@@ -35,7 +35,10 @@ description: >
 > method's closing step, which the numbered sequence previously never reached.
 > Step 7's `frames/` cleanup note added 2026-08-05 from that cold-start
 > build's postmortem, verified against `build.js`'s `frames()`/`video()` (the
-> figures are that build's measurement).
+> figures are that build's measurement). Step 4's review delegation softened
+> to delegate-or-review-inline the same day (owner call): the cold build
+> reviewed inline, caught real defects, and shipped — the images are the
+> requirement, not the messenger.
 
 **What it makes:** one self-contained HTML file that plays an animated scene in
 any browser, and renders frame-exact to MP4, AVIF or WebP. No player, no build
@@ -170,9 +173,12 @@ bun run build.js probe <name>.html "beatAt('hit',.5)" 'sep(a, b)'
 bun run build.js probe <name>.html 4 'shape(bear)'   # what IS this thing?
 ```
 
-**Delegate this to the `film-reviewer` agent**, which ships beside this skill. It
-runs the instruments, reads the images, and reports on all three axes with the
-evidence behind each finding.
+**Delegate this to the `film-reviewer` agent** (ships beside this skill; it runs
+the instruments, reads the images, and reports on all three axes with evidence)
+**— or run the instruments yourself and read every image.** Both paths are
+legitimate: the first cold-start build reviewed inline and caught real defects
+pre-delivery. What is not legitimate is skipping the images — the delegation
+exists to guarantee the review happens with fresh eyes, not to gatekeep it.
 
 **Read the generated images with the Read tool — a filename is not a review.**
 Composition fails within a frame; continuity fails between frames; semantics

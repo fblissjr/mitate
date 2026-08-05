@@ -7,6 +7,18 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.19.5
+
+### changed
+
+**Step 4's review delegation softened to delegate-or-review-inline**
+(owner call, 2026-08-05, settling the question the cold build raised).
+The first cold-start session never invoked `film-reviewer` — it ran the
+instruments inline, read every image, caught real defects pre-delivery,
+and shipped. The instruction now names both paths and states the real
+requirement: the images get read; the delegation guarantees fresh eyes,
+it does not gatekeep the review.
+
 ## 0.19.4
 
 ### added

@@ -33,6 +33,9 @@ description: >
 > deterministic-black; `WEBGPU=swiftshader` fails non-deterministic and is
 > refused), and the workflow gained step 8, the film field report — the
 > method's closing step, which the numbered sequence previously never reached.
+> Step 7's `frames/` cleanup note added 2026-08-05 from that cold-start
+> build's postmortem, verified against `build.js`'s `frames()`/`video()` (the
+> figures are that build's measurement).
 
 **What it makes:** one self-contained HTML file that plays an animated scene in
 any browser, and renders frame-exact to MP4, AVIF or WebP. No player, no build
@@ -228,6 +231,12 @@ before shooting one. Whatever ships, every recording derives from the one scene
 file.
 `references/recordings.md` owns the format tradeoffs; `references/delivery.md`
 owns the case where you ship no recording at all, which is most of them.
+
+`all` (and `frames`) leave their intermediate PNGs in `frames/` — deliberately,
+so the encode can be redone or a frame inspected without a reshoot — and that
+is tens of MB per film (a 37s export left 1,110 PNGs, 52 MB). Delete or move
+the directory once the export is accepted; it is not part of the deliverable,
+and nothing else cleans it up.
 
 ### 8. Close out — the film field report
 

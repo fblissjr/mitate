@@ -27,6 +27,12 @@ you are deciding whether a green result means anything.
 >
 > **Not here.** the method itself → `method.md`; backend policy → `webgpu-stack.md`.
 >
+> **Amended 2026-08-05**: the no-instrument ledger gained two entries from
+> the first cold-start build with this skill — the `txt()` bypass (a
+> strippable pass certifies only opted-in text) and the inert
+> composed-periodic expression, which every instrument reports clean by
+> construction.
+>
 > **Three kinds of claim live in this repo and only one of them rots.** An
 > *incident record* ("this reached `git add` once") is history and stays true. An
 > *intent* comment ("this tick is why the frame is deterministic") is checkable by
@@ -433,6 +439,21 @@ Recorded honestly, because these are where films actually ship broken:
   yourself. The `?nocap` switch removes the DOM caption; it does **not** remove
   canvas text, which is where a diagrammatic film's meaning actually lives — in
   one external-doc film only 2 of 8 beats survived a strict cover-*all*-text pass.
+  The stronger `?strip=text` (what the sheet's `nocap` argument sends) also
+  no-ops canvas draws — but **only those routed through the 2D template's
+  `txt()` helper**. Hand-rolled `fillText` survives the pass silently and the
+  resulting sheet looks normal, so a green here certifies only the text the
+  scene chose to make strippable. `method.md` owns the authoring rule that
+  keeps this honest.
+- **Whether an animated sub-expression actually varies.** A decorative pulse
+  written as `sin(quant(t,2)*π*2)` is exactly constant — every sample lands on
+  a sine node — and every instrument reports clean: still pure in `t`, so smoke
+  is green; no discontinuity, so no strip shows a pop; far too small a region
+  for `motion`'s whole-frame delta. One shipped invisibly on the first
+  cold-start build with this skill and was found only by incidental
+  hand-inspection. The countermeasure is `probe`: sample the expression at 4-5
+  `t` values; fewer than two distinct outputs means the animation does not
+  exist. `method.md` ("A composed periodic can be constant") owns the rule.
 - **Whether a beat is funny, warm, or tense.** No still answers it.
 - **Whether a caption is legible at the size it will actually be viewed.**
   Captions are a constant fraction of the frame (`calc(var(--fw)*.015625)`), so

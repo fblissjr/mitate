@@ -7,6 +7,37 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.19.4
+
+### added
+
+**What the first cold-start build taught, written where the next build
+will read it.** The market-crash film (2026-08-04) was built by an
+installed-plugin session with no repo context — the docs-only test the
+work queue called for — and it shipped in one pass with zero tool
+errors, catching two real defects pre-delivery with the shipped
+instruments. Its postmortem also named what nothing caught, and each
+finding now lives in its home:
+
+- `references/method.md`: two rules in the semantics axis — route every
+  2D canvas draw through `txt()` from the first draft (hand-rolled
+  `fillText` opts out of `?strip=text` silently, and the nocap sheet
+  still looks normal), and run the nocap sheet early on any text-heavy
+  2D scene, not only at review. New continuity-axis section "A composed
+  periodic can be constant": that build's halt-banner blink,
+  `sin(quant(t,2)*π*2)`, was exactly 0 from the first draft — pure in
+  `t`, no pop, invisible to `motion`'s whole-frame delta — so the rule
+  is to `probe` any composed periodic at 4-5 `t` values before shipping
+  it.
+- `references/instruments.md`: the no-instrument ledger gains both
+  classes — the `txt()` bypass (a strippable pass certifies only
+  opted-in text) and the inert sub-expression, which every instrument
+  reports clean by construction.
+- `SKILL.md` step 7: `build.js all` leaves its intermediate PNGs in
+  `frames/` (a 37s export left 1,110 PNGs, 52 MB) — deliberate tool
+  behavior, but nothing in the workflow said to clean it up, and that
+  build noticed only during its postmortem.
+
 ## 0.19.3
 
 ### fixed

@@ -11,6 +11,12 @@
 > report, at the end of this file. The step existed as a one-off practice
 > (one report, 2026-07-25) and was never part of the written method, which
 > is why it happened once.
+>
+> **Amended 2026-08-05**, from the first cold-start build with this skill (an
+> installed-plugin session with no repo context): the txt()-from-first-draft
+> and early-nocap rules in the semantics axis, and "A composed periodic can
+> be constant" in the continuity axis. Both are that build's defects, written
+> where the next build will read them.
 
 
 The backend-agnostic core: the three failure axes, the beats discipline, the
@@ -619,6 +625,29 @@ Generalizes past walking to anything whose cycle should be locked to travel:
 wheels and rotors, footfalls, conveyor treads, a pulse stepping along a path, a
 rotating drill advancing into a surface.
 
+## A composed periodic can be constant
+
+The blink that never blinked, from the first cold-start build with this skill —
+a halt banner's pulse:
+
+```js
+Math.sin(quant(t, 2) * Math.PI * 2)   // quant returns multiples of 0.5 …
+```
+
+… so the argument is always a multiple of π and the expression is exactly `0`,
+from the first draft onward. The "blink" was a constant alpha the whole film.
+No instrument can see this class: the expression is still a pure function of
+`t`, so smoke stays green; a constant has no discontinuity, so no strip shows a
+pop; and `motion`'s whole-frame delta cannot notice one small text region that
+never moves inside an otherwise busy frame. On that build it was found by hand,
+by accident, while investigating an unrelated measurement.
+
+The check is `probe`, and it is nearly free: evaluate the expression at four or
+five `t` values spread across its beat and confirm at least two distinct
+outputs before shipping it. Do this for any decorative pulse or blink that
+**composes** two periodic or quantised functions — composition is where the
+aliasing hides. A bare `sin(t*ω)` does not need it.
+
 ## Hard cuts are the one discontinuity you want
 
 Model distinct settings (a workshop and a machine's interior; a datacenter and a
@@ -681,6 +710,22 @@ touches geometry, and mesh-built labels survive the pass — strip those by hand
 before trusting the result. If you cannot tell, the
 geometry is not carrying the explanation and you have built a slideshow with a
 3D background.
+
+Two rules fall out of that mechanism, both learned on the first cold-start
+build with this skill — a 2D explainer whose HUD (ticker, order-book label,
+counters, a banner) was first written with raw `ctx.fillText`:
+
+- **Route every canvas draw through `txt()` from the first draft.** Hand-rolled
+  `fillText` opts out of `?strip=text` silently: the nocap sheet still looks
+  normal, it just stops testing what it claims to. On that build the bypass was
+  caught by re-reading the template's kernel comment against the code — never
+  by the instrument, which cannot tell "geometry carries the story" from "the
+  text I failed to strip does".
+- **On any 2D scene with more than a caption's worth of HUD or canvas text, run
+  the nocap sheet once as soon as the first text-bearing beat exists**, not
+  only at review time. The first nocap sheet of a scene whose text is routed
+  correctly already shows zero leftover words; that early frame is the cheap
+  proof the instrument is still wired to the scene.
 
 This replaces the older and much weaker "does the caption contradict what's on
 screen?" — contradiction is rare and easy to spot. The common failure is a

@@ -191,11 +191,22 @@ not shipped); SKILL.md `frames/` cleanup note; review delegation softened
 filename named in step 4 (0.19.6).
 
 **Filed in `working-plan.md` with revive triggers:** mechanical
-inert-expression check; `fillText`-outside-`txt()` detector; smoke states
-parity scope on green; `motion` output hygiene (banner suppression,
-operative-line-last); `strip`/`sheet` filename-last printing and strip
-overwrite; probe refusing a no-op expression. Owner's call 5 resolved
-2026-08-05.
+inert-expression check; `fillText`-outside-`txt()` detector; `motion`
+output hygiene (banner suppression, operative-line-last); `strip`/`sheet`
+filename-last printing and strip overwrite; probe refusing a no-op
+expression. Owner's call 5 resolved 2026-08-05. The smoke-parity-scope row
+landed the same day (0.20.0): its trigger fired with the option E batch and
+the full smoke run now states its parity scope on green.
+
+**The scene itself (added 2026-08-05):** a `film-reviewer` pass — the
+shipped agent's first real exercise — returned promote-after-fixing: the
+middle three beats were three captions over one continuous fall, the outro
+was a static uncovered loop seam, and the reveal carried the documented
+momentum-stall anti-pattern. All were fixed in a revised copy that landed
+in `scenes/crash.html`; the cold original stays under `internal/` as this
+record's fixture. The shipped 2D-baseline promotion was **held by owner
+call on the n=1 principle** — more portfolio scenes get built and reviewed
+first.
 
 **Held here as record, no action:** the 23k-token uninspectable design
 block; the one-round composition pass; the absorbed exposure advisory;

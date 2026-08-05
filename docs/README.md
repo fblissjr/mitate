@@ -43,6 +43,7 @@ reference that needs to reach an installed user goes in
 | should examples live in the plugin | [`examples-placement.md`](examples-placement.md) | only if reopening that decision |
 | what does this word mean | `../plugin/skills/mitate/references/glossary.md` | the first time `register`, `fence`, `the parity set` or `install cache` does more work than it looks like |
 | what went wrong, and what we learned | [`postmortems/`](postmortems/) | newest first — later entries correct earlier ones |
+| **how a cold session actually used the skill** — the timeline, what it read vs skipped, where it stumbled, what the tools printed at it | [`scene-analyses/`](scene-analyses/), one dated record per analyzed plugin-only build | before changing SKILL.md's workflow or a reference's routing, and when judging whether written guidance binds — the first record (market-crash) is the baseline the next cold build gets compared against |
 
 **The invariants that bite on a first edit** are in `CLAUDE.md` at the repo
 root, which also carries the full map of scripts, workflows and agents.

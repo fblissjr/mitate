@@ -24,6 +24,7 @@ other surface points at the home. Nothing restates.
 | history — what happened and why | CHANGELOG.md and git | docs speak present tense only |
 | **a check's pass criterion** | the code that implements the check, beside the flag or constant it governs | CI config and session logs POINT; they never restate it |
 | **what a session did** | `internal/log/`, one file per working day — **tracked as of 2026-08-01** | a finding worth keeping is still promoted to a postmortem. Tracking made the log citable; it did NOT make it doctrine. Cite it for what happened, never for what is true — where a log and a postmortem disagree, the postmortem wins |
+| **what a cold build actually did** — the timeline, guidance-vs-behavior and tool-output record of an external, plugin-only session (class created 2026-08-05, owner) | `docs/scene-analyses/`, one dated file per analyzed build. A dated record: it settles nothing and needs no freshness marker | the builder's own postmortem stays beside its scene as `(local)` evidence — cite it for the film's technical findings and this record for the builder's behavior; where they disagree about behavior, the transcript-derived record wins. References and working-plan cite these files as evidence |
 
 
 **Render, delivery and recording are separate domains and must not share a

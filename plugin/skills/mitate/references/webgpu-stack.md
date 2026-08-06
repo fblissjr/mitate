@@ -1,10 +1,5 @@
 # The node stack: WebGPURenderer, TSL, and the recorder
 
-> **Provenance.** Canonical for the backend policy, the determinism rules, recorder mechanics, and the measured node-stack brackets. Last verified (in the working tree, not an install cache) against
-> the templates and shipped examples 2026-07-24 (full source audit;
-> corrections recorded in the changelog). If this file and the code
-> disagree, audit before trusting either — then fix the stale one.
->
 > **Not here.** shipping the scene, and posters → `delivery.md`; export formats
 > and encoders → `recordings.md`; material recipes → `materials.md`.
 
@@ -13,7 +8,8 @@ The renderer-specific half of mitate's 3D backend. The universal method —
 failure axes, beats discipline, determinism rules — is `method.md`; the shot
 vocabulary is `film-language.md`. This file is what changed when the stack
 moved from `WebGLRenderer` + GLSL to `WebGPURenderer` + TSL, and every claim in
-it was measured on `three@0.185.1` during Phase 0 (2026-07-23).
+it was measured on `three@0.185.1`. If this file and the code disagree, audit
+before trusting either — then fix the stale one.
 
 ## One renderer, two backends
 
@@ -81,20 +77,16 @@ byte-compare against a frame captured before that first render completes.
    chromaticAberration) are per-frame pure.
 4. **No `ComputeNode` / storage buffers.** Stateful across dispatches, and the
    WebGL2 fallback cannot run them at all.
-5. **`renderer.sortObjects = false` stays off.** Found by the gearbox
-   regression film, then reproduced once out-of-pipeline (3 meshes, no
-   shadows, no fog, both backends). **The harness is gone.** This entry
-   said the repro scripts were "preserved in the session scratchpad" and
-   they are not in the tree — not tracked, not under gitignored
-   `internal/`. So the mechanism below is a *recorded observation*, not a
-   re-runnable measurement, and nothing here can tell you whether it still
-   holds on three past r185. Read the counts as history.
-   Filing it upstream was never done and cannot be, without rebuilding the
-   repro first. TRIGGER to rebuild it as a tracked `bracket-sortobjects.js`:
-   the next three.js bump, or any change to the boot sequence. Keeping the
-   flag off costs nothing meanwhile, and its one consequence is documented
-   at the end of this entry — which is why this is relabelled rather than
-   re-derived now.
+5. **`renderer.sortObjects = false` stays off.** Found by a corpus regression
+   film, then reproduced once out-of-pipeline (3 meshes, no shadows, no fog,
+   both backends). **The harness is gone** — the repro scripts are not in the
+   tree. So the mechanism below is a *recorded observation*, not a re-runnable
+   measurement, and nothing here can tell you whether it still holds on three
+   past r185. Read the counts as history. It has not been filed upstream and
+   cannot be, without rebuilding the repro first. TRIGGER to rebuild it as a
+   tracked `bracket-sortobjects.js`: the next three.js bump, or any change to
+   the boot sequence. Keeping the flag off costs nothing meanwhile, and its one
+   consequence is documented at the end of this entry.
    The observation: with depth sorting on, REVISITING a state after the sort order
    changed renders objects at the previous render's pose. First visit
    correct; every revisit wrong; 100% deterministic-wrong on revisit (the
@@ -120,10 +112,10 @@ byte-compare against a frame captured before that first render completes.
   **in one page task**, then `settle` waits a double-rAF for presentation.
   Scene contract unchanged — `seekTo` stays synchronous.
 
-  A double-rAF alone was not enough, measured 2026-07-30 on ubuntu-22.04/WebGL2,
+  A double-rAF alone was not enough, measured on ubuntu-22.04/WebGL2,
   10 repeats per cell: a bare seek gave byte-differences on three cells at
   40%/30%/20%, and the same sequence with the readback sharing the seek's task
-  gave **0 of 200**. The failure had been misread as two shipped films carrying
+  gave **0 of 200**. The failure had been misread as two films carrying
   state; it was the gate racing presentation on a slow stack, which is what the
   original settle fix was for and what a fixed *duration* cannot guarantee.
   A readback is a completion barrier rather than a latency guess, so it should not
@@ -134,10 +126,10 @@ byte-compare against a frame captured before that first render completes.
   unverified; `seekSynced` is applied on both paths regardless, because a 1x1 read
   is cheap and the failure it prevents is silent.
 
-  **Use `seekSynced` at every site where a capture follows a seek.** All three of
-  `shoot.js`'s capture paths and smoke's determinism arm used a bare
-  `evaluate('window.seekTo(t)')` until 0.16.28, which means every recorded frame
-  of every MP4 went through the vulnerable pattern, not just the gate.
+  **Use `seekSynced` at every site where a capture follows a seek** — all three
+  of `shoot.js`'s capture paths, and smoke's determinism arm. A bare
+  `evaluate('window.seekTo(t)')` at any of them puts every recorded frame of
+  every MP4 through the vulnerable pattern, not just the gate.
 - **The drawing buffer is cleared after compositing.** An in-page
   `drawImage(canvas)` readback in a LATER task reads zeros; render-and-read
   must share one `evaluate`. smoke's exposure sampler does this; copy that
@@ -156,10 +148,11 @@ byte-compare against a frame captured before that first render completes.
   about WebGPU. `CHROMIUM_PATH` overrides; keep the gate and the recorder on
   the same binary.
 
-## The gearbox regression twin (measured 2026-07-23)
+## The regression twin
 
-The same scene body (beats, worlds, shots, animate) injected into this
-skill's template and frozen explainer-video's renders near-identically:
+Measured on a corpus film. The same scene body (beats, worlds, shots, animate)
+injected into this skill's template and into frozen explainer-video's renders
+near-identically:
 composition, lighting, and read match cell for cell on the contact sheets;
 both pass their own smoke. The once-reported "~3% framing delta" between
 stacks was MEASURED AWAY: at equal viewport and equal t, rendered geometry
@@ -172,8 +165,7 @@ byte- or crop-comparing captures. What genuinely differs across stacks is
 SHADING — the node renderer's highlights are brighter and shadows tighter
 (~9% of pixels differ by >8/255) — which the eye reads as zoom. Also
 learned here: `key.shadow.normalBias = .035` kills shadow acne on extruded
-faces at closeup (a scene-rig setting; both stacks needed it). The shipped
-example is `examples/gearbox.html`.
+faces at closeup (a scene-rig setting; both stacks needed it).
 
 ## Node materials in scene code
 
@@ -193,10 +185,10 @@ is NO `mx_perlin_noise_float` export and a typo'd node name propagates as
 `undefined` silently — plus `mx_worley_noise_float`, `mx_fractal_noise_float`,
 `mx_aastep`) computes on the GPU. `MeshPhysicalNodeMaterial` (transmission,
 `dispersion`, sheen, iridescence) and `MeshSSSNodeMaterial` are exercised by
-the material packs — recipes and measured traps in `materials.md`,
-demonstrated in `examples/materials.html`. `MeshToonNodeMaterial` is available
-but deliberately unused: the cel recipe authors its banding directly in the
-node graph on `MeshBasicNodeMaterial` instead.
+the material packs — recipes and measured traps in `materials.md`.
+`MeshToonNodeMaterial` is available but deliberately unused: the cel recipe
+authors its banding directly in the node graph on `MeshBasicNodeMaterial`
+instead.
 Post chains compose through
 `THREE.RenderPipeline` (`PostProcessing` is its deprecated alias). The
 template runs one ALWAYS, pass-through by default, with `STYLE.bloom` and

@@ -1,10 +1,5 @@
 # Style bibles v2: the whole look is one object
 
-> **Provenance.** Canonical for the style-bible schema and the committed workshop/neon control pair. Last verified (in the working tree, not an install cache) against
-> the templates and shipped examples 2026-07-24 (full source audit;
-> corrections recorded in the changelog). If this file and the code
-> disagree, audit before trusting either — then fix the stale one.
->
 > **Not here.** material recipes → `materials.md`; shot vocabulary → `film-language.md`. The flat-vector vocabulary has no home yet — see the backend table below.
 
 
@@ -30,7 +25,7 @@ definition.
 | backend | vocabulary lives in | state |
 |---|---|---|
 | 3D node stack | below, in this file | shipped |
-| Canvas2D flat vector | `bibles-2d.md` | **NOT WRITTEN.** `scene2d.template.html` ships with no art-direction reference of any kind. Its surface is `STYLE`, a palette const, `ACCENT_INK`, `stroke` weight and `contrastOn()`; the predecessor had three worked packs (paper-cutout, blueprint, neon-dark) which were left in the archive rather than promoted, because no 2D film has shipped since the rename |
+| Canvas2D flat vector | `bibles-2d.md` | **NOT WRITTEN.** `scene2d.template.html` ships with no art-direction reference of any kind. Its surface is `STYLE`, a palette const, `ACCENT_INK`, `stroke` weight and `contrastOn()`; the predecessor had three worked packs (paper-cutout, blueprint, neon-dark) which were left in the archive rather than promoted, because no 2D film has shipped to force the question |
 | anything later | its own `bibles-<backend>.md` | — |
 
 **Whoever writes the next one:** satisfy the contract above, name only what your
@@ -38,9 +33,10 @@ backend can actually mean, and state the hazards you *observed* separately from
 the ones you *predict*. A bible whose fields the template cannot consume is a
 mood board.
 
-**Why flat files and not a `bibles/` subfolder.** `scripts/selfcheck.js`'s
-provenance check reads `references/*.md` non-recursively, so a subfoldered
-reference would ship with no provenance enforcement at all. Flat costs nothing
+**Why flat files and not a `bibles/` subfolder.** The repo's self-check reads
+`references/*.md` non-recursively when it enforces each reference's routing
+edge, so a subfoldered reference would ship outside that enforcement
+entirely. Flat costs nothing
 until one backend needs more than one file — **that is the trigger to subfolder**,
 and it comes with a one-line change to make that check recurse.
 
@@ -69,17 +65,15 @@ const BIBLES = {
 const STYLE = BIBLES.workshop;   // <-- the one line
 ```
 
-## The committed control pair
+## The control pair
 
-`examples/gearbox.html` ships both bibles above. Verified 2026-07-23: same
+The two bibles above are a measured pair, verified on a corpus film: same
 beats, same geometry, one line — two categorically different films, both
 byte-deterministic on both backends. `workshop` is a lit machine-shop
 (steel and brass under a key light, steadicam); `neon` is a dark stage
 where the machines are silhouettes and the LIGHT is the subject — bloomed
 emissive markers, glowing time-history trails, locked long-lens camera,
-slower dolly blends. Poster frames for both live in the repo's `site/posters/` — outside this
-subtree, so not present in an install cache. To see them move, open the scene,
-which is here.
+slower dolly blends.
 
 ## Register rules
 
@@ -97,5 +91,5 @@ which is here.
   subject is a look decision hiding from the bible switch (the control
   pair is the test: if switching bibles leaves a subject color behind,
   that color was hardcoded). Neutral hardware may keep literals: the
-  committed pair leaves gearbox's pedestal, axle and rim-light hexes
+  measured pair leaves its machine's pedestal, axle and rim-light hexes
   fixed across both bibles.

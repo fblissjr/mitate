@@ -7,14 +7,6 @@ anything else is shipping a lossy copy of something you already have.
 That is a measured claim, not a preference: after compression the real artifact
 is smaller than a mid-quality recording of itself, at far better fidelity.
 
-> **Provenance.** Canonical for the scene as the delivered artifact — bundle
-> economics over the wire, hosting and mount policy, posters and stills, and
-> which artifact belongs on which surface.
-> **Verification date: 2026-07-24**, measured in this repo on this stack: the
-> brotli and showcase byte figures below, and the mount policy, were both taken
-> then and reconciled against what `site/` actually ships. Neither has been
-> re-measured since; the byte figures move whenever a scene's content does.
->
 > **Not here.** recording formats, encoders and their measured costs →
 > `recordings.md`; the format DECISION → SKILL.md, at spec time; render-side
 > cost → `webgpu-stack.md`.
@@ -53,7 +45,7 @@ option. Measured, it is the opposite, because text compresses and video does not
 The real artifact is cheaper than a mid-quality recording of itself, at far
 better fidelity — because it is not a copy, it is the thing. On this repo's
 showcase the swap cut a full scroll-through from ~6.3 MB to ~1.9 MB and removed
-8 MB of tracked mp4s.
+8 MB of tracked mp4s. The byte figures move whenever a scene's content does.
 
 Two second-order wins, both larger than they look:
 
@@ -67,7 +59,7 @@ Two second-order wins, both larger than they look:
 The cost is real and worth stating: a live scene boots in about a second where a
 video paints its poster instantly, and each one holds a GPU context. So the
 showcase mounts almost nothing: one driven hero scene on capable desktops
-(gearbox — the cheapest warm, ~1.1s to `sceneReady` against 4-5s for the
+(the cheapest scene to warm — ~1.1s to `sceneReady` against 4-5s for the
 character films), and every other scene only on an explicit click, unmounted on
 close. Under `prefers-reduced-motion`, and on coarse-pointer devices — where an
 offscreen-composited iframe was measured never reaching `sceneReady` — the hero
@@ -85,7 +77,7 @@ right there and deterministic.
 This is a rule about the scene being the source, which is why it lives here and
 not with the encoders: the still is rendered, never re-derived from a recording.
 
-In this repo that rule is why `site/posters/` carries a `-still.jpg` per film,
+In this repo that rule is why the showcase carries one `-still.jpg` per film,
 rendered from source at a chosen `t`. It is the only image the showcase ships.
 
 ## Which artifact goes on which surface
@@ -103,8 +95,8 @@ mechanism — lives there.
 What this repo actually does, after trying the alternatives: **it ships no
 recordings at all.** The showcase drives one hero scene through the window
 contract where the device can afford it, loads any other scene on demand, and
-otherwise nothing moves; the examples README embeds a poster frame per example, because GitHub
-cannot run a scene and a frame is the honest thing to show there. Every image is
-`build.js poster` against the scene. The recording path still holds for anyone
+otherwise nothing moves; the film READMEs embed a poster frame per film, because
+GitHub cannot run a scene and a frame is the honest thing to show there. Every
+image is `build.js poster` against the scene. The recording path still holds for anyone
 who *needs* an inline animated preview on GitHub — that is what `build.js avif`
 is for — but a page that says it is not a video should not open by playing one.

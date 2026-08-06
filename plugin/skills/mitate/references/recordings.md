@@ -7,16 +7,12 @@ is no recording; see `delivery.md`.
 
 Backend-agnostic: everything operates on shot frames, whatever rendered them.
 
-> **Provenance.** Canonical for recording FORMATS and their measured costs —
-> the size table, the decode tradeoff, encoder settings, and the GitHub
-> content-type mechanism with its evidence chain.
-> **Verification date: UNKNOWN — never audited end to end.** Someone should
-> verify these against the current encoders and stamp a real date. The size and
-> decode measurements were taken on the predecessor skill; they operate on
-> encoded output rather than on the renderer, so they carry over, but they have
-> not been re-measured on the node stack. The GitHub content-type findings are
-> about GitHub and are unaffected by either.
->
+**Trust these numbers accordingly.** The figures here have never been audited
+end to end. The size and decode measurements were taken on the predecessor
+skill; they operate on encoded output rather than on the renderer, so they carry
+over, but they are unverified on this stack. The GitHub content-type findings
+are about GitHub and are unaffected by either.
+
 > **Not here.** the scene as the delivered artifact, and posters →
 > `delivery.md`; the format DECISION → SKILL.md, at spec time; render-side cost
 > → `webgpu-stack.md`.
@@ -138,7 +134,7 @@ the renderer-backend speedup of the same magnitude in `webgpu-stack.md`) for one
 second less encode time, `-s 4` gave no
 further size gain for double the time. **One sweep, one film, one machine, one
 `avifenc` build — the knee's *location* is the claim, not the ratio, and neither
-has been re-measured since.** Content and encoder version both move it. Encode cost is 11s for 288 frames,
+has been re-measured.** Content and encoder version both move it. Encode cost is 11s for 288 frames,
 negligible against a 65s shoot.
 
 Visual check: decoded frames inspected by eye — crisp text, smooth gradients,

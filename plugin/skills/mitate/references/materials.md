@@ -1,16 +1,11 @@
 # Material packs: cel, subsurface, glass
 
-> **Provenance.** Canonical for the material packs and their ordering and bloom discipline. Last verified (in the working tree, not an install cache) against
-> the templates and shipped examples 2026-07-24 (full source audit;
-> corrections recorded in the changelog). If this file and the code
-> disagree, audit before trusting either — then fix the stale one.
->
 > **Not here.** the character scaffold → `characters.md`; backend and determinism → `webgpu-stack.md`.
 
 
-Three verified recipes on the node stack, each shipped in
-`examples/materials.html` and reviewed on the instruments. Every number and
-gotcha here was measured on `three@0.185.1`, most of them the hard way.
+Three verified recipes on the node stack, each measured on a corpus film and
+reviewed on the instruments. Every number and gotcha here was measured on
+`three@0.185.1`, most of them the hard way.
 
 ## The property-vs-node trap (read first)
 
@@ -82,48 +77,42 @@ glass.transmissionNode = THREE.float(.95);     // see the trap above
 
 **Ordering discipline (the sortObjects bill):** with `sortObjects=false`,
 transparent and transmissive objects composite in CREATION order. Create
-farther-first — in the showcase: emissive core, then glow disc, then far orb,
-then near orb. Verified: the overlap zone composites correctly and the scene
+farther-first — measured on a corpus film: emissive core, then glow disc, then
+far orb, then near orb. Verified: the overlap zone composites correctly and the scene
 is byte-deterministic on both backends **on macOS** — and that qualifier is
 load-bearing, because CI refuted the unqualified version.
 
 **Where creation order cannot express it** — objects that swap depth mid-film —
 set `renderOrder` explicitly, and **accept that a genuinely depth-swapping
-transparent pair is outside the guarantee.** That last clause was carried in the
-predecessor and dropped in an edit, leaving this reference stating a remedy for a
-case it no longer admitted was unsolved. Restored 2026-07-30.
+transparent pair is outside the guarantee.**
 
-> **RESOLVED 2026-07-30: this was never a defect in this film.** `materials.html`
-> failed smoke's in-session determinism arm on Linux/WebGL2 at `seekTo(5.36)`, as
-> did `menagerie.html` at 8.52 and 5.68. Measured rate with screenshots only:
-> 40%, 30%, 20% over 10 repeats. Measured rate with an in-page GPU readback
-> inserted before each screenshot, same runner, same scenes, identical `seekTo`
-> sequence: **0 of 200**.
+> **A heavy transmissive scene failing the determinism arm is a capture race,
+> not scene state.** Measured: heavy films failed smoke's in-session determinism
+> arm on Linux/WebGL2 at particular seek points, 40%, 30% and 20% over 10
+> repeats with screenshots only. With an in-page GPU readback inserted before
+> each screenshot — same runner, same scenes, identical `seekTo` sequence —
+> **0 of 200**.
 >
-> The readback is the only variable, and it eliminates the failure — so the
-> mechanism is a presentation/capture race, not scene state. A real divergence
+> The readback is the only variable, and it eliminates the failure, so the
+> mechanism is presentation/capture latency, not scene state. A real divergence
 > would survive a readback, which reads the canvas and cannot repair it.
 > `settle`'s double rAF (~33ms) is enough on macOS hardware GL and not enough on
-> a slow software-GL runner. The intermittency, the Linux-only-ness, and the
-> failing scene moving between runs all follow; the two affected films are the
-> two heaviest to render, which is what a latency-sensitive race predicts.
+> a slow software-GL runner. The intermittency, the Linux-only-ness, the failing
+> scene moving between runs, and the affected films being the heaviest to render
+> all follow — which is what a latency-sensitive race predicts. A small run of
+> identical failures is not evidence of a state dependency: that inference was
+> drawn here from three in a row and four more runs refuted it.
 >
-> The ordering discipline above is unaffected and still correct. What was wrong
-> was an earlier version of this note accusing the film of carrying state — and
-> before that, calling three identical failures "reproducible, therefore a state
-> dependency," which four runs later was false. Both retracted. Evidence and the
-> full chain: [the span postmortem](https://github.com/fblissjr/mitate/blob/main/docs/postmortems/2026-07-29_span_instrument-hardening.md).
->
-> **FIXED and VERIFIED in 0.16.28** — `backend.js`'s `seekSynced` seeks and forces
+> The ordering discipline above is unaffected and still correct. The fix lives in
+> the recorder's capture pattern: `backend.js`'s `seekSynced` seeks and forces
 > render completion in one page task, at all six capture sites. Verified on Linux
-> as a red/green pair: shipped path 0 of 200, control (bare seek) 10/10 on this
-> film's worst cell. The repair was in the recorder's capture pattern, never in
-> this film and never in the determinism arm — relaxing the arm would have
-> repaired the layer that was right.
+> as a red/green pair — shipped path 0 of 200, control (bare seek) 10/10 on the
+> worst cell. The repair belonged there, never in a film and never in the
+> determinism arm; relaxing the arm would have repaired the layer that was right.
 
 ## Bloom (first observations, not yet a rule)
 
-Measured on the showcase's emissive-behind-glass payoff, sweep .3→1.5:
+Measured on a corpus film's emissive-behind-glass payoff, sweep .3→1.5:
 threshold is monotone with NO cliff at 1.0 (input appears pre-tone-map), but
 the spread was ~1 mean-luma point — emissives seen THROUGH transmission
 barely feed bloom. The same strength at threshold .55 visibly halated the
@@ -141,11 +130,6 @@ a sheen recipe on `MeshPhysicalNodeMaterial`. Both node-slot-driven and both
 verified rendering; see `characters.md`.
 
 ## Procedural assets: recipes by shape problem
-
-*Carried from the predecessor's `style-3d.md`, unchanged in substance. This
-repo's CHANGELOG and `method.md` have said these live here since the reference
-split; they did not, and the pointer was true of the intention rather than the
-file. Promoted 2026-07-30 before the ancestor tree was archived off-machine.*
 
 Everything is composed from primitives — spheres, boxes, cylinders, planes, tori.
 No model files, no textures, no downloads. That constraint is what keeps a scene a
@@ -204,12 +188,12 @@ geometry serves wildly different domains. Before reaching for one, derive your o
   seeded `R[]` pool — deterministic arrangement, one draw call however many
   items. The cel trick: the outlines are a *second* `InstancedMesh` sharing
   the same matrices scaled ~1.06 with the BackSide ink material — linework
-  for the whole field at one more draw call. Built: the 46-tree forest in
-  `examples/toybot-walk.html`. For a beat that animates the field, write
+  for the whole field at one more draw call. Built on a corpus film: a 46-tree
+  forest. For a beat that animates the field, write
   per-instance values as functions of `(t, R[i])` and recompose matrices in
   `animate()` — still pure.
 - **Curves without asset files**: `LatheGeometry` from a `Vector2` profile
-  (the urn in toybot-walk), `ExtrudeGeometry` from a `Shape`, `TubeGeometry`
+  (a lathed urn), `ExtrudeGeometry` from a `Shape`, `TubeGeometry`
   along a Catmull-Rom curve. A profile array is data; no download.
 
 ### Not yet built, but the shape is obvious
@@ -227,9 +211,9 @@ principle is backend-agnostic and `smoke.js` enforces it for every backend.
 
 # The cinematic kit: post chain, cel shading, analytic IK
 
-Everything in this section shipped in `examples/toybot-walk.html` and was
-verified the project's way — `smoke.js` byte-determinism with the full chain
-enabled, contact sheet, squint strip, motion profile.
+Everything in this section was built on a corpus film and verified the
+project's way — `smoke.js` byte-determinism with the full chain enabled,
+contact sheet, squint strip, motion profile.
 
 ## The post chain (per-frame pure, or not at all)
 

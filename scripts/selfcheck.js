@@ -194,52 +194,48 @@ const fail = m => fails.push(m);
   notes.push(`${checked} relative markdown links inside the shipped subtree, all resolving`);
 }
 
-/* ---- 4. every reference carries a parseable provenance date ---------------
- * `metadata.review_interval_days` used to assert a 90-day cadence that nothing
- * enforced; it was deleted in 0.16.18 for being ambient cost. This is the
- * version that runs. Two references legitimately say they are unaudited — that
- * is an honest state, not a missing date, so it passes and is reported. */
+/* ---- 4. shipped markdown is date-free current state, with routing edges ---
+ * INVERTED at 0.22.0, owner rule: everything under plugin/ is loaded or read
+ * by agents using the skill, and they only care about what is true NOW — a
+ * date or an amendment note in a shipped file is history riding along in
+ * context. This check used to REQUIRE a dated provenance header in SKILL.md
+ * and every reference; the verification record those headers carried moved to
+ * docs/shipped-provenance.md, and the check now fails on any ISO date in any
+ * markdown under plugin/. Walks the filesystem rather than git ls-files, so a
+ * scratch .md with a date is caught before it is ever staged.
+ *
+ * The "Not here" edge requirement SURVIVES — it is routing, not history: every
+ * reference says what it is canonical for, and without the negative direction
+ * a reader who guessed wrong has nowhere to go. `grep -A1 'Not here'
+ * references/*.md` is still the whole ownership graph. */
 {
+  const mdUnder = (dir) => {
+    const out = [];
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) out.push(...mdUnder(p));
+      else if (e.name.endsWith('.md')) out.push(p);
+    }
+    return out;
+  };
+  const shippedMd = mdUnder(path.join(ROOT, 'plugin'));
+  for (const f of shippedMd) {
+    const rel = path.relative(ROOT, f);
+    const lines = R(f).split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      if (/\b20\d\d-\d\d-\d\d\b/.test(lines[i])) {
+        fail(`${rel}:${i + 1} carries a dated annotation — shipped markdown is `
+           + `current-state only; the verification record lives in `
+           + `docs/shipped-provenance.md and history lives in git`);
+      }
+    }
+  }
   // Deliberately does NOT assert how many references there are. A hardcoded 8
   // here would be a stale claim with a timer on it — the class this whole file
   // exists to catch. Every reference is checked; the population is reported.
   const refs = fs.readdirSync(REFS).filter(f => f.endsWith('.md'));
-  // SKILL.md carries one too, as of 0.16.34. It used to carry
-  // `metadata.last_verified` instead: frontmatter, so standing context cost on
-  // every activation, asserting a HUMAN review, going stale on every edit, and
-  // checked by nothing -- it was four days and two releases stale when removed.
-  // The provenance form is per-file, records what was verified against what, and
-  // is checked here. It is exempt from the "Not here" edge below: that edge maps
-  // ownership BETWEEN references, and SKILL.md is the router, not a peer.
-  const SKILL_MD = path.join(SUBTREE, 'SKILL.md');
-  {
-    const head = R(SKILL_MD).slice(0, HEADER_WINDOW);
-    if (!/>\s*\*\*Provenance\.\*\*/.test(head)) fail('SKILL.md has no provenance header');
-    else if (!/\b20\d\d-\d\d-\d\d\b/.test(head)) fail('SKILL.md provenance names no date');
-    // Scoped to the FRONTMATTER, not the whole head. The first version grepped
-    // the head for the string and fired on the provenance header immediately
-    // below, which explains why the field was removed -- a check that cannot
-    // tell carrying a field from describing one, which is the same
-    // false-accusation shape as the two seek-check specs before it.
-    const fm = (R(SKILL_MD).match(/^---\n([\s\S]*?)\n---/) || [])[1] || '';
-    if (/^\s*last_verified:/m.test(fm)) {
-      fail('SKILL.md still carries metadata.last_verified — removed in 0.16.34 as an '
-         + 'unenforced claim in always-loaded frontmatter; use the provenance header');
-    }
-  }
   for (const f of refs) {
     const head = R(path.join(REFS, f)).slice(0, HEADER_WINDOW);
-    if (!/>\s*\*\*Provenance\.\*\*/.test(head)) { fail(`${f} has no provenance header`); continue; }
-    const dated = /\b20\d\d-\d\d-\d\d\b/.test(head);
-    const admits = /not (been )?audited|UNKNOWN/i.test(head);
-    if (!dated && !admits) fail(`${f} provenance names neither a date nor an unaudited state`);
-    // The EDGE, and the reason this check exists rather than a schema document.
-    // Every reference says what it is canonical FOR; without the negative
-    // direction a reader who guessed wrong has nowhere to go, and the ownership
-    // map lived only in docs/source-of-truth.md — outside the subtree, so
-    // unreachable from the install cache. `grep -A1 'Not here' references/*.md`
-    // is now the whole relationship graph, which is the one thing a database
-    // would have bought, without the database.
     const edge = head.match(/\*\*Not here\.\*\*(.*)/);
     if (!edge) {
       fail(`${f} has no "Not here" edge — say where the adjacent thing lives`);
@@ -257,7 +253,8 @@ const fail = m => fails.push(m);
       }
     }
   }
-  notes.push(`${refs.length} references, each with a provenance header and a "Not here" edge`);
+  notes.push(`${shippedMd.length} shipped markdown files date-free; `
+    + `${refs.length} references, each with a "Not here" edge`);
 }
 
 // templates/*.js, read ONCE. Checks 5 and 6 below both walk this directory and

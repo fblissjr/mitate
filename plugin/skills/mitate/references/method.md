@@ -1,23 +1,6 @@
 # Method: designing a sequence that reads
 
-> **Provenance.** Canonical for the universal method — the three failure axes, beats and controls discipline, review passes, and the determinism idioms. Three dangling `style-3d.md` pointers survived the audit below and were fixed 2026-07-25 (0.16.2) — a straight read does not test whether pointers resolve; only following them does. Last verified (in the working tree, not an install cache) against
-> the templates and shipped examples 2026-07-24 (full source audit;
-> corrections recorded in the changelog). If this file and the code
-> disagree, audit before trusting either — then fix the stale one.
->
 > **Not here.** node-stack specifics → `webgpu-stack.md`; what each check can and cannot see → `instruments.md`.
->
-> **Amended 2026-08-04**: the method gains its closing step — the film field
-> report, at the end of this file. The step existed as a one-off practice
-> (one report, 2026-07-25) and was never part of the written method, which
-> is why it happened once.
->
-> **Amended 2026-08-05**, from the first cold-start build with this skill (an
-> installed-plugin session with no repo context): the txt()-from-first-draft
-> and early-nocap rules in the semantics axis, and "A composed periodic can
-> be constant" in the continuity axis. Both are that build's defects, written
-> where the next build will read them.
-
 
 The backend-agnostic core: the three failure axes, the beats discipline, the
 controls discipline, continuity and semantics review, and the determinism
@@ -40,11 +23,10 @@ The companion references hold what this file deliberately does not:
 
 **Map.** The top-level sections, in reading order. Deliberately unlinked — a heading map
 costs nothing and cannot dangle, where hand-written anchors ship into an install
-cache unverified. Two outside reviews called this file monolithic; it is long, but
-the shape below is the answer to *where do I read*, and it was previously
-invisible without reading the whole thing. (An earlier draft opened with a line
-count. It was wrong by 23 the moment it was committed, because the Map itself
-added lines — a number describing the file it lives in cannot help but rot.)
+cache unverified, and a straight read does not test whether pointers resolve;
+only following them does. This file is long, but the shape below is the answer
+to *where do I read*. (Do not open it with a line count: a number describing the
+file it lives in cannot help but rot — the Map itself adds lines.)
 
 - **Method** (here) — Three ways a sequence fails · Before you build · Build the control
 - **Axis 1 — Composition**, what fails inside one frame — One frame per beat hides
@@ -63,7 +45,7 @@ added lines — a number describing the file it lives in cannot help but rot.)
   breaks video/HTML parity. Includes: mutating a shared material is pure only if
   you restate it · where you will be tempted to break this
 - **The last step of a film** — the film field report: name what you built
-  twice, re-derived, or copied out of an example
+  twice, re-derived, or copied out of another scene
 
 ## Three ways a sequence fails
 
@@ -125,7 +107,7 @@ Shoot the same sample timestamps before and after and compare with
 `ffmpeg -lavfi psnr`. Byte-identical frames mean behavior-preserving; >70 dB is
 imperceptible rounding. Anything lower, go look at a difference image
 (`blend=all_mode=difference`) before assuming it is fine — when this was done on
-the shipped scenes the only sub-70 dB frames were caption-fade boundaries,
+a corpus of films the only sub-70 dB frames were caption-fade boundaries,
 localized to the caption pill, and a precision-critical world cut came out
 byte-identical.
 
@@ -460,7 +442,7 @@ them in source, and by watching the loop. That is a weaker instrument than a
 metric and it is the honest one.
 
 A note on dead air, since it is the finding people are most tempted to silence:
-the shipped diagrammatic example trips it, with ~1.8s of a completely static
+a diagrammatic corpus film trips it, with ~1.8s of a completely static
 title card. That is a legitimate held title, not a defect, and the correct
 response is to say so — not to lower the floor until the check goes quiet. A
 threshold moved to make a known case pass stops measuring anything.
@@ -627,7 +609,7 @@ rotating drill advancing into a surface.
 
 ## A composed periodic can be constant
 
-The blink that never blinked, from the first cold-start build with this skill —
+The blink that never blinked, from a cold-start build —
 a halt banner's pulse:
 
 ```js
@@ -711,8 +693,8 @@ before trusting the result. If you cannot tell, the
 geometry is not carrying the explanation and you have built a slideshow with a
 3D background.
 
-Two rules fall out of that mechanism, both learned on the first cold-start
-build with this skill — a 2D explainer whose HUD (ticker, order-book label,
+Two rules fall out of that mechanism, both learned on a cold-start
+build (an installed-plugin session with no repo context) — a 2D explainer whose HUD (ticker, order-book label,
 counters, a banner) was first written with raw `ctx.fillText`:
 
 - **Route every canvas draw through `txt()` from the first draft.** Hand-rolled
@@ -779,7 +761,7 @@ tells you its beak tip sits **+4.37** from its origin. Authors reach for the
 number they have, because it is the only one written down.
 
 So measure it. `seekTo` purity plus classic-script scope means a probe can read
-the scene's own objects with zero instrumentation — verified 2026-07-30: a
+the scene's own objects with zero instrumentation — measured: a
 scene's top-level `let` resolves by name inside `page.evaluate` and is *not* on
 `window`. There is a command for it, and using it is the point:
 
@@ -911,9 +893,9 @@ browser at all. Only a human resizing a window could see it. Measured on a
 fixed world point at `(3,3,0)` in the 3D template, projected at four window
 shapes: `ndc.x` went **0.913 → 1.161** (off-frame) from aspect 1.78 → 1.40,
 while `ndc.y` held constant to four decimals. Vertical framing was exactly
-aspect-invariant; horizontal was not. On the shipped `toybot-walk`, that cut
-the sign out of the rack-focus shot at 1.40 — the exact failure that scene's
-own comment ("both subjects must be visible") was written to prevent.
+aspect-invariant; horizontal was not. On one corpus film that cut the sign out
+of a rack-focus shot at 1.40 — the exact failure that scene's own comment
+("both subjects must be visible") was written to prevent.
 
 The fix is architectural, not a patch. An audit found **ten different implicit
 reference frames** in the pipeline — the canvas scaled by window height, the
@@ -951,7 +933,7 @@ Both templates therefore compose against the declared **design frame** and
   distance. That split is what makes it contain rather than merely zoom out.
 
 Both are the identity at the design aspect, so every recorded frame is
-byte-identical (verified across all shipped scenes at two timestamps). The
+byte-identical (verified across a corpus of scenes at two timestamps). The
 overlay change is not — it measures PSNR 79.0 dB (3D) / 74.0 dB (2D), above
 this file's 70 dB imperceptible bar, with the difference localized to the
 caption pill's antialiased edge.
@@ -988,14 +970,12 @@ Three consequences to design around:
   opacity instead.
 - Captions size against the **frame**, not the window: `#cap` is
   `font: 600 calc(var(--fw)*.015625)`, and `--fw` tracks the design frame box.
-  Measured on `gearbox` at three frame widths — 30px at 1920, 10px at 640,
+  Measured on a corpus film at three frame widths — 30px at 1920, 10px at 640,
   5.69px at 364 — all exactly `0.015625 x frame width`. So the overflow check
   smoke runs at 1920 IS representative at every window size, and there is no
-  caption/window parity gap. (This paragraph claimed the opposite until
-  2026-07-24, inherited from the predecessor, where captions really were fixed
-  CSS px against the window. That was one of the ten implicit frames the FRAME
-  architecture eliminated — the template's own comment lists it among the
-  defects it fixed — and this doc never caught up.)
+  caption/window parity gap. (Fixed CSS px against the *window* was one of the
+  ten implicit frames the FRAME architecture eliminated — the template's own
+  comment lists it among the defects it fixed.)
 - **What frame-relative scaling costs instead is legibility, and no instrument
   sees it.** Because a caption is a constant fraction of the frame, it is ~5.7px
   in a phone-sized box and ~10px in a gallery-card-sized one: composed
@@ -1083,12 +1063,12 @@ report**, and it is a step of the method, not optional bookkeeping:
   layout trick.
 - **What you re-derived from scratch.** A technique you worked out by hand
   that felt like it should have been written down somewhere.
-- **What you copied out of an example scene, and what for.** Reaching into an
-  example to learn a technique means a reference failed to teach it. Name the
-  scene and the pattern; that is the bug report.
+- **What you copied out of another scene, and what for.** Reaching into a
+  finished film to learn a technique means a reference failed to teach it. Name
+  the scene and the pattern; that is the bug report.
 
-Why this earns a place in the method: the examples demonstrate finished films
-and the references teach patterns, and the only way the gap between them gets
+Why this earns a place in the method: a finished film demonstrates and the
+references teach patterns, and the only way the gap between them gets
 found is a builder naming it at the moment it costs them. In the mitate repo
 these lines feed a pattern ledger whose counts decide what gets promoted into
 the kit and the references — the "second instance" and "third consumer"

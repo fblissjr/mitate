@@ -26,9 +26,25 @@ landed) — and the owner then held the promotion on the n=1 principle: one
 cold build is one sample, and the shipped teaching baseline should not be
 chosen on it. E executed 2026-08-05 with gearbox as the only shipped
 example; the fixed `crash.html` landed in `scenes/` as the corpus's 2D
-candidate, and **the 2D baseline slot stays open** until more portfolio
-scenes are built and reviewed (`working-plan.md` carries the row and its
-trigger).
+candidate, and the 2D baseline slot stayed open pending more reviewed
+portfolio scenes.
+
+**SUPERSEDED the next day — 0.21.0 (owner, 2026-08-05, evening): the plugin
+ships NO films at all.** The reasoning goes one step past E: a shipped
+example does not just cost cache bytes — it gets **copied instead of
+learned from**, which defeats the reference's job (the copying-pressure
+argument below, confirmed in the field: the one cold build opened no
+example at any point and learned everything from the references it read
+cold plus a template). The skill teaches through SKILL.md, the references and tested
+snippets; the corpus in `scenes/` is the **maintainer's calibration set** —
+where the owner learns what the skill's docs actually produce — and the
+site is the public face. This RETIRES the 2D-baseline-slot question rather
+than answering it: there is no shipped slot to fill, for either template.
+gearbox moved to `scenes/` with everything else; the browser brackets
+resolve it there. The teaching debt E left implicit is now explicit and
+owned: every technique a film used to demonstrate must be carried by a
+reference as tested code or plain method — `working-plan.md`'s
+snippet-harvest row is the standing step that pays it, scene by scene.
 
 
 

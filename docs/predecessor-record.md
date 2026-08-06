@@ -1,4 +1,4 @@
-last updated: 2026-07-30
+last updated: 2026-08-05
 
 # Predecessor record: explainer-video
 

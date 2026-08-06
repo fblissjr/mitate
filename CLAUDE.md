@@ -326,15 +326,20 @@ the check.
   Deliberately no hand-written index — `/postmortem:postmortem-index` generates
   one from frontmatter. Read the newest first: a postmortem carries dated
   annotations, so its later corrections outrank its first verdict.
-- Documentation carries a **dated freshness marker**, in whichever of the two
-  forms fits: a `last updated:` line (docs, plans), or a dated **provenance
-  header** saying what was verified against what (every reference, and SKILL.md).
-  The second is the better instrument — it records the check, not just the touch —
-  and both exist because `last updated:` means last **touched**: a commit that
-  edits a dated doc dates it to that commit, or the rule is unsatisfiable. A file
-  that is itself a dated record needs neither (`CHANGELOG.md`,
+- **Repo-side documentation** carries a **dated freshness marker** — a
+  `last updated:` line — which means last **touched**: a commit that edits a
+  dated doc dates it to that commit, or the rule is unsatisfiable. A file
+  that is itself a dated record needs none (`CHANGELOG.md`,
   `THIRD_PARTY_LICENSES.md`). `scripts/selfcheck.js` enforces this over every
   tracked `.md` carrying the marker, deriving that set rather than listing it.
+  **Shipped markdown under `plugin/` is the deliberate exception, in the
+  OTHER direction** (owner rule, 2026-08-05): it carries **no dates at all** —
+  no markers, no provenance headers, no amendment notes — because it loads
+  into working context and an agent using the skill only needs what is true
+  now. Its verified-against-what record is
+  [`docs/shipped-provenance.md`](docs/shipped-provenance.md), and selfcheck
+  check 4 fails on any ISO date under `plugin/`, so a dated annotation cannot
+  quietly return.
   `.claude/agents/*` and `.claude/rules/*` are behaviour definitions, not
   documentation — their freshness is git history — so **nothing mechanical covers
   them**, and a review found four stale claims in one agent file, each of which

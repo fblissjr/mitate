@@ -7,44 +7,25 @@ fails — it is a check that **passes and should not have**.
 `method.md` holds the method; this holds the instruments' brackets. Read it when
 you are deciding whether a green result means anything.
 
-> **Provenance.** Canonical for what each check can and cannot see, and for its
-> measured brackets. **Still not audited end to end** — the honest state, and the
-> earlier "Verification date: UNKNOWN" said so rather than pretending. What is
-> now dated is narrower and real: on **2026-07-29** the three shipped brackets <!--count-mention-->
-> were each run and each made capable of failing (0.16.16-0.16.17), and the
-> console-noise check was found broken on the default path and fixed. On
-> **2026-08-02** the `build.js check` section below was written against the verb
-> as shipped, and every row of its table was watched go red with its own check
-> neutralised before being written down. Same day: parity re-verified against
-> the store-backed check (full bracket run green). On **2026-08-04** the
-> `check` section was re-verified against the 0.18.2 verb (SIZES-from-store,
-> the executor seam, declared substitutions — each arm red first). Most other
-> brackets here were measured on the predecessor skill and
-> carry over, because they describe what a *check* can perceive, not what a
-> renderer draws. Anything the node stack invalidated has been re-measured or is
-> labelled. Where a number is inherited and not re-verified on this stack, it
-> says so.
->
 > **Not here.** the method itself → `method.md`; backend policy → `webgpu-stack.md`.
->
-> **Amended 2026-08-05**: the no-instrument ledger gained two entries from
-> the first cold-start build with this skill — the `txt()` bypass (a
-> strippable pass certifies only opted-in text) and the inert
-> composed-periodic expression, which every instrument reports clean by
-> construction.
->
-> **Three kinds of claim live in this repo and only one of them rots.** An
-> *incident record* ("this reached `git add` once") is history and stays true. An
-> *intent* comment ("this tick is why the frame is deterministic") is checkable by
-> reading. A *measurement assertion* ("measured — does not close the cloak",
-> "40/40 clean", "~2.3x") is a claim about a run that happened elsewhere, and it
-> decays silently the moment the code moves. The repo's own self-check counts the
-> uncontrolled ones and **ratchets** them — the count lives there, once, and is
-> not restated here. Two known casualties so far — 0.16.9's console anchor, whose comment
-> asserted a measurement never taken, and rule 5's `sortObjects` repro, cited as
-> preserved and absent from the tree. That ratio is the size of the class. It is
-> not a to-do list; it is the reason to distrust an unsourced number here,
-> including the ones below.
+
+**This file is not audited end to end.** Most brackets here were measured on the
+predecessor skill and carried over, not re-measured on this stack, because they
+describe what a *check* can perceive rather than what a renderer draws. Where a
+number is inherited and unverified on this stack, it says so.
+
+**Three kinds of claim live in this repo and only one of them rots.** An
+*incident record* ("this reached `git add` once") is history and stays true. An
+*intent* comment ("this tick is why the frame is deterministic") is checkable by
+reading. A *measurement assertion* ("measured — does not close the cloak",
+"40/40 clean", "~2.3x") is a claim about a run that happened elsewhere, and it
+decays silently the moment the code moves. The repo's own self-check counts the
+uncontrolled ones and **ratchets** them — the count lives there, once, and is
+not restated here. Two known casualties so far: a console anchor whose comment
+asserted a measurement never taken, and a `sortObjects` repro cited as
+preserved and absent from the tree. That is the size of the known class. It is
+not a to-do list; it is the reason to distrust an unsourced number here,
+including the ones below.
 
 **Map.** Deliberately unlinked — a heading map costs nothing and cannot dangle,
 where hand-written anchors ship into an install cache unverified.
@@ -123,16 +104,15 @@ from the same pattern. The general rule, which is the third instance of it in
 this file: **when a guard and the thing it guards ask different questions, the
 gap between the two questions is where defects live.**
 
-**<!--derived:fences-->7<!--/derived--> fences are registered**, not two:
-`CONTRACT`, `KERNEL`, `SOLVER`, `RIG`, `DRIVER`, `CHARACTER`, `HTML`. This line
-said "Six" and omitted `CONTRACT` for every version after 0.16.44 made it the
-seventh — in a file that ships, so the count and the list disagreed with
-`smoke.js` for every installed user. The number is now derived from that array.
-The `HTML` block uses HTML-comment markers rather than
+**<!--derived:fences-->7<!--/derived--> fences are registered**:
+`CONTRACT`, `KERNEL`, `SOLVER`, `RIG`, `DRIVER`, `CHARACTER`, `HTML`. The number
+is derived from that array rather than written by hand — a count restated in a
+file that ships disagrees with `smoke.js` for every installed user the moment a
+fence is added. The `HTML` block uses HTML-comment markers rather than
 JS-comment ones, because it lives outside `<script>` — smoke's parity loop
 carries a second regex arm for it. A new shared block gets a fence at the third
-consumer, and the fence goes in this list or it is not enforced. Since
-2026-08-02 each fence is compared against its canonical copy in
+consumer, and the fence goes in this list or it is not enforced. Each fence is
+compared against its canonical copy in
 `templates/fences/<NAME>.fence.txt` rather than across the carriers — so nine
 copies drifting *together* still fail, a single scanned scene is a real
 comparison, and `--parity-fix` regenerates carriers from the store instead of
@@ -180,23 +160,20 @@ direct reference to the function before the wrap and calls it privately; every
 template calls `window.seekTo` by name, and any replacement loop must keep doing
 so to stay visible here.
 
-**Corrected 2026-07-25 — an earlier version of this entry claimed a blind spot
-that does not exist, and the correction is the more useful finding.** It said a
-host that both replaces the loop *and* swallows the exception passes this check
-while rendering nothing, citing a measurement of 71 calls with 71 distinct `t`.
-That was an artifact of the **probe**, not of the gate: the ad-hoc wrapper used
-for that measurement incremented its counter *before* calling the inner
-`seekTo`, so the increment ran even when the inner threw. The shipped check
-counts **after the inner call returns**, which is why a swallowing host fires
-like any other frozen film.
+**A wrapper that counts before it calls measures its own wrapper, not the
+scene.** A host that both replaces the loop *and* swallows the exception does
+**not** slip past this check, though an ad-hoc probe once suggested it did (71
+calls, 71 distinct `t`): that probe incremented its counter *before* calling the
+inner `seekTo`, so the increment ran even when the inner threw. The shipped
+check counts **after the inner call returns**, which is why a swallowing host
+fires like any other frozen film.
 
-Re-bracketed four ways against `gearbox` by `templates/bracket-liveplay.js`,
+Bracketed four ways by `templates/bracket-liveplay.js`,
 which builds its own broken copies and is runnable from a clean checkout —
 all four firing: unmodified
 (calls=20, distinct=20, playing); a throw in the rAF loop; a throw inside
 `seekTo`; and a host that swallows the throw — the last three all calls=0,
-distinct=0. **The wrapper ordering is load-bearing**, and that is the finding
-this entry should have carried in the first place.
+distinct=0. **The wrapper ordering is load-bearing.**
 
 What survives, restated narrowly: **the check runs standalone, so no
 *deployment configuration* other than a top-level load is exercised** — not the
@@ -205,13 +182,13 @@ shipped-frame check runs under `?record=1` and does not reach them either. That
 is a coverage gap in the harness, not a blind spot in this check, and
 `site/app.js`'s warning is a warning rather than a check.
 
-Bracketed three ways on `gearbox`, all three firing with the right message: the
+Bracketed three ways on a corpus film, all three firing with the right message: the
 rAF chain never started (0 calls), the first frame threw and killed the chain
 (0 calls, plus the page error) — which is the shape the real defect took — and a
 frozen clock driving `seekTo(0)` forever (3+ calls, 1 distinct `t`, caught only
-by the distinctness arm). Quiet on every shipped example and on the 2D
+by the distinctness arm). Quiet on every corpus film and on the 2D
 template. Cost is one extra page load per scene: **+0.14 s on hardware WebGPU, +1.05 s on the
-software-GL default** — measured 2026-07-25 on `gearbox` at the 640x360 check
+software-GL default** — measured on a corpus film at the 640x360 check
 viewport, one machine, wall-clock over a full `smoke.js` run; the gap is boot,
 not the check.
 
@@ -222,7 +199,7 @@ cross-references the declarative tables `breakdown.md` enumerates — `BEATS`,
 `SHOTS`, `SUBJECTS`, `CONFIG`, `FRAME`, `KEYS`, read as literals out of the
 scene's source text — against each other and against the kit's own semantics,
 and every finding is decidable before a frame renders or the page loads at all.
-`SIZES` is the exception in that list since REP2 (0.18.0): it lives inside the
+`SIZES` is the exception in that list: it lives inside the
 SOLVER fence, so `check` gets it by EXECUTING the canonical fence store's copy
 beside the tools, not by reading the scene — sound only because parity holds,
 which is what guarantees the scene's own bytes agree with the store's.
@@ -235,7 +212,7 @@ which is what guarantees the scene's own bytes agree with the store's.
 | `KEYS[].beat` and `CONFIG.flashes[].beat` resolve | error | — |
 | `FRAME.px` describes `FRAME.aspect` | error | whether either is the frame you wanted |
 | a union shot on a rung whose anchor is a body landmark, with no `anchor` override | warn | whether the composition reads |
-| a `STYLE`/`CONFIG` key that nothing reads — not the carried fences, not the scene's own code (near-miss named within two edits) | warn | whether a key that IS read does what its name says; a key consumed only indirectly (no shipped carrier does this, measured 2026-08-04) |
+| a `STYLE`/`CONFIG` key that nothing reads — not the carried fences, not the scene's own code (near-miss named within two edits) | warn | whether a key that IS read does what its name says; a key consumed only indirectly (measured: no shipped carrier does this) |
 | a caption above `smoke.js`'s reading-speed limit | warn | legibility at the size it is viewed — see below |
 | three or more shots sharing one framing | warn | whether the repetition is a motif |
 
@@ -253,17 +230,17 @@ does.
 declared `h`/`w`/`d` matches the geometry it claims to describe. Measuring that
 means naming scene objects, which is `build.js probe`'s admitted exception and
 not this command's to take. `check` says so on every run, green ones included.
-**A table this reader cannot slice is named, not skipped — and that was false
-until 0.16.68.** `check` reads table LITERALS out of the source text, so a table
-assembled by a loop or returned from a call is beyond it. Until 0.16.68 both
-shapes produced a clean green: the loop form evaluated the empty literal as a
-valid table and reported `0 shot(s)`, the call form fell into the same state as a
-2D scene that has no `SHOTS` at all. **A verdict that cannot tell "nothing to
-check" from "could not check" is the exact failure this file exists to track**,
-and it shipped inside the verb whose purpose is catching what a render would
-miss. Now: such a table draws a warning naming it, the header says `SHOTS unread`
-rather than asserting a scene kind, and the verdict line lists either the tables
-covered or the tables not covered.
+**A table this reader cannot slice is named, not skipped.** `check` reads table
+LITERALS out of the source text, so a table assembled by a loop or returned from
+a call is beyond it. Both shapes are one step from a clean green: the loop form
+evaluates an empty literal as a valid table and reports `0 shot(s)`, the call
+form is indistinguishable from a 2D scene that has no `SHOTS` at all. **A
+verdict that cannot tell "nothing to check" from "could not check" is the exact
+failure this file exists to track**, and the verb whose purpose is catching what
+a render would miss is the last place it should live. So: such a table draws a
+warning naming it, the header says `SHOTS unread` rather than asserting a scene
+kind, and the verdict line lists either the tables covered or the tables not
+covered.
 
 One blind spot remains and is quieter: a table whose values are computed from
 geometry built at runtime evaluates to `NaN` rather than to a number. The
@@ -272,11 +249,11 @@ range test, a `NaN` `dur` fails the positive test, both verified — but a `NaN`
 that no comparison reaches passes unremarked. A value that is a BARE reference
 to a scene constant is the recognized case: it reads as unresolved and draws a
 warning naming what goes unchecked, rather than an error quoting a value the
-source never wrote (`dur` since 0.16.70, anchor fractions since 0.18.2).
+source never wrote (both `dur` and anchor fractions).
 Arithmetic ON such a reference collapses to `NaN` and rejoins the paragraph
 above.
 
-**Substitutions are declared, not silent (0.18.2).** Where `check` cannot read
+**Substitutions are declared, not silent.** Where `check` cannot read
 an input it runs on a stand-in, and the verdict says so: an unreadable or
 runtime-assembled table is named along with what it un-covers, and a `STYLE`
 assembled from a bible runs the solver against an empty stand-in and warns
@@ -287,7 +264,7 @@ page can legitimately disagree there, and the sixth `bracket-check-kit.js` arm
 pins that the disagreement is declared on screen rather than silent.
 
 **The fences execute in a mirrored environment, and the mirror has one seam.**
-Since REP2 `check` runs the canonical KERNEL and SOLVER fences with the scene's
+`check` runs the canonical KERNEL and SOLVER fences with the scene's
 extracted tables in scope, and identifiers the tables do not supply fall
 through to the process's real globals, so the fence takes the same code path it
 takes in a page. The seam: an identifier declared in NEITHER place is a
@@ -298,17 +275,17 @@ verdict on the known divergence corpus, and this seam is what that green cannot
 promise about unknown ones.
 
 **The threshold to know about is the repeated-framing warning.** Three is the
-floor, and it has an observation on each side: `gearbox` and `menagerie` each
+floor, and it has an observation on each side: two corpus films each
 return to their establishing shot, which puts both at a pair of identical
-framings — ordinary grammar, which must not fire — while the defect corpus's
-known "same card" defect sits at four. Nothing distinguishes a lazy repeat from a
+framings — ordinary grammar, which must not fire — while a known-defective
+scene's "same card" repeat sits at four. Nothing distinguishes a lazy repeat from a
 deliberate motif, so it is a warning and not an error.
 
 **Every row above has an arm in `templates/bracket-commands.js`**, each on a copy
-of a shipped scene with exactly that property broken, and each was watched go red
+of a corpus scene with exactly that property broken, and each was watched go red
 with its own check neutralised. The union row carries a second arm in the other
 direction: the same shot WITH an `anchor` must produce no warning, because a
-shipped two-shot is exactly that shape and a rule that cannot tell them apart
+real two-shot is exactly that shape and a rule that cannot tell them apart
 condemns a correct film.
 
 ## `build.js motion`
@@ -449,8 +426,8 @@ Recorded honestly, because these are where films actually ship broken:
   written as `sin(quant(t,2)*π*2)` is exactly constant — every sample lands on
   a sine node — and every instrument reports clean: still pure in `t`, so smoke
   is green; no discontinuity, so no strip shows a pop; far too small a region
-  for `motion`'s whole-frame delta. On the first cold-start build with this
-  skill one sat invisible through every instrument from first draft to the
+  for `motion`'s whole-frame delta. On one cold-start build
+  one sat invisible through every instrument from first draft to the
   continuity pass — caught pre-delivery, but by incidental hand-inspection
   while investigating something else, never by anything in this toolkit. The countermeasure is `probe`: sample the expression at 4-5
   `t` values; fewer than two distinct outputs means the animation does not

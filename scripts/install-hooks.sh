@@ -13,9 +13,10 @@
 #
 # What it wires, both no-browser and fast enough to sit on every commit:
 #   scripts/selfcheck.js   — version cascade, the three pin and its per-scene
-#                            stamps, subtree link resolution, provenance headers
-#                            and `Not here` edges, the assertion ratchet, and
-#                            freshness markers. Milliseconds.
+#                            stamps, subtree link resolution, the date-free rule
+#                            for shipped markdown and its `Not here` edges, the
+#                            assertion ratchet, and freshness markers.
+#                            Milliseconds.
 #   smoke.js --parity-only — fence parity: every carrier checked against the
 #                            canonical store (templates/fences/), across every
 #                            carrier directory,

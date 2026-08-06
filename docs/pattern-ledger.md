@@ -25,12 +25,14 @@ question is the reverse:
 > green. Promoting it costs a chart, or three carriers, or a version cascade.
 > Copying wins on local reward every time.**
 
-And the design invites it. `SKILL.md` and `examples/README.md` both index by
-*film* — "the regression film", "the comedy short" — so an agent needing "how do
-I gate a prop's presence" has exactly one move: open a scene and read it. There
-is no pattern-level index, and **no rule anywhere tells a reader that unfenced
-code in an example is that film's private solution rather than sanctioned
-practice.** The fences mark what *is* shared; nothing marks what is not.
+The design invited it until 0.21.0, when the plugin stopped shipping films
+at all — an installed agent now has no scene to copy from, only references
+and templates. Repo-side the pressure survives in `scenes/`: the corpus
+still indexes by *film* — "the regression film", "the comedy short" — there
+is no pattern-level index, and **no rule anywhere tells a reader that
+unfenced code in a corpus film is that film's private solution rather than
+sanctioned practice.** The fences mark what *is* shared; nothing marks what
+is not.
 
 So:
 

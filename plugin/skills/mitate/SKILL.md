@@ -19,27 +19,6 @@ description: >
 
 # mitate
 
-> **Provenance.** Canonical for routing and workflow order. Verified 2026-07-31
-> against `templates/` and `references/` — including the Environment section,
-> re-checked against `build.js`'s encoder call sites after Track E1 moved the
-> review verbs off ffmpeg. Step 3's `build.js check` line added 2026-08-02 and
-> run against every shipped example and template before being written. Fence
-> parity re-verified 2026-08-02 after the check inverted to compare carriers
-> against the canonical store in `templates/fences/` (bracket-parity.js, all
-> arms, plus a byte-identical regeneration over all nine carriers). A full
-> claim audit against 0.19.2 ran 2026-08-04 before the first cold-start build:
-> the fence list gained `CONTRACT` (it was one of seven, listed as one of
-> six), the two WebGPU flag hazards were re-separated (hand-rolled flags fail
-> deterministic-black; `WEBGPU=swiftshader` fails non-deterministic and is
-> refused), and the workflow gained step 8, the film field report — the
-> method's closing step, which the numbered sequence previously never reached.
-> Step 7's `frames/` cleanup note added 2026-08-05 from that cold-start
-> build's postmortem, verified against `build.js`'s `frames()`/`video()` (the
-> figures are that build's measurement). Step 4's review delegation softened
-> to delegate-or-review-inline the same day (owner call): the cold build
-> reviewed inline, caught real defects, and shipped — the images are the
-> requirement, not the messenger.
-
 **What it makes:** one self-contained HTML file that plays an animated scene in
 any browser, and renders frame-exact to MP4, AVIF or WebP. No player, no build
 step, no assets — the geometry is drawn live from code on every frame.

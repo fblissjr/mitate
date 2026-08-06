@@ -7,6 +7,44 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.22.0
+
+### changed
+
+**Every shipped markdown file is date-free current state** (owner rule: the
+skill loads into working context, and an agent using it only needs what is
+true now — an amendment date or a decision narrative is history riding
+along). The dated **Provenance** headers, **Amended** blocks, version tags
+and correction narratives are gone from SKILL.md and all eleven references;
+the verified-against-what record they carried moved to
+`docs/shipped-provenance.md` (one row per shipped file, updated in the same
+motion as a re-verification), and history stays where it always was — git
+and this changelog. Two things deliberately survived in the shipped files,
+dateless: **trust labels** ("inherited from the predecessor stack, not
+re-measured here", "never audited end to end") because they are current
+state, and the **"Not here" routing edges** because they are routing.
+Dependency pins (`three@0.185.1`, `r185`) also stay — they are the stack a
+measurement binds to, not release history.
+
+**`selfcheck.js` check 4 inverted with the move.** It used to REQUIRE a
+dated provenance header in every reference; it now FAILS on any ISO date in
+any markdown under `plugin/`, walking the filesystem rather than
+`git ls-files` so a scratch file is caught before staging. The "Not here"
+edge requirement survives unchanged. Red observed before the scrub (26
+dated lines across the tree), green earned after; `bracket-selfcheck.js`
+gains the check's first arm (an untracked dated fixture under
+`plugin/skills/mitate/`, which also proves the filesystem walk).
+
+**No example-film citations remain anywhere in the shipped skill.** Every
+"see `examples/<film>.html`" and film-name attribution became either the
+technique itself (where a snippet or template already carries it) or a
+plain "measured on a corpus film" provenance note. Techniques whose ONLY
+worked evidence was a retired film are logged as snippet-harvest debt in
+`working-plan.md` (first: the instanced-field outline pass; also the
+`normalBias` shadow fix and the physical/SSS integrated demo) — paid
+scene-by-scene as portfolio films land, never by authoring untested code
+into a reference.
+
 ## 0.21.0
 
 ### changed

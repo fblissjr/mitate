@@ -2,16 +2,6 @@
 
 The words this skill uses as if you already knew them.
 
-> **Provenance.** Canonical for the *definitions* of this project's vocabulary.
-> It owns no measurement and no method — every entry points at the file that
-> does. **Verification date: 2026-07-30**, written from a term census across the
-> tracked corpus: `register` appeared 98 times in 16 files and was defined
-> nowhere, `parity set` 4 times and nowhere, and `install cache` 11 times *inside
-> this subtree* with its only definition outside it, where a reader holding the
-> subtree cannot follow. The `parity set` entry re-verified 2026-08-02 against
-> `smoke.js` after parity inverted to compare carriers against the canonical
-> fence store.
->
 > **Not here.** How to do any of it → `method.md`; what a check can and cannot
 > see → `instruments.md`; shot grammar → `film-language.md`.
 
@@ -49,10 +39,9 @@ gate enforces.
 written byte-identically into every scene that carries it. Self-containment
 forbids a shared import, so the copies are real and a check reports divergence.
 The list is `smoke.js`'s `FENCES`, and it is the enforcing copy — a fence absent
-from it is not checked, whatever a doc says. `CONTRACT` joined at 0.16.44 and
-this sentence named six until 0.16.64, which is the third file to carry that
-exact omission. Read the array; do not trust a restatement of it, including this
-one.
+from it is not checked, whatever a doc says. Read the array; do not trust a
+restatement of it, including this one: a prose list of fence names goes stale
+silently, and several files have carried the same undercount at once.
 
 **the parity set** — the files whose copy of a given fence is actually compared
 against the canonical store (`templates/fences/`) on one run. One file is a
@@ -79,9 +68,11 @@ instruments catch each. `method.md` owns them.
 **the install cache** — the per-version copy of `plugin/` that
 `/plugin install` writes, and what an installed user actually holds. **It
 contains only what lives under `plugin/`** — this subtree, `plugin/README.md`,
-`agents/`, the manifest. No `docs/`, no `CLAUDE.md`, no `scripts/`. Every
-reference's provenance header says it was verified against the working tree
-rather than a cache, and this is the thing being distinguished.
+`agents/`, the manifest. No `docs/`, no `CLAUDE.md`, no `scripts/`. The repo
+keeps its verification records for these references outside this subtree, and
+they record checks against the working tree rather than against a cache — the
+two routinely differ by several versions, which is the thing being
+distinguished.
 
 **earn-in** — the bar a proposed instrument must clear before it is built:
 a film was blocked without it, **or** a third recorded instance of the same

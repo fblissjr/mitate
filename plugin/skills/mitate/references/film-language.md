@@ -1,10 +1,5 @@
 # Film language: shots as data
 
-> **Provenance.** Canonical for the shot vocabulary and the SHOTS[] solver semantics. Last verified (in the working tree, not an install cache) against
-> the templates and shipped examples 2026-07-24 (full source audit;
-> corrections recorded in the changelog). If this file and the code
-> disagree, audit before trusting either — then fix the stale one.
->
 > **Not here.** the determinism rules → `webgpu-stack.md`; the review passes → `method.md`.
 
 
@@ -13,8 +8,8 @@ sizes, angles, lenses, cuts — compiled onto the camera per frame by the solver
 in `scene.template.html`. Raw camera keyframes are gone from the template on
 purpose: coordinates were never the author's intent; framing was.
 
-Implemented in the **3D template** and proven on `examples/gearbox.html`,
-which is authored with zero hand-written keyframes. The 2D backend keeps its
+Implemented in the **3D template** and proven on a corpus film authored
+with zero hand-written keyframes. The 2D backend keeps its
 simpler `{x,y,zoom}` rail; a 2D solver analog is deliberately unbuilt until a
 2D film wants shot vocabulary.
 
@@ -109,16 +104,15 @@ pull-out, orbit — and a moving subject makes any shot a tracking shot.
 as a snap with a stutter rather than a smear. Measured; use it for pace, not for
 the effect its name suggests. `match: true` is the match-cut constraint: the entry must
 carry identical framing vocabulary (size/angle/elev/fov/anchor) to the
-previous shot — checked at load, throws loud. The worked instance is inherited
-(the predecessor's toybot open): MS on a sign plate, hard cut, MS on the bot's
-torso — the frames rhyme because the compiler guarantees they must. No shipped
-example here uses `match:` yet.
+previous shot — checked at load, throws loud. The worked instance is inherited:
+MS on a sign plate, hard cut, MS on a robot's torso — the frames rhyme because
+the compiler guarantees they must. Nothing shipped here uses `match:` yet.
 
 **Focus** — needs no extra wiring: the always-on `RenderPipeline` carries the
 DoF chain, gated on declaring `STYLE.dof` (`{maxBlur}`). Each shot's DoF
 plane sits on `focus` (default: its subject); `shotFocus` is solved per frame
 and feeds the chain's focus uniform whether or not DoF is enabled, so setting
-`focus:` without `STYLE.dof` changes nothing visibly. No shipped example
+`focus:` without `STYLE.dof` changes nothing visibly. Nothing shipped here
 enables `STYLE.dof` yet — bracket before trusting a look to it. **A rack focus
 is two adjacent shots differing only in `focus`, joined by `blend`** — the
 focus distance interpolates with the same ease as the camera. No manual

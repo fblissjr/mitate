@@ -1,10 +1,5 @@
 # The character scaffold
 
-> **Provenance.** Canonical for the character scaffold API, gait, and the worked proportion vectors. Last verified (in the working tree, not an install cache) against
-> the templates and shipped examples 2026-07-24 (full source audit;
-> corrections recorded in the changelog). If this file and the code
-> disagree, audit before trusting either — then fix the stale one.
->
 > **Not here.** surface and shading packs → `materials.md`; per-beat motion discipline → `method.md`.
 
 
@@ -66,8 +61,8 @@ Worked starting points (tune by looking, not by faith):
   `{tailLen:1.8, tailSegs:4, muzzle:.4}` for a creature register; drop the
   tail and muzzle for a human silhouette. `quadruped:false` hangs the
   forelimbs as arms (swing them from `gaitBob`, flex `mid.rotation.z`).
-- **Quadruped (bear-shaped) — the vector `examples/menagerie.html` ships,
-  verified building and walking:**
+- **Quadruped (bear-shaped) — the vector verified on a corpus film,
+  building and walking:**
   `{quadruped:true, torsoTilt:80, hipH:1.85, torsoLen:2.4, pelvisR:.95,
   chestR:1.05, neckLen:.85, neckSegs:2, neckTilt:55, headR:.62, muzzle:.55,
   tailLen:.5, tailSegs:2, tailTilt:30, shoulderW:1.6, hipW:1.5,

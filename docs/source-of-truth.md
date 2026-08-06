@@ -12,7 +12,8 @@ other surface points at the home. Nothing restates.
 |---|---|---|
 | line-local invariant (a tick that guards determinism, a flag that renders black) | the comment ON that line | references may summarize and point in |
 | method, discipline, failure modes — "how to fish" | `plugin/skills/mitate/references/*.md` | SKILL.md and code comments point, never re-teach |
-| measured numbers and brackets | the one reference that owns the subject, with its date, conditions, and a re-runnable harness | code comments name the phenomenon, not the figure |
+| measured numbers and brackets | the one reference that owns the subject, with its conditions and a re-runnable harness — dateless, since shipped markdown is current-state only; the when lives in the ledger row below | code comments name the phenomenon, not the figure |
+| **when a shipped file was last verified, against what** — the record shipped provenance headers used to carry (moved out 2026-08-05: everything under `plugin/` reads as current state, and selfcheck check 4 fails on any ISO date there) | `docs/shipped-provenance.md`, one row per shipped markdown file, updated in the same motion as the verification | shipped files carry dateless trust labels ("inherited, not re-measured on this stack") but never the date; history stays in git and CHANGELOG.md |
 | routing and workflow order | SKILL.md | — |
 | what a check can and cannot see | `references/instruments.md` | smoke.js comments say how, not what-it-means |
 | **render-side** facts — backends, determinism, node stack, per-frame cost | `references/webgpu-stack.md` | — |

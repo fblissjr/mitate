@@ -9,36 +9,14 @@ This is the specification. One section per table: what it declares, its fields,
 who reads it, and — the column that matters most — **what validates it**, where
 the honest answer is usually *nothing*.
 
-> **Provenance.** Derived on **2026-08-02** by reading the three shipped scene
-> templates and every shipped example, not from memory or from the plan. The key
-> surfaces for `STYLE` and `CONFIG` were enumerated mechanically (every
-> `STYLE.*` / `CONFIG.*` read in `templates/` and `examples/`), which is how the
-> kit-versus-film split below is known rather than guessed. The validation column
-> was checked against the actual `throw` sites.
->
-> **Amended the same day**, by the work this file specified: `build.js check`
-> shipped in 0.16.67 and closes part of the validation column below, so those
-> rows now say so. Building it also found two `SHOTS` fields this enumeration had
-> missed — `anchor` and `anchorX`, both read by the solver and both used by
-> shipped examples — which is the ordinary result of writing code against a spec
-> rather than reading one.
->
 > **Not here.** How to author a film → `method.md`; shot grammar and what `h`
 > means → `film-language.md`; look packs → `bibles.md`; character vectors →
 > `characters.md`; what a check can and cannot see → `instruments.md`.
->
-> **Amended 2026-08-04** (0.19.0, REP3): the `STYLE` and `CONFIG` sections'
-> "validated: nothing" verdicts are closed — `check` now warns on declared
-> keys that nothing reads, with the kit vocabulary derived from the fence
-> store at check time. The derivation's first run found a real dead key in a
-> shipped template — `scene2d` declared `faint` and nothing read it — now
-> deleted, which is the "what validates it" column earning its keep on the
-> file that defined it.
->
-> **Not audited:** whether each documented semantic is *correct* — this file
-> records what the code does, and a wrong-but-consistent semantic would survive
-> it. Field descriptions are copied from the templates' own comments where those
-> exist.
+
+**Not audited:** whether each documented semantic is *correct* — this file
+records what the code does, and a wrong-but-consistent semantic would survive
+it. Field descriptions are copied from the templates' own comments where those
+exist.
 
 ## The shape of the layer
 
@@ -113,12 +91,12 @@ from a template sees only what the template declares.
 | `bloom` | `true \| {strength,radius,threshold}` | off; `.5 / .3 / .9`. **Thresholds unmeasured on the TSL path** |
 | `ink`, `stroke`, `accents`, `fontFamily`, `titleInk` | colours / typography | per template |
 
-**Film-private** — read by an example but by no template: `dotIn`, `dotOut`,
-`floor`, `fogFar`, `gearIn`, `gearOut`, `markerGlow`.
+**Film-private** — names films have invented that no template reads: `dotIn`,
+`dotOut`, `floor`, `fogFar`, `gearIn`, `gearOut`, `markerGlow`.
 
 **`STYLE` is an open bag, not a schema** — a film may invent keys, and a film-
 private name that a future kit key collides with would silently change meaning.
-**Validated since 0.19.0: consumption.** `build.js check` warns on any declared
+**Validated: consumption.** `build.js check` warns on any declared
 key that nothing reads — not the fences the scene carries, not the scene's own
 code — naming the nearest known key when one is within two edits, so a
 misspelled `exposure` is a named near-miss instead of a silent render at the
@@ -147,7 +125,7 @@ whether a key that IS read does what its name says.
 
 **Validated: the beat resolution, and consumption.** `build.js check` resolves
 each `flashes[].beat` against `BEATS` — the only exercise that resolver gets,
-since no shipped scene declares a flash — and since 0.19.0 the same
+since no shipped template declares a flash — and the same
 unknown-key warn as `STYLE` covers this bag: a misspelled `capFade` draws a
 warn naming the near-miss instead of rendering at the default and reading as
 a choice.
@@ -240,7 +218,7 @@ this section used to list as unchecked — `at`'s fraction inside `0..1`, shots 
 ascending time order, and a union on a rung whose anchor is a body landmark. The
 last is a warning rather than an error, and narrowed: a union that supplies
 `anchor` explicitly has supplied the landmark the box lacks, which is what a
-shipped two-shot does deliberately. `check` also resolves the names the two rows
+real two-shot does deliberately. `check` also resolves the names the two rows
 above leave to load time and to luck, and flags three or more shots that share
 one framing.
 
@@ -262,9 +240,9 @@ const KEYS = [{beat: 'two', at: .45, x: 0, y: -2, zoom: 1.55}];
 frame has no cinematography to solve.** Values are lerped against a
 **smoothstep-eased** fraction of the span — `ss(t, a.t, b.t)`, not `t` itself —
 so motion between adjacent keys eases in and out rather than running at constant
-velocity, with `CONFIG.sway` noise added on top. This file said "interpolate
-linearly" until 2026-08-02; a reader acting on that would have predicted uniform
-motion and been wrong about every 2D camera move. World space is 90 units tall,
+velocity, with `CONFIG.sway` noise added on top. It is **not** a linear
+interpolation, and reading it as one predicts uniform motion and is wrong about
+every 2D camera move. World space is 90 units tall,
 `y` down, origin centre, contained on both axes against `FRAME.aspect`.
 
 **Validated:** the beat name, via `beatAt`, and again by `build.js check` before
@@ -288,8 +266,8 @@ as a gait or **hang** as arms.
 **This is the layer's best-shaped member, and the model worth copying.** It is a
 fixed schema with one typed hole: `matFor(part)` returns the material for
 `'torso' | 'head' | 'muzzle' | 'limb' | 'foot' | 'tail'`, which is where shading
-packs plug in without touching the skeleton. From that one constructor a shipped
-example builds a bear, a human and an invented strider. Structure at the seam,
+packs plug in without touching the skeleton. From that one constructor a single
+corpus film builds a bear, a human and an invented strider. Structure at the seam,
 arbitrary code in the leaf.
 
 **Validated, and it throws loudly:** hind legs must out-reach `hipH`; forelegs
@@ -311,8 +289,8 @@ bags with no schema at all — `STYLE` and `CONFIG`. The rest sit between.
 **Validation clusters where a mistake is unrepresentable, not where it is
 expensive.** Unknown names throw because a lookup fails; the checks that would
 catch an authoring error which *is* representable — an extent that does not match
-its geometry, an anchor outside its beat, a caption that will not fit — did not
-exist. Two of those three now do: `build.js check` (0.16.67) is that reading of
+its geometry, an anchor outside its beat, a caption that will not fit — are the
+harder half. Two of those three are covered: `build.js check` is that reading of
 this section, built from it. The third is still open and is the expensive one,
 because it is the only item here that cannot be decided from the tables at all —
 it needs the geometry, and reading geometry is `probe`'s exception.

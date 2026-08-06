@@ -75,6 +75,17 @@ const ARMS = [
     return () => fs.rmSync(f, { force: true });
   }, 'unparseable due-marker'],
 
+  // Check 4 inverted at 0.22.0: shipped markdown is current-state only, so a
+  // date under plugin/ is a failure rather than a requirement. The fixture is
+  // untracked and sits OUTSIDE references/ so only the date scan can fire —
+  // and an untracked file firing at all proves the scan walks the filesystem
+  // rather than git ls-files (the pre-staging window is covered).
+  ['a dated annotation in shipped markdown', () => {
+    const f = path.join(ROOT, 'plugin', 'skills', 'mitate', '_bracket_fixture_dated.md');
+    fs.writeFileSync(f, '> Amended 2020-01-01: bracket fixture — history must not ship.\n');
+    return () => fs.rmSync(f, { force: true });
+  }, 'carries a dated annotation'],
+
   // Adversarial round (owner, 2026-08-04: "verify the mechanisms actually do
   // what we think"). The naturally-spaced spelling was INVISIBLE to the first
   // regex — no fire, no error, the silent-miss class — and a when-absent

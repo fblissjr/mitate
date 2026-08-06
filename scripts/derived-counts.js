@@ -52,9 +52,9 @@ const REGISTRY = {
     what: 'controls (bracket-*.js), both directories',
     derive: () => trackedCount(f => /(^|\/)bracket-[^/]*\.js$/.test(f)),
   },
-  examples: {
-    what: 'example scenes that ship',
-    derive: () => trackedCount(f => f.startsWith(path.posix.join(SUBTREE, 'examples')) && f.endsWith('.html')),
+  scenes: {
+    what: 'films in the tracked corpus (the plugin ships none)',
+    derive: () => trackedCount(f => f.startsWith('scenes/') && f.endsWith('.html')),
   },
   postmortems: {
     what: 'tracked postmortems',
@@ -136,8 +136,12 @@ const MARKER = /<!--derived:([a-z-]+)-->([^<]*)<!--\/derived-->/g;
  * mention carries `<!--count-mention-->` on its line. That exemption is the
  * SAME use-versus-mention seam check 12 hit, and this repo has failed it six
  * times, so it is explicit rather than inferred. */
+// 'scenes'/'films' are deliberately NOT here despite the registry entry: as
+// prose nouns they are generic ("two films walked in"), and wiring them in
+// flagged a dozen narrative phrases in one run. The registry entry exists for
+// markers; the bare-count net stays narrowed to nouns that only ever count.
 const NOUN_OF = {
-  references: 'references', brackets: 'brackets', examples: 'examples',
+  references: 'references', brackets: 'brackets',
   postmortems: 'postmortems', defects: 'defect-rows', fences: 'fences',
 };
 const NUM = '(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|\\d+)';

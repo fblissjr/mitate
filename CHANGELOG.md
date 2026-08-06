@@ -7,6 +7,46 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.21.0
+
+### changed
+
+**The plugin ships zero films** (owner call, revising option E the day
+after it landed: a shipped example gets copied instead of learned from,
+and the skill's job is to teach building, not to hand out finished work).
+`gearbox.html` moved to `scenes/` with the rest of the corpus and the
+shipped `examples/` directory is gone — the install cache is now SKILL.md,
+references, templates and the film-reviewer agent, nothing else (~93% of
+the remaining shipped bytes were that one film). Every pointer moved in
+the batch: SKILL.md's Examples section replaced by a no-films statement
+under References, CLAUDE.md's Map and invariants 2 and 4 (parity command
+is three globs now), the pre-commit hook generator (reinstalled), all
+three workflows, both READMEs and the site copy, `netlify.toml` and
+`site/.gitignore` comments, the defect-corpus README's contrast line,
+and the extract-patterns skill's destination list.
+
+**`stage-films.sh` stages one home.** `scenes/` is required rather than
+tolerated-absent, the `MITATE_EXAMPLES` override is retired for
+`MITATE_SCENES`, and its bracket ran red before the edit (all three arms,
+on the moved tree) and green after.
+
+**Five shipped brackets repointed at the corpus.** `bracket-determinism`,
+`-liveplay`, `-noise` (gearbox), `-check-kit` and `-commands`
+(noise-chart) resolved their fixture scenes from the shipped examples
+directory — a path that went half-dead when the corpus moved at 0.20.0
+and nothing pushed since, so no CI run ever saw it. They now resolve
+`scenes/` at the repo root; brackets are repo controls that happen to
+ship as dev tooling.
+
+**`selfcheck.js` check 2 derives its scan set from `scenes/`.** It
+scanned the shipped examples directory, which silently narrowed the
+three-pin stamp check to one film at 0.20.0 and to zero today; it now
+scans the corpus home, where every embedding scene lives. Check 6's
+comment-citation scan moved with it. `derived-counts.js` retires the
+`examples` countable for a `scenes` one and deliberately keeps
+`scenes`/`films` out of the bare-count net (generic prose nouns — the
+first run flagged a dozen narrative phrases).
+
 ## 0.20.0
 
 ### changed
@@ -3603,7 +3643,7 @@ enabled explicitly.
 
 ### added
 
-**Phase 2 step 3: `examples/menagerie.html`, the character-scaffold gate demonstration.** A furred bear (lateral-sequence quadruped), a fabric-shirted human (biped), and a text-invented three-eyed whip-tailed strider — three proportion vectors through ONE `buildCharacter`, walking in on staggered gaits, all turning to the viewer, settling as a group. Gate criteria measured: squint-distinct silhouettes (the squint strip separates all three at 90px), planted feet (strip-checked for each), byte-determinism on both backends, cross-directory fence parity green (all five fences, templates + examples). Independently reviewed by the film-reviewer agent, which caught the round of defects author-eyes missed — the look beat happened entirely off-frame (heads yawed ~26° where the camera needed ~75°, and the shot framed one character while the other two turned off-screen), the film's only closeup was 70% void, the tail-wag idle blend spiked the wag rate ~5x for a few frames (phase blended through a t-scaled gate instead of crossfading amplitudes), a one-shot "breath" held every character 3-5% squashed from frame 0, and a bare floor made an 11-unit walk read as a treadmill. All fixed and re-verified; the nocap pass now carries the look beat on geometry alone. One kit addition fell out: `rig.centerX` (visual center relative to the root) — aiming a subject at a quadruped's root orbits its tail end and crops the head, measured as an FS rendering a wall of rump. Per owner policy (recorded in the plan): the HTML is the shipped artifact — no AVIF/MP4 is rendered by default; finalized scene HTMLs are also copied to gitignored `internal/scenes/` for local viewing.
+**Phase 2 step 3: `examples/menagerie.html`, the character-scaffold gate demonstration.** A furred bear (lateral-sequence quadruped), a fabric-shirted human (biped), and a text-invented three-eyed whip-tailed strider — three proportion vectors through ONE `buildCharacter`, walking in on staggered gaits, all turning to the viewer, settling as a group. Gate criteria measured: squint-distinct silhouettes (the squint strip separates all three at 90px), planted feet (strip-checked for each), byte-determinism on both backends, cross-directory fence parity green (all five fences, templates + examples). Independently reviewed by the film-reviewer agent, which caught the round of defects author-eyes missed — the look beat happened entirely off-frame (heads yawed ~26° where the camera needed ~75°, and the shot framed one character while the other two turned off-screen), the film's only closeup was 70% void, the tail-wag idle blend spiked the wag rate ~5x for a few frames (phase blended through a t-scaled gate instead of crossfading amplitudes), a one-shot "breath" held every character 3-5% squashed from frame 0, and a bare floor made an 11-unit walk read as a treadmill. All fixed and re-verified; the nocap pass now carries the look beat on geometry alone. One kit addition fell out: `rig.centerX` (visual center relative to the root) — aiming a subject at a quadruped's root orbits its tail end and crops the head, measured as an FS rendering a wall of rump. Per owner policy (recorded in the plan): the HTML is the shipped artifact — no AVIF/MP4 is rendered by default; finalized scene HTMLs are also copied to a gitignored local directory for viewing.
 
 ## 0.8.0
 

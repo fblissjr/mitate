@@ -51,7 +51,7 @@ unrelated next-session handoff memo was retired, so one word stops meaning two
 things.)
 
 A second, partial firing on 2026-08-04 is worth grading precisely (the
-market-crash cold build; transcript a local transcript database, local). The step
+market-crash cold build; its transcript `(local)`). The step
 **fired by name** — the session announced "let's do the film field report"
 unprompted, first evidence the 0.19.2 closing step reaches a builder who never
 read this repo — but what it then wrote was a delivery note (what the film

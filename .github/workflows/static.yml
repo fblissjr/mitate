@@ -68,7 +68,6 @@ jobs:
         run: |
           bun run plugin/skills/mitate/templates/smoke.js --parity-only \
             plugin/skills/mitate/templates/*.html \
-            plugin/skills/mitate/examples/*.html \
             scenes/*.html \
             fixtures/defect-corpus/*.html
 
@@ -77,7 +76,7 @@ jobs:
       # over selfcheck.js -- the repo's own claim-checker -- had never executed in
       # CI. Both are browser-free, which is why they belong in the cheap job.
       # Neither writes anything tracked: bracket-stage-films.js drives
-      # stage-films.sh at a throwaway fixture via MITATE_EXAMPLES/MITATE_FILMS.
+      # stage-films.sh at a throwaway fixture via MITATE_SCENES/MITATE_FILMS.
       # It used to rewrite the real 1.14 MB gearbox.html and restore it, which
       # risked a shipped artifact to control a script that only serves the site.
       # The loop lives in scripts/run-brackets.sh, called by BOTH workflows. It
@@ -120,7 +119,6 @@ jobs:
         run: |
           fail=0
           for f in plugin/skills/mitate/templates/*.template.html \
-                   plugin/skills/mitate/examples/*.html \
                    scenes/*.html \
                    fixtures/defect-corpus/*.html; do
             bun run plugin/skills/mitate/templates/build.js check "$f" || fail=1

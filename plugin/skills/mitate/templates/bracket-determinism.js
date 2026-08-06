@@ -42,7 +42,10 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-const EXAMPLE = path.join(__dirname, '..', 'examples', 'gearbox.html');
+// The corpus lives at the repo root (the plugin ships no films). Brackets are
+// repo controls: they ship as dev tooling but run from a checkout, where four
+// levels up from templates/ IS the repo root.
+const EXAMPLE = path.join(__dirname, '..', '..', '..', '..', 'scenes', 'gearbox.html');
 const T = 3.3;
 const sha = b => crypto.createHash('sha256').update(b).digest('hex').slice(0, 12);
 

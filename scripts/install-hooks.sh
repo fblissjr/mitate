@@ -60,7 +60,6 @@ bun run scripts/selfcheck.js
 
 bun run plugin/skills/mitate/templates/smoke.js --parity-only \
   plugin/skills/mitate/templates/*.html \
-  plugin/skills/mitate/examples/*.html \
   scenes/*.html \
   fixtures/defect-corpus/*.html
 HOOK_BODY

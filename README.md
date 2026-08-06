@@ -35,9 +35,8 @@ models can do all of this on their own.
 Those six are what it makes today, playing in the browser at
 **[mitate.microapp.me](https://mitate.microapp.me)** — free and MIT-licensed, and
 the site is just the films. The same scenes are tracked in
-[`scenes/`](scenes/) (the film corpus) and
-[`plugin/skills/mitate/examples/`](plugin/skills/mitate/examples/) (the shipped
-teaching baselines): open one from disk and you get the real artifact, at full
+[`scenes/`](scenes/) (the film corpus — the plugin itself ships no films):
+open one from disk and you get the real artifact, at full
 resolution and frame rate, rather than a compressed recording of it. It's an early version — this is the current output,
 not the ceiling.
 
@@ -66,7 +65,7 @@ roughly 700px of frame width.
 
 **Where it is.** There's a balance in building in AI between "unfinished" and
 "over-engineered", and this sits on the unfinished side (I think). Everything
-here runs 12 to 21 seconds — kept short so the examples open as live HTML on
+here runs 12 to 37 seconds — kept short so the films open as live HTML on
 ordinary devices. **Nothing caps duration**: a 60-second film has been built, and
 a frame at t=18000 costs what a frame at t=1 costs, because the scene graph is
 built once and every frame restates it rather than accumulating.
@@ -84,7 +83,7 @@ names — `seekTo`, `DURATION`, `stopPlayback`, `sceneReady` — and reads the r
 behind fallbacks, so a scene missing `BEATS` is degraded rather than broken.
 `smoke.js`'s `CONTRACT` and `SOFT_CONTRACT` are the authority; this section is
 the reader-facing view of them. This is the driver block from
-[`gearbox.html`](plugin/skills/mitate/examples/gearbox.html) (search for
+[`gearbox.html`](scenes/gearbox.html) (search for
 `window.seekTo`). The excerpt is abridged and may drift out of sync as scenes
 evolve — the scene file is the source of truth:
 
@@ -124,7 +123,7 @@ approval process flows"*, *"make a boss-intro cutscene for this creature"*,
 *"turn docs/data-flywheel.md into an explainer"*, *"make this joke an animated
 meme"*.
 
-The shipped examples run 12 to 21 seconds; a 60-second one has been built. A film
+The corpus films run 12 to 37 seconds; a 60-second one has been built. A film
 lasts exactly as long as the beats written for it, and the HTML file is the same
 size either way, because the duration is a number in a table. What grows with
 length is recording time and the number of beats to author and review — not the
@@ -151,15 +150,14 @@ so treat it as untested rather than supported.**
 
 | Path | What |
 |---|---|
-| [`plugin/`](plugin/) | The skill itself — manifest, `skills/mitate/` with SKILL.md, references, templates, examples. See [`plugin/README.md`](plugin/README.md) |
+| [`plugin/`](plugin/) | The skill itself — manifest, `skills/mitate/` with SKILL.md, references, templates. No films ship in it. See [`plugin/README.md`](plugin/README.md) |
 | [`site/`](site/) | The static showcase site behind [mitate.microapp.me](https://mitate.microapp.me) — one hand-authored page, no framework |
 | [`docs/`](docs/) | [`plan.md`](docs/plan.md) (founding plan, architecture, phase gates), [`physics-bake-proposal.md`](docs/physics-bake-proposal.md), and [`predecessor-record.md`](docs/predecessor-record.md) (the frozen predecessor's measured findings, inherited) |
 | [`scenes/`](scenes/) | The tracked film corpus — full repo members (CI-smoked, parity-checked, on the site), not shipped in the plugin |
-| [`scripts/`](scripts/) | `stage-films.sh` — copies the shipped examples AND `scenes/` into `site/films/` at build time |
+| [`scripts/`](scripts/) | `stage-films.sh` — copies `scenes/` into `site/films/` at build time |
 
-Each scene HTML file is tracked once — in `scenes/`, or in
-`plugin/skills/mitate/examples/` if it is a shipped teaching baseline — and
-staged into `site/films/` at deploy. Edit them where they live.
+Each scene HTML file is tracked once, in `scenes/`, and staged into
+`site/films/` at deploy. Edit them where they live.
 
 ## Status
 

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Stage the skill's example scenes into site/films/ for serving.
+# Stage the tracked film corpus into site/films/ for serving.
 #
-# The scenes are tracked ONCE, as the skill's examples. This copies them in so
+# The films are tracked ONCE, in scenes/ at the repo root — the plugin ships
+# no films, so the corpus is the site's single source. This copies them in so
 # the site has one source of truth instead of two divergent ones. Run from the
 # site/ directory (Netlify's base dir); it is the build command in netlify.toml
 # and is also what you run before a local preview. Lives in scripts/; it
@@ -17,19 +18,15 @@ set -euo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # Both overridable, and the reason is worth stating: bracket-stage-films.js used
 # to test the derivation guard by editing the tracked 1.14 MB gearbox.html and
-# restoring it in a finally. That put a SHIPPED artifact at risk to control a
-# script that only serves the website — a bad trade, since the examples are the
-# product and the site is a showcase of it. With these, the bracket builds a
-# throwaway fixture instead and nothing tracked is ever written.
-examples="${MITATE_EXAMPLES:-$root/plugin/skills/mitate/examples}"
-# The tracked-but-unshipped corpus (option E, 0.20.0): staged onto the site
-# exactly like the shipped examples — the site is the corpus's public face.
-# Tolerated absent so the bracket's throwaway fixtures need not fake it.
+# restoring it in a finally. That put a real film at risk to control a script
+# that only serves the website — a bad trade, since the corpus is the evidence
+# and the site is a showcase of it. With these, the bracket builds a throwaway
+# fixture instead and nothing tracked is ever written.
 scenes="${MITATE_SCENES:-$root/scenes}"
 films="${MITATE_FILMS:-$root/site/films}"
 
-if [ ! -d "$examples" ]; then
-  echo "stage-films: no examples at $examples" >&2
+if [ ! -d "$scenes" ]; then
+  echo "stage-films: no corpus at $scenes" >&2
   exit 1
 fi
 
@@ -37,7 +34,7 @@ mkdir -p "$films"
 
 # CLEARED FIRST, and the order is the point. The derivation below can exit 1 —
 # that is what its guard is for — and an aborted run used to leave the PREVIOUS
-# gearbox-neon.html sitting beside freshly copied examples, with nothing saying
+# gearbox-neon.html sitting beside freshly copied films, with nothing saying
 # it was stale. A local preview then served a film derived from a gearbox that no
 # longer exists. Absent is visible; stale is not. Scoped to *.html because that is
 # exactly what this script produces and what site/.gitignore ignores; nothing else
@@ -45,18 +42,10 @@ mkdir -p "$films"
 rm -f "$films"/*.html
 
 n=0
-for f in "$examples"/*.html; do
+for f in "$scenes"/*.html; do
   cp "$f" "$films/"
   n=$((n + 1))
 done
-
-if [ -d "$scenes" ]; then
-  for f in "$scenes"/*.html; do
-    [ -e "$f" ] || continue
-    cp "$f" "$films/"
-    n=$((n + 1))
-  done
-fi
 
 # The neon bible variant, derived. Measured 2026-07-30: the stored copy differed
 # from gearbox.html by the STYLE line and nothing else.

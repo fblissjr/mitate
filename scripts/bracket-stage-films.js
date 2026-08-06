@@ -13,7 +13,7 @@
  * gearbox.html and restore it in a finally, which put a shipped artifact at risk
  * to control a script that only serves the website — the examples are the
  * product, the site is a showcase of it, and that is the wrong way round. It now
- * points stage-films.sh at a throwaway fixture via MITATE_EXAMPLES/MITATE_FILMS.
+ * points stage-films.sh at a throwaway fixture via MITATE_SCENES/MITATE_FILMS.
  * The clean-run arm still uses the real corpus, read-only.
  */
 const { execFileSync } = require('child_process');
@@ -81,16 +81,16 @@ const check = (label, ok, detail) => { results.push([label, ok, detail]); };
 // exit-1 run must not leave the PREVIOUS neon in place, since a stale film is
 // indistinguishable from a fresh one by looking at it.
 //
-// ENTIRELY ON A FIXTURE. Two runs against a throwaway examples dir: the first
+// ENTIRELY ON A FIXTURE. Two runs against a throwaway scenes dir: the first
 // carries the bible line and must produce a neon, the second does not and must
 // fail while REMOVING the neon the first produced. That sequencing is what makes
 // "not left stale" a real assertion rather than a coincidence, and it is why the
-// old version reached for the tracked example -- it needed a prior good run.
+// old version reached for the tracked film -- it needed a prior good run.
 // A fixture supplies one for a few hundred bytes instead of 1.14 MB of product.
 {
   let ok, detail;
-  const exDir = path.join(FIX, 'examples'), filmDir = path.join(FIX, 'films');
-  const env = { MITATE_EXAMPLES: exDir, MITATE_FILMS: filmDir };
+  const exDir = path.join(FIX, 'scenes'), filmDir = path.join(FIX, 'films');
+  const env = { MITATE_SCENES: exDir, MITATE_FILMS: filmDir };
   const fixNeon = path.join(filmDir, 'gearbox-neon.html');
   try {
     fs.mkdirSync(exDir, { recursive: true }); fs.mkdirSync(filmDir, { recursive: true });

@@ -56,12 +56,15 @@ const path = require('path');
 
 const BUILD = path.join(__dirname, 'build.js');
 const SMOKE = path.join(__dirname, 'smoke.js');
-const EXAMPLES = path.join(__dirname, '..', 'examples');
+// The corpus lives at the repo root (the plugin ships no films). Brackets are
+// repo controls: they ship as dev tooling but run from a checkout, where four
+// levels up from templates/ IS the repo root.
+const SCENES = path.join(__dirname, '..', '..', '..', '..', 'scenes');
 const TEMPLATE = path.join(__dirname, 'scene.template.html');
 
 // The cheapest real scene in the corpus: one locked shot, no characters, no
 // solver traffic. A film would work and would cost minutes.
-const SOURCE = path.join(EXAMPLES, 'noise-chart.html');
+const SOURCE = path.join(SCENES, 'noise-chart.html');
 
 const has = bin => { try { execFileSync('command', ['-v', bin], { shell: true, stdio: 'ignore' }); return true; }
                      catch (e) { return false; } };

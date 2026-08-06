@@ -183,7 +183,7 @@ edge, which is what those edges are for. In practice the reachable homes are:
 
 **Not destinations, and refusing them is part of the job:** `VISION.md` (short on
 purpose; a summary of the plan gets deleted), `site/` (downstream, owns no fact),
-the examples (a film never promotes), and `internal/` (see Step 8).
+the film corpus in `scenes/` (a film never promotes), and `internal/` (see Step 8).
 
 **If no home in the table fits, say so and stop there.** Creating a home is a
 source-of-truth decision the disposer makes, not a side effect of an extraction

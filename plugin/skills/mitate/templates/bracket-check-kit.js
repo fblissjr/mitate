@@ -35,9 +35,12 @@ const fs = require('fs');
 const path = require('path');
 
 const BUILD = path.join(__dirname, 'build.js');
-const EXAMPLES = path.join(__dirname, '..', 'examples');
+// The corpus lives at the repo root (the plugin ships no films). Brackets are
+// repo controls: they ship as dev tooling but run from a checkout, where four
+// levels up from templates/ IS the repo root.
+const SCENES = path.join(__dirname, '..', '..', '..', '..', 'scenes');
 // The cheapest real 3D scene in the corpus — one shot, real solver traffic.
-const SOURCE = path.join(EXAMPLES, 'noise-chart.html');
+const SOURCE = path.join(SCENES, 'noise-chart.html');
 
 // The same anchor strings bracket-commands.js mutates; both files throw when
 // the scene stops carrying them, so drift is loud in whichever runs first.

@@ -57,8 +57,9 @@ with length. **The HTML file is the same size for a five-hour film as for a
 twelve-second one**, because the duration is a number in `BEATS`. That is the
 opposite of how video behaves, and it is the point.
 
-60s across 31 beats has been built. The shipped example is 16.5s because it is
-an example — **never quote that as a limit.**
+60s across 31 beats has been built. Films built with this skill have mostly
+run 12–40s because they were demonstrations — **never quote a film's length
+as a limit.**
 
 What does scale is narrower than it sounds: *recording* time is linear in frames,
 and authoring and review effort grow with the number of beats, so budget review
@@ -248,8 +249,8 @@ and nothing else cleans it up.
 
 The method's last step, not optional bookkeeping: before you finish, write
 three honest bullets into whatever record you keep — what you built twice,
-what you re-derived from scratch, and what you copied out of an example scene
-(and what for). `references/method.md`'s closing section owns the step and the
+what you re-derived from scratch, and what you copied out of a template or an
+earlier scene (and what for). `references/method.md`'s closing section owns the step and the
 why; the five minutes after the film lands are worth more than any review
 later.
 
@@ -334,18 +335,8 @@ Cited above at the step that needs them. In full:
 | `delivery.md` | shipping the scene itself, and posters |
 | `recordings.md` | choosing and encoding a recording format |
 
-## Examples
-
-One teaching baseline per template ships in `examples/`:
-
-| file | what it demonstrates |
-|---|---|
-| `gearbox.html` | the baseline 3D film, and the committed `workshop`/`neon` bible pair |
-
-The rest of the film corpus — characters, comedy, materials, the chart
-tier — is tracked in the repo but not shipped:
-https://github.com/fblissjr/mitate/tree/main/scenes (absolute URL because
-this file ships into an install cache). Those are finished films, not
-pattern references: a technique worth copying out of one belongs in a
-reference, and needing to read one to learn it is a gap worth reporting in
-the field report (step 8).
+No finished films ship with this skill, on purpose: a film would get copied
+instead of built, and every technique a film could teach belongs in a
+reference as tested code you compose yourself. If you find yourself needing
+a worked film to learn something the templates and references do not carry,
+that is a gap — report it in the field report (step 8).

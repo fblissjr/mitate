@@ -31,7 +31,7 @@ const PLUGIN_ROOT = path.join(ROOT, 'plugin');
 const SUBTREE = path.join(ROOT, 'plugin', 'skills', 'mitate');
 const REFS = path.join(SUBTREE, 'references');
 const TEMPLATES = path.join(SUBTREE, 'templates');
-const EXAMPLES = path.join(SUBTREE, 'examples');
+const SCENES = path.join(ROOT, 'scenes');
 
 const R = f => fs.readFileSync(f, 'utf8');
 // ONE directory walk. There were two, written a session apart for checks 3 and
@@ -92,8 +92,13 @@ const fail = m => fails.push(m);
   if (!threePin) fail('build.js no longer declares THREE_PIN — the pin has gone back to being prose');
   const pin = threePin;
   const stamp = /<!-- three (\d+\.\d+\.\d+) embedded by build\.js vendor -->/;
-  for (const f of fs.readdirSync(EXAMPLES).filter(f => f.endsWith('.html'))) {
-    const s = R(path.join(EXAMPLES, f));
+  // Scans the tracked corpus at scenes/ — the plugin ships no films, so that
+  // is where every embedding scene lives. This scan pointed at the shipped
+  // examples dir until the corpus moved out, which silently narrowed it to the
+  // one film left behind; deriving the set from the corpus home fixes the
+  // narrowing and survives the next move.
+  for (const f of fs.readdirSync(SCENES).filter(f => f.endsWith('.html'))) {
+    const s = R(path.join(SCENES, f));
     const embedded = new RegExp(`<script>[\\s\\S]{${LIB_MIN_BYTES},}?</script>`).test(s);
     const m = s.match(stamp);
     if (!embedded) { notes.push(`${f}: no embedded library (2D or unvendored) — stamp not required`); continue; }
@@ -542,7 +547,7 @@ const toolJs = new Map([
   // lands with nothing to catch it. Review flagged that it was written here.
   const MINIFIED_LINE = 500;
   const sceneHtml = [];
-  for (const d of [TEMPLATES, EXAMPLES]) {
+  for (const d of [TEMPLATES, SCENES]) {
     for (const f of fs.readdirSync(d).filter(x => x.endsWith('.html'))) {
       sceneHtml.push([path.relative(ROOT, path.join(d, f)), R(path.join(d, f))]);
     }

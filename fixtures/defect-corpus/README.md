@@ -1,4 +1,4 @@
-last updated: 2026-08-03
+last updated: 2026-08-05
 
 # The defect corpus — apparatus, not an example
 
@@ -17,12 +17,12 @@ Scenes kept **because they are broken**, with characterized defects at known
 timestamps. A new instrument gets a positive control the day it is written, and
 a *regression* control the day someone changes it.
 
-**This is not teaching material and must never be read as one.** `plugin/`'s
-`examples/` are scenes an author should learn from; these are scenes an
+**This is not teaching material and must never be read as one.** The films in
+`scenes/` are finished work an instrument has passed; these are scenes an
 instrument should be measured against. That is why this directory lives outside
 the plugin subtree: everything under `plugin/` ships into the install cache, and
-a deliberately defective scene must not reach a user as though it were an
-example.
+a deliberately defective scene must not reach a user as though it were a
+finished film.
 
 ## Why it exists at all
 
@@ -77,7 +77,7 @@ read the second as describing a different problem.
 ### Open: nothing checks this file still RUNS (2026-07-31)
 
 Parity covers it. **Smoke does not.** `gate.yml` copies `templates/` and
-`examples/` into its workspace and not `fixtures/`, so a change that stops this
+`scenes/` into its workspace and not `fixtures/`, so a change that stops this
 scene loading — a `KERNEL` edit it cannot survive, a contract rename — would be
 found by whoever next tried to use it, which is the "a command nobody runs rots
 quietly" shape the harness tier exists to close. It passed `smoke.js` cleanly on

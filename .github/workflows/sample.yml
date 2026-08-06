@@ -57,13 +57,12 @@ jobs:
         with:
           bun-version: latest
 
-      # Examples only: they ship vendored, so three is not needed and the
-      # templates are not what failed.
+      # Finished films only: they carry their library vendored, so three is not
+      # needed and the templates are not what failed.
       - name: workspace
         run: |
           mkdir -p ws
           cp plugin/skills/mitate/templates/backend.js ws/   # all the sampler requires
-          cp plugin/skills/mitate/examples/*.html ws/
           cp scenes/*.html ws/
           cd ws && bun add playwright-core@1.61.1
 

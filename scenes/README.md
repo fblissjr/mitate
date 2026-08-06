@@ -4,12 +4,14 @@ last updated: 2026-08-05
 
 The films that are **tracked but not shipped**: full members of the repo —
 smoke-checked in CI, fence-parity carriers, browsable and reviewable — but
-not copied into any installed user's plugin cache. That split is
-examples-placement option E, decided 2026-08-04 and executed 2026-08-05:
-the shipped subtree keeps one teaching baseline per template
-(`plugin/skills/mitate/examples/`), everything else lives here, and the
-showcase site is the public face for all of it (`scripts/stage-films.sh`
-stages both directories into `site/films/`).
+not copied into any installed user's plugin cache. **The plugin ships no
+films at all** (owner call, 2026-08-05, revising examples-placement option
+E the day it landed): a shipped example gets copied instead of learned
+from, so the skill teaches through prose and tested snippets, and every
+finished film lives here — as the maintainer's calibration corpus, the
+evidence base for what the skill's docs actually produce, and the source
+the showcase site stages from (`scripts/stage-films.sh` →
+`site/films/`).
 
 Each film is a complete, self-contained scene: open the `.html` straight
 from disk and it plays. WebGPU is not required — the embedded
@@ -22,6 +24,23 @@ from disk and it plays. WebGPU is not required — the embedded
 **These are finished films, not pattern references.** Reading one to learn
 a technique is a bug report against `references/` — log it in
 `docs/pattern-ledger.md` rather than only solving it.
+
+## gearbox
+
+[`gearbox.html`](gearbox.html) — the regression film against frozen
+explainer-video: the same scene body on both stacks, judged side-by-side.
+Five beats, 16.5s, seamless loop by construction. Showcases the baseline
+pipeline: beats, the shot solver, the node post chain.
+
+![gearbox](https://raw.githubusercontent.com/fblissjr/mitate/main/site/posters/gearbox-still.jpg)
+
+The same file carries the committed style-bible control pair: switch
+`const STYLE = BIBLES.workshop` to `BIBLES.neon` — one line — and the same
+beats render as a dark stage where the light is the subject
+(`gearbox-neon.html` on the site is derived from exactly that edit by
+`stage-films.sh`, never stored):
+
+![gearbox neon](https://raw.githubusercontent.com/fblissjr/mitate/main/site/posters/gearbox-neon-still.jpg)
 
 ## crash
 

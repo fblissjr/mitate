@@ -1,6 +1,6 @@
-# Scenes staged from the skill's examples/ at build time by scripts/stage-films.sh.
-# Tracked once, as plugin/skills/mitate/examples/ — not twice. A pattern rather
-# than a list, so a sixth example needs no edit here.
+# Scenes staged from the tracked corpus (scenes/ at the repo root) at build
+# time by scripts/stage-films.sh. Tracked once, there — not twice. A pattern
+# rather than a list, so a new film needs no edit here.
 #
 # EVERYTHING in films/ is ignored, not just *.html. The narrower `films/*.html`
 # would have let a staged .json, sprite sheet or map file get tracked by

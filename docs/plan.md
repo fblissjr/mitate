@@ -1,4 +1,4 @@
-last updated: 2026-08-04
+last updated: 2026-08-05
 
 # mitate: founding plan
 
@@ -60,7 +60,7 @@ conditions have changed; the fourth was that plan's own stated revisit trigger.
 2026-07-30 against the `fb-claude-skills` marketplace manifest: neither
 `explainer-video` nor `screenwright` is among its entries. This said "it stays
 installed" for the whole life of this repo and was wrong, which matters more than
-a stale line usually would — it is why `internal/legacy/` may hold the only
+a stale line usually would — it is why a local archive `(local)` may hold the only
 surviving copy of both ancestors, and it was the premise under which archiving
 them looked safe. mitate supersedes it when its
 explainer register is verifiably better on the same test cases; then the
@@ -1242,11 +1242,13 @@ scene, because that is the fastest path and the reward is immediate — the copy
 works and smoke goes green, while promoting it costs a chart or three carriers
 or a cascade.** Local reward favours copying every time.
 
-The design currently invites it. `SKILL.md` and `examples/README.md` both index
-by *film*, so an agent needing a technique has one move: open a scene and read
-it. And no rule tells a reader that **unfenced code in an example is that film's
-private solution rather than sanctioned practice** — the fences mark what is
-shared; nothing marks what is not. Left alone this yields individually good
+The design invited it until 0.21.0: `SKILL.md` and the shipped examples README
+both indexed by *film*, so an agent needing a technique had one move: open a
+scene and read it. The plugin now ships no films at all — the corpus lives in
+`scenes/`, repo-side only — which removes the shipped copy path but not the
+underlying pressure: no rule tells a repo-side reader that **unfenced code in a
+corpus film is that film's private solution rather than sanctioned practice** —
+the fences mark what is shared; nothing marks what is not. Left alone this yields individually good
 scenes that each paid full price for the same thing, with no way to answer where
 a pattern came from or how many times it has been rebuilt.
 
@@ -1399,6 +1401,6 @@ because its output ships as data.
 | 3D template + packs | MaterialX noise nodes (via `three/tsl`) | MaterialX, shipped in three | Apache 2.0 |
 | `CHARACTER` fence (`addFur`) | Shell fur | GPU Gems "Fur — Fins and Shells" (idea) | citation |
 | fabric recipe | Sheen via `sheenNode` | three.js / Filament lineage | MIT / Apache 2.0 |
-| `examples/noise-chart.html` | `hws12` hash + value noise | Dave Hoskins, Hash Without Sine | MIT |
-| `examples/noise-chart.html` | Cosine gradient palette | iquilezles.org/articles/palettes | MIT |
-| `examples/noise-chart.html` | Domain-warped fbm (algorithm) | iquilezles.org/articles/warp (idea) | citation |
+| `scenes/noise-chart.html` | `hws12` hash + value noise | Dave Hoskins, Hash Without Sine | MIT |
+| `scenes/noise-chart.html` | Cosine gradient palette | iquilezles.org/articles/palettes | MIT |
+| `scenes/noise-chart.html` | Domain-warped fbm (algorithm) | iquilezles.org/articles/warp (idea) | citation |

@@ -153,7 +153,7 @@
       <div class="claim reveal">
         <div class="n">where it is</div>
         <h2>There's a balance in building in AI between "unfinished" and "over-engineered" — this currently sits on the side of unfinished (I think).</h2>
-        <p>A tinkering idea, in the open because <b>it is fun to see what it can do</b>. The films on this page run 12 to 21 seconds, and that is a choice about <em>this page</em>, not a limit: each one embeds its own copy of three.js, so a project site that shipped long films would be a giant cache of code for no reason. <b>Nothing caps duration.</b> A frame at <span class="mono">t=18000</span> costs what a frame at <span class="mono">t=1</span> costs, and the file is the same size either way, because the duration is a number in a table rather than anything accumulated. Longer films have been built; they just do not belong here. Characters are one skeleton family.</p>
+        <p>A tinkering idea, in the open because <b>it is fun to see what it can do</b>. The films on this page run 12 to 37 seconds, and that is a choice about <em>this page</em>, not a limit: each 3D one embeds its own copy of three.js, so a project site that shipped long films would be a giant cache of code for no reason. <b>Nothing caps duration.</b> A frame at <span class="mono">t=18000</span> costs what a frame at <span class="mono">t=1</span> costs, and the file is the same size either way, because the duration is a number in a table rather than anything accumulated. Longer films have been built; they just do not belong here. Characters are one skeleton family.</p>
       </div>
     </div>
   </div>
@@ -162,9 +162,9 @@
 <!-- ============================ GALLERY (dark stage) ============================ -->
 <section class="sec stage-sec" id="films">
   <div class="wrap">
-    <div class="sec-head reveal"><span class="idx">02</span><span>The films</span><span class="ln"></span><span>five works · one pipeline</span></div>
+    <div class="sec-head reveal"><span class="idx">02</span><span>The films</span><span class="ln"></span><span>six works · one pipeline</span></div>
     <h2 class="sec-title reveal">Lit on the stage. Each one a single file that plays from disk.</h2>
-    <p class="sec-lede reveal">Every title below is one self-contained HTML page — three.js embedded, zero fetched assets. <b>These run 12 to 21 seconds</b> — a film lasts exactly as long as the beats written for it, and these are short so the page stays light, since every one carries its own three.js. Length costs nothing at runtime. The thumbnails are poster frames rendered from the scenes; open a film and the scene itself runs. Each is tagged with the <b>primitives an agent composed it from</b>. This is what composes easily today — the <a href="#roadmap">roadmap</a> is the rest of it, abstracted one primitive at a time.</p>
+    <p class="sec-lede reveal">Every title below is one self-contained HTML page — zero fetched assets, and three.js embedded in the ones that are 3D. <b>These run 12 to 37 seconds</b> — a film lasts exactly as long as the beats written for it, and the 3D ones are short so the page stays light, since every one of those carries its own three.js. Length costs nothing at runtime. The thumbnails are poster frames rendered from the scenes; open a film and the scene itself runs. Each is tagged with the <b>primitives an agent composed it from</b>. This is what composes easily today — the <a href="#roadmap">roadmap</a> is the rest of it, abstracted one primitive at a time.</p>
 
     <div class="films">
 
@@ -264,6 +264,25 @@
           <p class="film-actions"><a class="btn btn-stage-ghost btn-sm" href="films/noise-chart.html?v=2" target="_blank" rel="noopener">Open Noise Chart full size <span aria-hidden="true">↗</span></a></p>
           <div class="prims">
             <span class="prim">mx_fractal_noise</span><span class="prim">mx_worley_noise</span><span class="prim">mx_aastep</span><span class="prim">hash lattice</span><span class="prim">drift control</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- crash -->
+      <article class="film reveal">
+        <button class="film-screen" data-film="crash" aria-label="Play the market-crash film: a candlestick tape, an order book, and the margin-call feedback loop drawn as geometry">
+          <img class="poster-still" decoding="async" src="posters/crash-still.jpg"
+               loading="lazy" width="960" height="540" alt="" aria-hidden="true">
+          <span class="open"><span class="tri"></span><span class="lbl">preview</span></span>
+        </button>
+        <div class="film-meta">
+          <div class="slug">SCENE 06 — TERMINAL TIER · MARKET EXPLAINER</div>
+          <h3>Market Crash</h3>
+          <p class="desc">Ten beats with nobody in them: a candlestick tape prints, an order book thins, and the margin-call feedback loop is drawn as <em>literal geometry</em> — call-lines from candle to margin marker, sell-streaks into a stepped ask stack, and the cascade's bolts feeding back into the tape. The only film here with no three.js in it at all.</p>
+          <div class="runline"><span>run <b>37.0s</b></span><span>beats <b>10</b></span><span>loop <b>bg-to-bg</b></span></div>
+          <p class="film-actions"><a class="btn btn-stage-ghost btn-sm" href="films/crash.html?v=2" target="_blank" rel="noopener">Open Market Crash full size <span aria-hidden="true">↗</span></a></p>
+          <div class="prims">
+            <span class="prim">2D canvas kernel</span><span class="prim">beat-relative easing</span><span class="prim">camera rail</span><span class="prim">path draw-on</span><span class="prim">seeded price series</span>
           </div>
         </div>
       </article>
@@ -452,6 +471,6 @@ window.stopPlayback =
   </div>
 </div>
 
-<script src="app.js?v=30"></script>
+<script src="app.js?v=31"></script>
 </body>
 </html>

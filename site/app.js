@@ -288,6 +288,7 @@
     'menagerie':     { title: 'Menagerie · character-scaffold demo',  meta: 'one skeleton · three gaits',src: 'films/menagerie.html?v=2' },
     'materials':     { title: 'Materials · cel · SSS · glass',        meta: 'transparency ordering case',src: 'films/materials.html?v=2' },
     'noise-chart':   { title: 'Noise Chart · primitive isolation',    meta: '8 cells · 1 drift control', src: 'films/noise-chart.html?v=2' },
+    'crash':         { title: 'Market Crash · mechanics of a cascade',meta: '10 beats · 37.0s',          src: 'films/crash.html?v=2' },
   };
 
   const lb = document.getElementById('lightbox');

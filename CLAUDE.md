@@ -322,7 +322,10 @@ the check.
   doctrine. A log being citable now is a change in reach, not in authority —
   where the two disagree the postmortem wins, and a claim resting on narration is
   still resting on narration. A postmortem MAY cite a local-only
-  artifact, but must label it `(local)` and must not rest a claim on it.
+  artifact **by class, never by its specific path or filename** ("the build
+  transcript", not the file's name) — labelled `(local)`, with no claim
+  resting on it. Tracked files are public; a private artifact's name is
+  itself private (owner rule, 2026-08-05).
   Deliberately no hand-written index — `/postmortem:postmortem-index` generates
   one from frontmatter. Read the newest first: a postmortem carries dated
   annotations, so its later corrections outrank its first verdict.

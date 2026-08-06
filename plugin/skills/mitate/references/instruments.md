@@ -148,7 +148,7 @@ is as frozen as one that never started, and a call count alone passes it.
 
 **It asks whether `seekTo` is being driven, never whose loop is driving it**, and
 that generality is deliberate rather than incidental. More than one thing already
-replaces the built-in loop: `site/app.js` calls `stopPlayback()` and drives `t`
+replaces the built-in loop: the showcase site's player calls `stopPlayback()` and drives `t`
 itself ("we drive it now"), and any in-scene viewer does the same. A check
 written against `requestAnimationFrame` would go blind on exactly the scenes with
 the most machinery between the clock and the frame — and a control aimed at the
@@ -180,7 +180,7 @@ What survives, restated narrowly: **the check runs standalone, so no
 iframe-with-a-parent-driving-`seekTo` case, not the install cache. The
 shipped-frame check runs under `?record=1` and does not reach them either. That
 is a coverage gap in the harness, not a blind spot in this check, and
-`site/app.js`'s warning is a warning rather than a check.
+the showcase player's warning is a warning rather than a check.
 
 Bracketed three ways on a corpus film, all three firing with the right message: the
 rAF chain never started (0 calls), the first frame threw and killed the chain

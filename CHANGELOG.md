@@ -7,6 +7,15 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.22.1
+
+### fixed
+
+**`instruments.md` no longer cites `site/app.js`** — a path outside the
+shipped subtree dangles in every install cache (invariant 3, the same class
+the plugin README was caught in). Both mentions now name the showcase
+player by role; the technical claims around them are unchanged.
+
 ## 0.22.0
 
 ### changed

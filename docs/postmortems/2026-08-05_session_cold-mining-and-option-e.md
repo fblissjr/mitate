@@ -17,12 +17,12 @@ artifacts:
   - docs/pattern-ledger.md
   - internal/log/log_2026-08-05.md
   - 616fa2d
-  - f4a32f5
-  - e186390
-  - d57ca71
-  - a5883cb
-  - b14c05c
-  - e8edcc4
+  - 226b253
+  - 4f85973
+  - 09f6085
+  - d9f8258
+  - bd7ef9c
+  - 6da8891
 ---
 
 # Postmortem: cold-mining-and-option-e
@@ -43,7 +43,7 @@ including the first pass's own error.** The finding-oriented pass produced
 the 0.19.4 routing (`616fa2d`); a no-context subagent then rebuilt the cold
 session's timeline from the same evidence and surfaced three things the
 first pass had not: the field report's absence traces to the builder's own
-task list omitting step 8 (now a SKILL.md line, `e186390`); the `| tail`
+task list omitting step 8 (now a SKILL.md line, `4f85973`); the `| tail`
 habit cost the builder four recovery calls on a filename its tool had
 printed; and the full smoke run never states its parity scope. It also
 caught the analyzer's inherited error (section 2). Structural: the repo's
@@ -67,7 +67,7 @@ change was watched red (a full run in a scratch workspace with real deps,
 line absent) before the edit and green after, with `bracket-parity`'s 33
 arms green post-change and the one uncontrolled edge disclosed in the code
 comment (`plugin/skills/mitate/templates/smoke.js`); `stage-films.sh`'s
-bracket ran green on both sides of its edit (`d57ca71`).
+bracket ran green on both sides of its edit (`09f6085`).
 
 **The repo's controls caught every error the session left for them.**
 selfcheck caught a hand-written count ("two defects") in `docs/README.md`'s
@@ -80,9 +80,9 @@ intent observed rather than asserted.
 **Owner decisions landed in records the same hour they were made.** Two
 interview rounds plus one mid-turn brake, each written where it governs:
 the delegation softening as owner's call 5 resolved
-(`docs/working-plan.md`, `f4a32f5`), the promotion call *and its same-day
-revision* both in `docs/examples-placement.md` (`a5883cb`), the vendoring
-exploration as an Open question with its measurement (`b14c05c`).
+(`docs/working-plan.md`, `226b253`), the promotion call *and its same-day
+revision* both in `docs/examples-placement.md` (`d9f8258`), the vendoring
+exploration as an Open question with its measurement (`bd7ef9c`).
 
 ## 2. What did not go well
 
@@ -91,7 +91,7 @@ exploration as an Open question with its measurement (`b14c05c`).
 compressed from the builder postmortem's frontmatter `(local)` — whose
 own body contradicts it — rather than re-derived from the transcript,
 which shows the blink caught at 19:43:50, pre-delivery. Fixed in 0.19.6
-(`e186390`) only because the independent reconstruction flagged it.
+(`4f85973`) only because the independent reconstruction flagged it.
 Structural: a summary inherits its source's drift unless re-derived at
 write time — and knowing the rule does not confer immunity while applying
 it, since this error was written *into a document about that build's
@@ -109,8 +109,8 @@ hook-caught error.** Three stale freshness markers blocked the docs
 commit; folding the marker fix into the released commit via `--amend` was
 then blocked by the cascade trigger, which compares against the very
 commit being amended and cannot know the result would be coherent.
-Resolved by soft-reset and recutting (`d57ca71`); a straggler marker took
-one more commit (`e8edcc4`). Not a control defect — but a real interaction
+Resolved by soft-reset and recutting (`09f6085`); a straggler marker took
+one more commit (`6da8891`). Not a control defect — but a real interaction
 that cost two blocked commits, worth knowing before the next amend of a
 version-bump commit.
 

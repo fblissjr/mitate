@@ -1106,6 +1106,17 @@ bucket (e).
 
 ## Examples policy (decided 2026-07-23, measured on a live install)
 
+> **SUPERSEDED TWICE — this section is the 2026-07-23 record, not current
+> policy.** Option E (2026-08-04, `examples-placement.md`) moved the corpus
+> out of the plugin; the owner's 2026-08-05 call (0.21.0) went further:
+> **the plugin ships NO films at all.** Every film lives in `scenes/` as
+> the maintainer's calibration corpus; the skill teaches through
+> references, templates and tested snippets only. The paragraphs below are
+> kept as the reasoning of their day — the shallow-clone/cache mechanics
+> they measured are still true; the conclusion they drew from them is not
+> the policy. `examples-placement.md`'s decision block carries the whole
+> arc and is the thing to read before touching any of this.
+
 Examples stay in the plugin dirs. The mechanics, verified on this machine:
 `/plugin marketplace add` shallow-clones the ENTIRE repo regardless of which
 plugin the user wants; `/plugin install` then copies just that plugin's

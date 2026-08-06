@@ -4,8 +4,6 @@ scope: cold-mining-and-option-e
 date: 2026-08-05
 summary: The independent no-context reconstruction caught the analyzer repeating the builder postmortem's own drift ("shipped invisibly") into a shipped reference, the repo's hooks caught every other error class the session produced, and the owner's mid-execution n=1 brake turned a decided promotion into a corpus placement with the baseline slot held open.
 artifacts:
-  - a local transcript database
-  - the builder's postmortem (local)
   - docs/scene-analyses/2026-08-04_market-crash-cold.md
   - plugin/skills/mitate/references/instruments.md
   - plugin/skills/mitate/references/method.md
@@ -30,8 +28,8 @@ artifacts:
 # Postmortem: cold-mining-and-option-e
 
 Session mode. Scope: mining the 2026-08-04 cold market-crash build (its
-postmortems, its transcript index at a local transcript database `(local)`,
-its raw transcript `(local)`) and routing everything it taught — which grew, by
+postmortems `(local)`, its raw transcript `(local)`, and a local database
+indexing that transcript `(local)`) and routing everything it taught — which grew, by
 owner instruction and two interviews, into three patch releases
 (0.19.4–0.19.6), a new document class, the option E restructure (0.20.0),
 the film-reviewer agent's first real exercise, and the revision of
@@ -90,9 +88,8 @@ exploration as an Open question with its measurement (`b14c05c`).
 
 **The analyzer repeated the exact drift it was documenting.** 0.19.4's
 `instruments.md` entry said the inert blink "shipped invisibly" — wording
-compressed from the builder postmortem's frontmatter
-(`the builder's postmortem (local)`,
-whose own body contradicts it) rather than re-derived from the transcript,
+compressed from the builder postmortem's frontmatter `(local)` — whose
+own body contradicts it — rather than re-derived from the transcript,
 which shows the blink caught at 19:43:50, pre-delivery. Fixed in 0.19.6
 (`e186390`) only because the independent reconstruction flagged it.
 Structural: a summary inherits its source's drift unless re-derived at

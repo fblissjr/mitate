@@ -210,8 +210,8 @@ examples were not doing much teaching to begin with.
 **The experiment effectively ran on 2026-08-04, and the answer supports E.**
 The first cold-start build (`market-crash`, an installed-plugin session on
 0.19.3, no repo context) had every shipped example available in its install
-cache and **read none of them** — its transcript (a local transcript database,
-local) shows exactly two reference reads (`method.md`, `bibles.md`) plus the
+cache and **read none of them** — its transcript `(local)` shows exactly
+two reference reads (`method.md`, `bibles.md`) plus the
 2D template before the whole scene was written, and zero example opens at any
 point. It shipped in one pass. For the 2D register at least, the references
 carry the teaching alone, which is the condition the option-D worry needed

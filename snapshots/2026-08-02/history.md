@@ -198,7 +198,7 @@ Each verified during assembly on 2026-08-02.
   they are the days the site and the migration were built. The convention says
   one file per working day.
 - **A pointer in the earliest log does not resolve.** It cites the
-  instrument-hardening postmortem under `internal/postmortems/`, which moved to
+  instrument-hardening postmortem by its old local-only path, which moved to
   `docs/postmortems/` in 0.16.33. The log was committed after the move. Nothing
   covers it: check 3 resolves markdown links and deliberately excludes
   backticked prose, and this is backticked prose. The log for the following day

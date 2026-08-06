@@ -10,9 +10,8 @@ the film's technical findings.
 **Method and evidence.** Built by a sonnet-5 session in an isolated
 workspace with only the installed mitate plugin (0.19.3 — byte-identical to
 this repo's tree at the time), no repo context, permission mode `auto`.
-Evidence: the transcript index a local transcript database `(local)`, the
-raw session transcript in the isolated workspace's local directory
-`(local)`, the scene and its postmortems under the local fixture directory
+Evidence: the build session's raw transcript `(local)`, a local database
+that indexes it `(local)`, the scene and its postmortems from that build
 `(local)`, and the 0.19.3 install cache. Timeline reconstructed 2026-08-05
 by an independent no-context subagent (the repo's runnable-on-work-you-
 did-not-do extraction doctrine), then verified and routed by the analyzing
@@ -20,8 +19,8 @@ session. **Thinking blocks are stored empty in both stores** — every claim
 here rests on narration text, tool calls and their results, and token
 accounting; where that limit bites, it is said.
 
-Headline numbers (derived from `semantic_sessions` /
-`semantic_tool_calls`): prompt 19:32:08 → delivery 19:50:28, 96 tool
+Headline numbers (derived from the transcript index's session and
+tool-call rollups): prompt 19:32:08 → delivery 19:50:28, 96 tool
 calls, 0 tool errors, 0 permission prompts, 93,262 output tokens, one
 human interaction in the whole session (the postmortem-phase filing
 question).
@@ -203,8 +202,8 @@ shipped agent's first real exercise — returned promote-after-fixing: the
 middle three beats were three captions over one continuous fall, the outro
 was a static uncovered loop seam, and the reveal carried the documented
 momentum-stall anti-pattern. All were fixed in a revised copy that landed
-in `scenes/crash.html`; the cold original stays under `internal/` as this
-record's fixture. The shipped 2D-baseline promotion was **held by owner
+in `scenes/crash.html`; the cold original stays local as this record's
+fixture `(local)`. The shipped 2D-baseline promotion was **held by owner
 call on the n=1 principle** — more portfolio scenes get built and reviewed
 first.
 

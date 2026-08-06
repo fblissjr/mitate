@@ -409,12 +409,14 @@ which exists for exactly this and is 96 lines today.
 
 ## Salvaged from the ancestors, and what was deliberately left behind (2026-07-30)
 
-`internal/legacy/` is being archived off this machine. An audit checked every
+The local predecessor archive `(local)` is being archived off this machine. An
+audit checked every
 prose file in it against `predecessor-record.md`, `plan.md` and this file before
 calling anything uncaptured. **The consolidation held** — the four explainer-video
 planning docs, `screenwright_plan.md` and all twelve carried-over references are
-verbatim or corrected in the tracked corpus, and `internal/prior_artifacts/` is
-byte-identical to `internal/legacy/docs/`, so it is fully redundant.
+verbatim or corrected in the tracked corpus, and the local prior-artifacts tree
+`(local)` is byte-identical to that archive's docs directory, so it is fully
+redundant.
 
 **Promoted (0.16.35):** the procedural-asset cookbook into `materials.md`, which
 two shipped files already claimed contained it.
@@ -465,8 +467,8 @@ shape.
 
 ## What the predecessor already knew
 
-`internal/prior_artifacts/` holds the four explainer-video planning documents and
-the screenwright founding plan. **All of it is already consolidated** — the four
+The local prior-artifacts tree `(local)` holds the four explainer-video planning
+documents and the screenwright founding plan. **All of it is already consolidated** — the four
 explainer docs into [`predecessor-record.md`](predecessor-record.md) (arc,
 postmortem, per-item ledger, test suite, and the hardening plan as "The
 remediation"), and `screenwright_plan.md` into [`plan.md`](plan.md) by the
@@ -1587,10 +1589,10 @@ Cheapest-risk first. **Do not batch these**; each has a different control.
     setting any threshold — two observations is thin by this repo's own standard.
     Run the full example corpus. A real external before/after pair exists (an
     LFP-battery explainer, 8 beats, scores independently re-derived rather than
-    taken from a self-report) and is offered as additional data. It sits in
-    `internal/sonnet_and_gemini_scenes/` **`(local)`** — inside this tree and
+    taken from a self-report) and is offered as additional data. It sits in an
+    untracked scene directory **`(local)`** — inside this tree and
     directly runnable (`bun run build.js motion lfp-explainer.html`), but
-    `internal/` is gitignored, so it is present on one machine and absent from
+    gitignored, so it is present on one machine and absent from
     any clone. **The reason not to rest a threshold on it is sample size, not
     reachability** — it is one external scene, the same thinness argument that
     applies to the two documented fixtures. An earlier draft of this line said it
@@ -2322,7 +2324,7 @@ location was inherited, never re-chosen.
 `internal/*` + `!internal/log/`, never `internal/` + a negation, because git does
 not descend into an excluded directory. `CLAUDE.md` spends ten lines on that and
 warns that widening the negation publishes the rest — and the rest is
-`internal/outside_comms/` (third-party correspondence) and the local prototype fixture. A
+third-party correspondence and the local prototype fixture. A
 public repo sits one careless `.gitignore` edit from publishing private
 correspondence, and that exposure exists ONLY because a tracked directory lives
 inside a private tree.
@@ -2348,7 +2350,8 @@ managed.
 reason, so the convention and the repo move together — a repo diverging from an
 always-loaded global rule is the two-copies-disagree failure in its worst
 possible position. Do it sooner if `internal/` gains a second tracked child, or
-if anything is ever added to `outside_comms/` that would be costly to publish.
+if anything is ever added to the third-party correspondence tree that would be
+costly to publish.
 
 **Checklist when it happens:** `git mv` (history survives) · rewrite `.gitignore`
 to plain `internal/` · update `CLAUDE.md` (3 spots) and `source-of-truth.md`
@@ -2621,7 +2624,7 @@ rather than a matter of mood.
 | `bracket-noise`'s claims-webgpu arm: convert the standing local red to a skip-with-stated-reason on hardware-WebGPU machines, while CI keeps the real arm | the permanent red on developer hardware (filed, CHANGELOG 0.17.2) trains exactly the route-around habit the corpus doctrine warns about; declined as a quick edit because it touches signal honesty and needs its own red-first pass | the next edit to `bracket-noise.js` for any reason, or a session getting bitten by the red twice in one week |
 | the shipped 2D teaching-baseline slot (`examples/`) — open, with `scenes/crash.html` as candidate | owner, 2026-08-05, revising a same-day call mid-execution: the film-reviewer pass on crash ran (promote-after-fixing; the causal-loop geometry, continuous-velocity reveal, loop landing and minors all landed, instruments green) — but a cold build reviewed once is n=1, and the scene every future 2D film copies should not be chosen on one sample. The owner's framing: **create and review more portfolio test scenes before any "good enough, move on"** | a second 2D-register portfolio scene built and reviewed (the 2D-explainer rung is queued); then decide the baseline between the candidates on their review records |
 | a gate-cost watch threshold | graduated 2026-08-05 from the 2026-08-04 brainstorm at its deletion (its graduate-or-die rule; this was the one disposition still marked "proposed"): `gate.yml`'s comment says ~6m30s (measured 2026-08-02, dated, so not false); the last four green runs before 2026-08-04 took 7m01s–7m48s (`gh run list`, 2026-08-04), with `bracket-corpus.js` disclosing ~2min of that at its own site. The repo's own doctrine says a slow gate is one people route around | the first green gate run exceeding 10 minutes — then revisit the gate's composition, not before |
-| a mechanical inert-expression check (probe-based non-constancy) | the first cold-start build (2026-08-04, installed 0.19.3) shipped a constant "blink" — `sin(quant(t,2)*Math.PI*2)`, exactly 0 at every `t` — invisible to every instrument by construction: pure in `t` so smoke is green, no discontinuity so no strip pops, sub-threshold for `motion`'s whole-frame delta. Found by accident during an unrelated investigation (that build's postmortem, `(local)` under the local fixture directory). The manual rule landed in 0.19.4 (`method.md` "A composed periodic can be constant" + the `instruments.md` no-instrument entry); a mechanical form needs either an expression registry or a source scan for composed periodics, and goes through `controls.md`'s door with a red-first bracket — that build's pre-fix expression is the natural red arm | a second inert expression shipping past the method's probe rule, or the REP track giving scene expressions an addressable form |
+| a mechanical inert-expression check (probe-based non-constancy) | the first cold-start build (2026-08-04, installed 0.19.3) shipped a constant "blink" — `sin(quant(t,2)*Math.PI*2)`, exactly 0 at every `t` — invisible to every instrument by construction: pure in `t` so smoke is green, no discontinuity so no strip pops, sub-threshold for `motion`'s whole-frame delta. Found by accident during an unrelated investigation (that build's own postmortem, `(local)`). The manual rule landed in 0.19.4 (`method.md` "A composed periodic can be constant" + the `instruments.md` no-instrument entry); a mechanical form needs either an expression registry or a source scan for composed periodics, and goes through `controls.md`'s door with a red-first bracket — that build's pre-fix expression is the natural red arm | a second inert expression shipping past the method's probe rule, or the REP track giving scene expressions an addressable form |
 | a `fillText`-outside-`txt()` detector for 2D scenes | same build: the HUD was first hand-rolled with `ctx.fillText`, which opts out of `?strip=text` silently — the nocap sheet stays normal-looking while certifying only opted-in text. Caught by re-reading the template's kernel comment against the code, never by an instrument. A static scan (flag `fillText` calls in a 2D scene outside the kernel's own `txt` definition) is cheap and gate-shaped; through `controls.md`'s door, red first | a second bypass reaching review anywhere, or the next `build.js check` edit for any reason |
 | instrument output hygiene — five datapoints from the cold build's timeline (`docs/scene-analyses/2026-08-04_market-crash-cold.md`) | the review verbs print their operative line first and boilerplate last, so an agent's habitual `\| tail -N` reliably hides the thing it needs: `sheet … nocap`'s output filename was tailed away (cost: four recovery calls, a stale-image read, and a grep of the tool's own dispatch), `strip`'s filename likewise (one recovery `ls`), and `motion`'s re-run tail cut `median frame-diff` — the table's only absolute scale. Also: `strip` overwrites one fixed `<name>.strip.jpg` across runs, silently destroying earlier evidence (three ran; one survived); and `probe <t> 'null'` returns `null`/exit 0 — a probe with no question is indistinguishable from a probe that found nothing. Fix shape: operative line LAST, ffmpeg banner suppressed in `motion`, per-range strip filenames, probe refusing an expression that evaluates to nothing — build.js edits, through `controls.md`'s door | the next `build.js` edit for any reason, or the boss-intro cold build tripping on any of them |
 | `smoke.js` states its parity scope on green | smoke's pass output (6 lines) says nothing about fences: not that they were compared, how many, or against what — so the cold session's scene had its parity checked three times and the session had no way to know (it never ran `--parity-only`). The repo's own verdict-states-scope principle (`controls.md`; already applied to `build.js check`'s scope line and `run-brackets.sh`'s empty-glob fail) has not reached the shipped smoke's green path | the next `smoke.js` edit, or the option E batch (which adds a carrier and re-touches the parity surface anyway). **LANDED 0.20.0 (2026-08-05) — the trigger fired with the E batch and was honored**: the scope string is built once and printed by both modes; observed absent (full run, scratch workspace with real deps, pre-change) then present (same workspace, post-change); `bracket-parity` all 33 arms green after. Disclosed uncontrolled edge, in the code comment where it bites: the string's derivation is controlled by the scan arms via the `--parity-only` verdict, but no browser-free arm can reach the full run's PRINT of it — the gate log carries it on every run instead |

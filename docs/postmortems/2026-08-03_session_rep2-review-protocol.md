@@ -27,7 +27,6 @@ artifacts:
   - .claude/skills/verify-written-claims/SKILL.md
   - site/index.html
   - internal/log/log_2026-08-03.md
-  - internal/handoff_next-session.md
   - snapshots/2026-08-02/history.md
 ---
 
@@ -119,7 +118,7 @@ frontmatter, the day's thesis in one line.
 
 ## 3. Deviations from the plan
 
-The plan is `internal/handoff_next-session.md`'s THE WORK section plus the
+The plan is the next-session handoff memo's THE WORK section `(local)` plus the
 owner's in-session asks.
 
 | Planned | Shipped | Verdict |

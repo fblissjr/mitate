@@ -1602,7 +1602,7 @@ something regressed.
 
 **Outcome (2026-07-22): PASS — but it took 3 composition rounds, not the
 predicted ≤2, and it produced the run's best instrument finding.**
-Film: `internal/video-tests/a2-approval-flow.html` — a request travelling from
+Film: `a2-approval-flow.html` `(local)` — a request travelling from
 filing to recorded decision. 5 beats / 15.8s, blueprint pack, locked camera
 (`sway:0`, KEYS pinned to zoom 1). Built by splicing the 2D template so the
 KERNEL block stays byte-identical; `smoke.js` kernel-parity check confirms it.
@@ -1871,7 +1871,7 @@ a toolchain regression before committing render time to a big case.
 
 **Outcome (2026-07-22): PASS on all three axes — hypothesis confirmed, plus
 one new finding worth promoting to `film-language.md`.**
-Film: `internal/video-tests/d4-noise-cancelling.html` — how noise-cancelling
+Film: `d4-noise-cancelling.html` `(local)` — how noise-cancelling
 headphones work. 3 beats / 9.4s / 3 shots, no title card. The anti-wave is
 computed as the negation of the source wave's own expression and the sum trace
 is `a+b`, so causality is structural rather than co-incidental

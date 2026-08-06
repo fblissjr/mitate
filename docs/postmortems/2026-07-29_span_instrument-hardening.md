@@ -5,8 +5,6 @@ date: 2026-07-29
 range: f9fbb84..61fcd54
 summary: Four outside reviews found almost nothing real, but running the gate they all assumed was green found that it had been failing every 3D scene on the documented CI-safe path since 0.16.9 — the repo's instruments were strong and its instruments-on-instruments did not exist.
 artifacts:
-  - internal/outside_comms/m1.md (local)
-  - internal/outside_comms/m4/feedback.md (local)
   - plugin/skills/mitate/templates/smoke.js
   - plugin/skills/mitate/templates/bracket-noise.js
   - plugin/skills/mitate/templates/bracket-determinism.js
@@ -39,8 +37,8 @@ the first thing actually *run* turned out to be red.
 
 ## 1. What went well
 
-**Running the gate beat reading about it, by a wide margin.** Four reviews
-(`internal/outside_comms/m1.md` through `m4/feedback.md`) produced, between them,
+**Running the gate beat reading about it, by a wide margin.** Four outside
+reviews `(local)` produced, between them,
 two real defects — a duplication in `build.js`'s temp filenames and a
 context-budget observation about `references/method.md`. One `bun run smoke.js` on
 the default path produced a defect that had failed the entire shipped corpus for

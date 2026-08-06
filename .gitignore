@@ -13,7 +13,7 @@
 # traversable so the negation can take effect.
 #
 # The negation is deliberately narrow. internal/ still holds the local prototype fixture,
-# the prior-artifacts tree, outside_comms and scratch renders, and NONE of that
+# the prior-artifacts tree, third-party correspondence and scratch renders, and NONE of that
 # is tracked. Widening this pattern publishes them; add a new negated line for a
 # specific path instead.
 internal/*

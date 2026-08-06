@@ -4,7 +4,6 @@ scope: fence-store-emitter
 date: 2026-08-02
 summary: REP1 landed gate-clean in one session, but the wording sweep covered every file that describes parity and none that relocate smoke.js — four workspace-shape breaks shipped in 0.17.0 and surfaced loudly the same evening only because the store loader refuses instead of degrading.
 artifacts:
-  - internal/handoff_next-session.md
   - scripts/emit-spike.js
   - plugin/skills/mitate/templates/smoke.js
   - plugin/skills/mitate/templates/bracket-parity.js
@@ -20,8 +19,6 @@ artifacts:
   - docs/orientation.md
   - docs/plan.md
   - internal/log/log_2026-08-02.md
-  - internal/note_to-doc-session_2026-08-02.md
-  - internal/note_to-emitter-session_2026-08-02.md
   - scripts/selfcheck.js
   - scripts/run-brackets.sh
 ---
@@ -33,14 +30,12 @@ carrier-vs-store, `--parity-fix` reduced to regeneration, wording moved in the
 same phase. Shipped as 0.17.0 through 0.17.2 (`CHANGELOG.md`), on `r1-emitter`,
 concurrently with a second session that held `docs/` and `CLAUDE.md`. This
 postmortem is the session's own account; the two peer notes it exchanged are
-local-only (`internal/note_to-doc-session_2026-08-02.md`,
-`internal/note_to-emitter-session_2026-08-02.md`, both (local)) and no finding
-below rests on them.
+local-only `(local)` and no finding below rests on them.
 
 ## 1. What went well
 
 - **The handoff's verify-the-lead ritual earned its keep on arrival.**
-  `internal/handoff_next-session.md` (local) predicted its own rot and named
+  The next-session handoff memo `(local)` predicted its own rot and named
   three checkables; one had rotted exactly as predicted (HEAD was the
   post-merge log commit `c2823a6`, not the merge commit the memo named), and
   the substance held. Cost: one command. The general form: a handoff that
@@ -192,8 +187,8 @@ gate (now `docs/plan.md`'s REP track).
    the arm visible-and-counted, never self-green. Checkable by the trigger
    firing or not; wrong-premise if CI stops being the arbiter.
 5. **Multi-session days get an on-demand claims file.** Convention agreed
-   between the two sessions (peer notes, (local)): `internal/claims.md`,
-   one line per claim, created when a second live session announces itself,
+   between the two sessions (peer notes, (local)): an on-demand claims file
+   `(local)`, one line per claim, created when a second live session announces itself,
    deleted when the last claim releases, absence meaning "no concurrent
    claims". Checkable: the next day with two live sessions either creates
    it or the convention was dropped.

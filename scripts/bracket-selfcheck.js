@@ -119,6 +119,19 @@ const ARMS = [
     return () => fs.writeFileSync(f, had);
   }, 'would measure determinism on different browsers'],
 
+  // The frontmatter fix narrowed the silent-drop case; this arm pins that the
+  // CLASS is gone. A marker below the window used to remove the file from the
+  // population with nothing said — an absence cannot fail — so being outside
+  // the window is now itself a failure. Without this arm the check would
+  // regress to silence and every other freshness arm would stay green.
+  ['a marker pushed BELOW the window (must be loud, not silent)', () => {
+    const f = path.join(ROOT, '.claude', 'skills', 'extract-patterns', 'SKILL.md');
+    const had = fs.readFileSync(f, 'utf8');
+    const filler = '\n' + ('x'.repeat(80) + '\n').repeat(4);
+    fs.writeFileSync(f, had.replace('\nlast updated:', filler + '\nlast updated:'));
+    return () => fs.writeFileSync(f, had);
+  }, 'marker outside the window this check reads'],
+
   ['a stale marker sitting BEHIND long frontmatter', () => {
     const f = path.join(ROOT, '.claude', 'skills', 'extract-patterns', 'SKILL.md');
     const had = fs.readFileSync(f, 'utf8');
@@ -427,12 +440,26 @@ const ARMS = [
   // MISSED with a pending bump, green on a clean checkout and green again after
   // committing. Run this bracket on a clean tree, or read a MISSED here as "ask
   // what is uncommitted" before believing selfcheck has stopped working.
+  // FIXED 2026-08-07, on the fourth sighting and its own revive trigger: the
+  // arm now DETECTS the pending-bump state and skips with its reason stated,
+  // instead of scoring itself MISSED and failing the whole bracket. The
+  // blind spot above is unchanged and still real — what changed is that it no
+  // longer presents as "selfcheck has stopped working", which is a verdict
+  // people learn to read past, and a control nobody believes is worse than a
+  // control that admits what it could not test.
   ['plugin content changed without a version bump', () => {
     const f = path.join(ROOT, 'plugin', 'skills', 'mitate', 'templates', 'smoke.js');
     const before = fs.readFileSync(f, 'utf8');
     fs.writeFileSync(f, before + '\n// bracket fixture, removed by teardown\n');
     return () => fs.writeFileSync(f, before);
-  }, 'did not move'],
+  }, 'did not move', () => {
+    const dirty = execFileSync('git', ['status', '--porcelain', '--',
+      'plugin/.claude-plugin/plugin.json'], { cwd: ROOT, encoding: 'utf8' }).trim();
+    return dirty
+      ? 'a version bump is uncommitted, so check 11 is already satisfied and this '
+        + 'arm has nothing to prove — commit the cascade and re-run'
+      : null;
+  }],
 
   ['plugin content changed WITH a version bump', () => {
     const f = path.join(ROOT, 'plugin', 'skills', 'mitate', 'templates', 'smoke.js');
@@ -539,8 +566,17 @@ const ARMS = [
   }, null],
 ];
 
-let wrong = 0, ran = 0;
-for (const [label, breakIt, expect] of ARMS) {
+let wrong = 0, ran = 0, skipped = 0;
+for (const [label, breakIt, expect, precondition] of ARMS) {
+  // An arm whose precondition is unmet SKIPS AND SAYS WHY. It does not score
+  // itself MISSED: an arm that cannot be exercised has not failed, and reporting
+  // it as a failure is how a bracket trains people to read past its own verdict.
+  const why = precondition ? precondition() : null;
+  if (why) {
+    skipped++;
+    console.log(`${label.padEnd(38)} SKIPPED  -> ${why}`);
+    continue;
+  }
   ran++;
   let undo = () => {};
   let r;
@@ -557,4 +593,5 @@ if (wrong) {
     + ` claims to. Its green means less than it looks like. Do not trust it until this is 0.`);
   process.exit(1);
 }
+if (skipped) console.log(`\n${ran} arm(s) exercised, ${skipped} skipped (reasons above)`);
 console.log(`\nall ${ran} arms as specified`);

@@ -735,6 +735,7 @@ const toolJs = new Map([
   // whatever tracked .md actually carries the marker; the check reports the
   // count instead of asserting it.
   let marked = [];
+  const strayMarkers = [];
   try {
     marked = git('ls-files', '*.md').split('\n').filter(f => {
       if (!f) return false;
@@ -752,10 +753,25 @@ const toolJs = new Map([
       // gone unchecked since it was written. Demonstrated by setting its
       // marker to 2020-01-01 against a 2026-08-05 commit and watching
       // selfcheck stay green.
-      const body = R(abs).replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '');
-      return /^last updated:/m.test(body.slice(0, 200));
+      const raw = R(abs);
+      const body = raw.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '');
+      if (/^last updated:/m.test(body.slice(0, 200))) return true;
+      // NO SILENT DROPS. Stripping frontmatter fixed the case that bit, and
+      // left the CLASS intact: a marker below the window still vanishes from
+      // the population with nothing said, which is how two skills went
+      // unchecked for a week. A file that carries a marker somewhere but not
+      // where this check reads is now a failure rather than an absence — the
+      // window stays narrow (a marker belongs at the top) and being outside it
+      // is loud instead of silent.
+      if (/^last updated:/m.test(raw)) strayMarkers.push(f);
+      return false;
     });
   } catch (e) {}
+  for (const rel of strayMarkers) {
+    fail(`${rel} carries a "last updated:" marker outside the window this check reads, so its `
+       + `freshness would go unverified — move the marker to the top of the file, directly `
+       + `after any frontmatter`);
+  }
   if (shallow === 'true') {
     notes.push('freshness markers: skipped, shallow clone (needs fetch-depth: 0)');
   } else {

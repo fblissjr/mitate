@@ -66,7 +66,7 @@ jobs:
           cp scenes/*.html ws/
           # Same reason as gate.yml: without a manifest `bun add` walks UP and
           # installs into an ancestor, reporting success either way.
-          cd ws && echo '{"name":"sampler","private":true}' > package.json \
+          cd ws && { [ -f package.json ] || echo '{"name":"sampler","private":true}' > package.json; } \
             && bun add playwright-core@1.61.1
 
       - name: chromium

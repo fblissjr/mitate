@@ -7,6 +7,19 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.24.2
+
+### fixed
+
+**The scaffold's new `package.json` line could truncate an existing manifest.**
+0.24.1 wrote it with a bare `>`, which is correct in the fresh scene directory
+the block assumes and destructive anywhere else — a scaffold run inside a
+directory that already had a manifest would silently replace it. Guarded with
+`[ -f package.json ] ||` in SKILL.md and in both workflows. Caught reviewing
+0.24.1 rather than in the field, and it is the same shape as the bug 0.24.1
+fixed: a shipped command quietly reaching outside the scope its caller
+expected.
+
 ## 0.24.1
 
 ### fixed

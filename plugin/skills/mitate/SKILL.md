@@ -96,7 +96,7 @@ ends up unable to swap bibles.
 T=scene.template.html   # or scene.character.template.html / scene2d.template.html — pick from the table above
 cp -R "${CLAUDE_SKILL_DIR}"/templates/{$T,shoot.js,build.js,smoke.js,backend.js,fences} .
 mv "$T" <name>.html
-echo '{"name":"scene","private":true}' > package.json
+[ -f package.json ] || echo '{"name":"scene","private":true}' > package.json
 bun add three@0.185.1 playwright-core@1.61.1
 bun run build.js vendor <name>.html   # skip for scene2d — born self-contained
 ```
@@ -106,7 +106,9 @@ the scene directory `bun add` walks UP the tree and installs into the first one
 it finds — outside your workspace, in someone else's project or a home
 directory — and says `installed three@0.185.1` either way, so nothing in the
 output tells you it went elsewhere. You find out later, when `node_modules/` is
-not where you are.
+not where you are. It is guarded with `[ -f ]` because a bare `>` would truncate
+a manifest that is already there, which is the same class of silent damage in
+the other direction.
 
 `fences/` is the canonical fence store and travels with the tools: `smoke.js`
 refuses to run without it rather than silently checking zero fences, and

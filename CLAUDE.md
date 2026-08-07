@@ -99,7 +99,11 @@ copy of a router is the exact failure this file keeps catching.
   this line used to say "the twelve" while the tables held fourteen
 - **Repo-development agents and skills** — `.claude/agents/control-builder.md`,
   `doc-claim-auditor.md`, `.claude/skills/audit-claims/`,
-  `.claude/skills/extract-patterns/`, `.claude/skills/verify-written-claims/`
+  `.claude/skills/extract-patterns/`, `.claude/skills/verify-written-claims/`,
+  `.claude/skills/analyze-build-session/` (the second flywheel's instrument —
+  reconstructs what an installed-plugin build session actually did, from its
+  transcript rather than its own account; `VISION.md` carries the argument and
+  `docs/scene-analyses/` holds its output)
   (plus `.claude/settings.json`, which wires the claims reminder). **No standing model-delegation rule**, by
   owner call 2026-08-01: the always-loaded tiering rule cost more than it bought,
   and `working-plan.md` had already filed "inline the intent or drop it, since

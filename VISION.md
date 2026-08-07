@@ -1,4 +1,4 @@
-last updated: 2026-08-04
+last updated: 2026-08-07
 
 # Why this exists, and why in this order
 
@@ -308,6 +308,37 @@ are in [`docs/pattern-ledger.md`](docs/pattern-ledger.md).
 The cost of not having it is on record: a cookbook of shape recipes was written
 once, cited from two shipped files as though it had been carried over, was not
 carried over, and survived only because an archive audit went looking.
+
+**There is a second loop, and it runs the other way.** The first one carries
+technique *out* of a film and into the references. This one carries evidence
+*back*: a session that has only the installed plugin builds a film, and what it
+did — what it opened, what it never opened, where it stumbled, what the tools
+printed at it — is the measurement. Not a survey of what the docs say; a record
+of what they caused. The shipped surface is the only thing such a session has,
+so its behaviour is the closest thing to a direct reading of whether that
+surface works, and it is the only instrument the cold-start criterion below has
+ever had. **Improving the skill and the harness is downstream of watching them
+be used**, and this is what "used" means here.
+
+The reason it reads the transcript rather than the field report is measured, not
+philosophical. The report is the builder's account of itself, and the builder is
+the least reliable witness available: across four analysed builds, every one
+overstated its own debugging effort — three of them by six- to sevenfold — one
+shipped a figure it had itself measured twice and contradicted, one gave three
+different counts for one number in three places, and one shipped a field report
+that disagrees with its own postmortem about the session's signature finding.
+Their *technical* findings held up well. Their accounts of their own behaviour
+did not, and behaviour is what this loop is for. So the account is a lead and
+the transcript is the evidence, which is the same rule this project applies to
+every other claim.
+
+Two constraints ride with it, both learned the expensive way. A session that
+built in a workspace holding earlier work is contaminated even when its code is
+provably clean — a prior artifact sitting in context steers what gets done next,
+and an instruction to ignore it that names *files* will not reach what is
+already *read*. And the transcripts are private: findings and counts are
+reported verbatim, the artifacts they came from are cited by class and never by
+path or filename.
 
 ## How to tell if this is working
 

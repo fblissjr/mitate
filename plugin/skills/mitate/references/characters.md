@@ -80,6 +80,32 @@ cannot disagree. `vAmp` is the motion envelope (a `pulse` over the walk
 beat): gaitPose blends to a staggered rest stance as it dies, or the last
 cycle leaves feet mid-stride.
 
+**When the walk spans more than one beat, the envelope spans the SAME
+window — and this is a trap with a silent failure.** `ramp`/`pulse` address
+ONE named beat, so a travel that starts under a title card and finishes in
+the next beat needs both halves written against the same pair of edges.
+Get it wrong in the obvious direction — travel widened, envelope left on the
+walk beat — and the body translates while `vAmp` is still zero: `gaitPose`
+scales to nothing, the legs hold straight, and the figure skates in on locked
+limbs. Nothing flags it. It is pure in `t`, so smoke is green; there is no
+discontinuity, so no strip shows a pop; and it is a plausible-looking dark
+silhouette at wide framings.
+
+```js
+// Travel and envelope, addressed by beat at BOTH ends, so retiming either
+// beat moves them together. ss() for the position, bump() for the envelope —
+// pulse() IS bump() over one beat's span, and this is the two-beat form.
+const walkerXAt = t => lerp(WALK_START, WALK_END,
+  ss(t, beatAt('title', .35), beatAt('approach', .98)));
+...
+const vAmp = bump(t, beatAt('title', .35), beatAt('approach', .98));
+```
+
+Verify it the project's way rather than by eye: `build.js strip` over a
+mid-walk window, checking that a planted foot holds its ground position
+across cells while the body passes over it. A locked-limb skate is obvious in
+a strip and nearly invisible in a contact sheet.
+
 Phases are per-limb: biped `HL 0 / HR .5`; quadruped lateral-sequence walk
 `HL 0, FL .25, HR .5, FR .75`. Each planted limb's plant column rides its own
 attach x, which is what lets one grid serve a foreleg planting a

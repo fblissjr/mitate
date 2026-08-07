@@ -89,6 +89,54 @@ scenes corroborate — one cold build is one sample.
 
 ![crash](https://raw.githubusercontent.com/fblissjr/mitate/main/site/posters/crash-still.jpg)
 
+## strider-intro
+
+**Build class: WARM** — in-repo, and the class matters more here than
+anywhere else in the corpus. This film was built by a session with the plan,
+the pattern ledger and the instruments' own source in hand, and it was
+*designed* to reach for vocabulary a stranger would never touch. **Its
+smoothness is evidence about nothing.** What it is evidence for is below.
+
+[`strider-intro.html`](strider-intro.html) — a 20.4s, 7-beat game-cutscene
+boss intro: a creature walks out of the dark to a glowing shard, stops, turns
+its three eyes on the viewer, and the film cuts from those eyes to the shard
+at identical framing. Low-key rig — one warm practical inside the set, a rim
+that finds the silhouette edge, and a fill deliberately under the key.
+
+**Rung A of `boss-intro`, deliberately.** `plan.md` specifies the rung below
+that case as "a title card and dramatic lighting on an EXISTING creature",
+separating the register work from creature invention — so the strider is
+`menagerie`'s proportion vector verbatim, and the one new variable is the
+register. Creature invention is the next rung; mixing them would have made
+any failure unattributable.
+
+**What it was built to exercise**, all three verified unexercised across the
+whole corpus beforehand:
+
+- **`STYLE.dof` and a rack focus** — and enabling it is what found that
+  `STYLE.dof` had never worked (0.23.0). The film now carries the first
+  working depth of field in the project: shots 4 and 5 are identical framing
+  differing only in `focus`, joined by `blend`, and `shotFocus` pulls
+  8.18 → 5.62 across it.
+- **`match: true`** — zero occurrences repo-wide before this. Shot 7 rhymes
+  the shard against shot 6's head insert; the solver validates the constraint
+  at load and throws loud, so the rhyme is guaranteed rather than eyeballed.
+- **Per-shot camera energy, by hitting the wall.** `STYLE.energy` is global.
+  The approach wants `steadicam` and the halt wants `locked`; one value
+  serves both. That is **instance 2** of `pattern-ledger.md`'s per-shot-energy
+  row, which stood at 1 (`bear-and-bees`, the same compromise in the opposite
+  direction).
+
+Reviewed on all three axes: composition converged in three rounds plus a
+fourth after dof went live; `motion` reports 0 dead-air stretches; the
+semantics pass reads without a single word; the shard's composed periodic is
+probe-verified at 5 distinct values rather than assumed. It sits at 52.5%
+crushed — inside the exposure advisory by design, and the advisory's wording
+("add a fill/rim light") was the correct diagnosis of a real first-draft
+defect, not noise.
+
+![strider-intro](https://raw.githubusercontent.com/fblissjr/mitate/main/site/posters/strider-intro-still.jpg)
+
 ## menagerie
 
 **Build class: WARM** — in-repo, Phase 2 gate.

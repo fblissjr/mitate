@@ -7,6 +7,28 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.23.1
+
+### added
+
+**Two snippets harvested from `strider-intro`**, both lifted from code whose
+instruments ran green rather than authored into a reference freestanding.
+
+`characters.md` gains the **multi-beat gait envelope**. `ramp`/`pulse`
+address ONE named beat, so a walk that starts under a title card and finishes
+in the next beat needs travel and envelope written against the same pair of
+edges. The failure mode is why it earns a section: widen the travel, leave
+the envelope on the walk beat, and the body translates while `vAmp` is zero —
+`gaitPose` scales to nothing and the figure skates in on locked limbs. It is
+pure in `t` so smoke is green, there is no discontinuity so no strip shows a
+pop, and at wide framings it looks like a plausible dark silhouette. Verify
+with `strip` over a mid-walk window, not by eye.
+
+`film-language.md` gains the **worked rack focus** and its sizing rule: probe
+`shotFocus` at both ends of the pull and choose a `focalLength` of the same
+order as the travel. At 40 against a 2.56-unit pull the rack is invisible
+while every other check still passes.
+
 ## 0.23.0
 
 ### fixed

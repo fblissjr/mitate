@@ -135,6 +135,25 @@ softening instead of depth of field. `bracket-dof.js` pins the property that
 catches it — the frame must CHANGE when `focalLength` changes — because "is
 there an effect" passes in both states and cannot tell them apart.
 
+The worked rack, lifted from a corpus film whose instruments ran green:
+
+```js
+const STYLE = { /* … */ dof: {focalLength: 2.2, bokehScale: 3} };
+
+// Two adjacent shots, IDENTICAL framing, differing only in `focus`.
+// `blend` is what interpolates the focus distance across the cut.
+{at:['regard',.02], subject:'walker', size:'MCU', angle:10, focus:'shard'},
+{at:['regard',.42], subject:'walker', size:'MCU', angle:10, focus:'walker',
+ cut:'blend'},
+```
+
+**Size `focalLength` against the pull, not against taste.** Probe the two
+ends before choosing it — `build.js probe <scene> <t> 'shotFocus'` — and pick
+a focalLength of the same order as the travel. In the film above the pull is
+8.18 → 5.62, a 2.56-unit move, so 2.2 puts the far half soft and the near
+half sharp; at 40 the whole set stays sharp and the rack is invisible while
+every other check still passes.
+
 **Stage across the line, not down it.** Two subjects separated along an axis
 read as two subjects only when the camera looks ACROSS that axis — a small
 `angle` relative to their separation. Swinging near-perpendicular to the frame

@@ -69,8 +69,17 @@ So the jump in reference reads — 2 of 11 opened on 2026-08-04, 5 to 8 of 11
 here — is real and **cannot be attributed to the doc work**. A larger model at a
 higher effort setting reading more of everything predicts the same result. The
 honest reading is that the baseline row in `docs/README.md` promises a
-comparison this set cannot supply, and the next cold build should hold model and
-effort fixed if that comparison is wanted.
+comparison this set cannot supply.
+
+**The remedy is NOT to pin model and effort, and this file first said it was.**
+Corrected by the owner the same day: those two are the *outcome* of the whole
+loop, not a nuisance variable. If the plugin is getting better and agents are
+learning to work with it, the tier and effort needed to ship a film should
+**fall** — and that descent is the headline measure, made invisible the moment
+the axis is held fixed. The right instrument is the same brief re-run one tier
+*down* from the last configuration that shipped clean. What survives from the
+original caution is only its narrow half: a read count that rose while the model
+also got bigger cannot be credited to the doc work.
 
 **What this set does supply is one controlled experiment**: COLD versus WARM.
 Same model, same effort, same plugin, same day, same brief, same source image.
@@ -216,6 +225,44 @@ three exported MP4s; WARM hand-tuned four encode targets without opening
 `recordings.md`. COLD additionally never opened `instruments.md`, repeating the
 2026-08-04 build exactly. **Pointing by name from SKILL.md's routing table is not
 working**, and this is now four builds of evidence.
+
+### 2b. Why it was opened by nobody: references are a PRELUDE, never a lookup
+
+The finding above looks like bad routing until you measure *when* references
+get read. Every reference read in all three builds landed in an opening window:
+
+| build | reference-read window | session |
+|---|---|---|
+| COLD | **1.1 min** | 178.6 min |
+| WARM | **3.5 min** | 142.0 min |
+| V2V | **6.6 min** | 107.8 min |
+
+**Not one reference was opened mid-build, in any of them.** The apparent
+exception proves it — V2V grepped `delivery.md` and `recordings.md` at 14:23,
+*after* delivery, and only because a user follow-up forced a citation check.
+
+So SKILL.md's routing table cannot work as a table. It sits at the bottom of a
+document absorbed once at activation, and asks to be consulted at a moment when
+nothing is being consulted. Rewriting the three unopened files would not move
+this; the problem is not what they say.
+
+The set splits cleanly by *when it is needed*, and the open rates follow the
+split exactly:
+
+- **Prelude** — needed before authoring. `method.md` 4/4, `bibles.md` 4/4,
+  `characters.md` / `materials.md` / `film-language.md` 3/4 (the miss is the 2D
+  build, where they are largely N/A). **These work as-is.**
+- **Situated** — needed at a failure or a decision that arrives mid-build.
+  `instruments.md` 2/4, `glossary.md` 1/4, `breakdown.md` 1/4,
+  **`webgpu-stack.md` / `delivery.md` / `recordings.md` 0/4** — while all four
+  builds exported MP4s and three hit determinism failures. **These fail as-is,
+  and the failure is structural.**
+
+The fix is a harness change, not a docs change: **the instrument that creates
+the need carries the pointer.** A cross-reload failure that names
+`webgpu-stack.md` and its section is read at the moment it matters; an index
+entry is not. Measured cost of the current arrangement: ~53 minutes across
+three builds hand-rebuilding what one unopened file documents.
 
 ### 3. A failing determinism check yields a verdict and no artifacts — 3 of 3
 

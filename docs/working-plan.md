@@ -2650,6 +2650,74 @@ rather than a matter of mood.
 
 ---
 
+## The 2026-08-07 harvest queue — extraction run, undisposed (2026-08-07)
+
+`/extract-patterns` ran over the three installed-plugin builds with a no-context
+reader. **Recorded here rather than disposed in the same session, deliberately**:
+these land in the PRELUDE references — the ones measured at 3/4-4/4 open rates,
+so an error here reaches every future build — and nine reference edits plus a
+cascade at the end of a long session is how a good extraction becomes a bad
+reference. The skill's own warning is that an undisposed run is a lost run; this
+section is the answer to that, not an exemption from it.
+
+**Evidence tier.** Every item is subagent-derived from local artifacts, anchored
+to `docs/scene-analyses/2026-08-07_turtle-pair-and-v2v.md`. A sample of the
+gap claims was verified before filing: **three of four held exactly, one did
+not** — the feature-placement proposal claimed `proud` was undocumented, and
+`materials.md:221` already prescribes it with numbers (`0.1-0.3`), plus uses at
+`:43` and `:214`. That proposal survives only in its narrow form (the placement
+*mechanism* in `characters.md`, not the *principle*). **Verify each remaining
+item's grep before writing it** — the one that failed would have produced a
+duplicate entry, which is the one-home rule failing quietly.
+
+At trigger, counts are independent solutions across the three builds:
+
+| # | finding | count | proposed home | status |
+|---|---|---|---|---|
+| 1 | grounding cue authored as a radial-alpha disc parented to the touching part, not a shadow map | 2 | `characters.md` + kit primitive | unverified |
+| 2 | no cross-beat ramp exists, and the travel envelope should be the travel expression's derivative | 2 | `method.md` §ss-derivative + KERNEL | **gap verified** (`method.md:470` states the rule, no expression ships) |
+| 3 | two drivers owning one joint set — disjoint windows with an identity handover, or assign-from-lerp | 2 | `characters.md` | unverified |
+| 4 | the seeded `R[]` pool has a scale ceiling, and the shipped rule reads as forbidding the fix | 2 | `materials.md:236` + `method.md:996` clause | **gap verified** (those two lines are the whole surface) |
+| 5 | three shapes of false-green control: wrong artifact, never moved, ran once | 3 | `method.md` control section + `instruments.md:437` correction | unverified — note it CORRECTS a shipped instruction |
+| 6 | ~~features undocumented as needing to sit proud~~ **narrowed on verification**: the placement mechanism (by direction, radius places it) is absent from `characters.md`; the principle is already in `materials.md` | 3 → mechanism only | `characters.md` | **partly refuted, see above** |
+| 7 | facing × camera angle — the product of two documented facts, living in neither | 2 | `film-language.md` | **gap verified** |
+| 8 | the camera has a reachable region; hold the rung and lengthen the lens | 1 + 2 | `film-language.md:126` | unverified |
+| 9 | the two advertised source modalities (image → palette, timed source → beat edges) have no reading procedure | 2 | `method.md` | need already filed; this adds the content |
+
+Also at trigger, not yet written up: a closed form for a POSED CHAIN costs more
+than for travel (count 2); `build.js strip`'s first cell is not comparable to
+its neighbours (count 2, independently diagnosed twice); `sep()` cannot
+distinguish "not touching" from "could not measure" (count 2, mechanism
+diagnosed — an empty `Box3` serialises `Infinity` to `null`).
+
+**Ledger increments to EXISTING rows, which change trigger state:**
+built non-DOM text **1 → 3** (both turtle builds independently constructed
+letterform alphabets, forced by the same shipped constraint: `txt()` exists only
+in the 2D template and the DRIVER fence pins the DOM title to `BEATS[0]`, so any
+film wanting a title at the END must build glyphs) — **this fires the type-primitive
+row's "a second film needing built text" trigger, twice**, and its chart-tier
+disposition is unchanged. And declared-extents-rot **6 → 8**, still dispositioned
+to an unbuilt `subjectFromObject`.
+
+**Build versus write, from the same pass.** Primitive: the cross-beat ramp and
+the grounding disc (both at two independent implementations). Kit addition, and
+priced honestly because it touches a fence: `onHead`-shaped placement and
+`poseLimb`-shaped blending — ship the paragraph first, add the helper when a
+third film pays for it again. Instrument: a source-versus-render side-by-side
+verb, **at one instance, so filed and NOT built**. Everything else is a
+paragraph, and the pool ceiling especially — raising `R[]`'s length would treat
+the number as the bug when the bug is a rule with a missing clause.
+
+**One structural question the pass surfaced and could not place.** `facing ×
+angle` is a fact that is the *composition* of two facts, each correctly homed.
+The one-home rule has no shape for that, and this set produced it twice (the
+other: an extent declared in one place and derivable in another).
+`pattern-ledger.md` already names the class as "cross-scene generalizations,
+which the current model cannot express." That is a source-of-truth decision, not
+an extraction outcome.
+
+---
+
 ## What this implies for the phases, the tests, and the hierarchy
 
 Forward-looking consequences that are not items above, recorded because they

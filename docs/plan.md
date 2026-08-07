@@ -703,7 +703,17 @@ Loose ends carried in, none blocking Phase 4:
 - the unreproduced `WEBGPU=metal` 1-in-6 determinism FAIL, narrowed by the
   chart tier (it did **not** reproduce under dense noise coverage with no
   shadows, no characters, one shot) toward machinery bear-and-bees has and the
-  chart lacks. **Phase 4 raises the stakes on this one**: a bake is only worth
+  chart lacks. **Narrowed much further 2026-08-07 (0.26.0–0.27.0):**
+  `bear-and-bees` itself ran 48/48 green under `WEBGPU=metal` on the
+  seekSynced-hardened capture path — 24 runs on `playwright-core@1.61.1` and
+  24 on 1.62.1, verdicts verified per file — a sample a standing 1-in-6 rate
+  survives about 0.02% of the time. So on the current capture path the flake
+  is gone or far rarer than recorded; the original observation predates the
+  hardened path and is not retired by this. The determinism checks now carry
+  a canvas-readback discriminator (`smoke.js`, bracketed by
+  `templates/bracket-readback.js`), so any recurrence arrives with its layer
+  named — capture versus scene — instead of as a bare byte mismatch.
+  **Phase 4 raises the stakes on this one**: a bake is only worth
   anything if playback is deterministic, so if the intermittent FAIL is real
   it will surface here first. Re-run the chart control before trusting a green
   bake;

@@ -1237,6 +1237,35 @@ defect.
 | a primitive in `KERNEL` | a chart, plus the parity surface | second consumer, chart-proven |
 | a new fenced block, or a new fence | every carrier + cross-directory parity + version cascade — a cost that falls when REP1's emitter gate is green | third consumer |
 | an instrument | a bracket fired both ways, plus a row in `instruments.md` | earn-in: a film blocked, **or** a third recorded instance of the same wrong answer |
+| **a pointer carried by an instrument** — routing, not content | a message change on a failure path, plus a red-first arm proving the pointer appears **without the verdict moving** | a reference measured unopened at the moment it was needed |
+
+**Why the last row exists, and it was the cheapest row to be missing.** Every
+other form above changes what the skill *says*. That one changes *when a reader
+meets it*, and until 2026-08-07 the plan had no way to express the difference —
+so a reference nobody opened looked like an editorial problem and invited a
+rewrite that would have fixed nothing.
+
+The measurement that forced it: across the three installed-plugin builds, every
+reference read landed in an opening window of 1.1, 3.5 and 6.6 minutes against
+sessions of 178.6, 142.0 and 107.8. **Not one reference was opened mid-build in
+any of them.** So `SKILL.md`'s routing table cannot function as a table — it
+sits at the bottom of a document absorbed once at activation and asks to be
+consulted at a moment when nothing is being consulted. The references sort by
+*when* they are needed, and the open rates follow the sort exactly: **prelude**
+(method, bibles, characters, materials, film-language) at 3/4–4/4, and
+**situated** (instruments, webgpu-stack, delivery, recordings) at 0/4–2/4 —
+while every build exported an MP4 and three hit determinism failures.
+Measured cost: ~53 minutes across three builds rebuilding what one unopened
+file documents. Evidence and per-file rates:
+`docs/scene-analyses/2026-08-07_turtle-pair-and-v2v.md`.
+
+The trigger is deliberately a *measurement*, not a hunch — "unopened at the
+moment it was needed" is a fact a transcript can settle
+(`/analyze-build-session`), and without that discipline this row becomes
+licence to sprinkle documentation pointers through every message the tools
+print. The red-first condition is the other half: a pointer that moves a
+verdict is a check change wearing a routing costume, and goes through
+`controls.md`'s door as one.
 
 ### Promotion is not code transfer
 

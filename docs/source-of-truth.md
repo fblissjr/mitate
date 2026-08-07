@@ -241,11 +241,56 @@ Completing or deferring is an edit to the marker, so the disposition is in
 git. This replaced the handoff memo's job of remembering the future; a
 mechanism that fires beats a memo that rots.
 
+## A fact built out of two other facts (DECIDED 2026-08-07, owner)
+
+The one-home rule assumes a fact has a home. Two shapes do not, and both showed
+up in one extraction pass over the cold builds — `pattern-ledger.md` had already
+named the class as *"cross-scene generalizations, which the current model cannot
+express."* Neither is a duplication problem, which is why the existing rule slid
+off them: nothing is written twice, and the fact is still missing.
+
+**Shape 1 — a COMPOSED fact: the product of two facts that are each correctly
+homed elsewhere.** The worked instance: a subject's facing is a convention in
+`breakdown.md`, a shot's `angle` is defined in `film-language.md`, both are
+right, and *the number an author actually needs is their product* — a 3/4 front
+of a `+X`-facing subject is `angle ≈ +55`. That product lives in neither file. A
+cold build framed the back of a head in five consecutive shots because of it,
+and its own note is the diagnosis: *"a constant I held in my head rather than in
+a formula."*
+
+**The decision: a composed fact is a fact, and it is homed WHERE IT BITES** —
+the file owning the surface an author is writing when they need it, which is
+almost always the consumer rather than either input. Each input's home gets **a
+pointer, never a copy**; that is the ordinary one-home rule doing its ordinary
+job once the composed fact has a home to point at. So `facing × angle` belongs
+in `film-language.md`, beside `angle`, and `characters.md` points.
+
+Do **not** create a home for composed facts as a class. A file whose subject is
+"facts that are combinations of other facts" is a junk drawer with a
+justification, and the next reader cannot guess what is in it.
+
+**Shape 2 — a REDUNDANT fact: one fact reachable two ways, one of them
+authoritative.** The worked instance: a subject's extent is *declared* in
+`SUBJECTS` and *derivable* from the geometry, and the ledger row for
+declared-extents-rot has been climbing since long before anyone named the shape
+(at 8 as of 2026-08-07). **Home is the DERIVATION; the declaration is a cache
+and must be mechanically checkable against it.** A declaration that cannot be
+checked is not a second home, it is an unguarded copy — which is what the
+unbuilt `subjectFromObject` is for, and why that row keeps climbing rather than
+resolving.
+
+The test that separates them: ask whether the two sources can disagree. Two
+inputs to a product cannot — they are different facts. A declaration and its
+derivation can, and one of them is right.
+
 ## The rules
 
 - **A number appears once.** Re-measure it → update its home plus a CHANGELOG
   line. Finding the same figure in two places is itself the bug — delete the
   copy, don't sync it.
+- **A fact composed from two homed facts gets its own home, at the consumer**,
+  and the inputs point at it. See the section above; the failure it prevents is
+  a fact that is nobody's because it is everybody's halves.
 - **Every reference declares what it is canonical for, and its verification
   date lives in `shipped-provenance.md`** — not in the reference. A capability
   claim without a verification date is still a rumor; the date just stopped

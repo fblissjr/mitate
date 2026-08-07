@@ -87,7 +87,7 @@ from a template sees only what the template declares.
 | `energy` | `'locked' \| 'steadicam' \| 'handheld'` | declared in template — camera nerves |
 | `lens` | number, vertical degrees | `42` |
 | `cutDur` | partial override of the cut table | merged over `{hard:0, whip:.16, blend:.8}` |
-| `dof` | `true \| {maxBlur}` | off; `maxBlur` `.02`. Focus follows `SHOTS[].focus` |
+| `dof` | `true \| {focalLength, bokehScale}` | off; `2.5 / 3`. `focalLength` is WORLD UNITS, so it scales with the set. Focus follows `SHOTS[].focus` |
 | `bloom` | `true \| {strength,radius,threshold}` | off; `.5 / .3 / .9`. **Thresholds unmeasured on the TSL path** |
 | `ink`, `stroke`, `accents`, `fontFamily`, `titleInk` | colours / typography | per template |
 

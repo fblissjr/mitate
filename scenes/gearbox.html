@@ -940,17 +940,34 @@ addEventListener('resize',resize);resize();
      STYLE.bloom: true | {strength,radius,threshold}  — threshold brackets
        are UNMEASURED on the TSL implementation; do not import the old
        UnrealBloomPass numbers (see webgpu-stack.md).
-     STYLE.dof:   true | {maxBlur} — focus distance follows the SHOTS[]
-       `focus` property via the solver's shotFocus, so two adjacent shots
-       differing only in focus, joined by cut:'blend', ARE a rack focus.
+     STYLE.dof:   true | {focalLength, bokehScale} — focus distance follows
+       the SHOTS[] `focus` property via the solver's shotFocus, so two
+       adjacent shots differing only in focus, joined by cut:'blend', ARE a
+       rack focus. focalLength is how far off the focal plane a thing goes
+       fully soft, in WORLD UNITS, so it scales with your set: 2.5 is shallow
+       on a room-sized scene and effectively everything-in-focus on a
+       landscape. Defaults 2.5 / 3. These are three's own parameter names on
+       purpose — the block read `{maxBlur}` for a long time, which is not a
+       parameter r185's dof() has at any position, and an invented alias is
+       how the call and its documentation drifted apart in the first place.
    No temporal passes, ever — they break seekTo byte-identity. */
 const uFocus=THREE.uniform(12);
 const pipeline=new THREE.RenderPipeline(renderer);
 {
   const scenePass=THREE.pass(scene,camera);
   let out=scenePass.getTextureNode('output');
+  // dof() takes VIEW-SPACE Z, not a depth texture, and its fourth argument is
+  // focalLength (how far off the focal plane a thing goes fully soft), not a
+  // blur ceiling. Passing getTextureNode('depth') saturates the circle of
+  // confusion everywhere at once: the frame gets a uniform imperceptible
+  // softening and the parameter stops doing anything at all — byte-identical
+  // output across a 500x sweep. Silent, because every input is individually
+  // valid. bracket-dof.js is the control; it holds the r185 signature
+  // dof(node, viewZNode, focusDistance, focalLength, bokehScale).
   if(STYLE.dof){const o=STYLE.dof===true?{}:STYLE.dof;
-    out=THREE.dof(out,scenePass.getTextureNode('depth'),uFocus,o.maxBlur===undefined?.02:o.maxBlur);}
+    out=THREE.dof(out,scenePass.getViewZNode('depth'),uFocus,
+                  o.focalLength===undefined?2.5:o.focalLength,
+                  o.bokehScale===undefined?3:o.bokehScale);}
   if(STYLE.bloom){const o=STYLE.bloom===true?{}:STYLE.bloom;
     out=out.add(THREE.bloom(out,o.strength===undefined?.5:o.strength,o.radius===undefined?.3:o.radius,o.threshold===undefined?.9:o.threshold));}
   pipeline.outputNode=out;

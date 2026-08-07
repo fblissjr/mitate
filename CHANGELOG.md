@@ -7,6 +7,62 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.23.0
+
+### fixed
+
+**`STYLE.dof` produced no depth of field, and now does.** The RIG fence
+called `THREE.dof()` with two wrong arguments against three r185's
+signature `dof(node, viewZNode, focusDistance, focalLength, bokehScale)`:
+argument 2 was a depth texture where the node wants **view-space Z**
+(`PassNode.getViewZNode()`), and argument 4 was passed a `maxBlur` — which
+is not a parameter r185's `dof()` has at any position.
+
+The symptom is worth stating precisely, because "broken" is too coarse and
+the coarse version is what a check would have missed. Enabling `STYLE.dof`
+**did** change the frame: it applied a uniform, barely-perceptible softening
+with no depth falloff. What it did not do is respond to its own parameter —
+byte-identical renders at `maxBlur` `.016`/`.10`/`1.0`, and identical again
+at `focalLength` `0.8` vs `400.0`, a 500× sweep. A depth texture in the
+viewZ slot saturates the circle of confusion everywhere at once, leaving the
+knob nothing to move. So "is there an effect" cannot distinguish working
+from broken; only "does the parameter do anything" can.
+
+It failed silently in every direction: no page error, smoke green,
+`STYLE.dof` truthy, `THREE.dof` a function, and `uFocus` correctly tracking
+the solver. **The solver half was right the whole time** — `shotFocus`
+interpolates 8.18 → 5.62 across a `blend`, probe-measured — so the rack focus
+resolved exactly as documented and the render simply ignored it.
+
+Nothing caught it because nothing had ever entered the branch: no scene in
+the corpus enables `STYLE.dof`. `film-language.md` said so and told the next
+reader to bracket it before trusting a look to it, which is a warning that
+only pays when somebody runs the bracket.
+
+**New control: `templates/bracket-dof.js`.** Four arms, all byte comparisons
+between two renders of one `t`, so they hold on any backend with no
+reference image. One arm is the claim — the frame must change when
+`focalLength` changes — and it was observed RED against the pre-fix fence
+(`9bebe068` vs `9bebe068`) and green after. The other three are the blast
+radius: they held `8d13783f` identically across both runs, which is what
+proves the fix was not bought by blurring scenes that never asked for it.
+
+### changed
+
+**`STYLE.dof`'s option shape is `{focalLength, bokehScale}`** (defaults
+`2.5` / `3`), replacing `{maxBlur}`. These are three's own parameter names,
+chosen deliberately over a friendlier alias: the invented `maxBlur` is how
+the call and its documentation drifted apart without either looking wrong.
+`focalLength` is in **world units** — how far off the focal plane a thing
+goes fully soft — so it scales with the set and a value that reads on one
+scene means nothing on another. Updated in the fence store, all eight
+carriers, `film-language.md` and `breakdown.md`.
+
+Verified across the corpus: the fence change moves **zero rendered pixels**
+in every existing scene, since all of them take the `if(STYLE.dof)` false
+branch. Confirmed by rendering `gearbox`, `materials` and `menagerie` at the
+same `t` before and after.
+
 ## 0.22.3
 
 ### changed

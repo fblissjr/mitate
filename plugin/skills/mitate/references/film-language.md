@@ -109,14 +109,31 @@ MS on a sign plate, hard cut, MS on a robot's torso — the frames rhyme because
 the compiler guarantees they must. Nothing shipped here uses `match:` yet.
 
 **Focus** — needs no extra wiring: the always-on `RenderPipeline` carries the
-DoF chain, gated on declaring `STYLE.dof` (`{maxBlur}`). Each shot's DoF
+DoF chain, gated on declaring `STYLE.dof` (`{focalLength, bokehScale}`,
+defaults 2.5 / 3). Each shot's DoF
 plane sits on `focus` (default: its subject); `shotFocus` is solved per frame
 and feeds the chain's focus uniform whether or not DoF is enabled, so setting
-`focus:` without `STYLE.dof` changes nothing visibly. Nothing shipped here
-enables `STYLE.dof` yet — bracket before trusting a look to it. **A rack focus
+`focus:` without `STYLE.dof` changes nothing visibly. **A rack focus
 is two adjacent shots differing only in `focus`, joined by `blend`** — the
 focus distance interpolates with the same ease as the camera. No manual
 distance math survives in scene code.
+
+`focalLength` is **world units**: how far off the focal plane something goes
+fully soft. It scales with the set, so 2.5 is shallow in a room and
+effectively everything-in-focus across a landscape — a value that reads well
+on one scene means nothing on another. Both names are three's own; this
+paragraph documented a `{maxBlur}` for a long time and r185's `dof()` has no
+such parameter at any position.
+
+**The measured caution, which is the reason to look rather than assume.** The
+solver half and the render half fail independently. `shotFocus` was correct
+and interpolating (8.18 → 5.62 across a blend, measured by `probe`) while the
+render ignored it entirely, because the pipeline was handing `dof()` a depth
+texture where it wanted view-space Z. That combination is silent: no error,
+smoke green, every input individually valid, and a uniform imperceptible
+softening instead of depth of field. `bracket-dof.js` pins the property that
+catches it — the frame must CHANGE when `focalLength` changes — because "is
+there an effect" passes in both states and cannot tell them apart.
 
 **Stage across the line, not down it.** Two subjects separated along an axis
 read as two subjects only when the camera looks ACROSS that axis — a small

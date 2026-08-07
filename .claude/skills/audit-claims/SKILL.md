@@ -18,8 +18,9 @@ remember the agent's name.
 ## Why a check cannot do this job
 
 `scripts/selfcheck.js` verifies what is mechanical: the version cascade, the
-three pin and its stamps, link resolution, provenance headers, `Not here` edges,
-freshness markers, the assertion ratchet. It cannot verify that a comment reading
+three pin and its stamps, link resolution, the ABSENCE of dates under `plugin/`
+(check 4 inverted at 0.22.0 — it used to require dated provenance headers),
+`Not here` edges, freshness markers, the assertion ratchet. It cannot verify that a comment reading
 `measured — does NOT close the cloak` describes a measurement anyone took. That
 specific comment was false for seven releases and failed the entire shipped
 corpus on the default path. Semantic agreement between a claim and its code needs

@@ -1,4 +1,4 @@
-last updated: 2026-08-05
+last updated: 2026-08-07
 
 # Working plan: instruments, routing, and the viewer
 
@@ -876,12 +876,18 @@ reviewer.
 which installed users do not maintain, and the remit extension found above (code
 comments asserting enforcement) is still a sweep over *this skill's* code.
 
-*One honesty fix that routing does not cover, and should land with A0.* Whether
-or not a user opts in, they will compare their film to the shipped examples.
-**Say in `examples/README.md` that the shipped films had an independent reviewer
-pass, and what it caught.** Without that line, the misattribution survives the
-routing fix: a user who declines the delegation and finds their film weaker still
-concludes their judgment is worse.
+*One honesty fix that routing does not cover, and should land with A0.*
+**MOOTED BY 0.21.0, and worth keeping as the record of why.** The item read:
+whether or not a user opts in, they will compare their film to the shipped
+examples, so say in `examples/README.md` that the shipped films had an
+independent reviewer pass and what it caught — otherwise a user who declines
+the delegation and finds their film weaker concludes their judgment is worse.
+The plugin now ships no films and `examples/README.md` no longer exists, so
+there is nothing for a user to compare against and no file to say it in. The
+misattribution risk moved rather than vanished: it now lands on whoever reads
+`scenes/README.md`, which is a maintainer surface, and on any snippet the
+harvest lifts into a reference — a snippet presented without saying it came
+from a reviewed film invites the same comparison.
 
 ### A2. `build.js transitions <scene>`
 
@@ -3108,9 +3114,15 @@ of logging and it retires or promotes an entire suspect class.
 Explore for a coming session — the owner's ask, verbatim in intent: stop
 adding ~1.1 MB of the same vendored three.js IIFE to every film that lands
 in a public GitHub repository, and inject it at build time instead.
-Measured basis (`ls`, 2026-08-05): `scenes/` is 4.5 MB for five films, and
-~4.4 MB of that is four copies of the identical embedded library —
-`crash.html`, the one 2D film, is 43 KB. The examples-placement pass had
+Measured basis (`ls -l scenes/*.html` byte-summed — the method matters, since
+`du` block-sums differ at this precision): **5,792,858 bytes across six films
+as of 2026-08-07, of which 5,749,340 is five 3D films at ~1.14 MB each,
+essentially all of it the same embedded library**. `crash.html`, the one 2D
+film, is 43,518 bytes. Re-derived rather than trusted: this paragraph was
+filed on 2026-08-05 reading "4.5 MB for five films, ~4.4 MB of it four
+copies", and 0.21.0 moved `gearbox` into `scenes/` **later the same
+evening** — the newest prose was the wrongest, which is the invalidation
+shape `/verify-written-claims` step 5 exists for. The examples-placement pass had
 already measured the same shape when the films lived in `plugin/`
 (~95% of example bytes = the same IIFE), and VISION's declaration-lives
 section already argues the direction: the replicated surface is kit
@@ -3131,14 +3143,21 @@ breaks invariant 1, fails `build.js bundle`'s own self-containment
 assertion, and hangs every bracket." That warning is about *shipping*
 unvendored files and it is still right; the exploration's burden is to
 show the tracked-lean form never reaches a user or a bracket unbundled.
-Known edges to design against: the shipped example (`gearbox` must reach
-installed users runnable with no toolchain — `plugin install` is a copy,
-no build step exists to inject at); the brackets that drive
-`../examples/gearbox.html` directly; `stage-films.sh` (would bundle
-instead of `cp`); the gate workspace; fence parity (the 3D fences live
-inside what would change); and git history, where the four embedded
-copies already exist forever — this stops the growth, it does not shrink
-the past.
+Known edges to design against — **and the hardest one is gone, which makes
+this materially easier than the paragraph above was written to expect.**
+The filed version named "the shipped example (`gearbox` must reach installed
+users runnable with no toolchain — `plugin install` is a copy, no build step
+exists to inject at)" and "the brackets that drive `../examples/gearbox.html`
+directly". Both died at 0.21.0, hours after this row was filed: the plugin
+ships no films, so **no unbundled file has to survive a copy-only install
+path at all**, and the five brackets were repointed at `scenes/`. What
+actually remains: the brackets and `selfcheck.js`'s stamp scan now resolve
+films from `scenes/` (they would meet lean files there); `stage-films.sh`
+(would bundle instead of `cp`); the gate workspace, which `cp scenes/*.html
+ws/` and runs smoke directly; fence parity (the 3D fences live inside what
+would change, and the store is the comparison basis); the poster/AVIF path;
+and git history, where the embedded copies already exist forever — this
+stops the growth, it does not shrink the past.
 
 ### Open question: NaN has no policy, and the kit has become a DSL (2026-08-01, owner-raised)
 

@@ -8,20 +8,20 @@ You review a single `mitate` scene and report what is wrong with it.
 > cheaper tier. Routing down is for work that is well-specified, mechanical AND
 > verifiable; this one is a judgment call over rendered images, and its output is
 > the thing a human acts on. Pin a tier here only if that stops being true.
-> (This cited a repo-local rules file until it shipped — a path no installed
-> reader can reach, which is the whole reason this agent moved.)
-
 
 The skill's own references are the authority, not this file. **Read them first**,
-because they change and this brief does not:
+because they change and this brief does not. They sit at
+`skills/mitate/references/` alongside this agent — paths below are relative to
+the plugin root, which is what an installed reader actually has:
 
-- `plugin/skills/mitate/references/method.md` — the three
+- `skills/mitate/references/method.md` — the three
   failure axes, the controls discipline, the framing and determinism rules
-- `plugin/skills/mitate/references/instruments.md` — what
+- `skills/mitate/references/instruments.md` — what
   every check can and cannot see, with its measured bracket. **Read this before
   trusting any green result.**
-- `plugin/skills/mitate/references/film-language.md` for shot vocabulary;
-  `references/webgpu-stack.md` and `references/materials.md` for the node-stack
+- `skills/mitate/references/film-language.md` for shot vocabulary;
+  `skills/mitate/references/webgpu-stack.md` and
+  `skills/mitate/references/materials.md` for the node-stack
   half (backend policy, determinism rules, material recipes).
 
 ## The three axes, and the instrument for each
@@ -44,10 +44,16 @@ looked.** Tile beats side by side: the same error in three shots is one bug in a
 formula, and reading eleven PNGs one at a time hides that completely.
 
 The 0.95 end-of-beat pass is a standing step, not an option — it is where
-effects that park, and targets that arrive a beat late, become visible. Note
-that both the 0.6 and 0.95 samples land inside `CONFIG.flashes` windows on the
-beats bracketing a world cut, so a scene with flashes has sample points that are
-structurally unreadable; sample around them by hand.
+effects that park, and targets that arrive a beat late, become visible.
+
+A scene with `CONFIG.flashes` can have sample points that are structurally
+unreadable, but **compute which ones rather than assuming them**. A flash is a
+window of half-width `w` (default `.25`) around its anchor `beatAt(beat, at)`,
+so a fractional sample is blown out only when it falls within `w` of that
+anchor. The usual hit is the `0.95` sample of the beat *preceding* an `at: 0`
+flash, and only when that beat is short enough for `0.05 × dur < w`. Check the
+arithmetic against the scene's own `BEATS` and `flashes`; sample around a real
+hit by hand.
 
 **Continuity** — fails between frames. No metric works; that is measured, not an
 omission.
@@ -70,11 +76,10 @@ that only works with its words is a slideshow with a 3D background. **On a 3D
 film that pass is incomplete by construction**: `txt()` exists only in the 2D
 template, so mesh-built labels survive `nocap` — find and cover those by hand
 before trusting the result. `method.md` owns the caveat and `instruments.md`
-the measured miss behind it; this line dropped both for four versions, which is
-exactly the drift class an agent file with no freshness marker accumulates.
+the measured miss behind it.
 
 **Contract** — `bun run smoke.js <scene>.html` must pass, and the hard-fail set
-is wider than this line once claimed: zero page errors, the contract names,
+is wider than it looks: zero page errors, the contract names,
 determinism (ALL-quantified over a sample plan), a non-blank frame,
 shipped-frame spread, **live playback** (the rAF loop actually driving `seekTo`
 on the only path a human viewer takes — the check built because every other one

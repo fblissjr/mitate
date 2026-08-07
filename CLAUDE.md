@@ -1,4 +1,4 @@
-last updated: 2026-08-05
+last updated: 2026-08-07
 
 # mitate
 
@@ -188,8 +188,14 @@ for its red lines.
    prose — is plugin content. **SKILL.md is deliberately NOT in the cascade:** it
    carries no `version`, no `author` and no freshness field, because the whole
    file loads into context on activation and none of the three has a runtime use.
-   Its dating lives in a **provenance header** in the body, which `selfcheck.js`
-   check 4 verifies.
+   It carries **no dating either** — nothing under `plugin/` does, per the
+   conventions below; `selfcheck.js` check 4 enforces that absence, and the
+   verified-against-what record lives in
+   [`docs/shipped-provenance.md`](docs/shipped-provenance.md). This paragraph
+   said the opposite — that SKILL.md's dating lived in a provenance header
+   check 4 verified — for two days after 0.22.0 inverted the check, so the
+   repo's own front door contradicted itself about the same check eight
+   screens apart.
 
    A **fenced** block (`CONTRACT`, `KERNEL`, `SOLVER`, `RIG`, `DRIVER`,
    `CHARACTER`, `HTML`)

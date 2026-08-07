@@ -1,4 +1,4 @@
-last updated: 2026-08-05
+last updated: 2026-08-07
 
 # Where truth lives
 
@@ -245,9 +245,13 @@ mechanism that fires beats a memo that rots.
 - **A number appears once.** Re-measure it → update its home plus a CHANGELOG
   line. Finding the same figure in two places is itself the bug — delete the
   copy, don't sync it.
-- **Every reference carries a provenance header**: what it is canonical for,
-  and when it was last verified against the code. A capability claim without
-  a verification date is a rumor.
+- **Every reference declares what it is canonical for, and its verification
+  date lives in `shipped-provenance.md`** — not in the reference. A capability
+  claim without a verification date is still a rumor; the date just stopped
+  travelling with the claim at 0.22.0, because shipped markdown loads into an
+  agent's context and history riding along is cost with no reader. The homes
+  table above records the move; this rule said the opposite until it was
+  caught, which is the half-migration shape a two-section file invites.
 - **Incident records are canonical in code.** "This reached `git add` once"
   belongs on the line it scarred, forever; docs may cite it, never own it.
 - **When code and doc disagree, neither wins by default.** The newer audit

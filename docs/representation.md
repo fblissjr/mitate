@@ -1,4 +1,4 @@
-last updated: 2026-08-04
+last updated: 2026-08-07
 
 # Representation: where data stops and code starts
 
@@ -70,8 +70,14 @@ roughly half the fenced surface is comments, and those comments sit inline besid
 the code they constrain, carrying this project's measured determinism lessons.
 
 **4. Migration shape.**
-Five shipped examples plus one corpus fixture. <!--count-mention--> Big-bang is
-not the only option and probably not the right one.
+The carriers are the templates, the tracked corpus at `scenes/`, and the defect
+fixture; `smoke.js --parity-only` prints the population on every run, so this
+line names the classes rather than counting them. It read "five shipped
+examples plus one corpus fixture" until 2026-08-07 — a number that went wrong
+twice over (the plugin ships no examples since 0.21.0, and the corpus has since
+grown), and it survived because a `<!--count-mention-->` marker exempts a line
+from the scanner without exempting it from being false. Big-bang is not the
+only option and probably not the right one.
 
 ## The evidence, measured
 

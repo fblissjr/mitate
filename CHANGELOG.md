@@ -7,6 +7,44 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.22.2
+
+### fixed
+
+**`agents/film-reviewer.md` verified against the code for the first time, and
+three drift items fixed.** The file shipped from the day the plugin had an
+agent and had never been audited end to end; it was also the one shipped
+markdown file with no row in `docs/shipped-provenance.md`, because the 0.22.0
+scrub's working set was "files carrying a date" and this one carried none.
+
+- **A false mechanism claim.** The brief stated that "both the 0.6 and 0.95
+  samples land inside `CONFIG.flashes` windows on the beats bracketing a world
+  cut" as a structural property. It is arithmetic dependent on beat length and
+  flash half-width, and it is **false on the only scene in the corpus that
+  declares flashes**: `scenes/crash.html` anchors `{beat:'halt', at:0, w:.12}`,
+  and the preceding beat's `0.95` sample lands 0.175s before the anchor —
+  outside the window. Now stated as the arithmetic to compute against a
+  scene's own `BEATS`, with the real common case named (`0.05 × dur < w` on
+  the beat before an `at: 0` flash).
+- **Reference pointers that dangle from an install cache.** Three were written
+  `plugin/skills/mitate/references/...`, which resolves from a clone and from
+  nothing else — the plugin subtree IS the cache root. Rewritten plugin-root
+  relative, the form an installed reader actually has. Same invariant-3 class
+  as 0.22.1, and invisible to `selfcheck.js` check 5, which resolves markdown
+  links rather than backticked paths.
+- **Three amendment narratives survived the 0.22.0 scrub** ("this cited a
+  repo-local rules file until it shipped", "this line dropped both for four
+  versions", "wider than this line once claimed"). Check 4 matches ISO dates;
+  these carried none, so the enforcement covered one third of the rule it was
+  written for. Removed.
+
+### changed
+
+**`docs/shipped-provenance.md` states its row set as a derivable rule** — one
+row per line of `git ls-files 'plugin/' | grep '\.md$'` — rather than leaving
+it to be inferred from the rows present, which is how a 14-file scope came to
+have 13 rows.
+
 ## 0.22.1
 
 ### fixed
@@ -39,10 +77,16 @@ measurement binds to, not release history.
 dated provenance header in every reference; it now FAILS on any ISO date in
 any markdown under `plugin/`, walking the filesystem rather than
 `git ls-files` so a scratch file is caught before staging. The "Not here"
-edge requirement survives unchanged. Red observed before the scrub (26
-dated lines across the tree), green earned after; `bracket-selfcheck.js`
-gains the check's first arm (an untracked dated fixture under
-`plugin/skills/mitate/`, which also proves the filesystem walk).
+edge requirement survives unchanged. Red observed, green earned after;
+`bracket-selfcheck.js` gains the check's first arm (an untracked dated
+fixture under `plugin/skills/mitate/`, which also proves the filesystem
+walk). This entry read "Red observed **before the scrub** (26 dated lines
+across the tree)" until it was re-derived on 2026-08-07: the pre-scrub tree
+carried **40** dated lines across 12 files
+(`git grep -nE '20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]' 2a0f547^ -- 'plugin/'`).
+26 was a mid-scrub reading — which is how the day's log and the postmortem
+both worded it — and the changelog alone promoted it to a before-and-after
+figure it never was.
 
 **No example-film citations remain anywhere in the shipped skill.** Every
 "see `examples/<film>.html`" and film-name attribution became either the

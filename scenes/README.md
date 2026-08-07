@@ -89,6 +89,49 @@ scenes corroborate — one cold build is one sample.
 
 ![crash](https://raw.githubusercontent.com/fblissjr/mitate/main/site/posters/crash-still.jpg)
 
+## hauler
+
+**Build class: WARM** — in-repo, and built to reach for things a stranger
+would not. Its smoothness is evidence about nothing; its findings are below.
+
+[`hauler.html`](hauler.html) — a 20.8s, 7-beat cutscene. A low, broad,
+four-legged thing walks its route past a lit marker with an empty cradle
+strapped to its back, stops, looks for what it used to carry, and walks on.
+Same register as `strider-intro`, so the register is held constant and the
+creature is the one new variable.
+
+**Rung B of `boss-intro`: creature invention from text.** The description it
+was built from is in the file, verbatim, so each clause can be checked against
+the vector: *"It was built to carry something, and the thing it carried is
+gone. Four legs, plated, low to the ground. The cradle on its back is empty
+and it still walks the same route."*
+
+What it exercised, and what that cost:
+
+- **Quadruped gait** — the lateral-sequence path (`HL 0, FL .25, HR .5,
+  FR .75`) that `strider-intro` never touched, being a biped. First
+  four-legged corpus film since `menagerie`, and the first with a body low
+  enough that the plant columns sit close under the torso.
+- **The opposite corner of proportion space** — `hipH 1.35 / torsoLen 3.4 /
+  torsoTilt 88` against the strider's tall thin biped, through one
+  `buildCharacter`. Both hard constraints were checked by arithmetic before
+  the build rather than discovered by the throw.
+- **A determinism bug, found the hard way.** `SUBJECTS.pos` reading
+  `getWorldPosition()` is not pure — `seekTo` runs `setCamera` before
+  `animate`, so the camera aims with the previous frame's pose. smoke failed
+  at `t=16.64`. **`strider-intro` had the same defect and passed**, because no
+  sampled `t` landed where the stale pose moved a byte; both are fixed and
+  `film-language.md` now carries the rule.
+- **The second low-key scene**, which is what released the lighting-rig
+  harvest into `materials.md` — one film's lighting is taste, two is a method.
+
+Reviewed on three axes: four composition rounds; `motion` 0 dead-air
+stretches after two real fixes; semantics reads with every word stripped;
+quadruped planting confirmed by strip; the lamp's composed periodic
+probe-verified at 5 distinct values.
+
+![hauler](https://raw.githubusercontent.com/fblissjr/mitate/main/site/posters/hauler-still.jpg)
+
 ## strider-intro
 
 **Build class: WARM** — in-repo, and the class matters more here than

@@ -110,6 +110,54 @@ transparent pair is outside the guarantee.**
 > worst cell. The repair belonged there, never in a film and never in the
 > determinism arm; relaxing the arm would have repaired the layer that was right.
 
+## The low-key rig (two films, so it is a method rather than a look)
+
+Held back until a second scene used it, deliberately: one film's lighting is
+taste, and the harvest rule here is that a snippet comes out of passing code
+or stays filed. Two corpus films now carry it, and what stayed constant
+between them is the method; what moved, moved for the subject.
+
+Four roles, and the ratios matter more than the numbers:
+
+```js
+// FLOOR — not illumination. It lifts the darkest pixels off zero so the frame
+// reads dark rather than empty, and it is what keeps a deliberately dark film
+// off smoke's hard-fail branch (>=99% near-black is never a design choice).
+scene.add(new THREE.HemisphereLight(0x2a3a55, 0x0a0d14, .35));
+// KEY — low and RAKING, from behind. A dark register separates the subject by
+// edge, not by front light.
+const key = new THREE.DirectionalLight(0xffd9a8, 2.1);
+key.position.set(-7, 5.5, -9); key.castShadow = true;
+key.shadow.normalBias = .045;   // slope problem at a grazing angle, not a bias problem
+// FILL — cold, opposite side, well under the key. Enough that the unlit half
+// is form instead of a hole.
+const fill = new THREE.DirectionalLight(0x6f93c4, .85);  fill.position.set(8, 4, 6);
+// RIM — the one that is easy to get wrong. It must be on the side the CAMERA
+// sees. A key behind-left puts its edge on a face no shot is looking at.
+const rim = new THREE.DirectionalLight(0xffc98a, 1.6);   rim.position.set(5, 2.5, -7);
+```
+
+**What moved between the two films, and why — this is the part a single scene
+could not have told you.**
+
+- **Rim intensity scales with the silhouette's aspect.** A tall thin subject
+  presents a narrow vertical edge and takes a modest rim; a low broad one
+  presents a long horizontal edge and needed ~30% more before it read as an
+  edge rather than a smear.
+- **Fill scales with how tight the film goes.** At `FSA` and wider a weak fill
+  is fine. Both films had a beat at a tight rung where the subject rendered as
+  an unlit blob, and both times the fix was fill, not exposure.
+- **The shadow camera must cover the TRAVEL, not the subject.** A creature
+  walking 16 units clipped its own cast shadow inside a 12-unit shadow box.
+  Size it to the route.
+
+**Expect the exposure advisory and read it anyway.** Both films sit above the
+35% crushed threshold by design — that is the register, not a defect. But the
+advisory's text ("add a fill/rim light") was the correct diagnosis of a real
+first-draft defect in *both*, and in both cases it was tempting to wave
+through as expected for a dark film. A warning you have pre-decided to ignore
+is not a warning.
+
 ## Bloom (first observations, not yet a rule)
 
 Measured on a corpus film's emissive-behind-glass payoff, sweep .3→1.5:

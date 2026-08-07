@@ -21,6 +21,37 @@ optionally `w` its width. A moving subject is a tracking shot for free. Craft ru
 rendering: track a subject's *travel*, not its jumps — leave vertical action
 out of `pos` so it moves in the frame instead of being cancelled by the camera.
 
+**`pos` may NOT call `getWorldPosition()`, and the reason is an ordering you
+cannot see from here.** Reaching for the live object is the obvious way to
+frame a rig's part — a head, a prop riding a body — and it is not pure. It
+reads a world matrix, and that matrix was last written by the **previous**
+`animate()` call, because `seekTo` runs:
+
+```js
+setCamera(state); animate(t); setOverlay(t);
+```
+
+`setCamera` is what calls `pos()`. So a `pos` that reads a matrix is a
+function of `(t, whatever t was rendered before)`, the camera lands
+differently depending on the arrival path, and the frame stops being
+reproducible. Derive from the same named closed form the body uses instead —
+the proven-walker rule — and measure the offset once with
+`build.js probe <scene> <t> 'JSON.stringify(obj.getWorldPosition(new THREE.Vector3()))'`:
+
+```js
+// NOT this — impure, and silent until a seek lands on the wrong frame
+head: {pos: () => {const p = new THREE.Vector3();
+                   rig.head.getWorldPosition(p); return [p.x, p.y, p.z];}, h: 1.2},
+// this — one closed form drives body and camera alike
+head: {pos: t => [walkerXAt(t) + 4.82, 1.61, 0], h: 1.2},
+```
+
+**A green determinism run does not certify purity; it certifies the samples.**
+One corpus film shipped with the impure form and passed — none of the sampled
+`t` values landed where the stale pose moved a byte. The next film built the
+same way failed on its first smoke, at one specific `t`. If you write this and
+smoke is green, you have learned nothing about whether it is correct.
+
 **`h` means "the extent that must stay in frame", not "the subject's height".**
 Three films cropped their own payoff by declaring the figure and forgetting the
 prop: a robot's antenna, a cross-section's outer stations, a pelican's umbrella.

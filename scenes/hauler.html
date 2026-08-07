@@ -670,20 +670,29 @@ var<${$}> ${J} : ${W};`}}var W9=new R$,PF=new UK,Sw=new Map([[Int8Array,["sint8"
    Camera keyframes, captions and `duration` all derive from
    here, and animate() addresses beats by NAME via ramp()/pulse().
    ============================================================ */
+/* THE TEXT THIS CREATURE WAS INVENTED FROM, recorded verbatim because the
+   whole point of Rung B is whether a description survives the trip into a
+   proportion vector:
+
+     "It was built to carry something, and the thing it carried is gone.
+      Four legs, plated, low to the ground. The cradle on its back is empty
+      and it still walks the same route."
+
+   Every clause is checkable against the build below: four legs -> quadruped
+   (which also buys the lateral-sequence gait strider-intro never exercised,
+   being a biped); low to the ground -> hipH well under the bear vector;
+   plated -> scene-level shell geometry, not a scaffold feature; the cradle
+   -> a scene add-on riding rig.body via the documented attach-point pattern.
+   What the description asks for and the scaffold CANNOT give is recorded in
+   the field report, which is the actual deliverable of this rung. */
 const BEATS = [
-  {name: 'title',    dur: 2.6},
-  {name: 'approach', dur: 4.4, cap: "Something was already here"},
-  {name: 'halt',     dur: 2.2, cap: "It stops short of the shard"},
-  {name: 'regard',   dur: 3.4, cap: "And it looks back"},
-  {name: 'assert',   dur: 2.8, cap: "Three eyes, one intent"},
-  {name: 'rhyme',    dur: 2.4, cap: "It is not the thing that glows"},
-  // RENAMED from 'hold' after the motion profile: this beat scored 1.72, the
-  // highest in the film, against a name promising stillness. The motion is
-  // correct — the shot pulls WS->EWS and that is the intended outro — so the
-  // NAME was the wrong half. Renaming to match what the beat does, rather
-  // than damping the move to match what the name claimed, which would have
-  // been fixing the measurement instead of the film.
-  {name: 'recede',   dur: 2.6},
+  {name: 'title',  dur: 2.6},
+  {name: 'route',  dur: 4.6, cap: "It still walks the route"},
+  {name: 'cradle', dur: 3.0, cap: "The cradle on its back is empty"},
+  {name: 'stop',   dur: 2.4, cap: "It stops where it always stops"},
+  {name: 'regard', dur: 3.0, cap: "And looks for what it carried"},
+  {name: 'empty',  dur: 2.4, cap: "Nothing has been there for a long time"},
+  {name: 'resume', dur: 2.8},
 ];
 
 /* ---------- STYLE: everything that is the LOOK. ----------
@@ -692,38 +701,29 @@ const BEATS = [
    camera energy, lens and cut pace (energy/lens/cutDur, read by the solver) —
    lives here. Materials are still created inline in buildWorlds(); lift
    shared palette constants up here as the scene grows. */
+/* SECOND LOW-KEY SCENE, deliberately. The rig below is strider-intro's method
+   re-applied to a different subject, which is the condition the lighting-rig
+   harvest was waiting on: one scene is not a method. Where the numbers differ
+   from that film they differ for a stated reason, and the differences are the
+   interesting part of the second sample. */
 const STYLE = {
-  bg: 0x06080e,
-  exposure: 0.95,                     // if the scene looks washed out, LOWER this first
-  lens: 38,                           // slightly wide — the approach wants depth
-  // CAMERA ENERGY IS GLOBAL, AND THIS FILM IS THE SECOND SCENE TO WANT IT
-  // PER-SHOT. The approach wants 'steadicam' (something breathing, following);
-  // the halt and the regard want 'locked' (it has stopped, and so has the
-  // camera). One value has to serve both. Chosen 'steadicam' because a locked
-  // approach reads as a slideshow, which costs more than a drifting hold does.
-  // pattern-ledger.md's per-shot-energy row was at count 1 (bear-and-bees
-  // wanted 'locked' for the hush and went all-locked); this is instance 2 and
-  // the same compromise in the opposite direction.
-  energy: 'steadicam',                // camera nerves: 'locked' | 'steadicam' | 'handheld'
-  // FIRST SCENE IN THE CORPUS TO ENABLE DoF, and enabling it is what found
-  // the bug. film-language.md said "bracket before trusting a look to it";
-  // running that bracket showed the RIG fence was handing dof() a depth
-  // texture where it wanted view-space Z, so the effect was a uniform
-  // imperceptible softening that ignored its own parameter. Fixed in the
-  // fence, controlled by bracket-dof.js.
-  //
-  // focalLength is WORLD UNITS. The rack in SHOTS[] pulls shotFocus 8.18 ->
-  // 5.62 (probe-measured), a 2.56-unit travel, so focalLength has to be of
-  // that order for the pull to read at all — at 40 the whole set is sharp and
-  // the rack is invisible. 2.2 puts the far half soft when focus sits on the
-  // shard and sharp when it lands on the creature.
-  dof: {focalLength: 2.2, bokehScale: 3},
+  bg: 0x07090d,
+  exposure: 0.95,
+  lens: 40,
+  // Global, still. Third film to want it per-shot: the route wants motion in
+  // the camera and the regard wants none. pattern-ledger's row is at 2.
+  energy: 'steadicam',
+  // focalLength is WORLD UNITS and this set is LONGER than strider's — the
+  // hauler walks a 16-unit route past a marker, so the same 2.2 would have
+  // put the far half of every wide shot into mush. Sized against this film's
+  // own pull, measured with probe rather than copied from the other film.
+  dof: {focalLength: 3.4, bokehScale: 3},
 };
 
 /* ---------- CONFIG: everything that is neither timing nor look. ---------- */
 const CONFIG = {
-  title: "STRIDER",
-  subtitle: "it was already here",
+  title: "HAULER",
+  subtitle: "the cradle is empty",
   flashes: [],                        // world-cut flashes, as {beat, at} — e.g. [{beat:'two', at:0}]
   seed: 20260807,                     // change to reshuffle all seeded randomness
   sway: 0.06,                         // idle camera drift. Set to 0 for `build.js loop`:
@@ -1006,47 +1006,28 @@ function mesh(g,m,parent,px=0,py=0,pz=0){const o=new THREE.Mesh(g,m);o.position.
 function std(color,opts={}){return new THREE.MeshStandardMaterial(Object.assign({color,roughness:.7},opts));}
 /* ==== RIG-END ==== */
 
-/* ---------- lights: a LOW-KEY rig, and the numbers are the register ----------
-   The default rig is a bright three-point setup for explainers. A cutscene
-   boss intro is the opposite brief: most of the frame is dark, the subject is
-   separated from the background by a RIM rather than lit from the front, and
-   the one warm source in the world is diegetic (the shard).
+/* ---------- lights: the low-key rig, second application ----------
+   Same four roles as strider-intro (hemisphere floor, raking key, weak cold
+   fill, camera-side rim) because that is what the register needs. Two numbers
+   moved and both moved for the subject, which is the useful part of a second
+   sample: the shadow camera is WIDER, because this creature travels 16 units
+   instead of 10 and a 16-unit shadow box clipped its own cast shadow at the
+   route's far end; and the rim is STRONGER, because a low broad body presents
+   a long horizontal edge to camera where the strider presented a thin
+   vertical one, and the same intensity read as a smear rather than an edge.
 
-   The exposure lint is the thing to know about here: smoke.js hard-fails only
-   at >=99% near-black (EXPOSURE_LUMA_CRUSH 8, i.e. luma < 8/255), and WARNS
-   above EXPOSURE_CRUSHED_THRESHOLD = 0.35. A film in this register lives in
-   warning territory on purpose. The hemisphere floor below is what keeps it
-   off the hard fail: it lifts the darkest pixels off zero without lighting
-   anything, so the frame is dark rather than empty. */
-scene.add(new THREE.HemisphereLight(0x2a3a55,0x0a0d14,.35));
-// KEY: low, raking, from behind-left — a rim that finds the silhouette edge
-// rather than a front light that flattens it.
-const key=new THREE.DirectionalLight(0xffd9a8,2.1);
-key.position.set(-7,5.5,-9);key.castShadow=true;
+   The exposure lint hard-fails only at >=99% near-black and warns above 35%
+   crushed, so a film in this register lives in warning territory by design.
+   The hemisphere floor is what keeps it off the hard branch. */
+scene.add(new THREE.HemisphereLight(0x33455f,0x0d1119,.55));
+const key=new THREE.DirectionalLight(0xffd7a4,2.0);
+key.position.set(-8,5,-9);key.castShadow=true;
 key.shadow.mapSize.set(2048,2048);
-key.shadow.camera.left=-16;key.shadow.camera.right=16;key.shadow.camera.top=14;key.shadow.camera.bottom=-14;
-// Shadow acne on a raking light is a slope problem, not a bias problem: at
-// this angle the surface is nearly parallel to the light, so normalBias is
-// what fixes it and `bias` alone would peter-pan the feet.
-key.shadow.normalBias=.045;
+key.shadow.camera.left=-22;key.shadow.camera.right=22;key.shadow.camera.top=16;key.shadow.camera.bottom=-16;
+key.shadow.normalBias=.045;                 // slope problem on a raking light, not a bias problem
 scene.add(key);
-// FILL: cold, weak, opposite side. Enough to keep the unlit half readable as
-// form instead of a hole. Deliberately under the key, but NOT by as much as
-// the first draft: at .30 the creature was a black blob at every rung tighter
-// than FSA, which the contact sheet made obvious and the exposure advisory
-// had already said in words ("add a fill/rim light").
-const fill=new THREE.DirectionalLight(0x6f93c4,.85);fill.position.set(8,4,6);scene.add(fill);
-// RIM: the register's actual requirement, and the thing the first draft did
-// not have. The key sits behind-LEFT at (-7,5.5,-9) and every shot looks from
-// roughly +Z, so the key's edge falls on a face the camera cannot see. This
-// one is behind-RIGHT and low, which puts a hot line down the neck and skull
-// on the side that IS visible — separation by rim rather than by exposure.
-const rim=new THREE.DirectionalLight(0xffc98a,1.6);rim.position.set(5,2.5,-7);scene.add(rim);
-// PRACTICAL: the shard's own light, warm, short range. This is the only
-// source with a position inside the set, which is what makes the shard read
-// as the thing that glows rather than a thing that is lit.
-const shardLight=new THREE.PointLight(0xffb347,26,18,2);
-shardLight.position.set(0,1.9,0);scene.add(shardLight);
+const fill=new THREE.DirectionalLight(0x6f93c4,1.15);fill.position.set(9,4,6);scene.add(fill);
+const rim=new THREE.DirectionalLight(0xffc98a,2.1);rim.position.set(6,2.2,-7);scene.add(rim);
 
 /* ==== CHARACTER-START ==================================================
    The character scaffold. ONE parametric skeleton family — a character is a
@@ -1346,73 +1327,118 @@ function chainWave(chain,phase,amp,lag,axis){
    references/characters.md carries worked vectors.
    ============================================================ */
 let walker;
-let shard,shardCore,stones=[];
+let cradle,marker,lamp;
 function buildWorlds(){
   const world=new THREE.Group();scene.add(world);
-  // Dark ground. A near-black diffuse still takes the rim light at grazing
-  // angles, which is what draws the horizon line without a horizon object.
-  const floor=mesh(new THREE.PlaneGeometry(90,90),std(0x11151d,{roughness:.95}),world);
+  const floor=mesh(new THREE.PlaneGeometry(120,120),std(0x10141b,{roughness:.95}),world);
   floor.rotation.x=-Math.PI/2;floor.castShadow=false;
 
-  // THE SHARD — the practical, and the match cut's second subject. An
-  // octahedron reads as "cut" from any angle, which a sphere does not, and it
-  // gives the rim light hard edges to catch.
-  shard=new THREE.Group();shard.position.set(0,0,0);world.add(shard);
-  shardCore=mesh(new THREE.OctahedronGeometry(1.15,0),
-    new THREE.MeshStandardMaterial({color:0xffc46b,emissive:0xff9a2e,
-      emissiveIntensity:1.5,roughness:.25,metalness:.1}),shard,0,1.9,0);
-  shardCore.castShadow=false;                    // a light source casting its own shadow reads as a bug
-  // THE HUSK IS FOUR SEPARATE PLATES, NOT A SHELL. First draft wrapped the
-  // core in one opaque octahedron of radius 1.5 around a core of 1.15 — which
-  // enclosed it completely. The contact sheet caught it: the `rhyme` beat,
-  // the payoff the whole match cut exists for, framed a black box with two
-  // light slivers escaping, under a caption reading "it is not the thing that
-  // glows". Broken casing with gaps is what the beat needs, and gaps are what
-  // let the core light the plates from inside.
-  for(let i=0;i<4;i++){
-    const a=i*Math.PI/2+.4;
-    const pl=mesh(new THREE.OctahedronGeometry(.62,0),
-      std(0x4a3c24,{roughness:.8}),shard,Math.cos(a)*1.28,1.9+(R[40+i]-.5)*1.1,Math.sin(a)*1.28);
-    pl.scale.set(.5,1.5,1);
-    pl.rotation.set(R[50+i]*.8,a,R[54+i]*.6);
-  }
-  // Base rubble: three stones, sizes from the frozen pool. Parallax during
-  // the approach, and they give the ground somewhere to cast onto.
-  for(let i=0;i<7;i++){
-    const a=R[i*3]*Math.PI*2,r=2.3+R[i*3+1]*5.5,sc=.22+R[i*3+2]*.5;
-    const st=mesh(new THREE.DodecahedronGeometry(sc,0),std(0x1b202b,{roughness:.9}),world,
-                  Math.cos(a)*r,sc*.55,Math.sin(a)*r);
-    st.rotation.set(R[i*3]*3,R[i*3+1]*3,R[i*3+2]*3);
-    stones.push(st);
+  /* THE CREATURE. Every number below is the text turned into a proportion,
+     and the two hard constraints are checked here rather than discovered by
+     the build-time throw:
+       hindUpper+hindLower > hipH          0.80+0.75 = 1.55 > 1.35  ok
+       foreUpper+foreLower > shoulder height, where shoulder height is
+         hipH + cos(torsoTilt)*torsoLen  = 1.35 + cos(88deg)*3.4 = 1.469
+         and foreUpper+foreLower          = 0.85+0.80 = 1.65       ok
+       shoulderW/2 > chestR                2.10/2 = 1.05 > 0.92     ok
+     torsoTilt 88 is the "built to carry" clause: a near-horizontal back is
+     what a cradle sits on, and it is the single number that most separates
+     this silhouette from the bear vector it started from. */
+  walker=buildCharacter(
+    {quadruped:true, torsoTilt:88, hipH:1.35, torsoLen:3.4, pelvisR:1.05, chestR:.92,
+     neckLen:.70, neckSegs:2, neckTilt:72, headR:.48, muzzle:.75,
+     tailLen:.30, tailSegs:2, tailTilt:15,
+     shoulderW:2.10, hipW:2.00,
+     foreUpper:.85, foreLower:.80, foreR:.40,
+     hindUpper:.80, hindLower:.75, hindR:.44,
+     footLen:.75, footH:.28},
+    part=>std({torso:0x46505f,head:0x515c6d,muzzle:0x333c49,limb:0x3c4552,
+               foot:0x6b5730,tail:0x46505f}[part],{roughness:.72}));
+
+  // A SENSOR BAND, and it is here because the description did not ask for it.
+  // "Four legs, plated, low to the ground" says nothing about a face, and the
+  // scaffold's head is a bare sphere — so the regard beat, whose whole job is
+  // the creature looking, rendered as a featureless ball. The text underspecified
+  // the one part the film pays off on. Recorded in the field report rather
+  // than quietly patched: an invented creature needs a face the description
+  // never mentions, every time, and that is a fact about text-to-creature and
+  // not about this text.
+  // Placement fought neckTilt 72, which pitches the whole skull forward-down,
+  // so head-local +x aims at the ground rather than at camera. The first
+  // draft's band sat at (.40,.10,0) and rendered as a sliver under the chin.
+  // Lifted onto the brow and widened until it reads at FS.
+  const band=mesh(new THREE.BoxGeometry(.18,.16,.86),
+    new THREE.MeshStandardMaterial({color:0xffd9a0,emissive:0xff9f36,
+      emissiveIntensity:2.4,roughness:.3}),walker.head,.26,.40,0);
+  band.castShadow=false;
+  band.rotation.z=-.5;                    // lie along the brow, not across the muzzle
+  // Housing shrunk hard after round 3: at .22x.30x.12 the two blocks sat in
+  // FRONT of the band at FS and occluded the thing they were framing, so the
+  // insert read as a dark quad with a yellow splinter. Cheek-side only now,
+  // and small enough to bracket the light rather than eat it.
+  for(const sz of[-1,1]){
+    const h=mesh(new THREE.BoxGeometry(.10,.20,.07),std(0x2b3340,{roughness:.6}),
+                 walker.head,.24,.40,sz*.52);
+    h.rotation.z=-.5;
   }
 
-  // THE STRIDER — lifted verbatim from menagerie.html's proportion vector.
-  // Rung A isolates the REGISTER, so the creature is deliberately not new:
-  // creature-invention is the next rung and mixing them would make a failure
-  // unattributable. Materials are re-darkened for this rig — the menagerie
-  // palette was lit by a bright three-point setup and reads as plastic here.
-  walker=buildCharacter(
-    {hipH:3.4,torsoLen:1.4,torsoTilt:12,pelvisR:.55,chestR:.5,
-     neckLen:1.8,neckSegs:5,neckTilt:18,headR:.32,muzzle:.5,
-     tailLen:2.4,tailSegs:6,tailR:.12,tailTilt:10,
-     shoulderW:1.35,hipW:.95,
-     foreUpper:1.15,foreLower:1.05,foreR:.11,hindUpper:1.9,hindLower:1.8,hindR:.15,
-     footLen:.6,footH:.16},
-    // Lifted ~40% in value from the first draft. The originals (0x232b3a and
-    // friends) were chosen to read dark and instead read as absent: at MCU the
-    // head returned almost nothing to camera and the beat had no subject.
-    // Dark is a lighting result, not a material value — the rim above is what
-    // makes these read dark rather than these numbers.
-    part=>std({torso:0x3d4a63,head:0x4a5872,muzzle:0x2b3446,limb:0x36415a,
-               foot:0x6b5730,tail:0x3d4a63}[part],{roughness:.7}));
-  // Three eyes across the brow — the text said so. EMISSIVE here, not white
-  // plastic: in a low-key rig the eyes are the only thing that must survive
-  // the darkness, and they are what the assert beat pays off on.
-  for(const k of[-1,0,1]){
-    const e=mesh(S(.075,10,8),
-      new THREE.MeshStandardMaterial({color:0xffe9c0,emissive:0xffb347,
-        emissiveIntensity:2.2,roughness:.3}),walker.head,.24,.3,k*.14);
-    e.castShadow=false;
+  // PLATING — scene-level shells, not a scaffold feature. Four slabs along
+  // the back, sized off the torso so they follow the vector rather than
+  // hardcoding a length. Deliberately NOT near-equal to the torso radius:
+  // overlapping shells at similar radii z-fight, which characters.md warns
+  // about and which is invisible until it strobes in motion.
+  // Placed by MEASUREMENT, not by eye. probe bb(walker.body) reports the torso
+  // spanning y 0.30..2.40 in world (hipH 1.35 plus a ~1.05 lathe radius), and
+  // local y tracks world y here — so the back surface is y~2.30 and anything
+  // authored below that is inside the animal. The first draft put these at
+  // y=.62 and they were invisible in every frame: geometry that exists,
+  // renders, costs draw calls and is buried in a torso.
+  for(let i=0;i<4;i++){
+    const p=mesh(new THREE.BoxGeometry(.66,.15,1.62),std(0x39424f,{roughness:.65}),
+                 walker.body,.35+i*.78,2.28,0);
+    p.rotation.z=.03*(i-1.5);
+  }
+
+  // THE CRADLE — the film's subject, and a scene add-on riding rig.body via
+  // the documented attach-point pattern. Four posts and two rails, framing
+  // nothing. The emptiness has to be GEOMETRY, not a caption: the semantics
+  // pass strips every word and this beat still has to say "empty".
+  cradle=new THREE.Group();cradle.position.set(1.75,2.30,0);walker.body.add(cradle);
+  for(const sx of[-1,1])for(const sz of[-1,1]){
+    mesh(new THREE.BoxGeometry(.13,.86,.13),std(0x6b5730,{roughness:.6}),cradle,
+         sx*.92,.43,sz*.62);
+  }
+  for(const sz of[-1,1]){
+    mesh(new THREE.BoxGeometry(2.0,.11,.13),std(0x6b5730,{roughness:.6}),cradle,0,.86,sz*.62);
+  }
+  // Worn straps, hanging slack — the "gone" clause. Two short posts angled
+  // down from the rails, going nowhere.
+  for(const sx of[-1,1]){
+    const st=mesh(new THREE.BoxGeometry(.07,.42,.07),std(0x2e2a22,{roughness:.9}),cradle,
+                  sx*.92,.62,.62);
+    st.rotation.x=sx*.5;
+  }
+
+  // THE MARKER — "the same route" needs a thing the route is measured
+  // against, or the walk is just a walk. A leaning post with a dim lamp: the
+  // one warm source in the set, which is what the low-key rig needs to be
+  // motivated rather than arbitrary.
+  marker=new THREE.Group();marker.position.set(3.4,0,-1.2);world.add(marker);
+  const post=mesh(new THREE.BoxGeometry(.28,4.2,.28),std(0x3b3529,{roughness:.85}),marker,0,2.1,0);
+  post.rotation.z=.09;
+  lamp=mesh(S(.30,14,12),
+    new THREE.MeshStandardMaterial({color:0xffcf87,emissive:0xff9f36,
+      emissiveIntensity:1.1,roughness:.35}),marker,-.36,3.9,0);
+  lamp.castShadow=false;
+  const lampLight=new THREE.PointLight(0xffb347,16,14,2);
+  lampLight.position.set(3.04,3.9,-1.2);world.add(lampLight);
+
+  // Ground rubble for parallax and something for the cast shadows to land on.
+  for(let i=0;i<9;i++){
+    const a=R[i*3]*Math.PI*2,r=3.0+R[i*3+1]*9.0,sc=.20+R[i*3+2]*.42;
+    const st=mesh(new THREE.DodecahedronGeometry(sc,0),std(0x1a1f28,{roughness:.9}),world,
+                  Math.cos(a)*r,sc*.55,Math.sin(a)*r-1.0);
+    st.rotation.set(R[i*3]*3,R[i*3+1]*3,R[i*3+2]*3);
   }
 }
 buildWorlds();
@@ -1456,107 +1482,98 @@ buildWorlds();
    ============================================================ */
 // Travel as a named closed form — SUBJECTS and animate() both derive from
 // THIS, so the camera and the body can never disagree (proven-walker rule).
-const WALK_START=-15;
-/* WALK_END was -3.4 and moved back on a MEASURED framing conflict, not taste.
-   Shot 7 is FS on 'shard' (h 3.2), so the frame is 3.2/.95 = 3.37 units tall
-   and 3.37*16/9 = 5.99 wide, spanning x in [-3.0,+3.0] about the shard at 0.
-   A strider halting at -3.4 put a foreleg inside that span, and the `rhyme`
-   beat — the match cut's payoff — had a leg hanging in frame left.
+const WALK_START=-13;
+const WALK_STOP=1.1;                              // level with the marker, not past it
+const WALK_ON=7.4;                                // and past it, at the end
 
-   The interesting part is WHY the fix is here rather than in the shot: shot 7
-   carries `match: true`, so its size/angle/elev/fov are LOCKED to shot 6's.
-   Recomposing the match target by swinging its angle would silently recompose
-   the head insert too, or throw at load. The constraint pushes the fix into
-   the world instead of the camera, which is the constraint doing its job. */
-const WALK_END=-4.9;                             // stops SHORT of the shard at x=0
-// ramp() is ss()-based, so it clamps: travel holds at WALK_END for every beat
-// after 'approach' without a second expression to keep in sync.
-/* THE WALK STARTS DURING THE TITLE, and that is a dead-air fix with a
-   measurement behind it. First draft ramped over 'approach' alone, which
-   parked the creature at WALK_START for the whole title beat: `motion` scored
-   title at 0.05 and reported DEAD AIR t=0.83-2.08s, 1.25s of a 2.6s beat with
-   nothing on screen changing. Spanning the ramp across both beats also says
-   the right thing — the caption is "Something was already here", and a
-   creature standing perfectly still until the title clears contradicts it.
-   Addressed by beat at both ends, so retiming either one still works. */
-const walkerXAt=t=>lerp(WALK_START,WALK_END,
-  ss(t,beatAt('title',.35),beatAt('approach',.98)));
+/* TWO TRAVEL LEGS, and the envelope covers BOTH. The multi-beat gait rule in
+   characters.md is written for one span; this is its two-span form, and both
+   halves of the trap are live here.
+
+   Leg 1 ends at 'stop', not at 'route'. First draft ended it at route .97,
+   which parked the creature for the whole `cradle` beat — motion scored that
+   beat 0.09 and reported DEAD AIR over 2.0s of its 3.0s. Ending the arrival
+   inside `stop` is also what the beat names already claimed ("It stops where
+   it always stops"), so the fix was a disagreement between the timing and the
+   captions rather than a new idea.
+
+   Leg 2 exists because `resume` was a lie. The film's last beat is named for
+   the creature walking on and the creature did not move — motion scored it
+   the HIGHEST in the film at 2.06, which was the camera pulling WS->EWS with
+   a stationary subject underneath. A beat whose motion is entirely camera and
+   whose name promises a subject is the kind of thing a still cannot show and
+   a per-beat profile can. */
+const LEG1=['title',.04,'stop',.30];
+const LEG2=['resume',.08,'resume',.98];
+const walkerXAt=t=>
+  lerp(WALK_START,WALK_STOP,ss(t,beatAt(LEG1[0],LEG1[1]),beatAt(LEG1[2],LEG1[3])))
+  +(WALK_ON-WALK_STOP)*ss(t,beatAt(LEG2[0],LEG2[1]),beatAt(LEG2[2],LEG2[3]));
 const SUBJECTS={
-  // Travel only — vertical action stays OUT of pos so the body moves IN the
-  // frame instead of being cancelled by the camera (film-language.md).
-  walker:{pos:t=>[walkerXAt(t)+walker.centerX,walker.height/2,0],h:walker.height+.5},
-  // The head as its own subject, for the insert. Its h is the HEAD's extent,
-  // so the rung must be one that FITS — see the SHOTS note on sub-subjects.
-  /* DERIVED FROM walkerXAt, not from getWorldPosition, and the reason is a
-     determinism bug this film SHIPPED with and a later one caught.
+  // Travel only — vertical action stays OUT of pos, so the body moves in the
+  // frame rather than being cancelled by the camera.
+  walker:{pos:t=>[walkerXAt(t)+walker.centerX,walker.height/2,0],
+          h:walker.height+.5, w:7.8, d:2.4},
+  // A WIDE subject, so it declares `w`. The size ladder is calibrated to
+  // HEIGHT; this creature is 5.6 long and ~2.3 tall, so without `w` every
+  // rung tighter than WS would frame less width than the body occupies and
+  // crop it — the measured failure film-language.md records on a bench.
+  /* THESE TWO ARE DERIVED FROM walkerXAt, NOT FROM getWorldPosition, AND THE
+     REASON IS A REAL DETERMINISM BUG THIS FILM HIT.
 
-     `pos` is specified as a pure function of t. `getWorldPosition()` is not
-     one: it reads a world matrix written by the PREVIOUS animate() call, and
-     seekTo runs `setCamera(state); animate(t); setOverlay(t)` — so the camera
-     is aimed using the pose from wherever the film was seeked from. The
-     subject becomes a function of (t, previous t).
+     `pos` is specified as a pure function of t. `obj.getWorldPosition()` is
+     NOT one: it reads a world matrix, and the matrix was last written by the
+     PREVIOUS animate() call. seekTo runs
 
-     This film passed smoke with the impure form, which is the part worth
-     keeping: the determinism check samples a handful of t values, and here
-     none of them landed where the stale pose differed enough to move a byte.
-     The same pattern in `hauler.html` failed immediately at t=16.64. A green
-     determinism run does not certify purity; it certifies the samples.
+         setCamera(state); animate(t); setOverlay(t);
 
-     Offset measured with probe against the rig at rest: rootX -4.9, head
-     world x -3.797, so +1.103. */
-  head:{pos:t=>[walkerXAt(t)+1.103,6.80,.05],h:1.15},
-  // The shard, fixed. h covers the emissive core AND the husk around it —
-  // "the extent that must stay in frame", not the object's height.
-  shard:{pos:()=>[0,1.9,0],h:3.2},
+     so setCamera — which is what calls pos() — sees the pose from wherever
+     the film was seeked from, not the pose at t. The subject is therefore a
+     function of (t, previous t), the camera lands somewhere slightly
+     different depending on arrival path, and the frame is not reproducible.
+
+     smoke caught it: `seekTo(16.64) not deterministic — scene carries state
+     across frames`. The offsets below were measured with probe against the
+     rig at rest (rootX 1.1 -> cradle world x 2.85, head world x 5.92) so the
+     camera and the body still derive from ONE closed form, which is the
+     proven-walker rule the gait already follows. */
+  head:{pos:t=>[walkerXAt(t)+4.82,1.61,0],h:1.25},
+  cradle:{pos:t=>[walkerXAt(t)+1.75,2.30,0],h:1.6,w:2.3},
+  marker:{pos:()=>[3.4,2.4,-1.2],h:4.6},
 };
 // The size ladder, calibrated to the convention a cinematographer means:
 // f = how many frame-heights the subject's full height spans; a = the
 // vertical anchor on the subject the camera aims at. FS is full-body tight;
 // MS is waist-up — the first cut of this table shipped MS at full-shot
 // framing and the rack's second subject fell out of frame.
-/* THIS SHOT LIST IS THE EXPERIMENT. Three vocabulary paths that film-language.md
-   documents and that NO scene in the corpus had exercised before this one
-   (verified 2026-08-07 by grepping every scene, template and fixture):
-
-     1. STYLE.dof + a rack focus — shots 4 and 5, identical framing, differing
-        ONLY in `focus`, joined by `blend`. That is the documented definition
-        of a rack focus, so if the mechanism works the two shots are the proof.
-     2. match: true — shot 7. Zero occurrences repo-wide before this. The
-        solver validates it AT LOAD and throws loud, so a wrong match cut
-        cannot render; it is self-checking in a way most of the vocabulary
-        is not.
-     3. per-shot camera energy — does NOT exist. See the STYLE.energy note.
-
-   Sub-subject rule (film-language.md): a rung is relative to the DECLARED
-   subject. 'head' has h:1.15, so CU on it would put the camera inside the
-   skull. The insert uses FS — the tightness is already in the choice of
-   subject. Shot 7 must then use FS too, because `match` requires identical
-   size/angle/elev/fov/anchor. That constraint is doing real work: it forces
-   the rhyme to be a rhyme. */
+/* Rung A's shot grammar, re-applied. The register is proven; the creature is
+   the one new variable, so the camera deliberately does what worked rather
+   than inventing a second unknown. Two things had to change for the subject,
+   and they are the second sample's real content:
+     - every rung on 'walker' is WIDE (WS/FSA), because a union-shaped, wider-
+       than-tall subject has no waist and MS/MCU/CU carry human-figure
+       meanings. Rung A could reach MCU on a tall thin biped; this cannot.
+     - the rack pulls the OTHER WAY (near -> far, creature -> cradle), which
+       is the same mechanism exercised in the opposite direction. */
 const SHOTS=[
-  // 1 — the world before anything happens. Union subject takes a WIDE rung.
-  //     EWS first draft: the squint pass showed a near-empty frame for 2.6s —
-  //     "speck in the world" is the rung's meaning, but at this exposure a
-  //     speck in the dark is nothing at all. WS keeps the emptiness and gives
-  //     it a subject.
-  {at:['title',0],     subject:['walker','shard'], size:'WS', angle:24},
-  // 2 — the approach. pos moves, so this is a tracking shot for free.
-  {at:['approach',.06],subject:'walker', size:'WS',  angle:18, cut:'hard'},
-  // 3 — it arrives and stops. Pull to FSA as the feet plant.
-  {at:['halt',0],      subject:'walker', size:'FSA', angle:18, cut:'blend'},
-  // 4 — RACK FOCUS, near half: framed on the strider, FOCUSED ON THE SHARD.
-  {at:['regard',.02],  subject:'walker', size:'MCU', angle:10, focus:'shard'},
-  // 5 — RACK FOCUS, far half: byte-for-byte the same framing, focus pulls to
-  //     the strider. `blend` is what interpolates the focus distance.
-  {at:['regard',.42],  subject:'walker', size:'MCU', angle:10, focus:'walker', cut:'blend'},
-  // 6 — the insert. FS on a small named subject, per the sub-subject rule.
-  {at:['assert',0],    subject:'head',   size:'FS',  angle:10, cut:'whip'},
-  // 7 — THE MATCH CUT. Same size/angle/elev/fov/anchor as shot 6, different
-  //     subject: the eyes rhyme with the thing they are guarding.
-  {at:['rhyme',0],     subject:'shard',  size:'FS',  angle:10, cut:'hard', match:true},
-  // 8 — pull back out to both, and the title returns over the same geometry
-  //     the film opened on.
-  {at:['recede',0],    subject:['walker','shard'], size:'WS', angle:24, size2:'EWS', cut:'blend'},
+  // 1 — the route and the thing that measures it.
+  {at:['title',0],    subject:['walker','marker'], size:'WS',  angle:20},
+  // 2 — tracking; pos moves, so this is a tracking shot for free.
+  {at:['route',.06],  subject:'walker', size:'WS',  angle:14, cut:'hard'},
+  // 3 — RACK near half: framed on the body, FOCUSED ON THE BODY.
+  {at:['cradle',.02], subject:'walker', size:'WS',  angle:12, focus:'walker'},
+  // 4 — RACK far half: identical framing, focus pulls back to the cradle.
+  {at:['cradle',.45], subject:'walker', size:'WS',  angle:12, focus:'cradle', cut:'blend'},
+  // 5 — it arrives and stops.
+  {at:['stop',0],     subject:'walker', size:'WS',  angle:20, cut:'blend'},
+  // 6 — the insert. FS on a small named subject, per the sub-subject rule:
+  //     a tight rung on a small subject compounds twice and puts the camera
+  //     inside it.
+  {at:['regard',.05], subject:'head',   size:'FSA', angle:8,  cut:'whip'},
+  // 7 — THE MATCH CUT. Same size/angle/elev/fov as shot 6, different subject:
+  //     the head it looks with and the cradle it cannot fill, at one size.
+  {at:['empty',0],    subject:'cradle', size:'FSA', angle:8,  cut:'hard', match:true},
+  // 8 — it walks on, and the frame lets it go.
+  {at:['resume',0],   subject:['walker','marker'], size:'WS', angle:20, size2:'EWS', cut:'blend'},
 ].map(sh=>({...sh,t:beatAt(sh.at[0],sh.at[1])}));
 SHOTS.forEach((sh,i)=>{sh.t1=i<SHOTS.length-1?SHOTS[i+1].t:TOTAL;});
 /* ==== SOLVER-START ====================================================
@@ -1698,61 +1715,52 @@ function setCamera(state){
 function animate(t){
   const x=walkerXAt(t);
   const s=x-WALK_START;                          // gait rides distance, never t
-  // MOTION ENVELOPE, spanning the SAME window as walkerXAt above. pulse() is
-  // bump() over one beat's span; the travel now crosses two beats, so the
-  // envelope is bump() over the identical pair. Leaving this as
-  // pulse(t,'approach',...) after moving the travel would have translated the
-  // body through the whole title beat with vAmp at zero — gaitPose scaled to
-  // nothing, feet not cycling, the creature skating in on locked legs. That
-  // is the sliding-paws defect the fixture corpus keeps as a calibration
-  // target, and it would have been authored in by a one-line edit elsewhere.
-  const vAmp=bump(t,beatAt('title',.35),beatAt('approach',.98));
+  // Envelope over the SAME span as the travel — see TSPAN. A quadruped skates
+  // just as loudly as a biped when these disagree, and with four planted
+  // limbs it is four feet wrong instead of two.
+  // Envelope over BOTH legs. max(), not sum: the legs are disjoint, so a sum
+  // is the same thing here — but max is what stays correct if they ever
+  // overlap, and a walk cycle scaled past 1 is a different bug entirely.
+  const vAmp=Math.max(
+    bump(t,beatAt(LEG1[0],LEG1[1]),beatAt(LEG1[2],LEG1[3])),
+    bump(t,beatAt(LEG2[0],LEG2[1]),beatAt(LEG2[2],LEG2[3])));
   walker.root.position.x=x;
+  // QUADRUPED: gaitPose drives all four limbs on the lateral-sequence phases
+  // the scaffold assigns (HL 0, FL .25, HR .5, FR .75). strider-intro was a
+  // biped and exercised none of that path — this is the first corpus film
+  // since menagerie to walk a four-legged rig, and the first ever to do it
+  // with a body this low, where the plant columns sit close under the torso.
   const stride=gaitPose(walker,s,vAmp,{start:WALK_START,rootX:x});
   const bob=gaitBob(s,stride);
-  // expression is the scene's job — gaitPose only plants feet:
-  walker.body.position.y=.09*bob*vAmp;
-  walker.body.rotation.z=.05*vAmp;               // lean into the walk
-  walker.limbs.FL.attach.rotation.z=.45*bob*vAmp;
-  walker.limbs.FR.attach.rotation.z=-.45*bob*vAmp;
-  walker.limbs.FL.mid.rotation.z=walker.limbs.FR.mid.rotation.z=.3;
+  // A heavy body bobs LESS and rolls MORE than a light one. Both numbers are
+  // the creature's mass reading, not the scaffold's.
+  walker.body.position.y=.05*bob*vAmp;
+  walker.body.rotation.z=.025*vAmp;
+  walker.body.rotation.x=.03*Math.sin(Math.PI*s/stride)*vAmp;   // lateral roll
 
-  // REGARD: the long neck carries most of the turn, the head finishes it.
-  // ss() not pulse() — the turn ARRIVES AND STAYS; the creature does not look
-  // back at the shard afterwards. pulse() here would have it swing back on
-  // its own, which is the "grow and stay vs flash and go" trap the kernel
-  // comment names.
-  const look=ss(t,beatAt('regard',.05),beatAt('regard',.55));
-  chainCurl(walker.neckChain,-.05-.13*look,'z'); // standing S-curve, deepens
-  chainCurl(walker.neckChain,-.55*look,'y');     // the turn, distributed
-  walker.head.rotation.y=-.45*look;
-  // ASSERT: a slow push of the head forward, arriving and holding.
-  const assert=ss(t,beatAt('assert',0),beatAt('assert',.55));
-  walker.head.rotation.x=-.10*assert;
+  // REGARD: ss(), not pulse() — the turn ARRIVES AND STAYS. pulse() would
+  // swing the head back on its own, which is the grow-and-stay trap.
+  const look=ss(t,beatAt('regard',.05),beatAt('regard',.6));
+  chainCurl(walker.neckChain,-.10-.20*look,'z');
+  chainCurl(walker.neckChain,-.42*look,'y');
+  walker.head.rotation.y=-.38*look;
+  // It looks BACK at its own cradle before it looks at us — the beat's whole
+  // sentence. Released as the film cuts away.
+  const back=pulse(t,'regard',.0,.45);
+  walker.head.rotation.x=-.16*back;
 
-  // TAIL: one wave restated per frame — gait-coupled while walking, then a
-  // slow t-driven idle as the envelope dies (s freezes when the body stops,
-  // so without the second term the tail would freeze mid-wave).
-  chainWave(walker.tailChain,Math.PI*s/stride+.9*t*(1-vAmp),
-            .22*vAmp+.06*(1-vAmp),.7,'x');
+  // TAIL: gait-coupled while moving, slow t-driven idle once s freezes.
+  chainWave(walker.tailChain,Math.PI*s/stride+.8*t*(1-vAmp),
+            .16*vAmp+.05*(1-vAmp),.7,'x');
 
-  // BREATH: an inhale-exhale pulse across the held beats. pulse() is correct
-  // here precisely because a breath IS flash-and-go.
-  const breath=pulse(t,'halt',.15,.95);
-  walker.body.scale.y=1+.03*breath;
+  // The straps hang slack and swing off the gait — the only thing on the
+  // cradle that moves, which is what sells it as carrying nothing.
+  cradle.rotation.z=.012*Math.sin(Math.PI*s/stride*2)*vAmp;
 
-  // THE SHARD PULSE. Written as a composed periodic, which is the exact shape
-  // instruments.md warns can be silently constant — sin(quant(t,2)*PI*2) is
-  // zero at every sample. This one is NOT quantized and is probe-checked in
-  // the review below; the whole point of writing it here is that the check
-  // is what makes it trustworthy, not the fact that it looks animated.
-  const pulseT=.5+.5*Math.sin(t*1.35);
-  // Pulled down from 1.15+.7: at FS the core clipped to flat yellow and the
-  // octahedron's facets stopped reading, so the shape was carried entirely by
-  // the husk plates. The point light does more of the work now.
-  shardCore.material.emissiveIntensity=.62+.36*pulseT;
-  shardLight.intensity=24+13*pulseT;
-  shardCore.rotation.y=t*.22;                    // slow, continuous, no wrap seam
+  // Lamp flicker. Written as a composed periodic, which instruments.md warns
+  // can be exactly constant; probe-checked in review rather than trusted.
+  const fl=.5+.5*Math.sin(t*2.1)*Math.cos(t*.7);
+  lamp.material.emissiveIntensity=.85+.45*fl;
 }
 
 /* ==== DRIVER-START ====================================================

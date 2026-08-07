@@ -7,6 +7,43 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.24.0
+
+### fixed
+
+**`SUBJECTS[*].pos` may not call `getWorldPosition()`, and two corpus films
+were written that way before anything said so.** `pos` is specified as a pure
+function of `t`. `getWorldPosition()` reads a world matrix, and that matrix
+was last written by the **previous** `animate()` call, because `seekTo` runs
+`setCamera(state); animate(t); setOverlay(t)` — and `setCamera` is what calls
+`pos()`. So the camera aims using the pose from wherever the film was seeked
+from: the subject is a function of `(t, previous t)` and the frame is not
+reproducible.
+
+`hauler` failed smoke on it immediately — `seekTo(16.64) not deterministic`.
+**`strider-intro` shipped with it and passed**, because none of the sampled
+`t` values landed where the stale pose moved a byte. Both now derive from the
+same named closed form the body uses, with offsets measured by `probe`.
+
+The generalisable half is in `film-language.md` with both spellings side by
+side: **a green determinism run does not certify purity, it certifies the
+samples.** A static check that rejects the impure form is filed in
+`working-plan.md` with its red arm named — prose is currently the only guard,
+and this entry says so rather than implying otherwise.
+
+### added
+
+**The low-key lighting rig, in `materials.md`** — held back deliberately
+until a second film used it, because one scene's lighting is taste. Four
+roles with their ratios, and more usefully the three things that MOVED
+between the two films and why: rim intensity scales with the silhouette's
+aspect (a long horizontal edge needs ~30% more than a narrow vertical one),
+fill scales with how tight the film's tightest rung goes, and the shadow
+camera must cover the travel rather than the subject. Also the honest note
+that both films sit above the 35%-crushed advisory by design — and that in
+both, the advisory's own words were the correct diagnosis of a real
+first-draft defect.
+
 ## 0.23.1
 
 ### added

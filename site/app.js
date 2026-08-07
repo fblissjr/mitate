@@ -290,6 +290,7 @@
     'noise-chart':   { title: 'Noise Chart · primitive isolation',    meta: '8 cells · 1 drift control', src: 'films/noise-chart.html?v=2' },
     'crash':         { title: 'Market Crash · mechanics of a cascade',meta: '10 beats · 37.0s',          src: 'films/crash.html?v=2' },
     'strider-intro': { title: 'Strider · a boss intro',              meta: '7 beats · 20.4s',           src: 'films/strider-intro.html' },
+    'hauler':        { title: 'Hauler · the cradle is empty',         meta: '7 beats · 20.8s',           src: 'films/hauler.html' },
   };
 
   const lb = document.getElementById('lightbox');

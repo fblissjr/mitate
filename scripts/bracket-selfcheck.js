@@ -7,8 +7,15 @@
  * "every gate check ships with a bracket" -- and this is that bracket.
  *
  * It works by BREAKING THE TREE on purpose, one defect at a time, and asserting
- * selfcheck notices. Every fixture is removed in a finally; if this script is
- * killed mid-run, `git status` shows what to delete.
+ * selfcheck notices. Every fixture is undone in a finally; if this script is
+ * killed mid-run, `git status` shows the damage — but read it carefully,
+ * because the arms break the tree in two distinct ways and the recovery
+ * differs. An arm that CREATES a fixture file wants it deleted. An arm that
+ * MODIFIES a tracked file in place wants `git checkout --` instead:
+ * `withCascade`, the freshness-marker arms, the sample.yml pin arm and the
+ * encoder-budget arm all work that way. This line said only "what to delete"
+ * until 2026-08-07, which would have left a modified workflow or SKILL.md
+ * sitting in the tree looking like intentional work.
  *
  *   bun run scripts/bracket-selfcheck.js
  *

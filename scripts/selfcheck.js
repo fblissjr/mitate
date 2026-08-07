@@ -155,7 +155,17 @@ const fail = m => fails.push(m);
            + `gate would measure determinism on different browsers`);
       }
     }
-    if (samplePinned.length) notes.push(`sample.yml's ${samplePinned.length} pin(s) agree with gate.yml`);
+    // THE VERDICT STATES ITS SCOPE. A pin sample.yml installs that gate.yml
+    // does not is compared against nothing, and a note reading "N pin(s) agree"
+    // would cover that silently — the same shape as check 7's dropped
+    // population, one file away. Name the uncompared ones instead: this check
+    // can reject a skew, it cannot approve a package only one workflow has.
+    const unmatched = samplePinned.filter(t =>
+      !pinned.some(g => g.slice(0, g.lastIndexOf('@')) === t.slice(0, t.lastIndexOf('@'))));
+    if (samplePinned.length) {
+      notes.push(`sample.yml: ${samplePinned.length - unmatched.length} pin(s) agree with gate.yml`
+        + (unmatched.length ? `, ${unmatched.length} not in gate.yml so uncompared (${unmatched.join(', ')})` : ''));
+    }
   }
   // The container tag is a FOURTH consumer of the playwright version. An image
   // shipping browsers for one playwright and a playwright-core pinned to another

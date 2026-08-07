@@ -333,15 +333,27 @@ applied to the portfolio itself.
   exercises it**", and that was true until `crash.html` landed: a ten-beat 2D
   film built cold, from `method.md` and the 2D template alone. It is now in
   `scenes/` and it exercises `drawOn`/`alongPath` and in-canvas text, which
-  had no worked demonstration anywhere. **Two things the closure changed that
-  a "done" would hide:** the film carries *no fence markers at all*, so it is
-  in the corpus but outside the parity set — deliberate divergence per the
-  documented mechanism, and it means the 2D kernel is unpoliced by parity
-  where the 3D one is not; and `txt()` being 2D-only is precisely why the
-  `nocap` semantics pass is incomplete on 3D films, which `instruments.md`
-  owns. The rung below `market-crash` is therefore no longer "a 2D film" but
-  **a second one** — the n=1 brake applies to the register as much as to the
-  cold-start criterion.
+  had no worked demonstration anywhere. What the closure changed that a
+  "done" would hide: `txt()` being 2D-only is precisely why the `nocap`
+  semantics pass is incomplete on 3D films, which `instruments.md` owns. The
+  rung below `market-crash` is therefore no longer "a 2D film" but **a second
+  one** — the n=1 brake applies to the register as much as to the cold-start
+  criterion.
+
+  **CORRECTION, 2026-08-07.** This bullet asserted for one day that
+  `crash.html` "carries no fence markers at all", sits "outside the parity
+  set", and leaves "the 2D kernel unpoliced by parity where the 3D one is
+  not". **All three were false and the error was mine**: the check behind
+  them grepped for a marker syntax this repo does not use (`mitate:begin:X`
+  rather than `==== X-START ====`), and an empty result was read as an
+  absence rather than as a broken query. `crash.html` carries `CONTRACT` and
+  `KERNEL` — the two every scene carries — and the 2D template carries only
+  those two because a 2D scene has no solver, rig, driver or character block
+  to share, which is design and not a gap. Parity guards them: injecting one
+  line inside crash's `KERNEL` fence takes `--parity-only` red, verified
+  rather than reasoned. The lesson is the one this repo keeps relearning in
+  new costumes — **a query that returns nothing is a claim about the query
+  until you make it return something.**
 - **`small-crowd` (6–12 figures, no instancing, no LOD)** — sits below
   `crowd-cross` and answers the question that actually matters first: does
   per-figure gait phase read as a crowd? `menagerie` already draws three

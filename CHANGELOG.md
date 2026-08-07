@@ -7,6 +7,49 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.25.0
+
+### added
+
+**The 2026-08-07 harvest queue, disposed: nine findings from three
+installed-plugin builds land in the references.** Every row's gap was
+re-verified against the current files before writing, and the content for the
+three heaviest rows was re-derived from the build fixtures' own code and
+records rather than from the extraction's summaries. What shipped, by file:
+
+- `method.md` — the continuous-motion advice now names the spanning form it
+  previously could not satisfy (`ramp` cannot cross a beat; `ss`/`bump`
+  against `beatAt` edges can, pointing at `characters.md`'s worked instance);
+  a "Reading a source" section for the two advertised modalities (measure the
+  image before sampling it, still interval bounds claimable edge precision,
+  budget for returning to the source); two new false-green-control shapes with
+  the rule under all of them (a control that holds its independent variable
+  constant reads its own constancy as agreement); and a drawing-versus-deriving
+  clause on the seeded-pool rule — `R[]`'s length is not a ceiling on a
+  field's size, verified against both builds' independent fixes.
+- `characters.md` — feature placement by direction (radius does the placing,
+  `materials.md` keeps the numbers); the contact disc as the authored grounding
+  cue, lifted from a delivery-green build's implementation; the
+  two-drivers-one-joint-set handover, both working shapes with the silent
+  failure named.
+- `film-language.md` — `angle` is a world azimuth (derived from the SOLVER
+  fence: 0° on +Z, 90° on +X), composed with the +X facing convention into the
+  fact that lived in neither file: which angle shows a face. Plus the
+  reachable-region rule — hold the rung, lengthen the lens.
+- `instruments.md` — the probe countermeasure corrected: identical outputs are
+  ambiguous between a constant expression and a probe that never moved `t`;
+  distinct outputs prove, constancy requires a positive control.
+- `breakdown.md`, `materials.md` — pointers to the two composed/derived facts
+  above, per the composed-fact decision (the fact lives where it bites; inputs
+  point, never copy).
+
+No fence was touched. The two fence-priced helpers (a contact-disc kit
+primitive, a kernel cross-beat ramp) were declined at two instances each —
+the paragraph ships first, and a helper waits for a third film to pay for it.
+Ledger increments applied in `pattern-ledger.md`: built non-DOM text 1 → 3
+(the type-primitive trigger has fired, twice over), declared-extents-rot
+6 → 8.
+
 ## 0.24.2
 
 ### fixed

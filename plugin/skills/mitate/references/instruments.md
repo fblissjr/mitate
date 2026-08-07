@@ -441,8 +441,15 @@ between frames, does the film explain itself without its words.
   one sat invisible through every instrument from first draft to the
   continuity pass — caught pre-delivery, but by incidental hand-inspection
   while investigating something else, never by anything in this toolkit. The countermeasure is `probe`: sample the expression at 4-5
-  `t` values; fewer than two distinct outputs means the animation does not
-  exist. `method.md` ("A composed periodic can be constant") owns the rule.
+  `t` values. Two or more distinct outputs prove it varies; **identical
+  outputs are ambiguous** — a constant expression and a probe that never moved
+  `t` produce the same flat line, and a hand-rolled probe that maps over
+  timestamps while reading the scene graph without seeking reads one pose N
+  times (the shipped `build.js probe` seeks per invocation, which is the
+  property to preserve). Before recording constancy in either direction, run
+  the same probe against an expression known to vary — a probe that cannot
+  show variation anywhere is measuring itself. `method.md` ("A composed
+  periodic can be constant") owns the rule.
 - **Whether a caption is legible at the size it will actually be viewed.**
   Captions are a constant fraction of the frame (`calc(var(--fw)*.015625)`), so
   they compose correctly at every size and go unreadable at small ones — ~5.7px

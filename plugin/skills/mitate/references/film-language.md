@@ -106,6 +106,15 @@ waist. Asking for `MS` on a 9-unit-wide pair jams the camera into the gap
 between them. Use `WS`/`FSA`/`FS` for a union and save the tight rungs for a
 single named subject.
 
+**The camera has a reachable region; the lens is how you stay inside it.**
+Rung and lens set the distance, so a tight rung on a normal lens can put the
+camera inside a wall, inside the subject's own volume, or across a set piece —
+the solver places, it does not collide. When the framing is right and the
+position is not, hold the rung and declare a longer per-shot lens (`fov:`
+smaller): identical subject-to-frame ratio, camera farther out. The reverse
+trade — widening `fov` to squeeze into a cramped set — buys perspective
+distortion along with the proximity, which is a look to choose, not a fix.
+
 **Subjects may name several things.** `subject: ['plank','hammer']` frames the
 union box. Every causal beat is two objects and the space between them, and
 hand-authoring a composite subject with an invented centre is the thing this
@@ -128,6 +137,17 @@ lens give distance, binding on whichever axis is tighter; `angle`/`elev` place t
 subject. The projected fit rotates the box by **azimuth only** — a near-top-down shot of
 a deep subject can still clip on depth. `size2`/`angle2` ease across the shot's duration — push-in,
 pull-out, orbit — and a moving subject makes any shot a tracking shot.
+
+**`angle` is a world azimuth, and the shot that shows a face is a product.**
+The solver places the camera at `[sin(angle), ·, cos(angle)]` of the subject's
+center: `0°` puts it on **+Z**, `90°` on **+X**, negative angles the other way
+around. The character convention faces **+X** (`breakdown.md`), so on a
+convention-following subject `angle:90` is frontal, `0` and `180` are the two
+profiles, and `-90` shoots the back of the head. Neither fact answers the
+framing question alone — what the camera sees is the subject's facing composed
+with the shot's angle, and a subject that turns mid-film carries its frontal
+angle with it. A build that composed nothing framed the back of a head for
+five consecutive shots.
 
 **Cuts** — how a shot ENTERS: `hard` (default), `whip` (0.16s snap), `blend`
 (0.8s dolly-morph). **`whip` is a fast cut, not a whip pan** — it differs from

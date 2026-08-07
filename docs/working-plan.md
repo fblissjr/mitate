@@ -2650,7 +2650,7 @@ rather than a matter of mood.
 
 ---
 
-## The 2026-08-07 harvest queue — extraction run, undisposed (2026-08-07)
+## The 2026-08-07 harvest queue — extraction run, DISPOSED (2026-08-07)
 
 `/extract-patterns` ran over the three installed-plugin builds with a no-context
 reader. **Recorded here rather than disposed in the same session, deliberately**:
@@ -2670,19 +2670,33 @@ not** — the feature-placement proposal claimed `proud` was undocumented, and
 item's grep before writing it** — the one that failed would have produced a
 duplicate entry, which is the one-home rule failing quietly.
 
+**DISPOSED 2026-08-07, the following session.** Every row's grep was re-derived
+against the current references before writing; all nine held (one apparent
+refutation — `proud` absent from `materials.md` — was the verifying grep's own
+case-sensitivity, and the queue's original verification stood). Content for
+rows 1, 4 and 5 was re-derived from the build fixtures themselves rather than
+from the extraction's summaries: the contact disc and the pool-ceiling fix were
+read out of the shipped scenes' code, and the three false-green shapes out of
+the warm build's own postmortem `(local)`. All nine landed as reference prose;
+no fence was touched. The two fence-priced helpers (the contact-disc kit
+primitive, a kernel cross-beat ramp) were **declined**, per this section's own
+pricing: the paragraph ships first, and the composed `ss`/`bump` form already
+serves — a helper waits for a third film to pay for it. The two ledger
+increments below are now applied in `pattern-ledger.md`, not merely filed here.
+
 At trigger, counts are independent solutions across the three builds:
 
 | # | finding | count | proposed home | status |
 |---|---|---|---|---|
-| 1 | grounding cue authored as a radial-alpha disc parented to the touching part, not a shadow map | 2 | `characters.md` + kit primitive | unverified |
-| 2 | no cross-beat ramp exists, and the travel envelope should be the travel expression's derivative | 2 | `method.md` §ss-derivative + KERNEL | **gap verified** (`method.md:470` states the rule, no expression ships) |
-| 3 | two drivers owning one joint set — disjoint windows with an identity handover, or assign-from-lerp | 2 | `characters.md` | unverified |
-| 4 | the seeded `R[]` pool has a scale ceiling, and the shipped rule reads as forbidding the fix | 2 | `materials.md:236` + `method.md:996` clause | **gap verified** (those two lines are the whole surface) |
-| 5 | three shapes of false-green control: wrong artifact, never moved, ran once | 3 | `method.md` control section + `instruments.md:437` correction | unverified — note it CORRECTS a shipped instruction |
-| 6 | ~~features undocumented as needing to sit proud~~ **narrowed on verification**: the placement mechanism (by direction, radius places it) is absent from `characters.md`; the principle is already in `materials.md` | 3 → mechanism only | `characters.md` | **partly refuted, see above** |
-| 7 | facing × camera angle — the product of two documented facts, living in neither | 2 | `film-language.md` | **gap verified** |
-| 8 | the camera has a reachable region; hold the rung and lengthen the lens | 1 + 2 | `film-language.md:126` | unverified |
-| 9 | the two advertised source modalities (image → palette, timed source → beat edges) have no reading procedure | 2 | `method.md` | need already filed; this adds the content |
+| 1 | grounding cue authored as a radial-alpha disc parented to the touching part, not a shadow map | 2 | `characters.md` + kit primitive | **WRITTEN** — `characters.md`, lifted from the restage's `contactShadow()` (green at delivery); kit primitive declined at 2 |
+| 2 | no cross-beat ramp exists, and the travel envelope should be the travel expression's derivative | 2 | `method.md` §ss-derivative + KERNEL | **WRITTEN** — `method.md`'s spanning advice now names the `ss`/`bump` form it previously could not satisfy, pointing at `characters.md`'s worked instance; KERNEL primitive declined — the composed form serves |
+| 3 | two drivers owning one joint set — disjoint windows with an identity handover, or assign-from-lerp | 2 | `characters.md` | **WRITTEN** — `characters.md`, both shapes, with the failure named |
+| 4 | the seeded `R[]` pool has a scale ceiling, and the shipped rule reads as forbidding the fix | 2 | `materials.md:236` + `method.md:996` clause | **WRITTEN** — drawing-vs-deriving clause in `method.md`'s determinism rules, pointer in `materials.md`; fix verified in both builds' code (strided access, closed-form hash) |
+| 5 | three shapes of false-green control: wrong artifact, never moved, ran once | 3 | `method.md` control section + `instruments.md:437` correction | **WRITTEN** — two bullets + the constancy-as-agreement rule in `method.md`; `instruments.md`'s probe countermeasure corrected (identical outputs are ambiguous, positive control required). Content re-derived from the warm build's postmortem `(local)`, not the extraction summary |
+| 6 | ~~features undocumented as needing to sit proud~~ **narrowed on verification**: the placement mechanism (by direction, radius places it) is absent from `characters.md`; the principle is already in `materials.md` | 3 → mechanism only | `characters.md` | **WRITTEN** — mechanism only, pointing at `materials.md` for the numbers |
+| 7 | facing × camera angle — the product of two documented facts, living in neither | 2 | `film-language.md` | **WRITTEN** — azimuth convention derived from the SOLVER fence (`angle:0` on +Z, `90` on +X ⇒ frontal for a +X-facing subject), homed where it bites per the composed-fact decision; `breakdown.md` carries the pointer |
+| 8 | the camera has a reachable region; hold the rung and lengthen the lens | 1 + 2 | `film-language.md:126` | **WRITTEN** — with the reverse trade (widening fov) named as a look, not a fix |
+| 9 | the two advertised source modalities (image → palette, timed source → beat edges) have no reading procedure | 2 | `method.md` | **WRITTEN** — "Reading a source" section: dimensions before sampling, still interval bounds claimable precision, return-to-source budget |
 
 Also at trigger, not yet written up: a closed form for a POSED CHAIN costs more
 than for travel (count 2); `build.js strip`'s first cell is not comparable to

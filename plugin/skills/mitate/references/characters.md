@@ -155,6 +155,38 @@ shots until the face existed. Ears, horns, props, markings all follow the
 same pattern. If a feature needs to move, drive it from `t` like everything
 else.
 
+**Place a feature by direction, and let the radius do the placing.** A feature
+on a head is a unit direction from the head's center scaled to the surface:
+`dir.normalize().multiplyScalar(headR + lift)`, parented to `rig.head` so it
+rides every nod. The `lift` is what keeps it sitting PROUD of the surface —
+`materials.md` owns the numbers. Hand-tuned xyz offsets are wrong twice: they
+drift off the sphere the moment a proportion changes, and they restate the
+radius a second time.
+
+**Ground contact is authored, not hoped for.** A contact disc parented to each
+touching part: `CircleGeometry` rotated flat, transparent dark basic material
+with a radial fade — `opacity = (1-d)^k * alpha`, `d` 0 at the center and 1 at
+the rim — `depthWrite:false`, `castShadow`/`receiveShadow` off, floated just
+above the floor. Parented to the limb end it plants and lifts with the foot for
+free, and it reads as contact at every rung. It is ordinary geometry, so it is
+exactly as deterministic as the rest of the scene and takes the whole shadow
+pipeline off the determinism surface — where a shadow-mapped contact ties the
+cue to one light's direction and to the map's resolution besides. Write the
+falloff as plain arithmetic rather than `smoothstep`: a reversed argument order
+yields a silently constant-zero opacity that reads as "the mesh never got
+built".
+
+**Two drivers, one joint set.** A gait and a gesture that both write the same
+limb do not compose — rotations assign, so the last writer wins, and adding
+them double-counts the rest pose. Two shapes work, and both are declarations
+about windows rather than adjustments to values: give each driver a disjoint
+beat window and hand over THROUGH the shared rest pose (each side's envelope is
+zero at the boundary, so the joints pass through the same stance and no frame
+shows both writers); or keep one writer and assign a blend — compute both joint
+targets, write the `lerp` of the two with a beat-addressed weight. A limb
+written by two live drivers is pure in `t` and green in smoke while it snaps at
+every window edge.
+
 ## Not here yet (deliberately)
 
 The face morph basis, expression library and hands are Phase 3

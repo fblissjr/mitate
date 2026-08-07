@@ -253,6 +253,8 @@ the page loads, along with `at` inside `0..1`. **Not validated:** anything else 
 
 A body expressed as numbers, consumed by `buildCharacter(P, matFor)`. Lengths in
 world units, angles in degrees; facing `+X`, sagittal plane `XY`, `z` lateral.
+Which shot `angle` shows the face is a composed fact and lives with its
+consumer, in `film-language.md`.
 Defaults come from `propDefaults()`; *"a bear", "a human", "the creature you just
 described"* are overrides of those defaults plus a material choice.
 

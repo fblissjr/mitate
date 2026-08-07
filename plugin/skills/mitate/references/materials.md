@@ -234,7 +234,9 @@ geometry serves wildly different domains. Before reaching for one, derive your o
 - **Field of instances** (forests, crowds, populations, fleets): one
   `InstancedMesh` per geometry, transforms composed ONCE at load from the
   seeded `R[]` pool — deterministic arrangement, one draw call however many
-  items. The cel trick: the outlines are a *second* `InstancedMesh` sharing
+  items. A field larger than the pool derives per-instance values as pure
+  functions of the index; the boundary of the never-redraw rule is in
+  `method.md`'s determinism rules. The cel trick: the outlines are a *second* `InstancedMesh` sharing
   the same matrices scaled ~1.06 with the BackSide ink material — linework
   for the whole field at one more draw call. Built on a corpus film: a 46-tree
   forest. For a beat that animates the field, write

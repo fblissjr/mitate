@@ -111,6 +111,30 @@ a corpus of films the only sub-70 dB frames were caption-fade boundaries,
 localized to the caption pill, and a precision-critical world cut came out
 byte-identical.
 
+### Reading a source, when one exists
+
+Every input is re-authored — there is no import path — so a source image or
+video contributes exactly one thing: **measurements**. Both advertised source
+modalities have a procedure, and each has a measured failure mode:
+
+**An image gives a palette and proportions.** Read the file's actual dimensions
+before computing a single sample coordinate — on one build, five of eight
+pixel-sampling commands returned nothing, from an assumed 2000px width against
+a 6144px file and from a shell that does not word-split unquoted variables.
+Sample a coarse grid, cluster to a handful of hexes, and write them into the
+style bible as NAMED colors (`bibles.md`) — the bible is where a palette lives,
+not scattered constants.
+
+**A timed source gives beat edges.** Extract stills no coarser than the
+precision you intend to claim: edges stated to 0.05s from stills sampled at
+0.2s are invented, not measured. A container-duration match verifies the
+container, never the timing. And budget for RETURNING to the source: one
+restage read its reference for 71 seconds at the start and never again, then
+spent eight times the tokens on its own renders as on the thing it was
+restaging. After each composition round, put a source still beside the render
+at the same moment and say what differs — a question no instrument asks for
+you yet.
+
 ### Beats before geometry
 
 A sequence is a list of beats — (time range, caption, one visible change). Write
@@ -209,6 +233,17 @@ like evidence. This is the failure mode of the rule above, and it is easy to hit
   came from something else still in the way.
 - A "does it fail without X" run where X was still present, so the pass proved
   nothing.
+- A check aimed at the wrong artifact: on one build a batch of smoke runs
+  executed after an earlier command's `cd` had moved the shell, scanned a
+  different scene entirely, and reported three passes — written into a source
+  comment as measured before the path was caught. Pin the path, and read the
+  tool's own echo of what it scanned.
+- A sampler that never moved its independent variable: a determinism control
+  that rendered one frame per page load compared three first-frames and called
+  the trivial match agreement; a probe that mapped over six timestamps while
+  reading the scene graph without seeking read one pose six times — six
+  identical numbers, exactly the signature of the constant-animation defect it
+  was hunting.
 - Asking a summarizing tool whether a document says something and reading its
   silence as absence — absence is exactly what summarization discards.
 
@@ -220,6 +255,11 @@ one in your notes and nobody revisits it.
 
 Symptom to watch for: a control that passes on the first attempt, testing
 something you expected to be broken.
+
+The shape under most of these: **the control held its independent variable
+constant and read the resulting constancy as agreement.** Before recording a
+green, name the variable the control varied and point at the two readings that
+differ because of it.
 
 ### The worked instance: three frames that proved nothing
 
@@ -467,9 +507,23 @@ boundary. The wheel decelerates to a full stop twice during the payoff — in a
 film whose entire subject is a flywheel that should be gathering speed. Every
 sampled frame is correct. The defect exists only in the derivative.
 
-**Author continuous motion as one ramp spanning every beat it covers**, or
-integrate a speed envelope in closed form. Per-beat ramps are for per-beat
-events, and momentum is not an event.
+**Author continuous motion as one span covering every beat it crosses** — and
+note that `ramp`/`pulse` cannot write that span, because each addresses a
+single named beat. The spanning form is `ss`/`bump` against explicit edges,
+both ends addressed by beat so retiming moves them together:
+
+```js
+ss(t,   beatAt('spin',.18), beatAt('outro',.78))   // position across the span
+bump(t, beatAt('spin',.18), beatAt('outro',.78))   // its motion envelope
+```
+
+`bump` is zero exactly where `ss` is flat and peaks where it is steepest, so a
+position and an envelope written against the same pair of edges cannot disagree
+about when motion exists — which is the property per-beat addressing silently
+loses the moment a travel crosses a boundary. The worked two-beat instance, and
+the locked-limb failure that comes from widening one end and not the other, is
+in `characters.md`'s gait section. Per-beat ramps are for per-beat events, and
+momentum is not an event.
 
 ## `during()` is a step function
 
@@ -993,7 +1047,12 @@ video.
 
 # Determinism rules (breaking these breaks video/HTML parity)
 
-- All randomness from the seeded pool `R[]`, indexed, never re-drawn.
+- All randomness from the seeded pool `R[]`, indexed, never re-drawn. The ban
+  is on **drawing** — consuming values in call order — not on **deriving**: a
+  population larger than the pool takes pure functions of the index
+  (`R[(i*7)%R.length]` strided access, or a closed-form hash of `i`),
+  identical under any evaluation order. The pool's length is not a ceiling on
+  a field's size.
 - No `Date.now()`, no `performance.now()` outside the preview driver, no state
   accumulated across frames — `seekTo(8)` after `seekTo(2)` must equal
   `seekTo(8)` cold.

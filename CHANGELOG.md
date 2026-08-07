@@ -7,6 +7,39 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.24.1
+
+### fixed
+
+**The scaffold installed dependencies outside the scene directory.** SKILL.md's
+setup block ran `bun add three@… playwright-core@…` with nothing creating a
+local manifest, so in an empty workspace bun walked UP the tree and installed
+into the first `package.json` it found — someone else's project, or a home
+directory. It reports `installed three@0.185.1` either way; nothing in the
+output names the destination, so the failure is silent until `node_modules/` is
+found to be somewhere else.
+
+Measured on three installed-plugin builds that hit it the same day
+(`docs/scene-analyses/2026-08-07_turtle-pair-and-v2v.md`): two detected it and
+spent roughly ten and six minutes recovering, one of them editing a manifest and
+lockfile outside its own workspace to undo it; the third never noticed, and its
+workspace still has no `node_modules`. The fix is one line — a minimal
+`package.json` written before `bun add` — verified red-first in a scratch tree:
+without it, a child directory's install lands in the ancestor's manifest and the
+child gets nothing; with it, the ancestor is untouched.
+
+**The gate had the same shape, which is why it could never catch this.**
+`gate.yml` built its scratch workspace and ran the same manifest-less `bun add`,
+so CI was exercising the broken path rather than the prescribed one. It now
+writes the manifest too, which makes the gate a real control for the scaffold
+instead of a copy of its bug.
+
+**The scaffold block contradicted the template table two lines above it.** The
+table routes films with figures to `scene.character.template.html`, and the
+block hardcoded `scene.template.html`. A build hit exactly this, substituted by
+hand and reported it with a line citation. The block now takes the template name
+as a variable, and carries the `vendor` skip for the 2D template.
+
 ## 0.24.0
 
 ### fixed

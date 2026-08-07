@@ -17,7 +17,9 @@
 //   bun run build.js motion <scene.html> [fps]     -> per-beat motion profile + dead air, no files kept
 //   bun run build.js check  <scene.html>           -> cross-reference the declarative tables, no browser, no frames
 //
-// Prereqs: bun add three@0.185.1 playwright-core@1.61.1. That is the whole list
+// Prereqs: a scene-local package.json, THEN bun add three@0.185.1
+// playwright-core@1.61.1 — without the manifest bun installs into an ancestor
+// and reports success either way. That is the whole list
 // for BUILDING AND REVIEWING a scene — `vendor`, `bundle`, `frames`, `probe`,
 // `poster`, `sheet`, `aspect` and `strip` need no external binary at all.
 // `check` needs neither: it is string work over the scene file.

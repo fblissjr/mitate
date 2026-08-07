@@ -121,7 +121,12 @@ jobs:
           # the install cache, NOT out of the gate. Same smoke, same workspace,
           # same coverage as when films lived in the shipped subtree.
           cp scenes/*.html ws/
-          cd ws && bun add three@0.185.1 playwright-core@1.61.1
+          # The manifest is not tidiness: without it `bun add` walks UP and
+          # installs into an ancestor, which is what three installed-plugin
+          # builds hit on 2026-08-07. CI had the same shape, so the gate could
+          # not have caught it — this line makes CI run what SKILL.md prescribes.
+          cd ws && echo '{"name":"scene","private":true}' > package.json \
+            && bun add three@0.185.1 playwright-core@1.61.1
 
       # No WEBGPU. No ANGLE_BACKEND. This is the path that was broken.
       - name: smoke

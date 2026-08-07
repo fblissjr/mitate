@@ -137,3 +137,33 @@ of it landing on whoever runs selfcheck next was not.
    `templates/bracket-*.js` fixture resolution, section 2's repair claim
    was incomplete — annotate here. If it runs green, the claim held under
    the only test that matters.
+
+   **RESOLVED 2026-08-07: it ran green, and the claim held.** The push
+   landed 2026-08-06T00:53Z; gate run `31061108002` reports
+   `every bracket ran (8), all green` with every fixture resolving from
+   `scenes/`, and static run `31061108001` is green alongside it. Nothing
+   in section 2's repair was incomplete.
+
+## 6. Annotation, 2026-08-07 — what a verification pass found afterwards
+
+A re-derivation of this batch's own prose (the `/verify-written-claims`
+procedure, run over `c4f7990..HEAD`) confirmed twelve claims and refuted
+nine, landed as 0.22.2. Two of them bear on this postmortem directly:
+
+- **Section 1's "26 real dated lines mid-scrub" is unverifiable and the
+  changelog's version of it was wrong.** The pre-scrub tree carried **40**
+  dated lines across 12 files
+  (`git grep -nE '20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]' 2a0f547^ -- 'plugin/'`).
+  This file's "mid-scrub" wording is consistent with 26 being a
+  partial-progress reading; `CHANGELOG.md` promoted the same number to
+  "before the scrub", which it never was. Corrected there.
+- **Section 3's "README and agent file included" was true of the rule's
+  scope and false of the edit's.** `plugin/agents/film-reviewer.md` was
+  never touched by the scrub — it carried no dates, so it fell out of a
+  working set defined by what check 4 matches — and it was consequently
+  the one shipped markdown file with no row in the ledger the batch
+  created. Its first end-to-end verification (2026-08-07) found three real
+  drift items, including a mechanism claim false on the only corpus scene
+  that exercises it. **The generalisable finding: a scrub whose file set is
+  "what the check matches" is narrower than the rule the check enforces**,
+  and the gap is invisible precisely because the check is green.

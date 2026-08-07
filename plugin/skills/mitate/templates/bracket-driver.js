@@ -342,9 +342,15 @@ try {
     ['clean fixture, unmutated (all three silent)', s => s,
       { code: 'zero', says: /all scenes pass/ }],
 
+    // The regex stops at the em dash on purpose: what follows it is the layer
+    // attribution (bracket-readback.js's subject), which on a CLEAN fixture
+    // with a forced comparison is the capture-layer branch — the readbacks
+    // genuinely agree. This arm asserts only that the assertion still reaches
+    // the verdict; pinning the attribution wording here would make two
+    // brackets own one sentence.
     ['checkDeterminism assertion forced', s => s.replace(
       'if (sha256(x) !== sha256(y)) {', 'if (true) {'),
-      { code: 'nonzero', says: /not deterministic — scene carries state across frames/ }],
+      { code: 'nonzero', says: /not deterministic — / }],
 
     // The one the `!fails.length` guard can silently skip. If that guard ever
     // starts firing on this fixture, this arm goes MISSED rather than quietly
@@ -446,8 +452,8 @@ try {
 
     ['a disconnected push is invisible (negative control)', s => s
       .replace('if (sha256(x) !== sha256(y)) {', 'if (true) {')
-      .replace('const { page, dur, PLAN, fails } = ctx;',
-               'const { page, dur, PLAN, fails } = ctx; const sink = []; void fails;')
+      .replace('const { page, dur, PLAN, fails, file } = ctx;',
+               'const { page, dur, PLAN, fails, file } = ctx; const sink = []; void fails;')
       .replace('      fails.push(`seekTo(${ts}) not deterministic',
                '      sink.push(`seekTo(${ts}) not deterministic'),
       { code: 'zero', says: /all scenes pass/ }],

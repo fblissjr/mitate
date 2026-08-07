@@ -1243,7 +1243,11 @@ defect.
 other form above changes what the skill *says*. That one changes *when a reader
 meets it*, and until 2026-08-07 the plan had no way to express the difference —
 so a reference nobody opened looked like an editorial problem and invited a
-rewrite that would have fixed nothing.
+rewrite that would have fixed nothing. First instance landed at 0.26.0: both
+determinism verdicts carry the `webgpu-stack.md` pointer with its section
+named, and `templates/bracket-readback.js` holds the red-first arm — the
+pointer observed absent against the pre-change tree, present after, verdict
+polarity unmoved.
 
 The measurement that forced it: across the three installed-plugin builds, every
 reference read landed in an opening window of 1.1, 3.5 and 6.6 minutes against

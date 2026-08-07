@@ -7,6 +7,62 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.26.0
+
+### added
+
+**A failing determinism check now says which layer failed, hands over the
+evidence, and routes the reader.** Three shipped-tool gaps, all three measured
+as independent reinventions or misdirections across the three analyzed builds,
+closed in the one place they intersect — `smoke.js`'s two determinism checks:
+
+- **The readback discriminator.** Every screenshot capture is paired with an
+  in-page hash of the canvas pixels (`getImageData`, one layer above the
+  compositor). When screenshots disagree, the verdict names the layer: readback
+  differs too → scene state, the scene is the defect; readback byte-stable →
+  capture layer, and the text says the scene is innocent instead of blaming it.
+  A screenshot is two layers downstream of scene state, and the old text
+  attributed the intervening layers' noise to the subject — measured costing
+  one build its longest debugging stretch. An unreadable canvas is a declared
+  substitution: the verdict says attribution did not run rather than
+  pretending it did.
+- **`--dump-frames`.** On either determinism failure the two disagreeing
+  screenshots are written beside the scene as
+  `<scene>.detfail.<tag>.{a,b}.png`; without the flag, the failure names it.
+  All three analyzed builds had patched a private `smoke.js` to get exactly
+  these artifacts.
+- **The situated pointer.** Both failure texts name `webgpu-stack.md` and the
+  section, resolved against smoke's own location so the path works from the
+  install cache. First instance of `plan.md`'s pointer-carried-by-an-instrument
+  row, under its red-first condition. The cross-reload text's "Usual cause: a
+  seeded or unseeded random drawn once at load" — absent in all three measured
+  builds, actively misdirecting one — survives only on the branch whose
+  readback evidence supports a scene-side defect, demoted to one possibility
+  among several.
+
+**`templates/bracket-readback.js`** pins all of it: a clean control, the
+scene-state verdict (readback differs named in the text), the capture-layer
+verdict on a fixture that reproduces screenshot-differs/readback-agrees from a
+clean checkout (a wall-clock DOM overlay — deliberately observation-side noise,
+which is what the classifier certifies; it does not retro-diagnose any field
+failure), the artifacts arm, and the pointer arm. All four behavior arms were
+observed failing against the pre-change tree before the change landed.
+`bracket-driver.js`'s two touched anchors (the forced-assertion regex, the
+disconnected-push destructure) were each observed failing against the new
+`smoke.js` before being updated — the second had half-applied its mutation and
+was reporting a throw as its verdict.
+
+**Baseline on the open metal FAIL, with its scope stated.** With the
+discriminator live, `bear-and-bees` ran **24/24 green** under `WEBGPU=metal`
+on `playwright-core@1.61.1` (2026-08-07, one machine, every run
+`all scenes pass` verified per file, not piped). A standing 1-in-6 rate
+survives a 24-run clean sample about 1.3% of the time, so on this
+seekSynced-hardened capture path the historic flake is either gone or far
+rarer than recorded — which does NOT retire the lead: the original FAIL may
+predate the hardened path, and the discriminator has still never seen the
+phenomenon live. This count is the baseline the held playwright bump compares
+against, and every future smoke run contributes attribution for free.
+
 ## 0.25.0
 
 ### added

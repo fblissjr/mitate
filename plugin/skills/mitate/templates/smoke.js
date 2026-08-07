@@ -8,6 +8,14 @@
 //
 //   bun run smoke.js                 -> checks every *.html in cwd (skips .bundled)
 //   bun run smoke.js <scene.html>... -> checks the named scenes
+//   bun run smoke.js --dump-frames <scene.html>...
+//                                    -> WRITES on a determinism failure: the two
+//                                       disagreeing screenshots land beside the
+//                                       scene as <scene>.detfail.<tag>.{a,b}.png.
+//                                       Three independent plugin-only builds each
+//                                       patched a private copy of this file to get
+//                                       exactly these artifacts; the flag is the
+//                                       shipped form of that patch.
 //   bun run smoke.js --parity-fix [scene.html...]
 //                                    -> WRITES: regenerates every fenced block
 //                                       in the named carriers from the canonical
@@ -851,6 +859,70 @@ async function setupScene(ctx) {
   Object.assign(ctx, { dur, PLAN, t: PLAN[0] });
 }
 
+// THE READBACK DISCRIMINATOR, shared by the two determinism checks below.
+// A screenshot is two layers downstream of scene state: the canvas is
+// composited, then captured, and either downstream step can differ while the
+// scene's own pixels are byte-stable. Comparing only screenshots attributes
+// that downstream noise to the subject — the transcript record of three
+// independent plugin-only builds shows it doing exactly that in one day, one
+// of which spent its longest
+// debugging stretch on a scene the failure text wrongly indicted. So every
+// screenshot capture below is paired with an IN-PAGE hash of every canvas's
+// pixels (getImageData, one layer above the compositor), and when screenshots
+// disagree the readback pair names the layer: readback differs too -> scene
+// state; readback stable -> capture layer, scene innocent. bracket-readback.js
+// is the control — it forces both verdicts and the artifacts, and its header
+// carries the refutation condition (state that affects rendering without
+// affecting canvas pixels would fool the clean verdict).
+//
+// The hash is FNV-1a over raw RGBA bytes, computed in page so nothing crosses
+// the protocol but 8 hex chars. Zero-sized and unreadable canvases return a
+// labelled substitution instead of a hash — a verdict built on one says the
+// attribution is unavailable rather than pretending it ran.
+async function canvasReadback(page) {
+  try {
+    return await page.evaluate(`(() => {
+      const cs = document.querySelectorAll('canvas');
+      if (!cs.length) return 'no-canvas';
+      let h = 0x811c9dc5, read = 0;
+      for (const c of cs) {
+        if (!c.width || !c.height) continue;
+        const o = document.createElement('canvas');
+        o.width = c.width; o.height = c.height;
+        const g = o.getContext('2d');
+        g.drawImage(c, 0, 0);
+        const d = g.getImageData(0, 0, o.width, o.height).data;
+        for (let i = 0; i < d.length; i++) { h ^= d[i]; h = Math.imul(h, 0x01000193); }
+        read++;
+      }
+      return read ? (h >>> 0).toString(16) : 'no-readable-canvas';
+    })()`);
+  } catch (e) {
+    return 'readback-error: ' + String(e.message || e).split('\n')[0];
+  }
+}
+const readbackUsable = h => typeof h === 'string' && /^[0-9a-f]{1,8}$/.test(h);
+
+// Where a determinism failure routes the reader. Resolved against THIS file so
+// the path works from the install cache, a clone, and a copied workspace alike.
+// The transcript record of three builds shows every reference read landing in
+// the opening minutes and none mid-failure, so a pointer that is not in the
+// failure text is a pointer that is never followed; bracket-readback.js pins
+// that the pointer appears here without the verdict moving.
+const REF_WEBGPU = path.join(__dirname, '..', 'references', 'webgpu-stack.md');
+
+// --dump-frames: assigned from argv in main(). A failing comparison names the
+// two artifacts it wrote, or names the flag that would have written them.
+let DUMP_FRAMES = false;
+function dumpPair(file, tag, a, b) {
+  if (!DUMP_FRAMES) return ` Re-run with --dump-frames to write both PNGs.`;
+  const base = file.replace(/\.html?$/i, '');
+  const pa = `${base}.detfail.${tag}.a.png`, pb = `${base}.detfail.${tag}.b.png`;
+  fs.writeFileSync(pa, a);
+  fs.writeFileSync(pb, b);
+  return ` frames written: ${pa} ${pb}`;
+}
+
 // CHECK (hard): determinism. Same t twice must be byte-identical, at EVERY
 // sampled point. Catches accumulated state, Math.random(), and wall-clock
 // leaking into the scene — each of which silently desyncs the MP4 from the HTML
@@ -859,7 +931,11 @@ async function setupScene(ctx) {
 // settle (backend.js) between seekTo and screenshot is LOAD-BEARING here:
 // the capture race it closes was measured as a flaky determinism FAIL whose
 // in-page canvas pixels were byte-identical — a capture race reported as a
-// scene bug, which is the one thing this check must never do.
+// scene bug, which is the one thing this check must never do. The readback
+// pair captured alongside each screenshot is what makes that sentence
+// enforceable instead of aspirational: when the screenshots disagree, the
+// verdict below names the layer that moved rather than defaulting the blame
+// onto the scene.
 //
 // NO try/catch, and that is the design, not an omission. A throw here reaches
 // checkScene's outer catch, becomes a FAIL, and abandons every check after it.
@@ -873,12 +949,15 @@ async function setupScene(ctx) {
 // Two meanings for one word inside 30 lines is a rename worth making while the
 // code is being moved anyway.
 async function checkDeterminism(ctx) {
-  const { page, dur, PLAN, fails } = ctx;
+  const { page, dur, PLAN, fails, file } = ctx;
   // Assigned before the loop so a mid-loop `break` still leaves the frames
   // captured so far visible to the two checks below — same as the inline
-  // `let frames = []`, and the blank-frame backstop depends on it.
+  // `let frames = []`, and the blank-frame backstop depends on it. readbacks
+  // rides along index-for-index so the reload check can attribute ITS layer.
   const frames = [];
+  const readbacks = [];
   ctx.frames = frames;
+  ctx.readbacks = readbacks;
   for (const ts of PLAN) {
     // seekSynced, not a bare seek: this arm reported a capture race as a scene
     // defect on a slow GL stack (40%/30%/20% on three cells; 0 of 200 once the
@@ -886,19 +965,35 @@ async function checkDeterminism(ctx) {
     await seekSynced(page, ts);
     await settle(page);
     const x = await page.screenshot();
+    const hx = await canvasReadback(page);
     await seekSynced(page, dur);                         // move away...
     await seekSynced(page, ts);                          // ...and back
     await settle(page);
     const y = await page.screenshot();
+    const hy = await canvasReadback(page);
     frames.push(x);
+    readbacks.push(hx);
     if (sha256(x) !== sha256(y)) {
-      fails.push(`seekTo(${ts}) not deterministic — scene carries state across frames `
-               + `(checked ${PLAN.join(', ')})`);
+      const usable = readbackUsable(hx) && readbackUsable(hy);
+      const layer = usable && hx === hy
+        ? `the canvas readback is byte-stable (${hx} both sides) while the screenshots differ. `
+          + `That is the CAPTURE layer, not scene state — the scene is innocent; do not edit it `
+          + `to chase this. Suspect the observation path (sync, settle, compositor): `
+          + `${REF_WEBGPU} ("Seek WITH a sync, then settle, then screenshot").`
+        : usable
+        ? `scene carries state across frames — the canvas readback differs too `
+          + `(${hx} -> ${hy}), so the defect is in the scene, not the capture. `
+          + `Determinism rules: ${REF_WEBGPU} ("The six determinism rules the node stack adds").`
+        : `scene carries state across frames (canvas readback unavailable — ${hx} — so `
+          + `layer attribution did not run; treat the scene as the suspect but know this `
+          + `verdict rests on screenshots alone). See ${REF_WEBGPU}.`;
+      fails.push(`seekTo(${ts}) not deterministic — ${layer}`
+               + `${dumpPair(file, 't' + ts, x, y)} (checked ${PLAN.join(', ')})`);
       break;
     }
   }
 }
-checkDeterminism.requires = ['page', 'dur', 'PLAN', 'fails'];
+checkDeterminism.requires = ['page', 'dur', 'PLAN', 'fails', 'file'];
 // a throw leaves the page seeked somewhere arbitrary, and two advisory
 // checks below carry hard-fail branches -- running them on a broken page
 // manufactures a SCENE fail from a HARNESS fault, the misattribution this
@@ -945,7 +1040,7 @@ checkDeterminism.onThrow = 'abandon';
 // That is the whole asymmetry, and it is why the two halves of one `if` had
 // opposite justifications.
 async function checkReloadDeterminism(ctx) {
-  const { page, file, PLAN, frames, fails } = ctx;
+  const { page, file, PLAN, frames, readbacks, fails } = ctx;
   if (frames.length) {
     await page.goto('file://' + path.resolve(file) + '?record=1');
     await page.waitForFunction('window.sceneReady === true', { timeout: 20000 });
@@ -958,15 +1053,37 @@ async function checkReloadDeterminism(ctx) {
     await seekSynced(page, PLAN[0]);
     await settle(page);
     const reloaded = await page.screenshot();
+    const hr = await canvasReadback(page);
     if (sha256(reloaded) !== sha256(frames[0])) {
-      fails.push(`seekTo(${PLAN[0]}) differs ACROSS a page reload — the scene is `
-               + `deterministic within a session but not between them, so the live `
-               + `HTML and the recorded MP4 are different films. Usual cause: a seeded `
-               + `or unseeded random drawn once at load rather than derived from t`);
+      // The text below once ended "Usual cause: a seeded or unseeded random
+      // drawn once at load" — and in all three analyzed builds that named
+      // cause was absent, actively misdirecting one hunt. A message that names
+      // a cause costs more than silence the moment the cause is absent, so the
+      // named cause now appears only on the branch whose readback evidence
+      // supports a scene-side defect, and as one possibility rather than a
+      // diagnosis.
+      const h0 = readbacks[0];
+      const usable = readbackUsable(h0) && readbackUsable(hr);
+      const layer = usable && h0 === hr
+        ? `the canvas readback is byte-stable across the reload (${h0} both sides) while `
+          + `the screenshots differ. That is the CAPTURE layer, not scene state — the scene `
+          + `is innocent; do not edit it to chase this. See ${REF_WEBGPU} `
+          + `("Seek WITH a sync, then settle, then screenshot").`
+        : usable
+        ? `the scene renders differently per load (canvas readback ${h0} -> ${hr}) — `
+          + `deterministic within a session but not between them, so the live HTML and the `
+          + `recorded MP4 are different films. One known cause among several: a value drawn `
+          + `once at load (a random, the clock, the viewport) rather than derived from t. `
+          + `See ${REF_WEBGPU} ("The six determinism rules the node stack adds").`
+        : `the scene is deterministic within a session but not between them, so the live `
+          + `HTML and the recorded MP4 are different films (canvas readback unavailable — `
+          + `${h0} / ${hr} — so this verdict rests on screenshots alone). See ${REF_WEBGPU}.`;
+      fails.push(`seekTo(${PLAN[0]}) differs ACROSS a page reload — ${layer}`
+               + `${dumpPair(file, 'reload', frames[0], reloaded)}`);
     }
   }
 }
-checkReloadDeterminism.requires = ['page', 'file', 'PLAN', 'frames', 'fails'];
+checkReloadDeterminism.requires = ['page', 'file', 'PLAN', 'frames', 'readbacks', 'fails'];
 // weaker than the above but real: a throw can land mid-reload, so the page
 // is not the page the remaining checks assume
 checkReloadDeterminism.onThrow = 'abandon';
@@ -1386,11 +1503,15 @@ async function checkScene(browser, file) {
   // filtering one string out of argv — `--store dir` would leave `dir` in the
   // list and the store path would be treated as a scene to scan.
   const parityFix = argv.includes('--parity-fix');
+  // Assigned to the module flag rather than threaded through ctx: the two
+  // consumers are the determinism checks, and widening their requires for a
+  // write-side switch would churn the ctx contract bracket-driver.js pins.
+  DUMP_FRAMES = argv.includes('--dump-frames');
   let storeDir = null, sawStore = false, dupStore = false, sawFrom = false;
   let scenes = [];
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
-    if (a === '--parity-only' || a === '--parity-fix') continue;
+    if (a === '--parity-only' || a === '--parity-fix' || a === '--dump-frames') continue;
     if (a === '--store') {
       if (sawStore) dupStore = true;
       sawStore = true; storeDir = argv[++i] ?? null; continue;

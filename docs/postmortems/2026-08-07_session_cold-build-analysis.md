@@ -171,6 +171,16 @@ would silently disable the arm, which is worse than the MISSED it replaced.
    differs, the capture-race framing in
    `docs/scene-analyses/2026-08-07_turtle-pair-and-v2v.md` is wrong and the
    determinism lead points at the scenes instead. Gates item 2.
+   **DONE 0.26.0, in a stronger form than specified** — the discriminator
+   ships inside `smoke.js`'s determinism checks themselves (a readback beside
+   every screenshot, layer named in the verdict), and
+   `templates/bracket-readback.js` reproduces screenshot-differs/readback-agrees
+   from a clean checkout deterministically (a wall-clock DOM overlay) rather
+   than probabilistically. Scope honestly narrower in one respect: the bracket
+   proves the *instrument* discriminates; it does not retro-diagnose the field
+   failures — that is what the baseline runs are for, and their count and
+   verdicts are in the changelog and `working-plan.md`'s lead row. The
+   refutation condition stands, restated in the bracket's header.
 2. **Then bump `playwright-core` to 1.62.1 and re-measure.** Refuted if the
    Chromium 149→151 change moves determinism results in a way item 1's baseline
    cannot separate from a real fix — in which case the bump was premature and
@@ -180,16 +190,29 @@ would silently disable the arm, which is worse than the MISSED it replaced.
    refuted, or explicitly declined. Wrong-premise if a second sampled gap claim
    fails, which would mean the extraction's precision is too low to route from
    without full re-derivation.
+   **DONE 0.25.0 (`e83fc64`)** — all nine written, greps re-verified first,
+   the two fence-priced helpers declined at two instances. The wrong-premise
+   condition did not fire: a second claim *appeared* to fail (`proud` absent
+   from `materials.md`) and the failure was the verifying grep's own
+   case-sensitivity, not the extraction's — the file says `PROUD`.
 4. **Ship `smoke.js --dump-frames`.** Done when a failing determinism arm writes
    the two disagreeing frames and the bracket shows the verdict unchanged. Three
    builds each hand-built this; a fourth doing so refutes nothing but confirms
    the cost.
+   **DONE 0.26.0** — `bracket-readback.js`'s artifacts arm pins exactly the
+   stated condition: both PNGs written, verdict class unchanged, observed
+   MISSED against the pre-change tree.
 5. **Route a situated reference from the instrument that creates the need**,
    under `docs/plan.md`'s new cost-table row. Done when a determinism failure
    names `webgpu-stack.md` and its section, with a red-first arm proving the
    pointer appears without the verdict moving. Refuted if the next analysed
    build still does not open it — which would mean the pointer is not the
    binding constraint and the finding was wrong.
+   **DONE 0.26.0** for the determinism instrument, both failure texts, section
+   named, path resolved against smoke's own location so it works from the
+   install cache; the red-first arm is in `bracket-readback.js`. The
+   refutation half stays open by construction — it can only be settled by the
+   next analysed build.
 6. **Run the next cold build one tier DOWN** from the last configuration that
    shipped clean, same brief. Done when the result is recorded either way. This
    is the only measurement that can show the loop working; four builds so far

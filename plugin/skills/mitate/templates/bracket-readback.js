@@ -122,6 +122,34 @@ const clockInj = s => s.replace(
   + '<script>(function tick(){document.getElementById(\'wallclock\').textContent='
   + 'performance.now().toFixed(3);requestAnimationFrame(tick)})();</script>');
 
+// A GL canvas WITHOUT preserveDrawingBuffer, carrying real cross-frame state.
+// After present, drawImage from such a canvas reads back fully transparent —
+// byte-stable zeros on both sides of any comparison — so before the blank
+// detector existed, a genuinely nondeterministic scene like this one drew the
+// capture-layer verdict and was told it was innocent. The templates declare
+// preserveDrawingBuffer:true; this gate runs on arbitrary scenes, so the arm
+// pins that a blank readback is treated as attribution-unavailable, never as
+// agreement. (Found by review of the discriminator's first release and
+// reproduced against a live page before the fix was written; this arm is the
+// standing control.)
+const GLBLANK = `<!doctype html><html><body style="margin:0;background:#fff">
+<canvas id="c" width="640" height="360"></canvas>
+<script>
+const c = document.getElementById('c');
+const gl = c.getContext('webgl'); // preserveDrawingBuffer defaults to false
+window.DURATION = 2;
+let acc = 0;
+window.seekTo = function (t) {
+  acc += 0.013;
+  gl.clearColor((t * 0.31 + acc) % 1, (0.2 + acc * 0.7) % 1, 0.45, 1);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+};
+window.stopPlayback = function () {};
+window.seekTo(0);
+window.sceneReady = true;
+</script></body></html>
+`;
+
 // [label, fixture transform, extra argv, expect] — expect.says is asserted on
 // the run's combined output, expect.absent (if set) must NOT appear, and
 // expect.files (if set) is a pattern at least one written file must match.
@@ -143,6 +171,9 @@ const ARMS = [
 
   ['--dump-frames writes both PNGs, verdict class unchanged', stateInj, ['--dump-frames'],
     { code: 'nonzero', says: /not deterministic[\s\S]*frames written/, files: /\.detfail\..*\.(a|b)\.png$/ }],
+
+  ['blank GL readback -> attribution unavailable, never innocence', () => GLBLANK, [],
+    { code: 'nonzero', says: /readback-blank/, absent: /CAPTURE layer/ }],
 ];
 
 let wrong = 0, ran = 0, skipped = 0;

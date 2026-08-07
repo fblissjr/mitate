@@ -126,7 +126,7 @@ jobs:
           # builds hit on 2026-08-07. CI had the same shape, so the gate could
           # not have caught it — this line makes CI run what SKILL.md prescribes.
           cd ws && { [ -f package.json ] || echo '{"name":"scene","private":true}' > package.json; } \
-            && bun add three@0.185.1 playwright-core@1.61.1
+            && bun add three@0.185.1 playwright-core@1.62.1
 
       # No WEBGPU. No ANGLE_BACKEND. This is the path that was broken.
       - name: smoke

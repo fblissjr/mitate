@@ -67,3 +67,8 @@ Thumbs.db
 # removes them in a finally -- this is the belt for the path where it cannot,
 # because scratch in the repo root is one `git add -A` from a commit.
 .mitate-cmd-*/
+
+# Point-in-time snapshots stay local (owner call, 2026-08-07). NOTE: this
+# entry only stops NEW snapshot files from being staged; files tracked before
+# it landed remain tracked until an explicit `git rm --cached`.
+snapshots/

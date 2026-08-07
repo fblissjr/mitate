@@ -88,8 +88,8 @@ These are not failures; they are unlabelled. Each must be rewritten to one of:
 
 - past tense with its observation time — "as of 18:20 the other session held
   `docs/**`" instead of "another session holds `docs/**`";
-- explicitly sourced — `(memory)`, `(local)`, `(reported)` — the convention
-  `snapshots/2026-08-02/history.md` already uses for exactly this;
+- explicitly sourced — `(memory)`, `(local)`, `(reported)` — the labelling
+  convention the postmortems and logs already use for exactly this;
 - deleted. A number that carries nothing usually carries nothing.
 
 The precedent is `docs/postmortems/2026-08-02_session_fence-store-emitter.md`'s

@@ -133,14 +133,6 @@ copy of a router is the exact failure this file keeps catching.
   and stays that way. Narration, not doctrine — read it for what a day actually
   did and why, and read `docs/postmortems/` for what was concluded. Tracked as of
   2026-08-01, so a log is now citable; that changed its reach, not its standing
-- **Point-in-time snapshots** — `snapshots/<YYYY-MM-DD>/`, each a frozen record of
-  what the project was on one date: architecture, the verification apparatus, the
-  state of play, the doc topology, and how it got there. **A dated record, in the
-  same class as `CHANGELOG.md` and the logs — it settles nothing and is never the
-  tiebreaker.** Do not link to one from a live document: a live document pointing
-  at a frozen one is how the frozen one starts being read as current. Read one to
-  ask *how did it get this way*, which no live document answers because none is
-  supposed to
 - **This file** — `CLAUDE.md`, the front door. `scripts/selfcheck.js` check 9
   asserts every tracked top-level entry appears in this Map, because the claim
   below it is a completeness claim and prose could not hold it: a review found
@@ -297,7 +289,7 @@ for its red lines.
 
 ## Tooling
 
-`bun`, `three@0.185.1` + `playwright-core@1.61.1` (both pinned), ffmpeg on PATH;
+`bun`, `three@0.185.1` + `playwright-core@1.62.1` (both pinned), ffmpeg on PATH;
 `avifenc` for AVIF loops, `img2webp` for WebP. The recorder resolves `three` from
 the workspace where a scene is being built, not from the plugin.
 

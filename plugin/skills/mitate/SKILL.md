@@ -97,7 +97,7 @@ T=scene.template.html   # or scene.character.template.html / scene2d.template.ht
 cp -R "${CLAUDE_SKILL_DIR}"/templates/{$T,shoot.js,build.js,smoke.js,backend.js,fences} .
 mv "$T" <name>.html
 [ -f package.json ] || echo '{"name":"scene","private":true}' > package.json
-bun add three@0.185.1 playwright-core@1.61.1
+bun add three@0.185.1 playwright-core@1.62.1
 bun run build.js vendor <name>.html   # skip for scene2d — born self-contained
 ```
 
@@ -282,13 +282,18 @@ Not style — each was measured, and each fails quietly rather than loudly.
 
 ## Environment
 
-Pinned: `three@0.185.1`, `playwright-core@1.61.1`, bun. **No encoder is needed to
+Pinned: `three@0.185.1`, `playwright-core@1.62.1`, bun. **No encoder is needed to
 build or review a scene** — `bundle`, `frames`, `probe`, `poster`, `sheet`,
 `aspect` and `strip` all run on bun and a browser alone, and `check` needs not
 even a browser.
 
-`playwright-core` ships **no browser** — run `bunx playwright install chromium`
-before the first render, or set `CHROMIUM_PATH`.
+`playwright-core` ships **no browser** — run
+`bun node_modules/playwright-core/cli.js install chromium` before the first
+render, or set `CHROMIUM_PATH`. Through the installed package's own CLI, not
+`bunx playwright`: that fetches the latest full playwright, whose pinned
+Chromium build can differ from the one this workspace's pin names, and two
+resolvable browsers is how the gate and the recorder end up measuring
+different renderers.
 
 **Export needs encoders, and only export does:** `video`/`all` need ffmpeg on
 PATH, `avif` needs avifenc, `loop` needs img2webp. Each probes for its own and

@@ -884,7 +884,7 @@ async function canvasReadback(page) {
     return await page.evaluate(`(() => {
       const cs = document.querySelectorAll('canvas');
       if (!cs.length) return 'no-canvas';
-      let h = 0x811c9dc5, read = 0;
+      let h = 0x811c9dc5, read = 0, nonzero = false;
       for (const c of cs) {
         if (!c.width || !c.height) continue;
         const o = document.createElement('canvas');
@@ -892,10 +892,24 @@ async function canvasReadback(page) {
         const g = o.getContext('2d');
         g.drawImage(c, 0, 0);
         const d = g.getImageData(0, 0, o.width, o.height).data;
-        for (let i = 0; i < d.length; i++) { h ^= d[i]; h = Math.imul(h, 0x01000193); }
+        for (let i = 0; i < d.length; i++) {
+          if (d[i] !== 0) nonzero = true;
+          h ^= d[i]; h = Math.imul(h, 0x01000193);
+        }
         read++;
       }
-      return read ? (h >>> 0).toString(16) : 'no-readable-canvas';
+      if (!read) return 'no-readable-canvas';
+      // Every byte zero is the cleared-buffer signature, not a hash: a GL/GPU
+      // context WITHOUT preserveDrawingBuffer reads back fully transparent
+      // after present, byte-stable on both sides of any comparison — which
+      // would hand a genuinely broken scene the capture-layer verdict. The
+      // templates declare preserveDrawingBuffer:true, but this gate runs on
+      // arbitrary scenes, so a blank readback is a labelled substitution and
+      // never evidence.
+      if (!nonzero) return 'readback-blank (all canvases fully transparent — '
+        + 'a GL/GPU context without preserveDrawingBuffer reads back cleared; '
+        + 'declare preserveDrawingBuffer:true to make attribution possible)';
+      return (h >>> 0).toString(16);
     })()`);
   } catch (e) {
     return 'readback-error: ' + String(e.message || e).split('\n')[0];
@@ -984,8 +998,8 @@ async function checkDeterminism(ctx) {
         ? `scene carries state across frames — the canvas readback differs too `
           + `(${hx} -> ${hy}), so the defect is in the scene, not the capture. `
           + `Determinism rules: ${REF_WEBGPU} ("The six determinism rules the node stack adds").`
-        : `scene carries state across frames (canvas readback unavailable — ${hx} — so `
-          + `layer attribution did not run; treat the scene as the suspect but know this `
+        : `scene carries state across frames (canvas readback unavailable — ${hx} / ${hy} — `
+          + `so layer attribution did not run; treat the scene as the suspect but know this `
           + `verdict rests on screenshots alone). See ${REF_WEBGPU}.`;
       fails.push(`seekTo(${ts}) not deterministic — ${layer}`
                + `${dumpPair(file, 't' + ts, x, y)} (checked ${PLAN.join(', ')})`);

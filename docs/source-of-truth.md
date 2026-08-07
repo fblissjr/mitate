@@ -186,8 +186,8 @@ listing four cached plugin versions where five exist is outside every guard here
 since 2026-08-03 that sentence has teeth: a line about repo state in those
 files either carries the command/commit that produced it, or is written in
 past tense with its observation time, or is labelled `(memory)`, `(local)`
-or `(reported)` (the vocabulary the postmortems and
-`snapshots/2026-08-02/history.md` already use). Adopted on measurement: an
+or `(reported)` (the vocabulary the postmortems already use). Adopted on
+measurement: an
 audit of three days of corrections found every drifted line uncited and
 every cited line surviving, at a base rate of roughly four failures per
 twenty-three confident same-sitting claims. `/verify-written-claims` is the
@@ -205,9 +205,12 @@ memo proved that future obligations kept in prose evaporate, and because
 - **Doctrine** — `VISION.md`, `plan.md`, `representation.md`, `CLAUDE.md`,
   the shipped references. Changed by decision, never pruned. Drift control is
   `/audit-claims`. **Changes here need the owner.**
-- **Dated records** — `CHANGELOG.md`, `internal/log/`, `docs/postmortems/`,
-  `snapshots/`. Append or annotate only; never pruned, never a tiebreaker.
+- **Dated records** — `CHANGELOG.md`, `internal/log/`, `docs/postmortems/`.
+  Append or annotate only; never pruned, never a tiebreaker.
   No permission needed to append; rewriting history is forbidden for anyone.
+  Point-in-time snapshots left this class 2026-08-07 (owner call): they are
+  no longer tracked, and an archived record is withdrawn from the record —
+  never cited as current evidence.
 - **In-motion documents** — `working-plan.md`'s queue and status sections,
   any dated brainstorm, and the class's worked example: `restructure-2026-07.md`,
   which lived as one until it deleted itself 2026-08-04. Consumed by

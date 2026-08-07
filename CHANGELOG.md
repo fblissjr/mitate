@@ -7,6 +7,48 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.27.0
+
+### changed
+
+**`playwright-core` 1.61.1 → 1.62.1 (Chromium 149.0.7827.55 → 151.0.7922.34),
+executed as the experiment the hold was designed to enable.** The owner-agreed
+sequence — discriminator as a bracket on 1.61.1, baseline, then bump — ran to
+completion in order. On 1.62.1 the identical battery reproduced the identical
+result: full corpus `all scenes pass`, `bracket-readback` 5/5,
+`bracket-driver` 18/18, `bracket-determinism` 3/3, and 24/24 metal runs of
+`bear-and-bees` green — the same 24/24 the 1.61.1 baseline recorded hours
+earlier (2026-08-07, one machine, verdicts verified per file). Nothing moved
+that the baseline can see; the hold is spent. Every pin consumer updated:
+SKILL.md (scaffold and environment), `gate.yml`, `sample.yml`, `build.js`'s
+prereq comment, `CLAUDE.md`. The browser-install guidance now goes through
+the pinned package's own CLI
+(`bun node_modules/playwright-core/cli.js install chromium`) instead of
+`bunx playwright`, which fetches the latest full playwright and can install a
+different Chromium build than the workspace's pin names.
+
+### fixed
+
+**Two review findings against 0.26.0's discriminator, both confirmed, both
+closed red-first.** (1) A GL canvas without `preserveDrawingBuffer` reads back
+fully transparent after present — byte-stable zeros on both sides — so a
+genuinely nondeterministic scene drew the capture-layer verdict and was told
+it was innocent: the discriminator's misattribution, inverted. `canvasReadback`
+now returns a labelled `readback-blank` substitution when every canvas reads
+fully transparent, routing to the attribution-unavailable branch; a new
+`bracket-readback.js` arm (a WebGL fixture with real cross-frame state and no
+`preserveDrawingBuffer`) was observed drawing the innocence verdict against
+the pre-fix tree and the unavailable verdict after. (2) The in-session
+unavailable branch printed only the first readback, so a healthy hash could be
+displayed as the reason attribution did not run; it now prints both, matching
+the reload branch. Bracket total: 6/6.
+
+**Point-in-time snapshots archived out of the tree (owner call).** `snapshots/`
+is untracked, gitignored, and moved to the local archive; the dated-record
+class in `source-of-truth.md` no longer includes it, the CLAUDE.md Map bullet
+is gone, and every live pointer at a snapshot record now says the record is
+archived. An archived record is withdrawn: never cited as current evidence.
+
 ## 0.26.0
 
 ### added

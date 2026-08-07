@@ -67,10 +67,13 @@ jobs:
           # Same reason as gate.yml: without a manifest `bun add` walks UP and
           # installs into an ancestor, reporting success either way.
           cd ws && { [ -f package.json ] || echo '{"name":"sampler","private":true}' > package.json; } \
-            && bun add playwright-core@1.61.1
+            && bun add playwright-core@1.62.1
 
       - name: chromium
-        run: cd ws && bunx playwright install --with-deps chromium
+        # The pinned package's own CLI, not `bunx playwright`: the latter
+        # fetches the latest full playwright, whose pinned Chromium build can
+        # differ from the one this workspace's playwright-core names.
+        run: cd ws && bun node_modules/playwright-core/cli.js install --with-deps chromium
 
       # No WEBGPU: the fallback path is where the failure lives.
       - name: sample

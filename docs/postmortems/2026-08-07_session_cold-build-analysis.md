@@ -185,6 +185,12 @@ would silently disable the arm, which is worse than the MISSED it replaced.
    Chromium 149→151 change moves determinism results in a way item 1's baseline
    cannot separate from a real fix — in which case the bump was premature and
    should be reverted, not absorbed.
+   **DONE 0.27.0 (owner-directed, same day).** The refutation condition did
+   not fire: the identical battery on 1.62.1 reproduced the identical result —
+   corpus green, all three determinism-family brackets green, 24/24 metal runs
+   on `bear-and-bees` on both versions. Nothing moved that the baseline can
+   see. The 1-in-6 lead itself remains open on both backends; the changelog
+   carries the counts.
 3. **Dispose the harvest queue** in `docs/working-plan.md`, verifying each
    item's grep before writing. Done when each of the nine rows is written,
    refuted, or explicitly declined. Wrong-premise if a second sampled gap claim

@@ -97,6 +97,35 @@ const ARMS = [
     return () => fs.rmSync(f, { force: true });
   }, 'obligation is due'],
 
+  // Check 7's POPULATION, not its comparison. The check derives which files
+  // carry a marker instead of listing them — deliberately, and its own comment
+  // says why — but the derivation applied a 200-char window to the raw file, so
+  // any file whose frontmatter ran past 200 chars silently dropped OUT of the
+  // set and was never checked. Silent by construction: a file that is not in
+  // the population cannot fail, and the count just came back lower with nothing
+  // naming the absentee. Found 2026-08-07 on the repo skills, whose markers sit
+  // at bytes 578 and 614 because a skill needs a long `description:` to trigger
+  // at all; `extract-patterns` had been unchecked since it was written and was
+  // in fact stale. The fixture is therefore a TRACKED file with long
+  // frontmatter — an untracked one cannot exercise this check, which reads
+  // git ls-files — and the arm dies if the window ever returns.
+  // sample.yml was the fifth consumer of the playwright pin and the only one
+  // nothing compared, so a bump everywhere else would leave the determinism
+  // sampler a browser version behind while still reporting in the same units.
+  ['sample.yml skewed off gate.yml\'s pin', () => {
+    const f = path.join(ROOT, '.github', 'workflows', 'sample.yml');
+    const had = fs.readFileSync(f, 'utf8');
+    fs.writeFileSync(f, had.replace(/playwright-core@[\d.]+/, 'playwright-core@1.62.1'));
+    return () => fs.writeFileSync(f, had);
+  }, 'would measure determinism on different browsers'],
+
+  ['a stale marker sitting BEHIND long frontmatter', () => {
+    const f = path.join(ROOT, '.claude', 'skills', 'extract-patterns', 'SKILL.md');
+    const had = fs.readFileSync(f, 'utf8');
+    fs.writeFileSync(f, had.replace(/^last updated: .*/m, 'last updated: 2020-01-01'));
+    return () => fs.writeFileSync(f, had);
+  }, 'extract-patterns/SKILL.md says "last updated: 2020-01-01"'],
+
   ['a when-absent target that exists but is untracked', () => {
     const target = path.join(ROOT, 'docs', '_bracket_fixture_untracked_target.md');
     const f = path.join(ROOT, 'docs', '_bracket_fixture_dueenv.md');

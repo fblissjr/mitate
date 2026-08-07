@@ -3,6 +3,8 @@ name: audit-claims
 description: Check that this repo's claims still match its code — reference docs, CLAUDE.md, the load-bearing comments in templates/*.js, and the public capability claims on the showcase site — by dispatching doc-claim-auditor at whatever the current diff touched. Use before committing a change that edits code a reference describes, after writing or revising any reference or invariant, or when a claim's freshness is in doubt. Read-only: reports drift, does not rewrite.
 ---
 
+last updated: 2026-08-07
+
 # audit-claims
 
 `source-of-truth.md` already requires this: *"Drift detection is scheduled, not

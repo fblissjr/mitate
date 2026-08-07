@@ -121,6 +121,13 @@ const fail = m => fails.push(m);
   const pin = threePin;
   const ci = R(path.join(ROOT, '.github', 'workflows', 'gate.yml'));
   const skill = R(path.join(SUBTREE, 'SKILL.md'));
+  // sample.yml is a FIFTH consumer and was unchecked until 2026-08-07: it
+  // installs playwright-core for the determinism sampler, so bumping the pin
+  // everywhere else left it silently a version behind — and a sampler running a
+  // different browser than the gate is measuring a different thing while
+  // reporting in the same units. Checked by the same rule rather than a second
+  // one: every pinned token it installs must match gate.yml's.
+  const sampleCi = R(path.join(ROOT, '.github', 'workflows', 'sample.yml'));
   const pinned = [...ci.matchAll(/bun add ([^\n]+)/g)]
     .flatMap(m => m[1].split(/\s+/))
     .filter(t => /^[@\w./-]+@[\d.]+$/.test(t));
@@ -134,6 +141,21 @@ const fail = m => fails.push(m);
     if (pkg === 'three' && pin && ver !== pin) {
       fail(`CI installs three@${ver} but build.js pins ${pin} — vendor would refuse what CI installed`);
     }
+  }
+  {
+    const samplePinned = [...sampleCi.matchAll(/bun add ([^\n]+)/g)]
+      .flatMap(m => m[1].split(/\s+/))
+      .filter(t => /^[@\w./-]+@[\d.]+$/.test(t));
+    if (!samplePinned.length) fail('sample.yml installs nothing pinned — did its workspace step change?');
+    for (const t of samplePinned) {
+      const pkg = t.slice(0, t.lastIndexOf('@'));
+      const gateSame = pinned.find(g => g.slice(0, g.lastIndexOf('@')) === pkg);
+      if (gateSame && gateSame !== t) {
+        fail(`sample.yml installs ${t} but gate.yml installs ${gateSame} — the sampler and the `
+           + `gate would measure determinism on different browsers`);
+      }
+    }
+    if (samplePinned.length) notes.push(`sample.yml's ${samplePinned.length} pin(s) agree with gate.yml`);
   }
   // The container tag is a FOURTH consumer of the playwright version. An image
   // shipping browsers for one playwright and a playwright-core pinned to another
@@ -717,7 +739,21 @@ const toolJs = new Map([
     marked = git('ls-files', '*.md').split('\n').filter(f => {
       if (!f) return false;
       const abs = path.join(ROOT, f);
-      return fs.existsSync(abs) && /^last updated:/m.test(R(abs).slice(0, 200));
+      if (!fs.existsSync(abs)) return false;
+      // STRIP YAML FRONTMATTER BEFORE THE WINDOW. The 200-char window says
+      // "near the top", which is the right intent and was the wrong
+      // implementation: a file whose frontmatter is longer than 200 chars
+      // pushes its marker outside the window, so the file drops out of the
+      // POPULATION and is never checked. Silent, because a file that is not in
+      // the set cannot fail — the count just comes back one lower and nothing
+      // says which one is missing. Found 2026-08-07: two repo skills carry
+      // markers at bytes 578 and 614 (a long frontmatter `description:` is
+      // what a skill needs to trigger correctly), and `extract-patterns` had
+      // gone unchecked since it was written. Demonstrated by setting its
+      // marker to 2020-01-01 against a 2026-08-05 commit and watching
+      // selfcheck stay green.
+      const body = R(abs).replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '');
+      return /^last updated:/m.test(body.slice(0, 200));
     });
   } catch (e) {}
   if (shallow === 'true') {

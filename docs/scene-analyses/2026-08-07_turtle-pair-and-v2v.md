@@ -19,7 +19,16 @@ read paths in each transcript, not assumed). Evidence: each build session's raw
 transcript `(local)`, a local database indexing it `(local)`, and each build's
 own scene, field report and postmortems `(local)`. Timelines reconstructed
 2026-08-07 by three independent no-context subagents, one per build, then
-verified and routed by the analyzing session. **Thinking blocks are recorded but
+routed by the analyzing session. **Evidence tier, stated because it varies
+within this file:** the headline numbers, the reference-read tables and
+complement, the model/effort/plugin figures, the human turns and the
+contamination account were re-derived directly against the transcripts by the
+analyzing session. The per-build timelines, quoted tool output, and the
+account-versus-transcript diffs are **subagent-derived and spot-verified, not
+exhaustively re-checked** — the two findings that became a shipped fix (the
+scaffold escape) and the one that nearly became a wrong one (the STYLE
+warning) were each re-run independently, and the rest were not. A later pass
+that needs one of those claims to bear weight should re-derive it first. **Thinking blocks are recorded but
 their text is stored EMPTY in all three** — 113, 130 and 95 blocks at zero
 characters — so every claim here rests on narration text, tool calls and their
 results, and timing. Where that limit bites, it is said, and the conclusion is

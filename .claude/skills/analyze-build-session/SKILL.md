@@ -26,7 +26,8 @@ so can a good reference and one nobody opens.
 ## Read the transcript, not the field report
 
 This is the rule the skill exists to enforce, and it is measured rather than
-assumed. Across four analysed builds:
+assumed. Across the four builds analysed as of 2026-08-07 — a dated
+observation, not a live count:
 
 - **Every one overstated its own debugging effort.** Three by six- to
   sevenfold — "roughly two hours" against a measured 20m28s and 17m40s.
@@ -68,8 +69,45 @@ exit code and printed output; every error verbatim; guidance-versus-behavior;
 the builder's-account-versus-transcript diff; friction with costs.
 
 **Orchestrator, breadth — run these yourself, before and after dispatch:**
-the comparison table across builds, the never-opened complement, and the
-verification pass. A subagent cannot do any of the three.
+the comparison table across builds, the never-opened complement, the
+verification passes, and the dedup against what the repo already knows. A
+subagent cannot do any of the four.
+
+Budget roughly 200-250k subagent tokens per build. Three builds cost ~690k on
+the first run. Say so before starting a large batch rather than after.
+
+**It does not judge the films.** Composition, continuity and semantics are
+`film-reviewer`'s axes and this instrument deliberately has nothing to say
+about them. A pass that comes back with no opinion on whether the film is any
+good is working correctly.
+
+### Run this BEFORE dispatching, not after
+
+Model, effort and plugin version decide whether the builds are comparable at
+all, so they are the first query, not a field filled in later. On the first run
+they were queried only after the owner asked, by which point three subagent
+prompts had already gone out framing a comparison the data does not support:
+2026-08-04 ran sonnet-5, the three 2026-08-07 builds ran opus-5 at two
+different effort levels, and six axes had moved at once.
+
+Produce the comparability verdict first and put it in the prompts. **"These are
+not comparable, and here is which axes moved" is a finding**, and it is the one
+that stops a later reader crediting a doc change for a difference a model
+change explains.
+
+### One prompt template, not three hand-written ones
+
+The first run hand-wrote a prompt per build. They came back structured
+differently, and the two that led with an explicit central question produced
+sharper reports than the one that had none. Use one template with three slots —
+**build label, central question, comparability note** — and change nothing else
+between builds. Identical prompts are also what makes "this finding appeared in
+two independent reports" mean anything.
+
+Every prompt requires a closing section the first run did not ask for and only
+two subagents volunteered: **"What I could not determine, and why."** The
+empty-thinking limit is systematic, so a report that does not name its own
+blind spots invites the orchestrator to over-read it.
 
 ## The extraction schema
 
@@ -95,10 +133,19 @@ them. Every field is derived, never remembered.
 The store is a star schema; query it read-only. Strip ANSI with
 `sed 's/\x1b\[[0-9;]*m//g'` and prefer `-box` or `-list -noheader`.
 
+Each trap carries its falsifier. **Run all four per fixture, before trusting
+anything.** They cost seconds and they are the only thing standing between a
+schema change and a confidently wrong analysis.
+
 **Trap 1 — `fact_content_blocks` is EMPTY.** Do not build on it.
+Falsifier: `SELECT count(*) FROM fact_content_blocks;` — nonzero means this
+trap has lifted and the table is now a real source worth using.
 
 **Trap 2 — thinking text is stored EMPTY.** The blocks are counted, their
-content is not there. Confirm it per fixture rather than assuming, then say so
+content is not there. **This is the highest-stakes falsifier of the four**: if
+`think_chars` ever comes back nonzero, the reasoning is available, every
+"unavailable by construction" caveat in the output is void, and the analysis
+gets materially better — so run it rather than inheriting the assumption. Say so
 in the output: a conclusion that needs the reasoning is **unavailable**, not
 inferable. Long silent gaps are unrecorded thinking; report the gap and its
 boundary markers, never a guess at its content.
@@ -113,7 +160,10 @@ FROM b GROUP BY 1 ORDER BY 2 DESC;
 ```
 
 **Trap 3 — effort is not in the database.** Only the raw log carries it, and
-`read_parquet` on an in-memory database refuses `-readonly`:
+`read_parquet` on an in-memory database refuses `-readonly`. This one fails
+loud — an empty result means the field moved, not that effort was unset — but
+never record "effort: unknown" without checking whether the field simply
+changed name:
 
 ```sql
 SELECT DISTINCT regexp_extract(raw_json,'"effort"\s*:\s*"[a-z]*"',0) hit, count(*) n
@@ -125,6 +175,9 @@ WHERE raw_json ILIKE '%effort%' GROUP BY 1 ORDER BY 2 DESC;
 count is wrong by about 5x. Filter, then read what survives by eye: rows like
 `[Image: original 2080x520, displayed at ...]` are the result of the session
 reading its own contact sheet, not a person saying something.
+Falsifier: compare `count(*) WHERE message_type='user'` against the filtered
+count below. If they are close, tool results are no longer landing in this
+stream and the filter is now removing real turns instead of noise.
 
 ```sql
 SELECT strftime(timestamp,'%H:%M:%S') t, length(content_text) len,
@@ -165,19 +218,79 @@ subtract. That subtraction is the finding, not the read list.
 
 ## Verify before writing anything down
 
-Two passes, both cheap, both of which have already caught a wrong write-up.
+Four passes. The first run did two of them and shipped a tracked record
+carrying claims it had not checked — which is this skill's own worst finding
+about itself.
 
-**Against the current tree.** The analysed build ran an older plugin. Check
-every finding against what ships now — some are already fixed, and a
-working-plan row for a closed defect is worse than none.
+**1. Against the subagent.** A report is evidence about a transcript, not the
+transcript. Spot-verify every claim that becomes a fix, a working-plan row, or
+a headline number, by re-running the query yourself — and mark everything else
+in the record as subagent-derived rather than implying you checked it. The repo
+already knows this in the general case: *verify a subagent's framing, not just
+its findings*, because the framing is what turns into structure. The first run
+verified two load-bearing claims because they were actionable, and took the
+rest on trust.
 
-**Against the code, for anything that looks like a bug.** A warning that fires
-on the documented-correct pattern read exactly like a false positive until the
-code comment showed it was a deliberate declared-substitution notice, pinned by
-its own bracket. **Never route a finding toward quieting a check** — that is
-`signal-honesty`, and this instrument is unusually good at generating
-plausible arguments for it. An ergonomics complaint about a check is fine; it
-must be filed as one, with the constraint that the signal survives the fix.
+**2. Against the current tree.** The analysed build ran an older plugin. Some
+findings are already fixed, and a working-plan row for a closed defect is worse
+than no row.
+
+**3. Against the code, for anything that looks like a bug.** A warning that
+fires on the documented-correct pattern read exactly like a false positive
+until the code comment showed it was a deliberate declared-substitution notice
+with its own bracket arm. **Never route a finding toward quieting a check** —
+that is `signal-honesty`, and this instrument is unusually good at generating
+plausible arguments for it. An ergonomics complaint about a check is fine; file
+it as one, with the constraint that the signal survives the fix.
+
+**4. Against what the repo already knows.** Subagents have no repo context by
+design, so *all* of the dedup lands on the orchestrator: diff every finding
+against `working-plan.md`'s open rows and the CHANGELOG before filing. Two
+outcomes matter and both get stated — a finding that duplicates an open row
+becomes **another datapoint on that row**, and a row whose revive trigger the
+finding satisfies gets marked **FIRED** rather than quietly re-filed beside
+itself.
+
+## How this file avoids going stale
+
+It makes three kinds of claim, and they rot in three different ways. Naming
+them is the whole anti-drift design, because **only one of the three can be
+mechanised, and it already is.**
+
+**Repo claims** — that `docs/scene-analyses/` is the home, that VISION carries
+the argument, that a check change goes through `controls.md`'s door. These are
+ordinary doc claims and the repo already has their control: `/audit-claims`
+routes `doc-claim-auditor` at whatever a diff touched, and this file is in its
+scope. Its freshness marker is enforced by `selfcheck.js` check 7 — which it
+was NOT until 2026-08-07, when the check's 200-char window turned out to sit
+inside the frontmatter of every repo skill, silently dropping them from the
+population it derives. Two skills had markers nothing had ever looked at. Fixed,
+with a bracket arm that dies if the window returns.
+
+**Schema claims** — the table and column names in the queries below. These
+belong to a tool this repo does not own, so nothing here can pin them. They
+fail LOUD: a renamed table or column errors on the spot. Leave them; a loud
+failure at the point of use needs no control.
+
+**Semantic claims — the dangerous class, and the reason for the rule below.**
+"Thinking text is empty." "Tool results are user-type messages."
+"`fact_content_blocks` is empty." If any of those stops being true, **every
+query still runs and every number is still wrong.** No error, no red, just a
+quietly false analysis. A CI check cannot cover it either: the fixtures are
+local-only, and this repo's own rule is that a bracket which cannot be re-run
+from a clean checkout is not a bracket.
+
+So: **every trap below ships with the one-line command that falsifies it, and
+the analyst runs it per fixture.** That is the whole mechanism. A trap stated as
+prose is an assumption with a timer on it; a trap stated as a check is a control
+that fires at the moment it matters, for the person it matters to, at zero cost.
+If a falsifier comes back the other way, the caveat it guards is **void** — say
+so in the record and fix this file in the same pass.
+
+**Measured claims** — "four builds", "6-7x". Written as dated observations on
+purpose, so the freshness marker governs them and a reader can see how old the
+sample is. Do not restate them as bare live counts; that is the failure
+`derived-counts.js` exists to catch elsewhere.
 
 ## Recurrence is what promotes a finding
 

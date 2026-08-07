@@ -3,6 +3,8 @@ name: verify-written-claims
 description: Re-derive every count, status and attribution written into a diff before it is committed, against the record rather than from memory. Use before committing a change that touches CHANGELOG.md, internal/log/, docs/postmortems/, a planning document, a handoff, or any summary prose about the repo's own state; and immediately after a decision, merge or version lands, to find the same day's prose that the landing invalidated. Read-only: it reports what disagrees and what cannot be derived, it does not rewrite.
 ---
 
+last updated: 2026-08-07
+
 # verify-written-claims
 
 

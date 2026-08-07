@@ -64,7 +64,10 @@ jobs:
           mkdir -p ws
           cp plugin/skills/mitate/templates/backend.js ws/   # all the sampler requires
           cp scenes/*.html ws/
-          cd ws && bun add playwright-core@1.61.1
+          # Same reason as gate.yml: without a manifest `bun add` walks UP and
+          # installs into an ancestor, reporting success either way.
+          cd ws && echo '{"name":"sampler","private":true}' > package.json \
+            && bun add playwright-core@1.61.1
 
       - name: chromium
         run: cd ws && bunx playwright install --with-deps chromium

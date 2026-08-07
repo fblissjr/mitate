@@ -358,6 +358,15 @@ the check.
   them**, and a review found four stale claims in one agent file, each of which
   would have made it report a working capability as drift. `/audit-claims` routes
   at them explicitly for that reason; it is their only control.
+  **`.claude/skills/*` are NOT in that exemption as of 2026-08-07** — all four
+  carry a marker and check 7 enforces it. They were outside it by accident
+  rather than by decision: the check derives its population by looking for the
+  marker in a 200-char window, and a skill's frontmatter `description` (long, by
+  necessity — it is what makes the skill trigger) pushed the marker past it, so
+  two skills with markers were silently absent from the set and two had never
+  been given one. The window now skips frontmatter, `bracket-selfcheck.js` has
+  an arm that dies if it returns, and `extract-patterns` — stale for a week
+  behind that window — was the first thing the fix caught.
 - **These controls exist to be used, not rediscovered.** `/audit-claims` dispatches
   `doc-claim-auditor` at whatever the diff touched — the executable form of the
   drift rule in `source-of-truth.md`, which went unrun for this repo's whole life

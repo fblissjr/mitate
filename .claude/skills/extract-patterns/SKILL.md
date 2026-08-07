@@ -3,7 +3,7 @@ name: extract-patterns
 description: Read finished work — a scene, a session log, a postmortem, a directory of them, or a mix — and propose which of its techniques belong in the references, each with its evidence, its destination from source-of-truth.md's homes table, and its pattern-ledger row. Use after a film ships or a review lands, when picking up a scene someone else built (another session, another agent, another harness), or when a technique looks like it was invented twice. Read-only: it proposes; it never writes a reference, CLAUDE.md, or the ledger.
 ---
 
-last updated: 2026-07-31
+last updated: 2026-08-07
 
 # extract-patterns
 

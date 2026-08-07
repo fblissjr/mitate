@@ -1299,6 +1299,79 @@ const toolJs = new Map([
   if (!due) notes.push(`${standing} standing obligation(s), none due`);
 }
 
+/* ---- 23. no SUBJECTS[*].pos reads a world matrix -------------------------
+ * `pos` is specified as a pure function of t. `obj.getWorldPosition()` is not
+ * one: it reads a world matrix, and that matrix was last written by the
+ * PREVIOUS animate() call, because the DRIVER fence's seekTo runs
+ *
+ *     setCamera(state); animate(t); setOverlay(t);
+ *
+ * and setCamera is what calls pos(). So the camera aims with the pose from
+ * wherever the film was seeked from, and the subject is a function of
+ * (t, previous t).
+ *
+ * WHY A CHECK AND NOT A RULE. The determinism sampler already catches this —
+ * sometimes. Two corpus films were written the impure way on consecutive
+ * days: hauler.html failed smoke at t=16.64, and strider-intro.html SHIPPED
+ * and passed, because none of its sampled t values landed where the stale
+ * pose moved a byte. A green determinism run certifies the samples, not the
+ * property, so the thing that catches this reliably has to read the source.
+ *
+ * THE PROXY LIMIT, stated rather than discovered: this is a text scan over
+ * the SUBJECTS block. It sees a direct getWorldPosition call and it does NOT
+ * see one reached through a helper, nor a matrixWorld read spelled another
+ * way. It can reject; it cannot approve. Widen it when something slips past,
+ * and do not read a green here as proof of purity. */
+{
+  const dirs = [SCENES, TEMPLATES, path.join(ROOT, 'fixtures', 'defect-corpus')];
+  const IMPURE = /getWorldPosition|\.matrixWorld/;
+  let scanned = 0;
+  for (const d of dirs) {
+    if (!fs.existsSync(d)) continue;
+    for (const f of fs.readdirSync(d).filter(f => f.endsWith('.html'))) {
+      const rel = path.relative(ROOT, path.join(d, f));
+      const lines = R(path.join(d, f)).split('\n');
+      // Bound the block by brace depth from `const SUBJECTS`, so a scene that
+      // formats it differently is still covered. Minified library lines are
+      // skipped by length — the embedded three.js is one enormous line and it
+      // is full of matrixWorld.
+      let depth = 0, inside = false, inBlockComment = false;
+      for (let i = 0; i < lines.length; i++) {
+        const raw = lines[i];
+        if (raw.length > 400) continue;
+        /* COMMENTS ARE STRIPPED BEFORE THE TEST, and the first version of this
+         * check did not do that — so it fired on the very comments explaining
+         * why not to write the impure form, in the two scenes that had just
+         * been FIXED. A check that cannot tell an instruction from a warning
+         * about that instruction reports the documentation as the defect. */
+        let line = raw;
+        if (inBlockComment) {
+          const end = line.indexOf('*/');
+          if (end === -1) continue;
+          line = line.slice(end + 2);
+          inBlockComment = false;
+        }
+        line = line.replace(/\/\*[\s\S]*?\*\//g, ' ');
+        const open = line.indexOf('/*');
+        if (open !== -1) { inBlockComment = true; line = line.slice(0, open); }
+        line = line.replace(/\/\/.*$/, '');
+        if (!inside && /^\s*(const|let|var)\s+SUBJECTS\s*=/.test(line)) { inside = true; scanned++; depth = 0; }
+        if (!inside) continue;
+        for (const ch of line) { if (ch === '{') depth++; else if (ch === '}') depth--; }
+        if (IMPURE.test(line)) {
+          fail(`${rel}:${i + 1} — a SUBJECTS entry reads a world matrix, which is not a pure `
+             + `function of t: seekTo runs setCamera BEFORE animate, so pos() sees the previous `
+             + `frame's pose and the camera depends on the arrival path. Derive from the same `
+             + `named closed form the body uses; references/film-language.md carries both spellings`);
+        }
+        if (depth <= 0 && /}/.test(line)) inside = false;
+      }
+    }
+  }
+  notes.push(`${scanned} SUBJECTS block(s) scanned, none reading a world matrix `
+           + `(text scan: sees a direct call, not one behind a helper)`);
+}
+
 for (const n of notes) console.log('  ok   ' + n);
 if (fails.length) {
   console.log('');

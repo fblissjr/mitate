@@ -27,9 +27,9 @@ same named closed form the body uses, with offsets measured by `probe`.
 
 The generalisable half is in `film-language.md` with both spellings side by
 side: **a green determinism run does not certify purity, it certifies the
-samples.** A static check that rejects the impure form is filed in
-`working-plan.md` with its red arm named — prose is currently the only guard,
-and this entry says so rather than implying otherwise.
+samples.** This entry originally said a static check was only *filed* and that
+prose was the sole guard; that was true when written and stopped being true
+the same day — the check landed as `selfcheck.js` check 23, below.
 
 ### added
 

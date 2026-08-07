@@ -479,6 +479,35 @@ const ARMS = [
     fs.writeFileSync(f, '# no frontmatter, so the index cannot see this at all\n');
     return () => fs.rmSync(f, { force: true });
   }, 'has no frontmatter'],
+
+  /* A SUBJECTS.pos that reads a world matrix. Untracked fixture in scenes/,
+     which also pins that the scan walks the corpus directory rather than a
+     git-tracked list — an impure scene should be caught before it is staged,
+     not after. */
+  ['a SUBJECTS entry reading a world matrix', () => {
+    const f = path.join(ROOT, 'scenes', '.bracket-impure-pos.html');
+    fs.writeFileSync(f,
+      'const SUBJECTS={\n' +
+      '  head:{pos:()=>{const p=new THREE.Vector3();rig.head.getWorldPosition(p);return[p.x,p.y,p.z];},h:1},\n' +
+      '};\n');
+    return () => fs.rmSync(f, { force: true });
+  }, 'reads a world matrix'],
+
+  /* The other half, and the reason the first version of check 23 was wrong:
+     a scene whose SUBJECTS block CITES the impure form in a comment — which
+     is exactly what the two fixed corpus films do — must stay GREEN. Delete
+     this arm and the check is free to start reporting its own documentation
+     as the defect again. */
+  ['a SUBJECTS block that only NAMES getWorldPosition in a comment (must stay green)', () => {
+    const f = path.join(ROOT, 'scenes', '.bracket-pure-pos.html');
+    fs.writeFileSync(f,
+      'const SUBJECTS={\n' +
+      '  // NOT this: pos must never call getWorldPosition — it reads the\n' +
+      '  /* previous frame\'s matrixWorld, so the camera is not pure in t. */\n' +
+      '  head:{pos:t=>[walkerXAt(t)+1.1,6.8,0],h:1},\n' +
+      '};\n');
+    return () => fs.rmSync(f, { force: true });
+  }, null],
 ];
 
 let wrong = 0, ran = 0;

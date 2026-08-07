@@ -1,6 +1,6 @@
 # mitate scenes — the tracked film corpus
 
-last updated: 2026-08-05
+last updated: 2026-08-07
 
 The films that are **tracked but not shipped**: full members of the repo —
 smoke-checked in CI, fence-parity carriers, browsable and reviewable — but
@@ -25,7 +25,36 @@ from disk and it plays. WebGPU is not required — the embedded
 a technique is a bug report against `references/` — log it in
 `docs/pattern-ledger.md` rather than only solving it.
 
+## Two build classes, and they are not comparable evidence
+
+Every film here carries a **build class**, because the corpus answers two
+different questions and pooling them would silently corrupt both.
+
+- **COLD** — built by a session holding *only the installed plugin*: SKILL.md,
+  the references, the templates, the tools. No repo context, no `VISION.md`,
+  no plan, no instrument source. A cold build asks **does the shipped surface
+  carry a stranger through?** Its stumbles are evidence about the docs, and
+  its smoothness is evidence the docs work. Recorded per build in
+  `docs/scene-analyses/`.
+- **WARM** — built by a session working *in this repository*, with the plan,
+  the working notes, the pattern ledger and the instruments' own source in
+  hand. A warm build asks **does the vocabulary do what it claims, and where
+  does it run out?** Its stumbles are evidence about the harness. **Its
+  smoothness is evidence about nothing** — the builder read the source, so a
+  clean warm build says nothing whatsoever about the shipped surface.
+
+The asymmetry is the whole point and it is easy to lose: a warm film that
+lands in one pass is *not* a data point for VISION's cold-start criterion, and
+citing it as one would inflate a sample of exactly one. When a film's class is
+unstated, assume nothing and go read its section below.
+
+**The cold-build practice began 2026-08-04.** Every film that predates it was
+built in-repo and is therefore WARM by construction; each section states its
+class explicitly rather than leaving it to that inference.
+
 ## gearbox
+
+**Build class: WARM** — in-repo, Phase 1.
 
 [`gearbox.html`](gearbox.html) — the regression film against frozen
 explainer-video: the same scene body on both stacks, judged side-by-side.
@@ -44,6 +73,8 @@ beats render as a dark stage where the light is the subject
 
 ## crash
 
+**Build class: COLD** — the only one, and the reason the class exists.
+
 [`crash.html`](crash.html) — a 37s, 10-beat market-crash explainer with no
 characters: candlestick tape, order book, and the margin-call feedback loop
 drawn as literal geometry (call-lines candle→marker, sell-streaks
@@ -60,6 +91,8 @@ scenes corroborate — one cold build is one sample.
 
 ## menagerie
 
+**Build class: WARM** — in-repo, Phase 2 gate.
+
 [`menagerie.html`](menagerie.html) — the Phase 2 character-scaffold gate
 demonstration: a furred bear, a fabric-shirted human, and a text-invented
 three-eyed strider — three proportion vectors through ONE `buildCharacter`,
@@ -72,6 +105,8 @@ gait.
 ![menagerie](https://raw.githubusercontent.com/fblissjr/mitate/main/site/posters/menagerie-still.jpg)
 
 ## bear-and-bees
+
+**Build class: WARM** — in-repo, Phase 2 deliverable.
 
 [`bear-and-bees.html`](bear-and-bees.html) — the Phase 2 film deliverable,
 a 21.3s comedy short carrying the comedic-timing half of the gate: a furred
@@ -87,6 +122,8 @@ pause-then-fast timing, probe-solved staging, and the character register.
 
 ## noise-chart
 
+**Build class: WARM** — in-repo, chart tier.
+
 [`noise-chart.html`](noise-chart.html) — the first chart-tier scene:
 charts isolate primitives the way films integrate them (one primitive per
 cell, judged before anything downstream uses it). Eight cells: the top row
@@ -101,6 +138,8 @@ tier and the determinism instruments doing their job.
 ![noise-chart](https://raw.githubusercontent.com/fblissjr/mitate/main/site/posters/noise-chart-still.jpg)
 
 ## materials
+
+**Build class: WARM** — in-repo, pack showcase.
 
 [`materials.html`](materials.html) — the pack showcase: one film, three
 beats, three surfaces — TSL-native cel banding, subsurface scattering

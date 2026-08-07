@@ -7,6 +7,25 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.22.3
+
+### changed
+
+**A success criterion is measurable, human-routed, or deleted** (owner rule).
+`instruments.md`'s *What has no instrument* ledger loses **"whether a beat is
+funny, warm, or tense"** and gains the rule that keeps it out: every entry is
+a property of the artifact that is either reachable by an instrument nobody
+has built yet, or real, decidable and reachable only by a human who must
+therefore be asked. A criterion that is neither is not a gap in the toolkit.
+
+The framing was the defect, not the sentence. A ledger titled *what has no
+instrument* turns each entry into work someone should do, and an undecidable
+property has no ground truth to build an instrument against — so that work
+cannot fail, which means it cannot succeed. It also quietly relocates what a
+corpus film is for: these scenes exist as **test cases for recursive
+improvement of the skill, the harness and the instruments**, not to be good.
+Every surviving entry is now one of the two admissible classes.
+
 ## 0.22.2
 
 ### fixed

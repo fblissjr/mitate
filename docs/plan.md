@@ -1,4 +1,4 @@
-last updated: 2026-08-05
+last updated: 2026-08-07
 
 # mitate: founding plan
 
@@ -327,12 +327,21 @@ Nine cases is a coarse ladder and the intermediate variants are what does not
 exist. Each of these isolates ONE new variable, which is Phase 1's lesson
 applied to the portfolio itself.
 
-- **A 2D film — and this is a hole, not a nicety.** `scene2d.template.html`
-  ships to every installed user and **no example exercises it**: every
-  example carries the `RIG` fence, and the 2D template carries only `CONTRACT` and
-  `KERNEL`. Its `drawOn`/`alongPath` phase-locked draw-on and in-canvas text have
-  no worked demonstration anywhere. A 2D data explainer would close that and is a
-  natural rung below `market-crash`.
+- **A 2D film — CLOSED 2026-08-04 by `market-crash`, and the closure is the
+  interesting part.** This bullet read "a hole, not a nicety —
+  `scene2d.template.html` ships to every installed user and **no example
+  exercises it**", and that was true until `crash.html` landed: a ten-beat 2D
+  film built cold, from `method.md` and the 2D template alone. It is now in
+  `scenes/` and it exercises `drawOn`/`alongPath` and in-canvas text, which
+  had no worked demonstration anywhere. **Two things the closure changed that
+  a "done" would hide:** the film carries *no fence markers at all*, so it is
+  in the corpus but outside the parity set — deliberate divergence per the
+  documented mechanism, and it means the 2D kernel is unpoliced by parity
+  where the 3D one is not; and `txt()` being 2D-only is precisely why the
+  `nocap` semantics pass is incomplete on 3D films, which `instruments.md`
+  owns. The rung below `market-crash` is therefore no longer "a 2D film" but
+  **a second one** — the n=1 brake applies to the register as much as to the
+  cold-start criterion.
 - **`small-crowd` (6–12 figures, no instancing, no LOD)** — sits below
   `crowd-cross` and answers the question that actually matters first: does
   per-figure gait phase read as a crowd? `menagerie` already draws three

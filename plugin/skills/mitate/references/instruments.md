@@ -406,7 +406,18 @@ not.
 
 ## What has no instrument
 
-Recorded honestly, because these are where films actually ship broken:
+Recorded honestly, because these are where films actually ship broken.
+
+**What belongs on this list, and what does not.** Every entry is a property of
+the artifact that is either (a) reachable by an instrument nobody has built
+yet, or (b) real, decidable, and reachable only by a human who must therefore
+be asked. A criterion that is *neither* — whether a beat is funny, warm or
+tense — does not belong here and is not a gap in the toolkit. Listing one
+invites someone to build an instrument for it, and the thing has no ground
+truth to build against. Judge a film's tone if you like; do not record it as a
+success criterion, because nothing can tell you that you were wrong. The
+review axes gate what is decidable: does a frame compose, does motion survive
+between frames, does the film explain itself without its words.
 
 - **Watching the loop at speed.** The strongest continuity instrument, and it
   needs a human. No agent can do it. The live-playback check above is not this
@@ -432,7 +443,6 @@ Recorded honestly, because these are where films actually ship broken:
   while investigating something else, never by anything in this toolkit. The countermeasure is `probe`: sample the expression at 4-5
   `t` values; fewer than two distinct outputs means the animation does not
   exist. `method.md` ("A composed periodic can be constant") owns the rule.
-- **Whether a beat is funny, warm, or tense.** No still answers it.
 - **Whether a caption is legible at the size it will actually be viewed.**
   Captions are a constant fraction of the frame (`calc(var(--fw)*.015625)`), so
   they compose correctly at every size and go unreadable at small ones — ~5.7px

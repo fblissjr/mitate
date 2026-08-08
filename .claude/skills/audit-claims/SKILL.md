@@ -3,7 +3,7 @@ name: audit-claims
 description: Check that this repo's claims still match its code — reference docs, CLAUDE.md, the load-bearing comments in templates/*.js, and the public capability claims on the showcase site — by dispatching doc-claim-auditor at whatever the current diff touched. Use before committing a change that edits code a reference describes, after writing or revising any reference or invariant, or when a claim's freshness is in doubt. Read-only: reports drift, does not rewrite.
 ---
 
-last updated: 2026-08-07
+last updated: 2026-08-08
 
 # audit-claims
 
@@ -54,7 +54,15 @@ there:
    - Changed invariants or conventions → `CLAUDE.md`, and check it against the
      code it claims to describe.
    - **Changed behaviour of any tool an agent describes → `.claude/agents/*`,
-     `.claude/rules/*`, every `.claude/skills/*/SKILL.md`, and this file.**
+     `plugin/agents/*`, `.claude/rules/*`, every `.claude/skills/*/SKILL.md`,
+     and this file.** `plugin/agents/*` is the same class with a wider blast
+     radius — it ships into every install cache, and `selfcheck.js` reaches
+     only its links and its absence of dates, never a capability claim. It sat
+     in NEITHER routing list until 2026-08-08, when the owner's suspicion of
+     drift sent a hand pass at `film-reviewer.md`: zero drifted claims, but
+     two instruments (`check`, `probe`) the file never routed to and no
+     control that would ever have noticed — the gap `working-plan.md`'s E4
+     filed as an open question, settled by this line.
      These are the blind spot: they carry no
      freshness marker by design, `selfcheck.js` derives its set from files that
      do, so **nothing mechanical covers them at all** — this routing line is the
@@ -78,6 +86,11 @@ there:
      day after 0.18.1 shipped both, found 2026-08-04 by a hand-run pass —
      the founding shape of this skill, repeating on a surface this routing
      list did not name until then.
+   - **Changed capability, or a claim about one → `plugin/README.md` and the
+     root `README.md` too.** Both are claim surfaces in no other list, and the
+     plugin one ships into every install cache — wider distribution than the
+     site, and it is where the worst drift found on 2026-07-31 lived. Filed as
+     `working-plan.md` E4 and unrouted until 2026-08-08.
    - **Changed capability, or a claim about one → `site/index.html`.** The site
      is a claim surface and was out of scope until 0.16.30. A page telling the
      public what the code does is exactly what this agent is for, and it is the

@@ -1,4 +1,4 @@
-last updated: 2026-08-07
+last updated: 2026-08-08
 
 # mitate: founding plan
 
@@ -1123,6 +1123,22 @@ bucket (e).
   `walker` declares `w:2.8` against a measured ~3.12 — and
   `bracket-corpus.js` already pins its geometry side, so REP4's red-first
   starts from a verified defect rather than authoring one.
+  **MET 2026-08-08** (0.28.0): the mechanism is `check`'s extent-provenance
+  warn — the FORM decided from the table source (any numeric literal in an
+  `h`/`w`/`d` value fires; derived bases and named terms pass), the VALUE
+  ceded to probe as the decision priced. The gate ran as written: the warn
+  named `walker (h: 6.1; w: 2.8)` on the fixture before any shipped scene
+  changed, and `templates/bracket-extents.js` holds both directions —
+  firing arms watched red against the pre-change tree, quiet arms watched
+  red under an over-firing mutant, the corpus arm pinning the fixture's
+  signature. First catch on shipped content, found by the mechanism the
+  hour it ran: the base template's knot declared `h:3.6` against a real
+  bounding box of 4.79, so every FS shot overflowed the frame by a quarter
+  — now derived from the geometry's own `computeBoundingBox`, with the
+  character template's pad renamed to the intent term (`HEADROOM`). The
+  corpus films still carry bare extents and warn on every `check`; their
+  migration is queued in `working-plan.md` as per-scene, value-preserving
+  work — each film re-verified, never a blind rename.
 - **REP5 — instrument the movement triggers.** Makes the pattern-ledger's
   counting cheap enough that the Promotion table's triggers actually fire —
   this file declares them unfireable without a count. *Gate:* a migration
@@ -1343,7 +1359,7 @@ Two consequences:
 The ledger's two entries at **6** are the proof: contact-measurement and declared
 extents were both far past every trigger here, both had a fix specified, and both
 were still unbuilt — one with a shipped code comment claiming the check existed.
-(Declared extents: still unbuilt, no longer undecided — REP4 carries it.)
+(Declared extents: landed — REP4, 0.28.0, the MET record above.)
 
 ### Provenance is required
 

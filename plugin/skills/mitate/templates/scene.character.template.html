@@ -762,8 +762,12 @@ buildWorlds();
 // THIS, so the camera and the body can never disagree (proven-walker rule).
 const WALK_START=-11;
 const walkerXAt=t=>lerp(WALK_START,0,ramp(t,'walk',.04,.96));
+// The pad is NAMED because its intent is the fact that keeps it honest: frame
+// clearance above the head, not part of the body. A bare +.4 reads as noise,
+// survives every rig change unexamined, and draws `build.js check`'s warn.
+const HEADROOM=.4;
 const SUBJECTS={
-  walker:{pos:t=>[walkerXAt(t)+walker.centerX,walker.height/2,0],h:walker.height+.4},
+  walker:{pos:t=>[walkerXAt(t)+walker.centerX,walker.height/2,0],h:walker.height+HEADROOM},
 };
 // The size ladder, calibrated to the convention a cinematographer means:
 // f = how many frame-heights the subject's full height spans; a = the

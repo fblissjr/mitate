@@ -213,6 +213,7 @@ which is what guarantees the scene's own bytes agree with the store's.
 | `FRAME.px` describes `FRAME.aspect` | error | whether either is the frame you wanted |
 | a union shot on a rung whose anchor is a body landmark, with no `anchor` override | warn | whether the composition reads |
 | a `STYLE`/`CONFIG` key that nothing reads — not the carried fences, not the scene's own code (near-miss named within two edits) | warn | whether a key that IS read does what its name says; a key consumed only indirectly (measured: no shipped carrier does this) |
+| a SUBJECTS extent (`h`/`w`/`d`) carrying a bare number instead of deriving from construction with named adjustments | warn | whether a derived extent's VALUE matches the geometry — the paragraph below |
 | a caption above `smoke.js`'s reading-speed limit | warn | legibility at the size it is viewed — see below |
 | three or more shots sharing one framing | warn | whether the repetition is a motif |
 
@@ -226,10 +227,16 @@ both satisfy and it sets the exit code; a warning is a composition judgement the
 tables merely make visible, and stays advisory for the reason the exposure lint
 does.
 
-**What it cannot see, and it is the layer's most expensive gap:** whether a
-declared `h`/`w`/`d` matches the geometry it claims to describe. Measuring that
-means naming scene objects, which is `build.js probe`'s admitted exception and
-not this command's to take. `check` says so on every run, green ones included.
+**What it cannot see, and it is the layer's most expensive gap:** whether an
+extent's `h`/`w`/`d` VALUE matches the geometry it claims to describe.
+Measuring that means naming scene objects, which is `build.js probe`'s admitted
+exception and not this command's to take. What it DOES see is the FORM: an
+extent carried by a bare number — tied to nothing, so updated by nothing —
+draws a warn naming the entry and its keys, while a derived extent
+(`bear.height*SC+PAD`) evaluates to `NaN` in this reader and its value goes
+unjudged. That trade — form checkable, value ceded to probe — is the
+representation decision's priced cost, and `check` says the value gap out loud
+on every run, green ones included.
 **A table this reader cannot slice is named, not skipped.** `check` reads table
 LITERALS out of the source text, so a table assembled by a loop or returned from
 a call is beyond it. Both shapes are one step from a clean green: the loop form

@@ -57,6 +57,17 @@ Three films cropped their own payoff by declaring the figure and forgetting the
 prop: a robot's antenna, a cross-section's outer stations, a pelican's umbrella.
 If a beat pays off on it, it is inside `h`.
 
+**An extent derives; a pad gets a name.** The base comes from the construction
+the camera frames — `rig.height`, a geometry's computed bounding box — and any
+hand adjustment rides as a named term (`h: walker.height+HEADROOM`), never a
+bare number folded in. In the record that decided this rule, hand-declared
+extents were wrong more often than right — one declared width sat under the
+real body at every sampled moment — while the one derived from `rig.height`
+was right first try. `build.js check` warns on a bare number in an extent: a
+number tied to nothing is the number nothing updates when the geometry
+changes. (The `h: 1.2` in the purity snippets above is elided context, not a
+form to copy.)
+
 **Declare `w` for anything wider than it is tall.** The size ladder below is
 calibrated to subject HEIGHT — `f` is a fraction of the frame's height — and
 the solver originally consulted nothing else. That is correct for an upright

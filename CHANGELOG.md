@@ -7,6 +7,65 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.28.0
+
+### added
+
+**REP4 — extent provenance, the representation track's fourth phase, MET.**
+`build.js check` now warns when a `SUBJECTS` extent (`h`/`w`/`d`) carries a
+bare number: the adopted rule (representation decision, point 4) is that an
+extent's base derives from the construction it frames and any hand adjustment
+is a named term, never a bare number folded in. The scan is source-text only —
+comments and strings stripped, extent value expressions sliced by depth, any
+numeric literal fires — so a derived extent (`bear.height*SC+PAD`) passes and
+its value stays probe's to measure; the check's standing footer now states
+that boundary as form-checked, value-not. Warn tier by `check`'s own severity
+rule: a bare extent is satisfiable, so it is not an ERROR, and every 3D corpus
+film currently draws the warn (their migration is a queued `working-plan.md`
+row, per-scene and value-preserving).
+
+**`templates/bracket-extents.js`** — six arms, both directions: bare extents
+fire with sites named, the adopted form stays quiet, a bare pad on a derived
+base fires, `pos` literals and comment digits stay quiet, an imperative
+`SUBJECTS` arrives as the declared table-level substitution, and the defect
+corpus draws the warn with row 11's `walker (h: 6.1; w: 2.8)` among the named
+sites — the red-first subject the phase gate specified. Firing arms were
+watched red against the pre-change tree; quiet arms were watched red under a
+deliberately over-firing mutant. Disclosed edges in the header: quoted extent
+keys and entry-level indirection are not scanned.
+
+### changed
+
+**Both 3D templates migrated to the form they now teach.** The base template's
+knot was the mechanism's first catch on shipped content: it declared `h:3.6`
+while the geometry's real bounding box is 4.79 tall — a (2,3) torus knot's
+lobes swing half again past its nominal radius — so every FS shot overflowed
+the frame by a quarter. The extent now derives from
+`geometry.computeBoundingBox()` in the build function, and the SUBJECTS
+teaching comment carries the derivation rule. The character template's `+.4`
+pad became the named term `HEADROOM`. Both pass `check` clean and the full
+template smoke battery (the base template's pre-existing exposure advisory
+moved 44.7% → 47.0% with the corrected framing, disclosed here rather than
+silently absorbed).
+
+**`film-reviewer.md` closes its omission gaps.** An owner-prompted audit found
+zero drifted claims but two instruments routed to no axis: the agent now runs
+`check` before any pixels, gets `probe` as the geometry axis (the defect class
+no still reaches), learns that a determinism FAIL arrives layer-attributed and
+that `--dump-frames` writes the disagreeing PNGs, carries dof on the
+composition axis, and routes to `breakdown.md` and `characters.md`. The
+flash-width default it restated inline returned to its one home in
+`breakdown.md`.
+
+**`references/instruments.md`** gains the extent-provenance row and rewrites
+the `check` gap paragraph as form-checked/value-ceded;
+**`references/film-language.md`** gains the extent-derivation paragraph beside
+its `h`/`w` guidance.
+
+**Repo-side, `audit-claims` routing** (not shipped): `plugin/agents/*` joined
+the agent-file bullet and both READMEs joined the changed-capability bullet —
+working-plan E4, both halves, settled.
+
 ## 0.27.0
 
 ### changed

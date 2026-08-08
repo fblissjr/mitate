@@ -1,4 +1,4 @@
-last updated: 2026-08-07
+last updated: 2026-08-08
 
 # Where truth lives
 
@@ -279,8 +279,11 @@ declared-extents-rot has been climbing since long before anyone named the shape
 (at 8 as of 2026-08-07). **Home is the DERIVATION; the declaration is a cache
 and must be mechanically checkable against it.** A declaration that cannot be
 checked is not a second home, it is an unguarded copy — which is what the
-unbuilt `subjectFromObject` is for, and why that row keeps climbing rather than
-resolving.
+declined `subjectFromObject` was proposed for, and why that row kept climbing
+rather than resolving. REP4 (0.28.0, 2026-08-08) resolved it in the direction
+this shape prescribes: the extent now derives — construction value plus named
+terms — so there is no cache to police, and `check` warns on the bare-number
+form that would reintroduce one; the VALUE half stays probe's to measure.
 
 The test that separates them: ask whether the two sources can disagree. Two
 inputs to a product cannot — they are different facts. A declaration and its

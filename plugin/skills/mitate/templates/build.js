@@ -1100,6 +1100,122 @@ function tableValue(text, name) {
   }
 }
 
+/* REP4 — extent provenance, decidable from the table source alone.
+ * SUBJECTS' h/w/d are the extents every framing computation trusts, and a bare
+ * number there carries no provenance: nothing ties 2.8 to the geometry it
+ * claims to describe, so nothing notices when that geometry changes. The
+ * adopted rule (the representation decision, repo-side): an extent's BASE
+ * derives from construction — rig.height, a build constant the geometry itself
+ * consumes — and a hand adjustment is a NAMED term (h: walker.height+HEADROOM),
+ * never a bare number folded in. In the record that decided this, hand-declared
+ * extents were wrong three of five while the one derived from rig.height was
+ * right first try.
+ * FORM, not value: whether the derived number matches the geometry is still
+ * probe's to measure, per the footer every run prints. Warn, not error — the
+ * tables can both be satisfied; what a bare number defeats is the next edit.
+ * Literals are found on a comment- and string-stripped copy of the table, so
+ * `h: 6.1  // fits today` fires on the 6.1 and never on the comment's words.
+ * Disclosed edges, stated in bracket-extents.js: a QUOTED extent key
+ * ('h': 2.8) is not the house spelling and is not scanned, and an entry
+ * assembled outside the literal is the table-level substitution one tier up.
+ */
+// Replace comments and string bodies with spaces, length-preserving, so the
+// bracket walk below never changes state inside either.
+function stripNoise(s) {
+  let out = '';
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (c === '/' && s[i + 1] === '/') { while (i < s.length && s[i] !== '\n') { out += ' '; i++; } if (i < s.length) out += '\n'; continue; }
+    if (c === '/' && s[i + 1] === '*') {
+      const e = s.indexOf('*/', i + 2); const end = e < 0 ? s.length : e + 2;
+      while (i < end) { out += s[i] === '\n' ? '\n' : ' '; i++; } i--; continue;
+    }
+    if (c === '"' || c === "'" || c === '`') {
+      const q = c; out += ' '; i++;
+      while (i < s.length && s[i] !== q) { if (s[i] === '\\') { out += '  '; i += 2; continue; } out += s[i] === '\n' ? '\n' : ' '; i++; }
+      if (i < s.length) out += ' ';
+      continue;
+    }
+    out += c;
+  }
+  return out;
+}
+const EXTENT_KEYS = new Set(['h', 'w', 'd']);
+function scanExtentProvenance(text, add) {
+  const src = tableSource(text, 'SUBJECTS');
+  if (typeof src !== 'string') return;   // absent/imperative/unreadable: the table loop already said so
+  const clean = stripNoise(src);
+  const identAt = (j) => { const m = /^[A-Za-z_$][\w$]*/.exec(clean.slice(j)); return m ? m[0] : null; };
+  // One walk, two levels: entry names at depth 1, extent keys at depth 2, an
+  // extent's value sliced from its ':' to the next depth-2 comma or the
+  // entry's closing brace. Deeper commas (call arguments, pos's array) never
+  // end a slice because the depth guard keeps them out of reach.
+  const offenders = new Map();
+  let depth = 0, entry = null, expectName1 = true, expectName2 = false;
+  let exprStart = -1, exprEntry = null, exprKey = null;
+  const flush = (end) => {
+    if (exprStart < 0) return;
+    const expr = clean.slice(exprStart, end);
+    const nums = [];
+    const re = /(\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?/g;
+    let m;
+    while ((m = re.exec(expr))) {
+      const before = expr[m.index - 1];
+      if (before !== undefined && /[\w$.]/.test(before)) continue;  // identifier tail, or property access
+      nums.push(m[0]);
+    }
+    if (nums.length) {
+      if (!offenders.has(exprEntry)) offenders.set(exprEntry, []);
+      offenders.get(exprEntry).push(`${exprKey}: ${nums.join(' ')}`);
+    }
+    exprStart = -1;
+  };
+  for (let i = 0; i < clean.length; i++) {
+    const c = clean[i];
+    if (c === '{' || c === '[' || c === '(') {
+      depth++;
+      if (depth === 2 && c === '{' && entry) expectName2 = true;
+      continue;
+    }
+    if (c === '}' || c === ']' || c === ')') {
+      if (depth === 2) flush(i);
+      depth--;
+      if (depth <= 0) break;
+      continue;
+    }
+    if (depth === 1) {
+      if (c === ',') { expectName1 = true; entry = null; continue; }
+      if (expectName1 && /[A-Za-z_$]/.test(c)) {
+        entry = identAt(i);
+        if (entry) { i += entry.length - 1; expectName1 = false; }
+      }
+      continue;
+    }
+    if (depth === 2 && entry) {
+      if (c === ',') { flush(i); expectName2 = true; continue; }
+      if (expectName2 && /[A-Za-z_$]/.test(c)) {
+        const id = identAt(i);
+        if (id) {
+          i += id.length - 1;
+          let j = i + 1; while (j < clean.length && /\s/.test(clean[j])) j++;
+          expectName2 = false;
+          if (clean[j] === ':') {
+            if (EXTENT_KEYS.has(id)) { exprStart = j + 1; exprEntry = entry; exprKey = id; }
+            i = j;
+          }
+        }
+      }
+    }
+  }
+  if (offenders.size) {
+    const sites = [...offenders].map(([name, keys]) => `${name} (${keys.join('; ')})`).join(', ');
+    add(CHECK_WARN, `SUBJECTS: bare number(s) in extents — ${sites} — an extent's base derives `
+      + `from the construction it frames (h: rig.height) and a hand adjustment is a NAMED term `
+      + `(h: rig.height+HEADROOM), never a bare number: nothing ties the number to the geometry it claims, `
+      + `so nothing notices when that geometry changes`);
+  }
+}
+
 // The caption thresholds have ONE home and it is smoke.js, which already runs
 // this lint per render. Read out of its source rather than restated here: a
 // second copy of the number is the drift docs/source-of-truth.md forbids, and
@@ -1323,6 +1439,7 @@ function check(scene) {
   const known = n => beatMiss(n) === null;
 
   const subjects = found.SUBJECTS && typeof found.SUBJECTS === 'object' ? Object.keys(found.SUBJECTS) : null;
+  scanExtentProvenance(text, add);
   const shots = Array.isArray(found.SHOTS) ? found.SHOTS : null;
   const framings = new Map();
 
@@ -1518,8 +1635,8 @@ function check(scene) {
   for (const [sev, msg] of out) console.log(`  ${sev.padEnd(5)} ${msg}`);
   // Said on every run, green ones included: a clean report here is not a clean
   // scene, and the gap is the expensive one. See references/instruments.md.
-  console.log(`\n  not checked here: whether a declared h/w/d matches the geometry it describes.`);
-  console.log(`  That needs the scene's own objects — \`build.js probe <scene> <t> 'bb(x)'\`.`);
+  console.log(`\n  not checked here: whether an extent h/w/d VALUE matches the geometry it describes — the FORM`);
+  console.log(`  is (a bare number in an extent warns); the value needs the scene's own objects — \`build.js probe <scene> <t> 'bb(x)'\`.`);
   if (errors) {
     console.log(`\n${errors} error(s), ${warns} warning(s) — the tables disagree with each other, `
       + `and no frame has to render for that to be true.`);

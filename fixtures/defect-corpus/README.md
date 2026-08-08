@@ -1,4 +1,4 @@
-last updated: 2026-08-05
+last updated: 2026-08-08
 
 # The defect corpus — apparatus, not an example
 
@@ -7,8 +7,12 @@ last updated: 2026-08-05
 > corpus scene that stops running stops being apparatus — and pins each
 > VERIFIED row's derivable signature: row 10b via `build.js check`'s
 > repeat-framing warning, row 11 via a probe of the walker's real width
-> against its declaration. Row 8 needs an encoder and is deferred, stated in
-> the bracket's header. **A row moving out of UNVERIFIED earns its arm in the
+> against its declaration. Since REP4 (2026-08-08) row 11 has a second,
+> check-side signature: its `w:2.8` is a bare-number extent, so the fixture
+> draws `check`'s extent-provenance warn with `walker` among the named sites —
+> pinned by `templates/bracket-extents.js`'s corpus arm, which also makes this
+> fixture that mechanism's red-first subject. Row 8 needs an encoder and is
+> deferred, stated in the bracket's header. **A row moving out of UNVERIFIED earns its arm in the
 > same change** — that is the wiring the earlier "before the next change,
 > build the runner" note was waiting for, ruled on by the owner (coarse tier
 > now, row-by-row as verification happens).
@@ -135,11 +139,14 @@ bun run plugin/skills/mitate/templates/build.js check fixtures/defect-corpus/aft
 
 **`check` is also this file's cheapest standing use, and its report is worth
 reading as a boundary.** It runs in milliseconds with no browser, and on this
-scene it finds exactly one thing: 10b's repeated framing. Every other defect
-below needs pixels, geometry or a clock. That is not a gap in the checker — it is
-the honest shape of what a declarative cross-reference can reach, and it is why
-row 11's declared-versus-real extent is the row `check` names and does not
-measure.
+scene it finds exactly two things: 10b's repeated framing, and — since REP4
+(2026-08-08) — the extent-provenance warn, because every one of this scene's
+eight SUBJECTS carries bare-number extents, row 11's `w:2.8` among them. Every
+other defect below needs pixels, geometry or a clock. That is not a gap in the
+checker — it is the honest shape of what a declarative cross-reference can
+reach. Row 11 still splits exactly on that boundary: `check` flags its FORM (a
+bare number, underivable), and only the probe above measures that the number
+is also WRONG — the declared 2.8 against a real ~3.12.
 
 **NOT yet re-measured against this build — carried from the prototype and
 therefore UNVERIFIED here.** Do not cite these numbers as properties of this

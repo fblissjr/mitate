@@ -1,4 +1,4 @@
-last updated: 2026-08-07
+last updated: 2026-08-08
 
 # Working plan: instruments, routing, and the viewer
 
@@ -392,7 +392,9 @@ boundary — extents are data, `pos` is a trajectory — is not a hypothetical s
 it is the tracked defect class in
 [`pattern-ledger.md`](pattern-ledger.md), **"declared extents rot; measured ones
 do not"**, standing at 6 instances with `subjectFromObject` already promoted as
-its fix. That row bears directly on the question the enumeration has to answer —
+its fix. *(Later: the row landed its disposition at REP4, 0.28.0 — derive with
+named terms, `check` warning on the bare form — and the helper was declined at
+its fence price; the ledger row carries the record.)* That row bears directly on the question the enumeration has to answer —
 whether `SUBJECTS`'s extents need to become functions of `t` rather than declared
 constants — and it is empirical evidence that already exists. Further instances
 were observed in externally-built scenes `(local)`; read them as corroboration
@@ -1909,6 +1911,14 @@ track. Open question worth settling in the same edit: `plugin/agents/` is not
 `.claude/agents/`, and whether the routing covers it should be explicit rather
 than inferred, for a file that ships.
 
+**SETTLED 2026-08-08, both halves, in `audit-claims`' routing.**
+`plugin/agents/*` joined the agent-file bullet — the open question resolved
+explicit-over-inferred, prompted by an owner suspicion of drift in
+`film-reviewer.md`: the hand pass found zero drifted claims but two
+instruments (`check`, `probe`) the file never routed to, which is the
+omission half of the exposure no drift audit sees. Both READMEs joined the
+changed-capability bullet in the same edit.
+
 ### E5. The harness tier's output reads as a coverage hole when it is a scope line
 
 `bracket-commands.js` currently prints `8 verb path(s) exercised, 9 skipped for a
@@ -2630,6 +2640,7 @@ rather than a matter of mood.
 | `bracket-noise`'s claims-webgpu arm: convert the standing local red to a skip-with-stated-reason on hardware-WebGPU machines, while CI keeps the real arm | the permanent red on developer hardware (filed, CHANGELOG 0.17.2) trains exactly the route-around habit the corpus doctrine warns about; declined as a quick edit because it touches signal honesty and needs its own red-first pass | the next edit to `bracket-noise.js` for any reason, or a session getting bitten by the red twice in one week |
 | ~~the shipped 2D teaching-baseline slot (`examples/`) — open, with `scenes/crash.html` as candidate~~ **RETIRED, not fired (owner, 2026-08-05 evening, 0.21.0):** the plugin ships no films at all, so there is no shipped slot for either template — the question this row waited on no longer exists. The n=1 principle it carried survives unchanged in the queue row (more portfolio scenes built AND reviewed before any "good enough") | the row's original terms are in `examples-placement.md`'s decision block, superseded section | — |
 | **snippet harvest, a standing per-scene step**: when a portfolio scene is built and reviewed, the techniques it demonstrated get carried into the references as **tested code snippets or plain method** — tested meaning the scene's own instrument-green run is the test, and the snippet is lifted from it, never authored freestanding (owner, 2026-08-05: references teach with "diverse sample code snippets we've actually tested as working"; shipped films are gone, so the references are the only teaching surface) | the 0.22.0 scrub converted every example-film citation to technique prose and surfaced the debt: first candidate is the **instanced field + instanced BackSide outline pass** (`materials.md` "Field of instances" — prose only; its worked instance was the retired toybot forest, and no shipped template carries an InstancedMesh field beyond the fur shell); second, lower: extrude/tube curve recipes (lathe survives in the character template) | each portfolio scene's close-out — the harvest is a named step beside the field report, and the next scene that uses an uncarried technique pays this row first |
+| **corpus films' extents to the REP4 form — per-scene, value-preserving** | every 3D corpus film draws `check`'s extent-provenance warn (observed 2026-08-08 on all seven — `crash`, the 2D film, declares no SUBJECTS and stays quiet; a first sweep claimed five because its grep pattern missed how `gearbox` and `materials` spell the declaration, and `check`'s own reader corrected it): bare `w`/`d` extents and bare `+.3/.4/.5` pads throughout. Migration is real per-scene work, not a rename: a base must derive from the rig or the build constants the geometry consumes, a pad gets an intent name, and the framing must not silently change — probe before and after where the current number is load-bearing, smoke re-run per film. The templates are already migrated (0.28.0), and the base template's own knot was the mechanism's first catch (`h:3.6` against a real 4.79). The FIXTURE is excluded permanently: its bare extents are row 11's defect and `bracket-extents.js`'s red-first subject | the next edit to any corpus film pays that film's migration in the same change; a film-wide sweep only as its own session with per-film verification |
 | `scripts/claims-reminder.sh`'s class glob still matches the retired handoff-memo pattern | dead pattern in a live control: the memo class it watched was retired 2026-08-04, so the glob can never match a real edit again — removing it is a behavior change to a bracketed control (`bracket-claims-reminder.js`), so it goes through controls.md red-first rather than into a prose sweep | the next `claims-reminder.sh` edit for any reason, or its 2026-08-24 checkpoint (same due-marker above) |
 | a gate-cost watch threshold | graduated 2026-08-05 from the 2026-08-04 brainstorm at its deletion (its graduate-or-die rule; this was the one disposition still marked "proposed"): `gate.yml`'s comment says ~6m30s (measured 2026-08-02, dated, so not false); the last four green runs before 2026-08-04 took 7m01s–7m48s (`gh run list`, 2026-08-04), with `bracket-corpus.js` disclosing ~2min of that at its own site. The repo's own doctrine says a slow gate is one people route around | the first green gate run exceeding 10 minutes — then revisit the gate's composition, not before |
 | a mechanical inert-expression check (probe-based non-constancy) | the first cold-start build (2026-08-04, installed 0.19.3) shipped a constant "blink" — `sin(quant(t,2)*Math.PI*2)`, exactly 0 at every `t` — invisible to every instrument by construction: pure in `t` so smoke is green, no discontinuity so no strip pops, sub-threshold for `motion`'s whole-frame delta. Found by accident during an unrelated investigation (that build's own postmortem, `(local)`). The manual rule landed in 0.19.4 (`method.md` "A composed periodic can be constant" + the `instruments.md` no-instrument entry); a mechanical form needs either an expression registry or a source scan for composed periodics, and goes through `controls.md`'s door with a red-first bracket — that build's pre-fix expression is the natural red arm | a second inert expression shipping past the method's probe rule, or the REP track giving scene expressions an addressable form |

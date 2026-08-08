@@ -23,6 +23,22 @@ the plugin root, which is what an installed reader actually has:
   `skills/mitate/references/webgpu-stack.md` and
   `skills/mitate/references/materials.md` for the node-stack
   half (backend policy, determinism rules, material recipes).
+- `skills/mitate/references/breakdown.md` — what each declared table means and
+  what validates it (the flash-window arithmetic below lives there);
+  `skills/mitate/references/characters.md` for rig anatomy when the film under
+  review has characters — contacts, gait and proportion defects are argued
+  against what the rig actually builds.
+
+## Before any pixels
+
+```
+bun run build.js check <scene>.html
+```
+Milliseconds, no browser: cross-references the declared tables — a shot's beat
+exists, anchors sit inside their beats, shots are in order, repeated framings,
+an extent carried by a bare number instead of deriving from construction. Its
+footer names what it cannot see. Run it first because every error it prints
+would otherwise surface later as a confusing visual finding.
 
 ## The three axes, and the instrument for each
 
@@ -46,11 +62,16 @@ formula, and reading eleven PNGs one at a time hides that completely.
 The 0.95 end-of-beat pass is a standing step, not an option — it is where
 effects that park, and targets that arrive a beat late, become visible.
 
+A scene declaring `STYLE.dof` puts focus on this axis too: the DoF plane sits
+on each shot's `focus` subject (default: the shot's subject), so verify the
+right thing is sharp — `bun run build.js probe <scene> <t> 'shotFocus'` reads
+the plane the solver chose. `film-language.md` owns the rack-focus vocabulary.
+
 A scene with `CONFIG.flashes` can have sample points that are structurally
 unreadable, but **compute which ones rather than assuming them**. A flash is a
-window of half-width `w` (default `.25`) around its anchor `beatAt(beat, at)`,
-so a fractional sample is blown out only when it falls within `w` of that
-anchor. The usual hit is the `0.95` sample of the beat *preceding* an `at: 0`
+window of half-width `w` around its anchor `beatAt(beat, at)` — the default
+width and the rest of the flash schema live in `breakdown.md` — so a
+fractional sample is blown out only when it falls within `w` of that anchor. The usual hit is the `0.95` sample of the beat *preceding* an `at: 0`
 flash, and only when that beat is short enough for `0.05 × dur < w`. Check the
 arithmetic against the scene's own `BEATS` and `flashes`; sample around a real
 hit by hand.
@@ -78,6 +99,14 @@ template, so mesh-built labels survive `nocap` — find and cover those by hand
 before trusting the result. `method.md` owns the caveat and `instruments.md`
 the measured miss behind it.
 
+**Geometry** — the defect class no still and no metric reaches: two things
+that must touch and do not, a subject occluded by what shares its space, a
+declared extent the real body exceeds. `bun run build.js probe <scene> <t>
+'<expr>'` reads the scene's own objects (`bb`, `sep`, `proj`, `reach` — the
+prelude is documented in `build.js`'s own probe section); a declared `h`/`w`
+is a claim about geometry and probe is its measurement. `instruments.md` lists
+what only probe reaches.
+
 **Contract** — `bun run smoke.js <scene>.html` must pass, and the hard-fail set
 is wider than it looks: zero page errors, the contract names,
 determinism (ALL-quantified over a sample plan), a non-blank frame,
@@ -86,6 +115,10 @@ on the only path a human viewer takes — the check built because every other on
 was blind to a frozen film), fence parity against the canonical store (every
 fence the scene carries, plus template integrity), and framing invariance.
 Caption speed, overflow and the exposure lint's advisory branch stay warnings.
+A determinism FAIL arrives with its layer named — the verdict says whether the
+scene's own pixels moved or only the capture did — so read the attribution
+before diagnosing, and re-run with `--dump-frames` to get the two disagreeing
+PNGs beside the scene for the visual half.
 `smoke.js`'s own header and `instruments.md` own the authoritative list; where
 this line and they disagree, they win.
 
@@ -97,7 +130,8 @@ Findings ranked most severe first. For each: what is wrong, the evidence
 Hold these standards:
 
 - **Distinguish measured from impression.** "The beak does not reach" is an
-  impression; "beak tip at x=1.07, bot face at 1.64, gap 1.07" is a finding.
+  impression; "beak tip at x=1.07, bot face at 1.64, gap 1.07" is a finding —
+  and probe is the instrument that turns the first into the second.
 - **When a check reports absence, ask what a positive result would have looked
   like.** If you cannot describe one, you have not run a check.
 - **Build the control** for any claim that a technique helps: render the version

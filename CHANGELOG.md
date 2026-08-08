@@ -7,6 +7,22 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.28.2
+
+### added
+
+**The host-state sweep completes in `bracket-extents.js`.** The mutated-table
+escape's class got named (`docs/controls.md`: enter through the verdict, not
+the parser; sweep the host's states as a round axis) and the bracket became
+its specimen: arms for the two previously unswept reader states (unreadable —
+named, no scan; absent — silent by design) and a census arm that DERIVES the
+state set from `tableValue`'s own source, so a fifth state goes red naming
+itself instead of the sweep quietly covering less than the reader classifies.
+Census watched red under a state mutant before being trusted. Owner ruling in
+the same session: this is a round axis paid at build/edit time, not new
+standing meta-machinery — what stands is the mechanism's own arms plus the
+derived census, never a checker of checkers.
+
 ## 0.28.1
 
 ### fixed

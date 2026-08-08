@@ -167,6 +167,56 @@ try {
     `exit ${r.code}${declared ? ', declared' : ', UNDECLARED'}${hit ? ', phantom warn' : ''}`);
 }
 
+/* ---- the host-state sweep (controls.md) ------------------------------------
+ * The scan is COUPLED to the table reader's classification, and the arms
+ * above already cover ok (every firing and quiet arm), imperative, and
+ * mutated (imperative's why-variant). The two below complete the sweep, and
+ * the census after them is its one standing guard: derived from build.js's
+ * own source, red the day the reader grows a state no fixture here covers —
+ * so the sweep cannot rot silently into four fixtures over five states.
+ * Where an arm's red lives in the HOST's behavior rather than the scan's,
+ * its comment says so: those are regression pins, not red-first
+ * demonstrations. */
+
+// unreadable: an unterminated literal has no slice to hand the scanner, so
+// the no-scan half is structural; the declared half pins the table loop's
+// own warn — its red is a host regression, stated here rather than implied.
+{
+  const r = run([BUILD, 'check', scene('unreadable.html',
+    'const SUBJECTS={box:{pos:()=>[0,1,0],h:2.5};')]);
+  const declared = /SUBJECTS is declared but could not be read/.test(r.out);
+  const hit = WARN.test(r.out);
+  arm('unreadable SUBJECTS: named, no scan', r.code === 0 && declared && !hit,
+    `exit ${r.code}${declared ? ', declared' : ', UNDECLARED'}${hit ? ', phantom warn' : ''}`);
+}
+
+// absent: a 2D scene has no SUBJECTS and silence is CORRECT — absence is
+// legitimate, so nothing is declared and nothing fires. Red if the scan ever
+// fabricates a finding from a scene with no table at all.
+{
+  const r = run([BUILD, 'check', scene('absent.html', '// no SUBJECTS at all')]);
+  const mentioned = /SUBJECTS/.test(r.out);
+  arm('absent SUBJECTS: silent by design, no scan', r.code === 0 && !mentioned,
+    `exit ${r.code}${mentioned ? ', SUBJECTS mentioned' : ', silent'}`);
+}
+
+// The census. `covered` is this file's own claim about its arms, kept beside
+// them; the derived half is what guards it — a fifth state in tableValue
+// goes red here naming itself, instead of the sweep quietly covering less
+// than the reader classifies.
+{
+  const src = fs.readFileSync(BUILD, 'utf8');
+  const states = [...new Set([...src.matchAll(/\bstate: '([a-z]+)'/g)].map(m => m[1]))].sort();
+  const covered = ['absent', 'imperative', 'ok', 'unreadable'];
+  const extra = states.filter(s => !covered.includes(s));
+  const gone = covered.filter(s => !states.includes(s));
+  arm('host-state census: every reader state has an arm here',
+    !extra.length && !gone.length,
+    extra.length ? `NEW state(s) with no fixture: ${extra.join(', ')}`
+      : gone.length ? `state spelling moved (${gone.join(', ')}) — re-derive this census`
+      : `states: ${states.join(' ')}`);
+}
+
 // The corpus arm — the red-first subject. Row 11's walker declares w:2.8 bare
 // (h:6.1 beside it), so the fixture draws the warn with walker named.
 // Claim: delete this arm and the fixture's extent signature can vanish — a

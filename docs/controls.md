@@ -28,6 +28,18 @@ find three holes the day it was built.
 - **Every substitution declares itself.** A stub, a sanitized value, an
   unresolved read: it refuses or it says so in the verdict. Homes: `plan.md`
   REP3; `references/instruments.md`'s declared-substitution paragraphs.
+- **Enter through the verdict, not the parser** (owner rule, 2026-08-08). The
+  flip side of the bullet above: a mechanism landing inside a host that
+  already classifies its input consumes the host's verdict instead of
+  re-reading the input beneath it — a second read carries a poorer state
+  model, and the two verdicts can disagree inside one report. Named on its
+  second instance: `check`'s extent scan re-sliced a SUBJECTS the table
+  reader had ruled mutated-and-uncovered, so the report declared the table
+  covered-by-nothing and judged its stale literal in the same breath
+  (0.28.1); the first was `check`'s solver running under the STYLE stand-in,
+  which earned its declared-divergence arm at REP2. Homes for the fix shape:
+  `build.js`'s scan-gating comment (the ok-slice handoff); this bullet for
+  the rule.
 
 ## Before you trust
 
@@ -51,6 +63,23 @@ find three holes the day it was built.
   by the external review. An adversarial round built from the author's own
   fixture family inherits the author's blind spots; environment variation is
   the half redundancy cannot buy.
+  **And sweep the host's states** (owner rule, 2026-08-08, the session of
+  the escape that named it): when the mechanism lives inside a host that
+  classifies its input — a table reader's ok/imperative/unreadable/absent, a
+  contract's hard and soft tiers, a declared stand-in — the round runs one
+  fixture per host state and asserts, for each, whether the mechanism runs
+  and whether its silence is declared. The mutated-table escape (0.28.1) was
+  unreachable by any input-shaped fixture: the bug was not in what the scan
+  read but in WHICH states routed input to it at all. Varying the input
+  explores the mechanism; sweeping the states explores its coupling.
+  **This is a round axis, not new standing machinery** (owner, same day):
+  the sweep is paid at build and edit time; what stands afterward is the
+  mechanism's own ordinary invariant-6 arms. The one drift risk a standing
+  form would add — the host growing a state no fixture covers — is closed by
+  DERIVING the state census from the host's source inside the mechanism's
+  own bracket, red on growth, never a list in prose and never a separate
+  checker of checkers. Specimen: `templates/bracket-extents.js` (one arm per
+  SUBJECTS state, census derived from `tableValue`).
 - **Controls need controls.** A check rots exactly like the thing it checks.
   Homes: invariant 6's bracket rule; `scripts/bracket-selfcheck.js`'s header
   (born because three checks shipped without one).

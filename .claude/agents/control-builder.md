@@ -56,6 +56,10 @@ repo's history exists because someone did it anyway:
 3. **Build the control: the same thing with the single claimed cause removed.**
    One variable. Same beats, same geometry, same camera, same seed — change only
    the mechanism under test. A control that differs in two ways proves nothing.
+   When the subject is a mechanism inside a host, `docs/controls.md`'s
+   adversarial-round bullet names the attack axes beyond input variants
+   (environment, the host's states) — read it before designing the attack;
+   it is the home and this line is only the pointer.
 
 4. **Verify the control actually ran.** This is the failure mode of the whole
    method and it is easy to hit: a blank-scene check that never modified the

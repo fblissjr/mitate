@@ -119,10 +119,19 @@ const ARMS = [
   // sample.yml was the fifth consumer of the playwright pin and the only one
   // nothing compared, so a bump everywhere else would leave the determinism
   // sampler a browser version behind while still reporting in the same units.
+  // The skew is DERIVED from whatever the file pins today (patch digit + 1),
+  // never written as a literal: this arm's first form hardcoded the version
+  // that WAS a skew, and the 1.61.1 -> 1.62.1 bump turned its mutation into a
+  // no-op — the arm replaced the pin with itself and reported the checker
+  // MISSED. A fixture that names its subject's current value goes stale the
+  // day the subject moves; one that derives a neighbour cannot.
   ['sample.yml skewed off gate.yml\'s pin', () => {
     const f = path.join(ROOT, '.github', 'workflows', 'sample.yml');
     const had = fs.readFileSync(f, 'utf8');
-    fs.writeFileSync(f, had.replace(/playwright-core@[\d.]+/, 'playwright-core@1.62.1'));
+    const skewed = had.replace(/playwright-core@(\d+)\.(\d+)\.(\d+)/,
+      (m, a, b, c) => `playwright-core@${a}.${b}.${Number(c) + 1}`);
+    if (skewed === had) throw new Error('arm could not find a playwright-core pin to skew in sample.yml');
+    fs.writeFileSync(f, skewed);
     return () => fs.writeFileSync(f, had);
   }, 'would measure determinism on different browsers'],
 

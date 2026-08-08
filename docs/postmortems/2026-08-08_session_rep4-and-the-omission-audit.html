@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Postmortem: rep4-and-the-omission-audit</title>
+<style>
+:root {
+  --bg: #fdfdfc; --fg: #1c1c1a; --muted: #6b6b66; --rule: #e2e2dd;
+  --accent: #7a5c2e; --panel: #f5f4f0;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #16161a; --fg: #e6e6e1; --muted: #9a9a94; --rule: #2e2e34;
+    --accent: #d9b978; --panel: #1f1f25;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 3rem 1.25rem 6rem; background: var(--bg); color: var(--fg);
+  font: 16px/1.65 ui-serif, Georgia, "Times New Roman", serif;
+  -webkit-text-size-adjust: 100%;
+}
+main { max-width: 44rem; margin: 0 auto; }
+h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 1.5rem; letter-spacing: -0.01em; }
+h2 {
+  font-size: 1.15rem; margin: 2.75rem 0 0.85rem; padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--rule); letter-spacing: -0.005em;
+}
+p { margin: 0 0 1rem; }
+code {
+  font: 0.86em/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: var(--panel); padding: 0.12em 0.34em; border-radius: 3px;
+  word-break: break-word;
+}
+.meta {
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 6px;
+  padding: 1rem 1.25rem; margin: 0 0 2.5rem;
+  font: 0.86rem/1.6 ui-sans-serif, system-ui, sans-serif;
+}
+.meta .summary {
+  font: 1rem/1.55 ui-serif, Georgia, serif; margin: 0 0 0.9rem;
+  padding-bottom: 0.85rem; border-bottom: 1px solid var(--rule);
+}
+.meta dl { display: grid; grid-template-columns: max-content 1fr; gap: 0.3rem 1rem; margin: 0; }
+.meta dt { color: var(--muted); }
+.meta dd { margin: 0; }
+.meta .artifacts { margin: 0.85rem 0 0; padding-top: 0.85rem; border-top: 1px solid var(--rule); }
+.meta .artifacts ul { margin: 0.35rem 0 0; padding-left: 1.1rem; }
+.meta .artifacts li { margin: 0.15rem 0; }
+.nothing { color: var(--muted); font-style: italic; }
+table { border-collapse: collapse; width: 100%; margin: 0 0 1rem; font-size: 0.94rem; }
+th, td { text-align: left; vertical-align: top; padding: 0.55rem 0.7rem; border-bottom: 1px solid var(--rule); }
+th { font: 600 0.82rem/1.4 ui-sans-serif, system-ui, sans-serif; color: var(--muted);
+     text-transform: uppercase; letter-spacing: 0.04em; }
+.annotation {
+  border-left: 3px solid var(--accent); background: var(--panel);
+  padding: 0.75rem 1rem; margin: 0 0 1rem; font-size: 0.94rem;
+}
+.annotation strong { color: var(--accent); }
+ul, ol { margin: 0 0 1rem; padding-left: 1.35rem; }
+li { margin: 0.3rem 0; }
+@media (max-width: 34rem) {
+  body { padding: 2rem 1rem 4rem; }
+  .meta dl { grid-template-columns: 1fr; gap: 0.1rem; }
+  .meta dt { margin-top: 0.5rem; }
+}
+</style>
+</head>
+<body>
+<main>
+<h1>Postmortem: REP4 and the omission audit (2026-08-08 session)</h1>
+
+<header class="meta">
+  <p class="summary">Every instrument's first catch this session included its own author &mdash; REP4's warn caught the teaching template's wrong extent the hour it ran, the review then found four bugs in the warn itself, and the audit skill this session extended for other files was itself not run until the owner asked.</p>
+  <dl>
+    <dt>Mode</dt><dd>session</dd>
+    <dt>Scope</dt><dd>rep4-and-the-omission-audit</dd>
+    <dt>Written</dt><dd>2026-08-08</dd>
+  </dl>
+  <div class="artifacts">
+    Artifacts examined:
+    <ul>
+      <li><code>docs/representation.md</code></li>
+      <li><code>docs/plan.md</code></li>
+      <li><code>docs/controls.md</code></li>
+      <li><code>docs/pattern-ledger.md</code></li>
+      <li><code>docs/working-plan.md</code></li>
+      <li><code>plugin/skills/mitate/templates/build.js</code></li>
+      <li><code>plugin/skills/mitate/templates/bracket-extents.js</code></li>
+      <li><code>plugin/skills/mitate/templates/scene.template.html</code></li>
+      <li><code>plugin/agents/film-reviewer.md</code></li>
+      <li><code>.claude/skills/audit-claims/SKILL.md</code></li>
+      <li><code>scripts/bracket-selfcheck.js</code></li>
+      <li><code>.github/workflows/static.yml</code></li>
+      <li><code>fixtures/defect-corpus/README.md</code></li>
+      <li><code>internal/log/log_2026-08-08.md</code></li>
+      <li><code>CHANGELOG.md</code></li>
+    </ul>
+  </div>
+</header>
+
+<p>Session scope: REP4 (the representation track's extents phase) taken as the
+next unblocked front while the cold build stays blocked on a plugin-only
+session; an owner-directed audit of <code>plugin/agents/film-reviewer.md</code>
+mid-session; the 0.28.0 release, its code review, and the two patch releases
+the review and an owner ruling produced (0.28.1, 0.28.2, plus the
+environment-axis doctrine commit <code>df95dca</code>).</p>
+
+<section>
+  <h2>1. What went well</h2>
+  <p><strong>Doctrine-first design left almost nothing to decide.</strong> REP4's binding terms
+  were already recorded &mdash; <code>docs/representation.md</code> decision point 4 (derive the
+  base, name the adjustment, declare-and-compare rejected) and the phase gate in
+  <code>docs/plan.md</code> (red on the corpus fixture before any shipped scene is touched)
+  &mdash; so the session's only fresh choices were warn-versus-error and scope, and
+  the severity followed from <code>check</code>'s own recorded severity rule rather than
+  argument. The mechanism landed in one pass (<code>1f610e3</code>). Structural version: a
+  decision written down at decision time converts a design session into an
+  implementation session.</p>
+  <p><strong>The mechanism's first run caught shipped content, including the file that
+  teaches the form.</strong> <code>scene.template.html</code> declared <code>h:3.6</code> while the knot's
+  measured bounding box is 4.788 tall &mdash; every FS shot overflowed the frame by a
+  quarter &mdash; the ninth independent instance of <code>docs/pattern-ledger.md</code>'s
+  declared-extents-rot row, found the hour the warn first ran (<code>1f610e3</code>).</p>
+  <p><strong>The owner's two mid-session questions each redirected the work more cheaply
+  than any planned step.</strong> "What's NOT in there" turned a clean drift audit of
+  <code>plugin/agents/film-reviewer.md</code> (zero drifted claims) into an omission audit
+  that found the real exposure &mdash; <code>check</code> and <code>probe</code> routed to no axis, and no
+  control naming the file at all (<code>1f610e3</code>). "New class of adversarial run, or
+  a check-on-a-check that will drift?" sized 0.28.2 as a round axis plus a
+  derived census instead of standing meta-machinery (<code>a285dd4</code>). Structural
+  version: the complement of a passing audit (what is absent, what would drift)
+  is a different question from the audit, and it takes someone asking it.</p>
+  <p><strong>Red-first held under recursion.</strong> 0.28.1's four fixes were each reproduced
+  as a failing bracket arm against the committed 0.28.0 before the fix
+  (<code>f9b412e</code>); 0.28.2's census was watched red under a phantom-state mutant
+  before being trusted (<code>a285dd4</code>); the quiet arms of <code>bracket-extents.js</code> were
+  proven fallible under a deliberately over-firing mutant. The discipline
+  survived being applied to fixes of the thing it had just been applied to.</p>
+  <p><strong>The review loop earned its run on consecutive days, on the same class of
+  code.</strong> Nine findings against the 0.28.0 diff, four of them live-verified
+  correctness bugs in the brand-new scanner (<code>f9b412e</code>) &mdash; the day after the
+  same loop found two confirmed bugs in the brand-new readback discriminator.
+  Structural version: a mechanism's first external review is worth more than
+  its author's adversarial round, and both days' evidence says schedule it
+  between commit and push, which is where it ran.</p>
+</section>
+
+<section>
+  <h2>2. What did not go well</h2>
+  <p><strong>0.28.0 carried four scanner bugs past an adversarial round that followed
+  the day's own new doctrine.</strong> The round varied the environment axis as
+  yesterday's postmortem prescribed, and still missed: quoted entry names (an
+  adjacent cell to the quoted <em>keys</em> it did test), the mutated-table coupling
+  (unreachable by any input-shaped fixture), array-index literals (no quiet
+  fixture used indexed derivation, because no shipped scene does), and a
+  garbled sentence in the standing footer that the author read repeatedly
+  without seeing (<code>f9b412e</code>). Structural version: fixture families inherit the
+  author's corpus and the author's reading; adjacency in fixture space is where
+  variants hide, and your own output prose is something you can no longer read.</p>
+  <p><strong>The session's own claims needed the same instruments it was building.</strong> The
+  first corpus sweep said "all five" 3D films warn when <code>check</code>'s own reader
+  found seven &mdash; a grep pattern over declaration spellings, the exact
+  derive-with-the-instrument class the repo already documents &mdash; caught by the
+  claims pass before the number reached prose (<code>docs/working-plan.md</code>'s queue
+  row records the correction).</p>
+  <p><strong><code>/audit-claims</code> was not run until the owner asked, at session end.</strong> Three
+  sibling passes ran unprompted &mdash; <code>doc-claim-auditor</code> twice, the
+  written-claims derivation pass, the code review &mdash; but the one skill whose
+  founding premise is "nothing made the pass happen, so it didn't"
+  (<code>.claude/skills/audit-claims/SKILL.md</code>) repeated its founding failure in the
+  session that extended its routing for other files. When run it found one real
+  drift: <code>.github/workflows/static.yml</code>'s comment describing the corpus's
+  check-visible signature as one warning, invalidated by the landing hours
+  earlier. Structural version: adding a surface to a control's scope is not the
+  same act as running the control, and the second does not follow from the
+  first.</p>
+  <p><strong>A control fixture one day stale.</strong> <code>scripts/bracket-selfcheck.js</code>'s
+  pin-skew arm hardcoded the version that was a skew when written; yesterday's
+  pin bump made the mutation a no-op and the arm reported its checker MISSED.
+  Found incidentally by running the full static tier, confirmed pre-existing
+  against a clean-HEAD worktree, fixed by deriving the skew from the current
+  pin (<code>f687a8e</code>). Structural version: a fixture that names its subject's
+  current value goes stale the day the subject moves; derive the neighbour.</p>
+</section>
+
+<section>
+  <h2>3. Deviations from the plan</h2>
+  <table>
+    <thead><tr><th>Planned</th><th>Shipped</th><th>Verdict</th></tr></thead>
+    <tbody>
+      <tr><td>REP4 mechanism, red-first on the corpus fixture, per the recorded gate</td><td>Warn in <code>check</code>, <code>bracket-extents.js</code>, fixture red observed before any shipped scene changed (<code>1f610e3</code>)</td><td>As planned</td></tr>
+      <tr><td>Template migration in the same session, corpus films queued</td><td>Both templates; the base template was itself the first catch</td><td>As planned, with an unplanned finding</td></tr>
+      <tr><td>Film-reviewer drift check (owner, mid-session)</td><td>Zero drift; omission audit closed six gaps; <code>audit-claims</code> routing gained <code>plugin/agents/*</code> and both READMEs (E4 settled)</td><td>As directed; grew, each step owner-prompted</td></tr>
+      <tr><td>(not planned) 0.28.1</td><td>The review's four scanner bugs and two doc findings, each closed red-first (<code>f9b412e</code>)</td><td>Review-driven; the release exists because the review ran before the push</td></tr>
+      <tr><td>(not planned) 0.28.2 and the class naming</td><td>Enter-through-the-verdict and the host-state sweep in <code>docs/controls.md</code>; census derived, watched red (<code>a285dd4</code>)</td><td>As directed, sized by the owner's round-axis-versus-meta-check cut</td></tr>
+      <tr><td>Environment-axis decision (offered at session start, decided in parallel)</td><td>Ruled and written into <code>docs/controls.md</code> (<code>df95dca</code>)</td><td>As planned</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>4. Escapes (tests)</h2>
+  <p><strong>The four 0.28.0 scanner bugs, by which control should have caught each:</strong>
+  quoted entry names &mdash; a missing fixture one cell from a tested one (quoted
+  keys), the classic near-miss; the mutated-table coupling &mdash; green-but-blind by
+  construction, since no input fixture can reach a host-state bug, which is
+  what promoted the host-state sweep to doctrine and the state census to a
+  standing arm (<code>docs/controls.md</code>, <code>a285dd4</code>); array-index literals &mdash; a
+  missing quiet fixture, because the fixture family mirrored the shipped corpus
+  and no shipped scene derives through an index yet; the garbled footer &mdash; not
+  test-shaped at all, output prose has no oracle, and the review (a cold
+  reader) is the instrument that caught it. All four fixes now stand behind
+  arms with recorded delete-claims (<code>plugin/skills/mitate/templates/bracket-extents.js</code>,
+  13 arms plus the census).</p>
+  <p><strong>The pin-skew arm staleness was an escape from yesterday's session</strong>, not
+  this one: 0.27.0's bump battery did not include the static bracket tier
+  locally, and nothing had been pushed to make CI run it. The escape window was
+  local-only and one day wide (<code>f687a8e</code>).</p>
+  <p><strong>The corpus fixture's check signature changed and its own documentation
+  kept up, but a workflow comment did not</strong> &mdash; <code>.github/workflows/static.yml</code>
+  described the fixture's check output as a single warning; the extent warn
+  made it two. Caught by the late <code>/audit-claims</code> run, fixed in the same
+  commit as this file. <code>fixtures/defect-corpus/README.md</code> had been updated in
+  the landing itself; the workflow comment was in no route this session walked
+  until the audit ran &mdash; which is the audit's argument.</p>
+</section>
+
+<section>
+  <h2>5. Forward items</h2>
+  <ul>
+    <li><strong><code>tableSource</code> has exactly one caller (<code>tableValue</code>), measured this
+    session.</strong> If a second caller appears in <code>build.js</code>, the
+    enter-through-the-verdict class is recurring in the file that named it &mdash;
+    checkable with one grep, and the finding would argue the prose rule needs a
+    mechanical form. Refuted if a second caller lands with a verdict-respecting
+    justification written at the site.</li>
+    <li><strong>The cold build now installs &ge;0.28.2 and its scene analysis should measure
+    the warn's reach</strong>: if the built film ships bare extents AND the transcript
+    shows <code>check</code> ran, the warn was seen and not taught &mdash; rewrite the message,
+    not the mechanism. Refuted if the film ships derived extents or never runs
+    <code>check</code>.</li>
+    <li><strong>Corpus film migration is enforced by its queue row</strong> (<code>docs/working-plan.md</code>):
+    the next corpus-film edit that lands without paying that film's migration &mdash;
+    visible as the film still warning under <code>check</code> after the edit &mdash; refutes
+    the row's on-next-touch mechanism and argues for the own-session sweep
+    instead.</li>
+    <li><strong>The film-reviewer agent's next drift check has a control</strong>: <code>audit-claims</code>
+    now routes at <code>plugin/agents/*</code>, so a <code>build.js</code>/<code>smoke.js</code> behavior change
+    that lands without a film-reviewer pass is checkable in retrospect from the
+    skill's own routing table. Refuted if the next such change shows the
+    routing was read and the pass still skipped &mdash; which would mean routing
+    lines do not produce runs, and the skill needs a hook, not a bullet.</li>
+  </ul>
+</section>
+
+</main>
+</body>
+</html>

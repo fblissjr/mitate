@@ -101,8 +101,10 @@ jobs:
       # as text since its third glob arm landed (0.16.45); what THIS step buys
       # is its declarative tables evaluated on every push. Be honest about the
       # size of that: `check` exits 0 on a warning, and the corpus's
-      # check-visible signature IS a warning (row 10b's repeat framing), so
-      # this is visibility in the log, not a gate. The gate is
+      # check-visible signature is warnings only — row 10b's repeat framing,
+      # plus the extent-provenance warn on every SUBJECTS entry since 0.28.0
+      # (the fixture is deliberately never migrated; its bare extents ARE row
+      # 11) — so this is visibility in the log, not a gate. The gate is
       # templates/bracket-corpus.js (0.18.1): it runs in gate.yml's bracket
       # loop, walks up from the workspace to fixtures/, drives after-hours.html
       # through a full smoke run, and pins the VERIFIED rows' signatures --

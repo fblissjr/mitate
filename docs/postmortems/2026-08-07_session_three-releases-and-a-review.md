@@ -109,6 +109,9 @@ environment variant, not a behavior variant, and only the external review
 tried it. **Structural version: an adversarial round built from the author's
 own fixture family inherits the author's blind spots; vary the environment
 axis, not just the input axis.**
+*(Annotation, 2026-08-08: ruled on by the owner and now doctrine —
+`docs/controls.md`'s adversarial-round bullet carries the requirement, with
+this finding as its evidence.)*
 
 **Relayed state disagreed with the tree twice, in both directions.** The
 owner reported a `.gitignore` edit the working tree did not contain (added

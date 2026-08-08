@@ -1,4 +1,4 @@
-last updated: 2026-08-04
+last updated: 2026-08-08
 
 # Controls: what makes a check trustworthy here
 
@@ -35,11 +35,22 @@ find three holes the day it was built.
   "adversarial testing is all we've learned works").** Invariant 6 proves
   the failure modes you thought of; this round hunts the ones you did not.
   Before a new mechanism is called done, attack it as an enemy: spelling and
-  formatting variants of its inputs, environment differences (tracked vs
-  untracked, laptop vs CI), scan-scope gaps, and above all the silent-miss
-  class — an input the mechanism never sees fails no check and raises no
-  error. First specimens: the due-marker check's three same-day holes
-  (`internal/log/log_2026-08-04.md`), each closed behind an arm observed red.
+  formatting variants of its inputs, scan-scope gaps, and above all the
+  silent-miss class — an input the mechanism never sees fails no check and
+  raises no error. First specimens: the due-marker check's three same-day
+  holes (`internal/log/log_2026-08-04.md`), each closed behind an arm
+  observed red.
+  **The round MUST vary the environment axis, not just the input axis**
+  (owner rule, 2026-08-08): context type, tracked vs untracked, laptop vs
+  CI — at least one fixture per round from outside the family the author
+  built the mechanism against. The evidence is the blank-readback escape
+  (postmortem `2026-08-07_session_three-releases-and-a-review.md`): the
+  readback discriminator's arms varied fixture *behavior* thoroughly and
+  every fixture was a 2D canvas where `getImageData` works, so the input
+  class that broke the classifier — an environment variant — was tried only
+  by the external review. An adversarial round built from the author's own
+  fixture family inherits the author's blind spots; environment variation is
+  the half redundancy cannot buy.
 - **Controls need controls.** A check rots exactly like the thing it checks.
   Homes: invariant 6's bracket rule; `scripts/bracket-selfcheck.js`'s header
   (born because three checks shipped without one).

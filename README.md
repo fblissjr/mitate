@@ -1,4 +1,4 @@
-last updated: 2026-08-05
+last updated: 2026-08-08
 
 # mitate
 
@@ -30,15 +30,16 @@ impossible here — so treat it as a bootstrap to personalize. When the film you
 want needs a primitive that doesn't exist yet, you build it on top — until
 models can do all of this on their own.
 
-[![Six scenes made with mitate: a bear nosing a hanging beehive, three characters walking in on their own gaits, a gearbox mechanism, subsurface scattering through thin skin, a grid of shader primitives, and the same gearbox under a neon style bible](site/posters/scenes.jpg)](https://mitate.microapp.me)
+[![A sampler of scenes made with mitate: a bear nosing a hanging beehive, three characters walking in on their own gaits, a gearbox mechanism, subsurface scattering through thin skin, a grid of shader primitives, and the same gearbox under a neon style bible](site/posters/scenes.jpg)](https://mitate.microapp.me)
 
-Those six are what it makes today, playing in the browser at
-**[mitate.microapp.me](https://mitate.microapp.me)** — free and MIT-licensed, and
-the site is just the films. The same scenes are tracked in
-[`scenes/`](scenes/) (the film corpus — the plugin itself ships no films):
-open one from disk and you get the real artifact, at full
-resolution and frame rate, rather than a compressed recording of it. It's an early version — this is the current output,
-not the ceiling.
+That sampler is a slice of what it makes today — the full corpus plays in the
+browser at **[mitate.microapp.me](https://mitate.microapp.me)** — free and
+MIT-licensed, and the site is just the films. The same scenes are tracked in
+[`scenes/`](scenes/) (the film corpus — the plugin itself ships no films, and
+that directory's README carries one section per film): open one from disk and
+you get the real artifact, at full resolution and frame rate, rather than a
+compressed recording of it. It's an early version — this is the current
+output, not the ceiling.
 
 *mitate* (見立て): to see one thing as another — the Japanese aesthetic of
 representing one thing through another. Here, seeing any input as a scene.

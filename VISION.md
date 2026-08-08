@@ -1,4 +1,4 @@
-last updated: 2026-08-07
+last updated: 2026-08-08
 
 # Why this exists, and why in this order
 
@@ -21,8 +21,8 @@ the **harness** that proves all of it — enough that an agent can turn **any
 context** into a scene, reliably.
 
 Not "a tool that makes films." Films are how the engine gets proven: every
-shipped example demonstrates that a layer works and fails loudly when it does
-not.
+film in the corpus demonstrates that a layer works and fails loudly when it
+does not.
 
 **And not a template library.** A template is a finished thing you fill in. It
 solves one film and rots on the second, because the next film is not that film.
@@ -216,7 +216,7 @@ independently of the artifact that embeds it, the claim is about authoring style
 instead — and the difference shows up as work: blocks held byte-identical across
 every carrier, a tool to propagate them, and a control to police that tool. The
 parity run reports the size of that tax on every invocation. It is not small, and
-it grows with every example added. One measurement sharpens what the tax is
+it grows with every carrier added. One measurement sharpens what the tax is
 evidence *of* (2026-08-02, method in `docs/representation.md`): the replicated
 surface is almost entirely kit machinery and its comments — declaration
 literals are a rounding error of it — so the tax argues for emitting the kit
@@ -254,10 +254,12 @@ made by escaping the system — and once authors escape, the consistency the
 vocabulary existed for is gone.
 
 **An unstructured one cannot be checked.** Nothing can validate a declaration
-that has no shape. That is why declared extents rot, why a hand-written subject
-table can disagree with the geometry it describes and nothing notices, and why a
-NaN can make one instrument fail loudly while another goes silently all-clear on
-the same run.
+that has no shape. That is why declared extents rotted for the project's whole
+life — a hand-written subject table could disagree with the geometry it
+described and nothing noticed, until the shape became checkable (REP4: the
+base derives, the adjustment is named, and a bare number draws a warning) —
+and why a NaN can make one instrument fail loudly while another goes silently
+all-clear on the same run.
 
 Both are avoidable at once, and the existence proof is already in the tree.
 `buildCharacter(P, matFor)` takes a fixed proportion vector — a real schema — and
@@ -362,18 +364,26 @@ you fail is worth more than one you have quietly dropped — and two of them wer
 written on 2026-08-02 as outright false, which is worth recording because one of
 them stopped being so on the same day.
 
-**Pre-render validation: now partly true, and the honest boundary is narrow.**
-`build.js check` (0.16.67) cross-references the declarative tables against each
-other before anything renders — every name a shot uses, every anchor inside its
-beat, captions against the reading limit. What it does **not** do is compare a
-declared extent against the geometry it claims to describe; that needs the scene's
-own objects, which is `probe`'s admitted exception. So the criterion holds for the
-tables' internal consistency and fails for the one case that needs runtime
-geometry — and that case is the layer's most expensive gap, not a rounding error.
-The verb states which tables it covered on every run, because a validator whose
-green cannot be told from a run that read nothing was the first defect it shipped
-with.
+**Pre-render validation: now mostly true, and the residual boundary is
+narrower than it was.** `build.js check` (0.16.67) cross-references the
+declarative tables against each other before anything renders — every name a
+shot uses, every anchor inside its beat, captions against the reading limit —
+and since REP4 (0.28.0) it also checks an extent's FORM: a bare number in an
+`h`/`w`/`d` draws a warning, and an extent that derives from its construction
+cannot disagree with it at build time, which dissolved the largest slice of
+what used to be the layer's most expensive gap. What still cannot be decided
+before render is the derived VALUE against the *posed* geometry — an extent
+is static and geometry is animated, the corpus's row 11 measures exactly that
+(a walker wider fallen than walking) — which needs the scene's own objects.
+The filed answer is in-scene self-validation sampled at shot times
+(`working-plan.md` carries the design and its triggers), not a widening of
+`probe`'s exception. The verb states which tables it covered on every run,
+because a validator whose green cannot be told from a run that read nothing
+was the first defect it shipped with.
 
-**Determinism magnitude: still false.** A determinism failure reports that it
-happened, not how large it was or where. Nothing has changed here, and the guard
+**Determinism magnitude: still false, though no longer untouched.** A failure
+now names its layer — the verdict says whether the scene's own pixels moved or
+only the capture did (0.26.0) — and can hand over the disagreeing frames. What
+it still does not report is how large the difference is or where it sits, so
+"roughly the same after a tooling change" remains uncheckable, and the guard
 against dogma above is the argument for changing it.

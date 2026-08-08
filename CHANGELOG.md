@@ -7,6 +7,34 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.28.1
+
+### fixed
+
+**The extent scan's four review findings, each fixed behind an arm watched red
+against 0.28.0 first.** A code review of the release found, live-verified: a
+QUOTED entry name (`'walker': {...}`) silently skipped its whole entry's scan;
+a SUBJECTS mutated after its declaration was judged on the stale literal while
+the same report declared it uncovered (and the mutated-in entry went
+unjudged); an array INDEX fired as a bare extent (`h: sizes[0]` warned naming
+"0" — an address, not a magnitude); and the standing footer printed a garbled
+clause on every run. The scan now runs only on a table the reader marked ok
+(one parse — `tableValue` hands the slice over, so the reader and the scanner
+cannot disagree about the bytes), reads quoted entry names AND quoted extent
+keys out of the raw slice at the stripped copy's own indexes (the length
+preservation is now load-bearing), exempts literals whose nearest predecessor
+is `[`, and the footer says "only its FORM is checked". `bracket-extents.js`
+grew an arm per finding plus the quoted-key case, cleans its temp dir in a
+`finally`, and its disclosed-edges header shrank to the one real edge
+(entry-value indirection).
+
+**Two documentation findings from the same review**: `film-reviewer.md`'s new
+dof paragraph restated the focus default inline — the same two-homes shape
+0.28.0 fixed for flash-width, now pointed at `breakdown.md` — and `plan.md`'s
+promotion passage hand-carried a ledger count ("two entries at 6") that the
+same 0.28.0 diff had moved to 9; the passage now defers to the ledger it
+cites.
+
 ## 0.28.0
 
 ### added

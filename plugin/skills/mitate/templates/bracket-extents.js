@@ -5,21 +5,24 @@
  * Each way a provenance lint can rot gets its own arms: silently firing on
  * nothing (the shipped scenes migrate and a regression stops the warn,
  * unnoticed because green output stays green) and firing on everything
- * (numbers inside `pos`, inside comments, inside strings — none of which is
- * an extent — until authors stop reading it). The run prints its own tally.
- * The synthetic fixtures live in a temp dir and cost no browser: check reads
- * source text only.
+ * (numbers inside `pos`, inside comments, inside strings, array indexes —
+ * none of which is an extent — until authors stop reading it). The run
+ * prints its own tally. The synthetic fixtures live in a temp dir and cost
+ * no browser: check reads source text only.
  *
- * DISCLOSED EDGES, out of scope by decision rather than accident:
- *   - a QUOTED extent key ('h': 2.8) is not the house spelling and is not
- *     scanned; every carrier and template writes bare keys.
- *   - a SUBJECTS assembled outside its literal (a call, later pushes) is the
- *     table-level declared substitution one tier up — the imperative arm here
- *     pins that the substitution is DECLARED, not that extents inside it are
- *     judged (they cannot be: there is no literal to scan). An ENTRY whose
- *     value is an identifier (`walker: WALKER`) is the same shape one level
- *     down and is skipped without a declaration — the entry's numbers live in
- *     another declaration this scan does not follow.
+ * The 0.28.1 arms carry the 0.28.0 review's findings, each one observed as
+ * a live miss or false fire before its fix: a QUOTED entry name skipped its
+ * whole entry silently, a table mutated after its declaration was judged on
+ * the stale literal while the same report said nothing covered it, and an
+ * array INDEX fired as if it were a magnitude.
+ *
+ * DISCLOSED EDGE, out of scope by decision rather than accident: an entry
+ * whose value is an identifier (`walker: WALKER`) is skipped without a
+ * declaration — the entry's numbers live in another declaration this scan
+ * does not follow. (A SUBJECTS assembled outside its literal, or mutated
+ * after it, is the table-level declared substitution one tier up; the
+ * mutated arm here pins that the substitution is DECLARED and the scan
+ * stays out.)
  *
  * The corpus arm pins the red-first subject: fixtures/defect-corpus row 11's
  * walker declares w:2.8 as a bare number, so the fixture must draw the warn
@@ -60,6 +63,10 @@ const scene = (name, subjectsLine) => {
   return p;
 };
 const WARN = /bare number\(s\) in extents/;
+
+// try/finally, so a throwing arm cannot leave the temp dir behind (0.28.0
+// review): the tally still runs, the fixtures never survive the process.
+try {
 
 // Claim: delete this arm and the warn can stop firing on the exact shape it
 // exists for — a fully hand-declared extent — and nothing else goes red.
@@ -102,6 +109,52 @@ const WARN = /bare number\(s\) in extents/;
     `exit ${r.code}${hit ? ', FALSE WARN' : ', quiet'}`);
 }
 
+// Claim: delete this arm and an array INDEX can fire as a bare extent again —
+// `sizes[0]` is an address into a build table, the derived form, and warning
+// on it after a film paid its migration trains route-around (0.28.0 review,
+// observed live: warned naming 'h: 0').
+{
+  const r = run([BUILD, 'check', scene('index.html',
+    'const SUBJECTS={rig:{pos:()=>[0,1,0],h:sizes[0],w:props[2]*SC}};')]);
+  const hit = WARN.test(r.out);
+  arm('array-index literals stay quiet (derived via table)', r.code === 0 && !hit,
+    `exit ${r.code}${hit ? ', FALSE WARN' : ', quiet'}`);
+}
+
+// Claim: delete this arm and a QUOTED entry name can silently skip its whole
+// entry again (0.28.0 review, observed live: 'quoted':{h:9.9} passed clean
+// green with no declaration of the skip).
+{
+  const r = run([BUILD, 'check', scene('quotedname.html',
+    "const SUBJECTS={'walker':{pos:()=>[0,0,0],h:9.9}};")]);
+  const hit = WARN.test(r.out) && /walker \(h: 9\.9\)/.test(r.out);
+  arm('quoted entry name is scanned, not skipped', r.code === 0 && hit,
+    `exit ${r.code}${hit ? ', warned' : ', NO WARNING'}`);
+}
+
+// Claim: delete this arm and a QUOTED extent key can slip back out of scope —
+// 'h': 2.8 is legal authoring and the scan now reads the raw slice for it.
+{
+  const r = run([BUILD, 'check', scene('quotedkey.html',
+    "const SUBJECTS={box:{pos:()=>[0,0,0],'h':2.8}};")]);
+  const hit = WARN.test(r.out) && /box \(h: 2\.8\)/.test(r.out);
+  arm('quoted extent key is scanned, not skipped', r.code === 0 && hit,
+    `exit ${r.code}${hit ? ', warned' : ', NO WARNING'}`);
+}
+
+// Claim: delete this arm and the scan can again judge a table the reader
+// declared uncovered (0.28.0 review, observed live: a SUBJECTS mutated after
+// its declaration drew BOTH 'nothing below covers it' AND an extent warn on
+// the stale literal, while the mutated-in entry went unjudged).
+{
+  const r = run([BUILD, 'check', scene('mutated.html',
+    'const SUBJECTS={box:{pos:()=>[0,1,0],h:2.5}};\nSUBJECTS.legend={pos:()=>[0,0,0],h:4};')]);
+  const declared = /SUBJECTS is declared but/.test(r.out);
+  const hit = WARN.test(r.out);
+  arm('mutated table: substitution declared, scan stays out', r.code === 0 && declared && !hit,
+    `exit ${r.code}${declared ? ', declared' : ', UNDECLARED'}${hit ? ', phantom warn' : ''}`);
+}
+
 // Claim: delete this arm and an imperative SUBJECTS can pass in silence —
 // no extent scan is possible without a literal, and that absence must arrive
 // as check's declared table-level substitution, not as a quiet green.
@@ -137,7 +190,9 @@ const WARN = /bare number\(s\) in extents/;
   }
 }
 
-fs.rmSync(tmp, { recursive: true, force: true });
+} finally {
+  fs.rmSync(tmp, { recursive: true, force: true });
+}
 
 if (wrong) {
   console.log(`\n${wrong} arm(s) did not behave as specified — the extent-provenance warn is not `

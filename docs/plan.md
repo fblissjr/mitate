@@ -1356,10 +1356,12 @@ Two consequences:
 > [pattern-ledger.md](pattern-ledger.md), fed by the film field reports that
 > already name what each film built twice.
 
-The ledger's two entries at **6** are the proof: contact-measurement and declared
-extents were both far past every trigger here, both had a fix specified, and both
-were still unbuilt — one with a shipped code comment claiming the check existed.
-(Declared extents: landed — REP4, 0.28.0, the MET record above.)
+The ledger's two founding entries are the proof — both reached **6** while
+their fixes sat specified and unbuilt, one with a shipped code comment
+claiming the check existed. The ledger owns their current counts; do not
+restate them here (this line said "at 6" while one row stood at 9, caught by
+the 0.28.0 review the day it happened). (Declared extents: landed — REP4,
+0.28.0, the MET record above.)
 
 ### Provenance is required
 

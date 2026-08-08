@@ -1094,7 +1094,10 @@ function tableValue(text, name) {
     if (mutatedAfterDeclaration(text, name)) {
       return { state: 'imperative', why: 'later lines add to or remove from it, so the literal read here is not the table the scene runs' };
     }
-    return { state: 'ok', value };
+    // src rides along so a consumer that needs the TEXT of an ok table (the
+    // extent scan) reads the same slice this verdict was formed on, instead
+    // of re-slicing and possibly disagreeing.
+    return { state: 'ok', value, src };
   } catch (e) {
     return { state: 'unreadable', why: String(e.message).split('\n')[0] };
   }
@@ -1115,12 +1118,24 @@ function tableValue(text, name) {
  * tables can both be satisfied; what a bare number defeats is the next edit.
  * Literals are found on a comment- and string-stripped copy of the table, so
  * `h: 6.1  // fits today` fires on the 6.1 and never on the comment's words.
- * Disclosed edges, stated in bracket-extents.js: a QUOTED extent key
- * ('h': 2.8) is not the house spelling and is not scanned, and an entry
- * assembled outside the literal is the table-level substitution one tier up.
+ * The scan runs ONLY on a table the reader marked ok — an imperative,
+ * unreadable, or mutated-after-declaration SUBJECTS is the table-level
+ * declared substitution one tier up, and scanning its stale literal anyway
+ * is how one report came to say "nothing below covers it" and judge it in
+ * the same breath (found by the 0.28.0 review). Quoted entry names and
+ * quoted extent keys ARE scanned — read out of the raw slice at the same
+ * index, which is what the stripper's length preservation exists for. The
+ * one disclosed edge, stated in bracket-extents.js: an entry whose value is
+ * an identifier rather than a literal is skipped, its numbers living in a
+ * declaration this scan does not follow.
  */
-// Replace comments and string bodies with spaces, length-preserving, so the
-// bracket walk below never changes state inside either.
+// Replace comments and string bodies with spaces, LENGTH-PRESERVING — the
+// walk below reads the clean copy for structure and the raw copy at the same
+// index for quoted names, so the two must never drift by a character.
+// Fed ONLY slices tableValue marked ok, so malformed input (the unterminated
+// comment tableSource refuses as UNPARSEABLE) cannot reach it — this is a
+// second, simpler lexer than tableSource's and that gate is what keeps their
+// differences unreachable rather than divergent.
 function stripNoise(s) {
   let out = '';
   for (let i = 0; i < s.length; i++) {
@@ -1141,11 +1156,22 @@ function stripNoise(s) {
   return out;
 }
 const EXTENT_KEYS = new Set(['h', 'w', 'd']);
-function scanExtentProvenance(text, add) {
-  const src = tableSource(text, 'SUBJECTS');
-  if (typeof src !== 'string') return;   // absent/imperative/unreadable: the table loop already said so
+// `src` is the SUBJECTS slice check() already extracted via tableValue — the
+// scan never re-parses the scene text, so the reader that judged the table
+// readable and the scanner that walks it cannot disagree about its bytes.
+function scanExtentProvenance(src, add) {
   const clean = stripNoise(src);
   const identAt = (j) => { const m = /^[A-Za-z_$][\w$]*/.exec(clean.slice(j)); return m ? m[0] : null; };
+  // A quoted name lives in the RAW slice (the stripper blanked it); the
+  // indexes align, so read it there. Returns {name, end} with end at the
+  // closing quote, or null when src[j] is not a quote.
+  const quotedAt = (j) => {
+    const q = src[j];
+    if (q !== '"' && q !== "'" && q !== '`') return null;
+    let k = j + 1;
+    while (k < src.length && src[k] !== q) { if (src[k] === '\\') k++; k++; }
+    return { name: src.slice(j + 1, k), end: k };
+  };
   // One walk, two levels: entry names at depth 1, extent keys at depth 2, an
   // extent's value sliced from its ':' to the next depth-2 comma or the
   // entry's closing brace. Deeper commas (call arguments, pos's array) never
@@ -1162,6 +1188,12 @@ function scanExtentProvenance(text, add) {
     while ((m = re.exec(expr))) {
       const before = expr[m.index - 1];
       if (before !== undefined && /[\w$.]/.test(before)) continue;  // identifier tail, or property access
+      // An index is an ADDRESS, not a magnitude: `sizes[0]` is the derived
+      // form reached through a build table, not a bare extent (0.28.0 review
+      // — a migrated film would have warned after paying the migration).
+      let b = m.index - 1;
+      while (b >= 0 && /\s/.test(expr[b])) b--;
+      if (expr[b] === '[') continue;
       nums.push(m[0]);
     }
     if (nums.length) {
@@ -1185,18 +1217,25 @@ function scanExtentProvenance(text, add) {
     }
     if (depth === 1) {
       if (c === ',') { expectName1 = true; entry = null; continue; }
-      if (expectName1 && /[A-Za-z_$]/.test(c)) {
-        entry = identAt(i);
-        if (entry) { i += entry.length - 1; expectName1 = false; }
+      if (expectName1) {
+        const q = quotedAt(i);
+        if (q) { entry = q.name; i = q.end; expectName1 = false; continue; }
+        if (/[A-Za-z_$]/.test(c)) {
+          entry = identAt(i);
+          if (entry) { i += entry.length - 1; expectName1 = false; }
+        }
       }
       continue;
     }
     if (depth === 2 && entry) {
       if (c === ',') { flush(i); expectName2 = true; continue; }
-      if (expectName2 && /[A-Za-z_$]/.test(c)) {
-        const id = identAt(i);
-        if (id) {
-          i += id.length - 1;
+      if (expectName2) {
+        let id = null, after = i;
+        const q = quotedAt(i);
+        if (q) { id = q.name; after = q.end; }
+        else if (/[A-Za-z_$]/.test(c)) { id = identAt(i); if (id) after = i + id.length - 1; }
+        if (id !== null) {
+          i = after;
           let j = i + 1; while (j < clean.length && /\s/.test(clean[j])) j++;
           expectName2 = false;
           if (clean[j] === ':') {
@@ -1323,6 +1362,7 @@ function execKit(name, vars, wants) {
 function check(scene) {
   const text = fs.readFileSync(scene, 'utf8');
   const found = {}, out = [], uncovered = [], covered = [], states = {};
+  let subjectsSrc = null;   // the ok SUBJECTS slice, for the extent scan
   const add = (sev, msg) => out.push([sev, msg]);
   // SIZES is NOT in this list any more: it lives inside the SOLVER fence, so
   // since REP2 it comes from executing the canonical store's copy — parity is
@@ -1335,6 +1375,7 @@ function check(scene) {
     found[name] = r.state === 'ok' ? r.value : null;
     states[name] = r.state;
     if (r.state === 'ok') covered.push(name);
+    if (name === 'SUBJECTS' && r.state === 'ok') subjectsSrc = r.src;
     // Declared and unreadable is a hole in THIS tool, not a verdict on the
     // scene, and it is said out loud: an instrument that quietly checks less
     // than it reports is the failure references/instruments.md exists to track.
@@ -1439,7 +1480,11 @@ function check(scene) {
   const known = n => beatMiss(n) === null;
 
   const subjects = found.SUBJECTS && typeof found.SUBJECTS === 'object' ? Object.keys(found.SUBJECTS) : null;
-  scanExtentProvenance(text, add);
+  // Extent provenance runs ONLY on an ok table: imperative (including
+  // mutated-after-declaration), unreadable and absent are already declared
+  // one tier up, and judging a stale literal under a "nothing below covers
+  // it" banner is the self-contradiction the 0.28.0 review caught live.
+  if (subjectsSrc !== null) scanExtentProvenance(subjectsSrc, add);
   const shots = Array.isArray(found.SHOTS) ? found.SHOTS : null;
   const framings = new Map();
 
@@ -1635,8 +1680,8 @@ function check(scene) {
   for (const [sev, msg] of out) console.log(`  ${sev.padEnd(5)} ${msg}`);
   // Said on every run, green ones included: a clean report here is not a clean
   // scene, and the gap is the expensive one. See references/instruments.md.
-  console.log(`\n  not checked here: whether an extent h/w/d VALUE matches the geometry it describes — the FORM`);
-  console.log(`  is (a bare number in an extent warns); the value needs the scene's own objects — \`build.js probe <scene> <t> 'bb(x)'\`.`);
+  console.log(`\n  not checked here: whether an extent h/w/d VALUE matches the geometry it describes — only its`);
+  console.log(`  FORM is checked (a bare number in an extent warns); the value needs the scene's own objects — \`build.js probe <scene> <t> 'bb(x)'\`.`);
   if (errors) {
     console.log(`\n${errors} error(s), ${warns} warning(s) — the tables disagree with each other, `
       + `and no frame has to render for that to be true.`);

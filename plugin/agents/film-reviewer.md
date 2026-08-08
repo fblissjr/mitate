@@ -63,9 +63,10 @@ The 0.95 end-of-beat pass is a standing step, not an option — it is where
 effects that park, and targets that arrive a beat late, become visible.
 
 A scene declaring `STYLE.dof` puts focus on this axis too: the DoF plane sits
-on each shot's `focus` subject (default: the shot's subject), so verify the
-right thing is sharp — `bun run build.js probe <scene> <t> 'shotFocus'` reads
-the plane the solver chose. `film-language.md` owns the rack-focus vocabulary.
+on each shot's `focus` subject — default and schema in `breakdown.md` — so
+verify the right thing is sharp: `bun run build.js probe <scene> <t>
+'shotFocus'` reads the plane the solver chose. `film-language.md` owns the
+rack-focus vocabulary.
 
 A scene with `CONFIG.flashes` can have sample points that are structurally
 unreadable, but **compute which ones rather than assuming them**. A flash is a

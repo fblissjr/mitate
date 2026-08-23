@@ -45,18 +45,22 @@ const run = () => {
 const withCascade = (mutateSkill) => () => {
   const f = path.join(ROOT, 'plugin', 'skills', 'mitate', 'SKILL.md');
   const pj = path.join(ROOT, 'plugin', '.claude-plugin', 'plugin.json');
+  const agyPj = path.join(ROOT, 'plugin', 'plugin.json');
   const mkt = path.join(ROOT, '.claude-plugin', 'marketplace.json');
   const chg = path.join(ROOT, 'CHANGELOG.md');
   const had = { f: fs.readFileSync(f, 'utf8'), pj: fs.readFileSync(pj, 'utf8'),
+                agyPj: fs.existsSync(agyPj) ? fs.readFileSync(agyPj, 'utf8') : null,
                 mkt: fs.readFileSync(mkt, 'utf8'), chg: fs.readFileSync(chg, 'utf8') };
   const cur = JSON.parse(had.pj).version;
   const next = cur.replace(/(\d+)$/, (n) => String(Number(n) + 1));
   fs.writeFileSync(f, mutateSkill(had.f));
   fs.writeFileSync(pj, had.pj.split(cur).join(next));
+  if (had.agyPj) fs.writeFileSync(agyPj, had.agyPj.split(cur).join(next));
   fs.writeFileSync(mkt, had.mkt.split(cur).join(next));
   fs.writeFileSync(chg, had.chg.replace(/^## /m, `## ${next}\n\n### changed\n\nbracket fixture.\n\n## `));
   return () => {
     fs.writeFileSync(f, had.f); fs.writeFileSync(pj, had.pj);
+    if (had.agyPj) fs.writeFileSync(agyPj, had.agyPj);
     fs.writeFileSync(mkt, had.mkt); fs.writeFileSync(chg, had.chg);
   };
 };
@@ -480,9 +484,11 @@ const ARMS = [
   ['plugin content changed WITH a version bump', () => {
     const f = path.join(ROOT, 'plugin', 'skills', 'mitate', 'templates', 'smoke.js');
     const pj = path.join(ROOT, 'plugin', '.claude-plugin', 'plugin.json');
+    const agyPj = path.join(ROOT, 'plugin', 'plugin.json');
     const mkt = path.join(ROOT, '.claude-plugin', 'marketplace.json');
     const chg = path.join(ROOT, 'CHANGELOG.md');
     const had = { f: fs.readFileSync(f, 'utf8'), pj: fs.readFileSync(pj, 'utf8'),
+                  agyPj: fs.existsSync(agyPj) ? fs.readFileSync(agyPj, 'utf8') : null,
                   mkt: fs.readFileSync(mkt, 'utf8'), chg: fs.readFileSync(chg, 'utf8') };
     const cur = JSON.parse(had.pj).version;
     // Bump the patch component so check 1 (cascade coherence) stays satisfied
@@ -491,10 +497,12 @@ const ARMS = [
     const next = cur.replace(/(\d+)$/, (n) => String(Number(n) + 1));
     fs.writeFileSync(f, had.f + '\n// bracket fixture, removed by teardown\n');
     fs.writeFileSync(pj, had.pj.split(cur).join(next));
+    if (had.agyPj) fs.writeFileSync(agyPj, had.agyPj.split(cur).join(next));
     fs.writeFileSync(mkt, had.mkt.split(cur).join(next));
     fs.writeFileSync(chg, had.chg.replace(/^## /m, `## ${next}\n\n### changed\n\nbracket fixture.\n\n## `));
     return () => {
       fs.writeFileSync(f, had.f); fs.writeFileSync(pj, had.pj);
+      if (had.agyPj) fs.writeFileSync(agyPj, had.agyPj);
       fs.writeFileSync(mkt, had.mkt); fs.writeFileSync(chg, had.chg);
     };
   }, null],

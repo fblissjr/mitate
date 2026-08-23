@@ -1,8 +1,8 @@
-last updated: 2026-08-08
+last updated: 2026-08-23
 
 # mitate
 
-A Claude Code skill that writes **an animated three.js scene as native HTML**.
+An agent skill (Claude Code & Antigravity 2.0) that writes **an animated three.js scene as native HTML**.
 There is no input format — whatever context your agent can already read is
 enough: a prompt, a document, a codebase, a screenshot. Ask for one and you get
 a single file that opens in any browser. Not a video: no player, no build step,
@@ -114,10 +114,14 @@ gearbox through `seekTo`, live.
 
 ## Install
 
+**Claude Code**:
 ```
 /plugin marketplace add fblissjr/mitate
 /plugin install mitate@mitate
 ```
+
+**Antigravity 2.0**:
+Discovered automatically via `.agents/plugins.json` pointing to `./plugin`, or installable via `agy plugin install ./plugin`.
 
 Then ask for one, in whatever words you'd normally use: *"animate how our
 approval process flows"*, *"make a boss-intro cutscene for this creature"*,
@@ -151,7 +155,8 @@ so treat it as untested rather than supported.**
 
 | Path | What |
 |---|---|
-| [`plugin/`](plugin/) | The skill itself — manifest, `skills/mitate/` with SKILL.md, references, templates. No films ship in it. See [`plugin/README.md`](plugin/README.md) |
+| [`plugin/`](plugin/) | The skill itself — manifests (`.claude-plugin/` & `plugin.json`), `skills/mitate/` with SKILL.md, references, templates. No films ship in it. See [`plugin/README.md`](plugin/README.md) |
+| [`.agents/`](.agents/) | Antigravity 2.0 workspace configuration ([`AGENTS.md`](AGENTS.md) front door) |
 | [`site/`](site/) | The static showcase site behind [mitate.microapp.me](https://mitate.microapp.me) — one hand-authored page, no framework |
 | [`docs/`](docs/) | [`plan.md`](docs/plan.md) (founding plan, architecture, phase gates), [`physics-bake-proposal.md`](docs/physics-bake-proposal.md), and [`predecessor-record.md`](docs/predecessor-record.md) (the frozen predecessor's measured findings, inherited) |
 | [`scenes/`](scenes/) | The tracked film corpus — full repo members (CI-smoked, parity-checked, on the site), not shipped in the plugin |

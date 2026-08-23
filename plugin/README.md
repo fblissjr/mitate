@@ -23,10 +23,14 @@ modern browser plays one and the recorder's default path needs no GPU.
 
 ## Installation
 
+**Claude Code**:
 ```
 /plugin marketplace add fblissjr/mitate
 /plugin install mitate@mitate
 ```
+
+**Antigravity 2.0**:
+Declared via `.agents/plugins.json` pointing to `./plugin`, or installable via `agy plugin install ./plugin`.
 
 Then just ask. The skill activates on intent, not on a command:
 

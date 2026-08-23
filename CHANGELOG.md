@@ -7,6 +7,15 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.28.3
+
+### added
+
+**Antigravity 2.0 dual compatibility without duplicating plugin content.**
+Added root manifest `plugin/plugin.json`, workspace instructions `AGENTS.md`, and `.agents/` configuration (`plugins.json`, `skills.json`) for Google Antigravity 2.0. The underlying `skills/mitate/` implementation, templates, references, and render stack remain single-homed and shared across both Claude Code and Antigravity 2.0 environments.
+
+Updated root `README.md` and `plugin/README.md` with Antigravity installation and discovery paths. Updated `scripts/selfcheck.js` and `scripts/bracket-selfcheck.js` to enforce version cascade coherence across dual manifests (`.claude-plugin/plugin.json` and `plugin/plugin.json`).
+
 ## 0.28.2
 
 ### added

@@ -66,15 +66,17 @@ const notes = [];
 const fail = m => fails.push(m);
 
 /* ---- 1. version cascade coherence (CLAUDE.md invariant 2) -----------------
- * Three files must move together or `marketplace update` never reaches an
- * installed user. Nothing checked that they had. */
+ * Manifests and CHANGELOG must move together or `marketplace update` never reaches
+ * an installed user. Nothing checked that they had. */
 {
   const plugin = JSON.parse(R(path.join(ROOT, 'plugin', '.claude-plugin', 'plugin.json'))).version;
+  const agyPluginPath = path.join(ROOT, 'plugin', 'plugin.json');
+  const agyPlugin = fs.existsSync(agyPluginPath) ? JSON.parse(R(agyPluginPath)).version : plugin;
   const mkt = JSON.parse(R(path.join(ROOT, '.claude-plugin', 'marketplace.json')));
   const mktMeta = mkt.metadata.version;
   const mktPlugin = mkt.plugins.find(p => p.name === 'mitate').version;
   const heading = (R(path.join(ROOT, 'CHANGELOG.md')).match(/^## (\d+\.\d+\.\d+)/m) || [])[1];
-  const all = { 'plugin.json': plugin, 'marketplace.metadata': mktMeta, 'marketplace.plugins[mitate]': mktPlugin, 'CHANGELOG newest heading': heading };
+  const all = { 'plugin.json': plugin, 'plugin/plugin.json': agyPlugin, 'marketplace.metadata': mktMeta, 'marketplace.plugins[mitate]': mktPlugin, 'CHANGELOG newest heading': heading };
   const distinct = [...new Set(Object.values(all))];
   if (distinct.length !== 1) {
     fail('version cascade disagrees — ' + Object.entries(all).map(([k, v]) => `${k}=${v}`).join(', '));

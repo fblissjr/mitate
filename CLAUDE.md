@@ -1,4 +1,4 @@
-last updated: 2026-08-07
+last updated: 2026-08-23
 
 # mitate
 
@@ -128,6 +128,7 @@ copy of a router is the exact failure this file keeps catching.
   [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md) (required, because
   three.js ships inside every scene — see invariant 1). One bullet on purpose:
   they are here so the map is total, not because each earns a paragraph
+- **Antigravity integration and workspace configuration** — `AGENTS.md` (front door for Antigravity 2.0), `.agents/` (`plugins.json`, `skills.json` declaring workspace customizations)
 - **Session narration** — `internal/log/`, one file per working day. **This is
   the only tracked thing under `internal/`**; the directory is otherwise local
   and stays that way. Narration, not doctrine — read it for what a day actually
@@ -176,14 +177,15 @@ for its red lines.
    check. Because three.js ships inside every scene, its MIT notice is required:
    [`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md) carries it.
 
-2. **Plugin content change ⇒ version cascade (three files).**
-   `plugin/.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json` +
-   a [`CHANGELOG.md`](CHANGELOG.md) entry. Without all three, `marketplace
-   update` never reaches installed users. Editing anything under
-   `plugin/skills/mitate/` — templates, references, not just SKILL.md
-   prose — is plugin content. **SKILL.md is deliberately NOT in the cascade:** it
-   carries no `version`, no `author` and no freshness field, because the whole
-   file loads into context on activation and none of the three has a runtime use.
+2. **Plugin content change ⇒ version cascade (manifests + changelog).**
+   `plugin/.claude-plugin/plugin.json` + `plugin/plugin.json` (for Antigravity) +
+   `.claude-plugin/marketplace.json` + a [`CHANGELOG.md`](CHANGELOG.md) entry.
+   Without these, `marketplace update` never reaches installed users. Editing
+   anything under `plugin/skills/mitate/` — templates, references, not just
+   SKILL.md prose — is plugin content. **SKILL.md is deliberately NOT in the
+   cascade:** it carries no `version`, no `author` and no freshness field, because
+   the whole file loads into context on activation and none of the three has a
+   runtime use.
    It carries **no dating either** — nothing under `plugin/` does, per the
    conventions below; `selfcheck.js` check 4 enforces that absence, and the
    verified-against-what record lives in

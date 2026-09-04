@@ -1,4 +1,4 @@
-last updated: 2026-08-08
+last updated: 2026-09-04
 
 # Shipped-file verification ledger
 
@@ -40,6 +40,7 @@ is a failure, so a dated annotation cannot quietly return.
 | `references/recordings.md` | recording formats and measured costs | **never audited end to end** | size/decode measurements taken on the predecessor skill; they operate on encoded output so they carry over, but are not re-measured on this stack |
 | `plugin/README.md` | install and layout, reader-facing | 2026-08-05 (rewritten alongside the zero-films restructure) | |
 | `agents/film-reviewer.md` | the review agent's brief: the axes, the instrument for each, and the reporting standard | 2026-08-07 (first end-to-end verification against the code); 2026-08-08 second full pass, owner-prompted, plus its complement — an OMISSION audit, which no drift pass sees | 2026-08-08: every capability claim re-verified against the working tree, zero drift. The omission audit found `check` and `probe` routed to no axis, the layer-attributed determinism verdict and `--dump-frames` unsurfaced, dof on no axis, `breakdown.md`/`characters.md` uncited — all closed at 0.28.0, and the flash-width default returned to its one home (`breakdown.md`). Earlier: **three drift items found and fixed at 0.22.2** — see the note below |
+| `rules/AGENTS.md` | active rules when mitate is loaded as an Antigravity plugin: Prime Directive, window contract, self-containment | 2026-09-04 (initial specification for Antigravity plugin parity) | covers plugin-scope rules; date-free per invariant 2 / check 4 |
 
 **The row set is every tracked markdown file under `plugin/`** — derivable, so
 it can be checked rather than trusted:

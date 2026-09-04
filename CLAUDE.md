@@ -1,8 +1,8 @@
-last updated: 2026-08-23
+last updated: 2026-09-04
 
 # mitate
 
-A Claude Code skill (and its showcase site) that turns any input into a
+An agent plugin for Claude Code and Google Antigravity (and its showcase site) that turns any input into a
 deterministic animated scene. Read [`docs/plan.md`](docs/plan.md) for the
 architecture and the phase gates; this file is only the things that bite on the
 first edit.
@@ -41,7 +41,7 @@ copy of a router is the exact failure this file keeps catching.
   criteria the project currently **fails**, on purpose
 - **The skill that ships** — `plugin/skills/mitate/SKILL.md`, plus
   `references/` (start with `glossary.md` — the words this project uses as if you
-  knew them), `templates/`, and `plugin/agents/film-reviewer.md`. **No films
+  knew them), `templates/`, `plugin/rules/AGENTS.md`, and `plugin/agents/film-reviewer.md`. **No films
   ship**: the skill teaches through prose and tested snippets, never a
   finished example to copy
 - **What happened and why** — `CHANGELOG.md`

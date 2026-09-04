@@ -57,6 +57,7 @@ Every fact has exactly one home. This README points; it does not restate.
 | formats, encoders, file size, inline on GitHub | `skills/mitate/references/recordings.md` |
 | what each check can and cannot see | `skills/mitate/references/instruments.md` |
 | materials, characters, style bibles | the correspondingly named `references/*.md` |
+| plugin rules (Antigravity active rules) | `rules/AGENTS.md` |
 | worked films you can open and read | none ship in the plugin, on purpose — the skill teaches through templates, references and tested snippets; the film corpus is tracked at https://github.com/fblissjr/mitate/tree/main/scenes |
 
 ## Status

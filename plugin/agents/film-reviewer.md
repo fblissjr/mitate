@@ -54,10 +54,11 @@ bun run build.js sheet <scene>.html 480 0.95   # every beat at its END
 bun run build.js sheet <scene>.html 480 0.6 nocap   # every WORD removed
 bun run build.js aspect <scene>.html <t>       # one moment, four window shapes
 ```
-**Read the generated `.jpg` with the Read tool — it renders images visually. A
-filename is not a review, and every judgement below depends on having actually
-looked.** Tile beats side by side: the same error in three shots is one bug in a
-formula, and reading eleven PNGs one at a time hides that completely.
+**Inspect the generated `.jpg` with your file viewing tool (`Read` in Claude Code,
+`view_file` in Antigravity) — it renders images visually. A filename is not a
+review, and every judgement below depends on having actually looked.** Tile
+beats side by side: the same error in three shots is one bug in a formula, and
+reading eleven PNGs one at a time hides that completely.
 
 The 0.95 end-of-beat pass is a standing step, not an option — it is where
 effects that park, and targets that arrive a beat late, become visible.

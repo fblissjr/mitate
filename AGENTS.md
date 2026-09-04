@@ -1,4 +1,4 @@
-last updated: 2026-08-23
+last updated: 2026-09-04
 
 # mitate (Antigravity Instructions)
 
@@ -9,6 +9,7 @@ Deterministic animated scenes from any input.
 - **Architecture & Roadmap**: Read [`docs/plan.md`](docs/plan.md).
 - **Source of Truth Map**: Read [`docs/source-of-truth.md`](docs/source-of-truth.md) for where facts are homed and how truth is maintained.
 - **Skill Definition**: The main skill is homed at [`plugin/skills/mitate/SKILL.md`](plugin/skills/mitate/SKILL.md) with references in `plugin/skills/mitate/references/` and templates in `plugin/skills/mitate/templates/`.
+- **Shipped Plugin Rules**: Active rules for users running the plugin are homed at [`plugin/rules/AGENTS.md`](plugin/rules/AGENTS.md).
 
 ## Prime Directive
 

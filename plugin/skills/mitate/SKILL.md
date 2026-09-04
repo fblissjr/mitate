@@ -94,7 +94,9 @@ ends up unable to swap bibles.
 
 ```bash
 T=scene.template.html   # or scene.character.template.html / scene2d.template.html — pick from the table above
-cp -R "${CLAUDE_SKILL_DIR}"/templates/{$T,shoot.js,build.js,smoke.js,backend.js,fences} .
+# Locate templates: $CLAUDE_SKILL_DIR in Claude Code, or the templates/ folder beside this SKILL.md in Antigravity
+TEMPLATES_DIR="${CLAUDE_SKILL_DIR:-<skill-directory>}/templates"
+cp -R "${TEMPLATES_DIR}"/{$T,shoot.js,build.js,smoke.js,backend.js,fences} .
 mv "$T" <name>.html
 [ -f package.json ] || echo '{"name":"scene","private":true}' > package.json
 bun add three@0.185.1 playwright-core@1.62.1

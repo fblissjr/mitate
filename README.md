@@ -155,7 +155,7 @@ so treat it as untested rather than supported.**
 
 | Path | What |
 |---|---|
-| [`plugin/`](plugin/) | The skill itself — manifests (`.claude-plugin/` & `plugin.json`), `skills/mitate/` with SKILL.md, references, templates. No films ship in it. See [`plugin/README.md`](plugin/README.md) |
+| [`plugin/`](plugin/) | The plugin itself — manifests (`.claude-plugin/` & `plugin.json`), `rules/`, `skills/mitate/` with SKILL.md, references, templates. No films ship in it. See [`plugin/README.md`](plugin/README.md) |
 | [`.agents/`](.agents/) | Antigravity 2.0 workspace configuration ([`AGENTS.md`](AGENTS.md) front door) |
 | [`site/`](site/) | The static showcase site behind [mitate.microapp.me](https://mitate.microapp.me) — one hand-authored page, no framework |
 | [`docs/`](docs/) | [`plan.md`](docs/plan.md) (founding plan, architecture, phase gates), [`physics-bake-proposal.md`](docs/physics-bake-proposal.md), and [`predecessor-record.md`](docs/predecessor-record.md) (the frozen predecessor's measured findings, inherited) |

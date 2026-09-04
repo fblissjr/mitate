@@ -7,6 +7,19 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.28.4
+
+### added
+
+**Antigravity plugin packaging and dual-environment execution support.**
+Added `plugin/rules/AGENTS.md` so that when `mitate` is active as an Antigravity plugin, its Prime Directive, self-containment invariant, and window contract rules are loaded automatically into agent context.
+
+Updated `plugin/skills/mitate/SKILL.md` scaffolding instructions so template copying resolves cleanly whether running inside Claude Code (`$CLAUDE_SKILL_DIR`) or Antigravity.
+
+Updated `plugin/agents/film-reviewer.md` visual inspection instructions to cite both Claude Code (`Read`) and Antigravity (`view_file`) file viewing tools.
+
+Updated `docs/shipped-provenance.md` ledger and `CLAUDE.md` Map to track the new shipped `rules/AGENTS.md`.
+
 ## 0.28.3
 
 ### added

@@ -48,10 +48,15 @@ copy of a router is the exact failure this file keeps catching.
 - **Repo tools** — `scripts/selfcheck.js`, `install-hooks.sh`,
   `stage-films.sh`, `derived-counts.js`, `diagnose-determinism.js`,
   `sample-determinism.js`, `claims-reminder.sh` (the PreToolUse hook wired in
-  `.claude/settings.json`). `scripts/bracket-*.js` are their controls, and cover
+  `.claude/settings.json`), and `cold-build.sh` with `cold-briefs/` (the
+  fixed prompts it feeds — the second flywheel's instrument, runs a
+  plugin-only session against the working tree and derives its verdict from
+  the transcript; `docs/harness-loop.md` is the plan it serves).
+  `scripts/bracket-*.js` are their controls, and cover
   `selfcheck.js`, `stage-films.sh`, `derived-counts.js` (through
-  `bracket-selfcheck.js`'s check 13 arms) and `claims-reminder.sh`
-  (`bracket-claims-reminder.js`). **`diagnose-determinism.js`,
+  `bracket-selfcheck.js`'s check 13 arms), `claims-reminder.sh`
+  (`bracket-claims-reminder.js`) and `cold-build.sh`
+  (`bracket-cold-build.js`, on a stub CLI — no model is called). **`diagnose-determinism.js`,
   `sample-determinism.js` and `install-hooks.sh` are uncontrolled**, which
   invariant 6 wants visible rather than glossed. Named rather than counted, on
   purpose: this line read "cover two of the five" and adding one tool made both

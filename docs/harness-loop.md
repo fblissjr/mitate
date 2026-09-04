@@ -129,8 +129,14 @@ and it will:
    the working directory or any parent. The root is never defaulted to a home
    path, because repo content carries none; the owner keeps one outside the
    repo.
-2. Load exactly one copy of the plugin, the **working tree**, via
-   `--plugin-dir`, with `--setting-sources ""` so the marketplace-installed
+2. Copy the working tree's `plugin/` into the run directory and load **that
+   copy** via `--plugin-dir`. Loaded in place, the session could walk up
+   from its skill directory into `docs/` and `scenes/`, which a marketplace
+   install cannot (invariant 3); the copy's parent holds nothing. The
+   script also refuses a cold root with a `CLAUDE.md` or `AGENTS.md`
+   anywhere in its ancestry, because the cold root may be a git repo of its
+   own and one instruction file there would load into every run. Then
+   `--setting-sources ""` so the marketplace-installed
    mitate and every other installed plugin stay out, and
    `--strict-mcp-config` so the account's connectors stay out. Both were
    probed on 2026-09-04: with no settings the session's slash commands hold
@@ -146,7 +152,8 @@ and it will:
    run is a routing measurement, `NOT-A-BUILD`, never counted as a build of
    the docs), which plugin files were read and how often (the reference-read
    table the analysis skill wants), and any read outside `plugin/`, which
-   marks the run `CONTAMINATED`.
+   marks the run `CONTAMINATED` — a read of the repo's in-place `plugin/`
+   included, since the session is meant to see only its copy.
 5. Hand off: `/analyze-build-session` on the transcript, then compare against
    the brief's baseline record in `scene-analyses/`.
 
@@ -172,7 +179,8 @@ truer fixture for "what users have", and the two answer different questions.
 
 - **Not actually cold.** Something leaks in. The check is mechanical, any
   read under the repo outside `plugin/` or under the plugin cache marks the
-  run, and the analysis skill refuses contaminated samples. The account's
+  run (the repo's in-place `plugin/` counts: the session gets a copy), and
+  the analysis skill refuses contaminated samples. The account's
   global `CLAUDE.md` still loads, as it did for every recorded fixture: a
   shared axis, recorded, not a contamination.
 - **The skill never triggers.** At a lower tier the description may fail to

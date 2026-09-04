@@ -19,8 +19,12 @@
 #
 # WHY THESE FLAGS, each one measured on 2026-09-04 against this machine:
 #
-#   --plugin-dir <repo>/plugin   loads the WORKING TREE — what will ship, not
-#       what users have (CLAUDE.md invariant 7). The manifest says which copy.
+#   --plugin-dir <run>/plugin    loads a COPY of the working tree's plugin/,
+#       made into the run directory first. What will ship, not what users
+#       have (CLAUDE.md invariant 7) — but loaded the way an install cache
+#       is: the copy's parent holds nothing, so the session cannot walk up
+#       from its skill directory into docs/ or scenes/. Loading plugin/ in
+#       place would let it, and a marketplace install cannot (invariant 3).
 #   --setting-sources ""         loads NO settings, so the marketplace-installed
 #       mitate and every other installed plugin stay out. Probed: the session's
 #       slash commands then hold exactly one plugin skill, mitate:mitate, from
@@ -37,8 +41,11 @@
 #       keyed by the workspace path; the script copies that file beside it.
 #
 # THE WORKSPACE IS EMPTY AND OUTSIDE THE REPO, so no CLAUDE.md is discovered
-# from it or any parent. The account's global CLAUDE.md still loads, as it did
-# for every recorded fixture — a shared axis, recorded in the manifest, not a
+# from it or any parent — and the script refuses a cold root that has a
+# CLAUDE.md or AGENTS.md anywhere in its ancestry, because the cold root may
+# itself be a git repo and one instruction file there would load into every
+# run. The account's global CLAUDE.md still loads, as it did for every
+# recorded fixture — a shared axis, recorded in the manifest, not a
 # contamination.
 #
 # PRIVACY. The transcript and the workspace stay under MITATE_COLD_ROOT, which
@@ -53,7 +60,8 @@
 #                as a build of the docs;
 #   reads        which files under the plugin the session read, and how many
 #                times — the reference-read table the analysis skill wants;
-#   contamination any read path under the repo (outside plugin/) or under the
+#   contamination any read path under the repo (the in-place plugin/ included:
+#                the session is meant to see only its copy) or under the
 #                plugin cache — one hit marks the run CONTAMINATED.
 #
 # Controlled by scripts/bracket-cold-build.js (stub CLI; no model is called).
@@ -93,6 +101,10 @@ case "$MITATE_COLD_ROOT" in
   "$ROOT"|"$ROOT"/*) die "MITATE_COLD_ROOT is inside the repo — a cold workspace under the repo discovers CLAUDE.md and is not cold" ;;
 esac
 [ -d "$PLUGIN" ] && [ -f "$PLUGIN/.claude-plugin/plugin.json" ] || die "no plugin at $PLUGIN — nothing to load, refusing to run a session that would measure the built-in skills"
+d="$MITATE_COLD_ROOT"; while :; do
+  for f in CLAUDE.md AGENTS.md; do [ -f "$d/$f" ] && die "$d/$f would load into every cold session — the cold root and its ancestors must carry no instruction file"; done
+  [ "$d" = "/" ] && break; d="$(dirname "$d")"
+done
 [ -f "$BRIEF" ] || die "brief not found: $BRIEF"
 command -v "$CLAUDE_BIN" >/dev/null 2>&1 || die "claude CLI not on PATH (or MITATE_CLAUDE_BIN wrong)"
 # A brief that names the skill removes the routing measurement (see cold-briefs/README.md).
@@ -101,7 +113,10 @@ if grep -qi 'mitate' "$BRIEF"; then die "brief names mitate — the skill's rout
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 RUN="$MITATE_COLD_ROOT/runs/$STAMP${LABEL:+-$LABEL}"
 WS="$RUN/workspace"
+PLUGIN_RUN="$RUN/plugin"
 mkdir -p "$WS"
+cp -R "$PLUGIN" "$PLUGIN_RUN" || die "could not copy plugin/ into the run directory"
+export MITATE_PLUGIN_DIR="$PLUGIN_RUN"
 
 SHA="$(git -C "$ROOT" rev-parse --short HEAD 2>/dev/null || echo unknown)"
 DIRTY="$(git -C "$ROOT" status --porcelain 2>/dev/null | wc -l | tr -d ' ')"
@@ -113,7 +128,7 @@ HAS_AVIFENC="$(command -v avifenc >/dev/null 2>&1 && echo true || echo false)"
 BUN_VERSION="$(bun --version 2>/dev/null || echo none)"
 
 CMD=("$CLAUDE_BIN" -p
-     --plugin-dir "$PLUGIN"
+     --plugin-dir "$PLUGIN_RUN"
      --setting-sources ""
      --strict-mcp-config
      --permission-mode "$MODE"
@@ -131,7 +146,8 @@ write_manifest() {
 {
   "run": $(json_str "$(basename "$RUN")"),
   "status": $(json_str "$1"),
-  "plugin_copy": "working-tree",
+  "plugin_copy": "working-tree, copied into the run directory",
+  "workspace_git_root": $(json_str "$(git -C "$WS" rev-parse --show-toplevel 2>/dev/null || echo none)"),
   "plugin_version": $(json_str "$PLUGIN_VERSION"),
   "git_sha": $(json_str "$SHA"),
   "git_dirty_files": $DIRTY,
@@ -201,7 +217,7 @@ if [ -d "$PROJ" ]; then
 fi
 
 # Derived verdicts. Everything below is read from the transcript, never typed.
-python3 - "$RUN/transcript.jsonl" "$PLUGIN" "$ROOT" "$CFG" "$RUN" "$CAPPED" "$CODE" <<'PY'
+python3 - "$RUN/transcript.jsonl" "$PLUGIN_RUN" "$ROOT" "$CFG" "$RUN" "$CAPPED" "$CODE" <<'PY'
 import json, sys, os, re, collections
 tr, plugin, root, cfg, run, capped, code = sys.argv[1:8]
 plugin = os.path.realpath(plugin); root = os.path.realpath(root)
@@ -215,7 +231,8 @@ def walk(o):
     elif isinstance(o, list):
         for v in o: yield from walk(v)
 def outside(p):
-    # A path under the repo but not under plugin/, or under the plugin cache.
+    # A path under the run's plugin copy is a legitimate read; anything under
+    # the repo (its in-place plugin/ included) or the plugin cache is not.
     rp = os.path.realpath(p) if p.startswith('/') else p
     if rp.startswith(plugin + os.sep): return 'plugin'
     if rp.startswith(root + os.sep) or rp.startswith(cache + os.sep): return 'outside'

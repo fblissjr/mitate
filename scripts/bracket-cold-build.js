@@ -40,14 +40,16 @@ if [ "\${1:-}" = "--version" ]; then echo "stub 0.0.0 (bracket)"; exit 0; fi
 cat >/dev/null
 init='{"type":"system","subtype":"init","cwd":"'"$PWD"'"}'
 skill='{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Skill","input":{"skill":"mitate:mitate","args":"a film"}}]}}'
-readp='{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Read","input":{"file_path":"'"$STUB_PLUGIN"'/skills/mitate/references/method.md"}}]}}'
+readp='{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Read","input":{"file_path":"'"$MITATE_PLUGIN_DIR"'/skills/mitate/references/method.md"}}]}}'
+readinplace='{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Read","input":{"file_path":"'"$STUB_PLUGIN"'/skills/mitate/references/method.md"}}]}}'
 readx='{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Read","input":{"file_path":"'"$STUB_ROOT"'/docs/plan.md"}}]}}'
-bashx='{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Bash","input":{"command":"cp -R '"$STUB_PLUGIN"'/skills/mitate/templates/fences . && cat '"$STUB_ROOT"'/VISION.md"}}]}}'
+bashx='{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Bash","input":{"command":"cp -R '"$MITATE_PLUGIN_DIR"'/skills/mitate/templates/fences . && cat '"$STUB_ROOT"'/VISION.md"}}]}}'
 result='{"type":"result","subtype":"success","total_cost_usd":0.5,"num_turns":3,"permission_denials":[],"usage":{}}'
 case "\${STUB_MODE:-build}" in
   nobuild) echo "$init"; echo "$readp"; echo "$result" ;;
   build)   echo "$init"; echo "$skill"; echo "$readp"; echo "$readp"; echo "$result" ;;
   contam)  echo "$init"; echo "$skill"; echo "$readp"; echo "$readx"; echo "$result" ;;
+  inplace) echo "$init"; echo "$skill"; echo "$readinplace"; echo "$result" ;;
   bashcontam) echo "$init"; echo "$skill"; echo "$bashx"; echo "$result" ;;
   hang)    echo "$init"; echo "$skill"; sleep 30; echo "$result" ;;
 esac
@@ -100,6 +102,16 @@ try {
     check('refuses when there is no plugin to load', r.code === 2 && /no plugin at/.test(r.out), `exit ${r.code}`);
   }
 
+  {
+    // The cold root may be a git repo of its own; one instruction file there
+    // would load into every run. Refuse before anything is copied.
+    const rootWithClaude = path.join(TMP, 'root-with-claude');
+    fs.mkdirSync(rootWithClaude, { recursive: true });
+    fs.writeFileSync(path.join(rootWithClaude, 'CLAUDE.md'), '# not for a cold session\n');
+    const r = run(['--dry-run'], { MITATE_COLD_ROOT: rootWithClaude });
+    check('refuses a cold root carrying an instruction file', r.code === 2 && /would load into every cold session/.test(r.out), `exit ${r.code}`);
+  }
+
   // ---- derived verdicts, one canned transcript each ------------------------
   {
     const r = run(['--label', 'nobuild', '--cap', '1'], { STUB_MODE: 'nobuild' });
@@ -121,7 +133,7 @@ try {
       return JSON.parse(fs.readFileSync(path.join(COLD, 'runs', d, 'manifest.json'), 'utf8'));
     } catch { return null; } })();
     check('the manifest records the copy, the brief hash and the status',
-      m && m.plugin_copy === 'working-tree' && /^[0-9a-f]{64}$/.test(m.brief_sha256) && m.status === 'COMPLETE',
+      m && /^working-tree/.test(m.plugin_copy) && /^[0-9a-f]{64}$/.test(m.brief_sha256) && m.status === 'COMPLETE',
       m ? `copy ${m.plugin_copy}, status ${m.status}` : 'no manifest');
   }
   {
@@ -129,6 +141,15 @@ try {
     const v = verdictOf('contam');
     check('a Read outside plugin/ marks the run CONTAMINATED, exit 1',
       r.code === 1 && v && /^CONTAMINATED/.test(v.status) && v.contaminating_paths.some(p => p.endsWith('docs/plan.md')),
+      `exit ${r.code}, status ${v && v.status}`);
+  }
+  {
+    // The session is meant to see only its copy. A read of the repo's in-place
+    // plugin/ means it found the checkout, which a cache install cannot.
+    const r = run(['--label', 'inplace', '--cap', '1'], { STUB_MODE: 'inplace' });
+    const v = verdictOf('inplace');
+    check('a read of the repo\'s in-place plugin/ (not the run copy) is CONTAMINATED',
+      r.code === 1 && v && /^CONTAMINATED/.test(v.status) && Object.keys(v.plugin_reads).length === 0,
       `exit ${r.code}, status ${v && v.status}`);
   }
   {

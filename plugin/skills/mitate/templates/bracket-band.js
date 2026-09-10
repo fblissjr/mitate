@@ -8,6 +8,8 @@
  *
  *   pristine 2D template     every reading low (nothing sits under the pill)
  *   content pushed under it  at least one reading high, and far above pristine
+ *     (with the template's clipAboveCaption removed)
+ *   pushed, clip kept        the same content reads low: the clip holds
  *   3D template              a declared skip, no readings, exit 0 — the world
  *                            fills the frame behind the caption, so ink there
  *                            is not a signal (the environment axis)
@@ -56,8 +58,12 @@ try {
   const write = (name, body) => { const p = path.join(dir, name); fs.writeFileSync(p, body); return p; };
   const pristine = write('pristine.html', s2);
   // Shift every world draw down after the camera, so the stations sit where
-  // the caption pill is on the unzoomed beats.
-  const pushed = write('pushed.html', mutate(s2, '  applyCamera(t);\n', '  applyCamera(t);ctx.translate(0,36);\n'));
+  // the caption pill is on the unzoomed beats. Two copies: one with the
+  // template's caption-safe clip removed (the reading must go HIGH), one with
+  // it kept (the clip must hold the reading at zero with the same content).
+  const shifted = mutate(s2, '  applyCamera(t);\n', '  applyCamera(t);ctx.translate(0,36);\n');
+  const pushed = write('pushed.html', mutate(shifted, 'ctx.save();clipAboveCaption();', 'ctx.save();'));
+  const clipped = write('clipped.html', shifted);
   const nocaps = write('nocaps.html', s2.replace(/, cap: "[^"]*"/g, ''));
   if (nocaps.length && fs.readFileSync(nocaps, 'utf8') === s2) throw new Error('bracket-band: caption removal matched nothing');
   const threeD = write('scene3d.html', fs.readFileSync(T3D, 'utf8'));
@@ -71,6 +77,11 @@ try {
   const maxB = Math.max(0, ...rb.map(r => r[1]));
   row('content under the pill', b.code === 0 && maxB >= HIGH && maxB >= RATIO * Math.max(maxA, 0.1),
     `max ${maxB}% (must be >= ${HIGH}% and >= ${RATIO}x pristine)`);
+
+  const e = run(clipped), re = readings(e.out);
+  const maxE = Math.max(0, ...re.map(r => r[1]));
+  row('pushed, clip kept', e.code === 0 && re.length > 0 && maxE < LOW,
+    `max ${maxE}% with the same shifted content (must be < ${LOW}%: clipAboveCaption holds)`);
 
   const c = run(threeD), rc = readings(c.out);
   row('3D template', c.code === 0 && rc.length === 0 && /band: skipped .*3D/.test(c.out),

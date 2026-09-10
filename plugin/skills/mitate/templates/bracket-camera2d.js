@@ -1,4 +1,5 @@
-/* Bracket for the 2D template's CAMERA EXPORT: `CAM` and `worldToScreen`.
+/* Bracket for the 2D template's CAMERA EXPORT: `CAM` and `worldToScreen`,
+ * and its CAPTION BAND export, `CAP_SAFE_Y` (second half of the file).
  *
  * The property: worldToScreen(x, y) is where the frame actually drew world
  * point (x, y). Anything a scene draws in screen space against a world
@@ -6,11 +7,14 @@
  * partial restate is silent: the labels drift off their lanes, nothing throws.
  *
  * EXECUTE, DON'T MIRROR. The truth is not a second copy of the camera maths;
- * it is the transform the world pass drew with, read back from the canvas
- * context with ctx.getTransform() in the SAME task as the seek (the one-task
- * rule smoke.js's sampleAt states). The template's draw() leaves the camera
- * transform on the context after the world pass, which is what makes that
- * read meaningful; an arm below goes red if that stops being true.
+ * it is the transform the world pass drew with: the template's own
+ * applyCamera(t), run inside save/restore after the seek and read back with
+ * ctx.getTransform(), in the SAME task as the seek (the one-task rule
+ * smoke.js's sampleAt states). worldToScreen is sampled first, from CAM as the
+ * frame left it. An earlier version read the context straight after the seek,
+ * trusting draw() to leave the camera transform on it; the caption-safe clip
+ * made draw() end in ctx.restore(), and this bracket's pristine arm went red
+ * on exactly that coupling, which is why the camera is now re-run explicitly.
  *
  * This names template internals (ctx, worldToScreen), because the property
  * under test IS a template internal. It is a read-only control over the
@@ -76,11 +80,16 @@ const TOL = 1e-3;
         let worst = 0, n = 0;
         for (const t of ${TIMES}) {
           window.seekTo(t);                       // seek and read in ONE task
-          const m = ctx.getTransform();
-          for (const [x, y] of ${JSON.stringify(POINTS)}) {
-            const p = m.transformPoint(new DOMPoint(x, y)), q = worldToScreen(x, y);
+          // worldToScreen as the frame left CAM, captured BEFORE anything below
+          // re-runs the camera (which would restate CAM itself).
+          const P = ${JSON.stringify(POINTS)}, qs = P.map(([x, y]) => worldToScreen(x, y));
+          // The transform the world pass drew with: the template's own
+          // applyCamera for this t, run inside save/restore and read back.
+          ctx.save(); applyCamera(t); const m = ctx.getTransform(); ctx.restore();
+          P.forEach(([x, y], i) => {
+            const p = m.transformPoint(new DOMPoint(x, y)), q = qs[i];
             worst = Math.max(worst, Math.hypot(p.x - q[0], p.y - q[1])); n++;
-          }
+          });
         }
         return { worst, n, zoomed: CAM.s };
       })()`);
@@ -95,9 +104,64 @@ const TOL = 1e-3;
     await browser.close();
     fs.rmSync(dir, { recursive: true, force: true });
   }
+  // ---- the caption band: CAP_SAFE_Y against the pill the page lays out ----
+  // CAP_SAFE_Y is computed from the fractions #cap's CSS uses, which is a
+  // second copy of those numbers; this is the control that holds the copy to
+  // the real pill. SAFE means the line sits above the pill's top at every
+  // captioned beat and not wastefully far above it (< 2 design units). Run at
+  // two window shapes, because the band is placed against the contained frame
+  // and a narrow window letterboxes it.
+  const CAP_ARMS = [
+    ['caption line, 16:9', null, [1280, 720], true],
+    ['caption line, narrow', null, [900, 900], true],
+    ['caption line, no padding', s => s.replace('(.015625*1.3+2*.00729167)', '(.015625*1.3)'), [1280, 720], false],
+  ];
+  const browser2 = await chromium.launch({ executablePath: chromiumPath(), args: angleArgs() });
+  const dir2 = fs.mkdtempSync(path.join(os.tmpdir(), 'caption2d-'));
+  try {
+    for (const [tag, patch, [w, h], expectSafe] of CAP_ARMS) {
+      const body = patch ? patch(src) : src;
+      if (patch && body === src) {
+        console.log(`${tag.padEnd(26)} FIXTURE NOT BUILT — mutation matched nothing (template drifted)`);
+        wrong++;
+        continue;
+      }
+      const out = path.join(dir2, tag.replace(/\W+/g, '_') + '.html');
+      fs.writeFileSync(out, body);
+      const page = await browser2.newPage({ viewport: { width: w, height: h }, deviceScaleFactor: 1 });
+      await page.goto('file://' + out + '?record=1');
+      await page.waitForFunction('window.sceneReady === true', null, { timeout: 60000 });
+      await page.evaluate('window.stopPlayback()');
+      let r;
+      try {
+        r = await page.evaluate(`(() => {
+          const sb = Math.min(canvas.width / VIEW_W, canvas.height / VIEW_H), tops = [];
+          for (const b of BEATS) {
+            if (!b.cap) continue;
+            window.seekTo(beatAt(b.name, .5));
+            tops.push((document.getElementById('cap').getBoundingClientRect().top - canvas.height / 2) / sb);
+          }
+          return { safe: CAP_SAFE_Y, pillTop: Math.min(...tops), n: tops.length };
+        })()`);
+      } catch (e) {
+        r = { error: String(e.message).split('\n')[0] };
+      }
+      await page.close();
+      const safe = !r.error && r.n > 0 && r.safe <= r.pillTop && r.pillTop - r.safe < 2;
+      const ok = safe === expectSafe;
+      if (!ok) wrong++;
+      console.log(`${tag.padEnd(26)} ${r.error ? 'ERROR ' + r.error
+        : `line ${r.safe.toFixed(2)} vs pill top ${r.pillTop.toFixed(2)} over ${r.n} beat(s)`} -> ${safe ? 'SAFE' : 'UNSAFE'}`
+        + (ok ? '' : `  BRACKET FAILED (expected ${expectSafe ? 'SAFE' : 'UNSAFE'})`));
+    }
+  } finally {
+    await browser2.close();
+    fs.rmSync(dir2, { recursive: true, force: true });
+  }
+
   if (wrong) {
-    console.log(`\n${wrong} arm(s) did not behave as specified — worldToScreen is not what the template claims.`);
+    console.log(`\n${wrong} arm(s) did not behave as specified — the template's camera or caption exports are not what it claims.`);
     process.exit(1);
   }
-  console.log(`\nall ${ARMS.length} arms as specified`);
+  console.log(`\nall ${ARMS.length + CAP_ARMS.length} arms as specified`);
 })();

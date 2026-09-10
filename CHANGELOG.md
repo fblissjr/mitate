@@ -7,6 +7,35 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.31.0
+
+### added
+
+**The 2D template keeps geometry out from under the caption.** `CAP_SAFE_Y`
+is the caption band's top edge in design units, computed from the fractions
+`#cap`'s CSS uses, and `clipAboveCaption()` clips the world pass above it in
+screen space; the template's `draw()` now wraps its world pass in
+`ctx.save(); clipAboveCaption(); … ctx.restore()`. Promoted from the pattern
+ledger at one instance, by owner call, because every captioned 2D film with a
+push-in meets it: the first film to use `band` read 6.0-8.0% on its zoomed
+beats after a hand fix, and 0.0% once clipped. `method.md`'s caption-band
+bullet now teaches the wrapper.
+
+Controls, red first (both brackets failed before the template change):
+`bracket-camera2d.js` holds `CAP_SAFE_Y` to the pill the page lays out, at a
+16:9 and a narrow window, with a mutant (padding term dropped) that must read
+unsafe; `bracket-band.js` shows content pushed under the pill reading 80.6%
+with the clip removed and 0% with it kept.
+
+### changed
+
+**`bracket-camera2d.js` re-runs the camera instead of trusting the context.**
+Its pristine arm went red on the template change: it had read the world
+pass's transform from the canvas context after the seek, relying on `draw()`
+to leave it there, and the new `ctx.restore()` drops it. The truth is now the
+template's own `applyCamera(t)` run inside save/restore, compared against
+`worldToScreen` as the frame left `CAM`. Both mutants still fail it.
+
 ## 0.30.0
 
 ### added

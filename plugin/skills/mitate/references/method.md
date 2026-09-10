@@ -1068,9 +1068,13 @@ Three consequences to design around:
   overflow and reading speed, never what it covers. On a 2D scene `build.js
   band` measures it: per captioned beat, the share of the pill's area over
   drawn content. It counts ink, not importance, and has no threshold, so read
-  it beside the sheet, and lay out with the band's position at the tightest
-  zoom in mind. On 3D the world always fills the frame behind the caption, and
-  the verb says so instead of measuring.
+  it beside the sheet. The 2D template prevents it rather than only measuring
+  it: `CAP_SAFE_Y` is the band's top edge in design units, and its `draw()`
+  wraps the world pass in `ctx.save(); clipAboveCaption(); … ctx.restore()`,
+  so no camera key can put geometry under the caption. Keep that wrapper when
+  replacing the demo, and draw screen-space overlays after the restore. On 3D
+  the world always fills the frame behind the caption, and `band` says so
+  instead of measuring.
 - **What frame-relative scaling costs instead is legibility, and no instrument
   sees it.** Because a caption is a constant fraction of the frame, it is ~5.7px
   in a phone-sized box and ~10px in a gallery-card-sized one: composed

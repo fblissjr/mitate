@@ -314,6 +314,25 @@ function applyCamera(t){
    pinned labels a background-coloured gutter rather than trusting the gap. */
 const CAM={s:1,cx:0,cy:0};
 const worldToScreen=(wx,wy)=>[canvas.width/2+(wx-CAM.cx)*CAM.s,canvas.height/2+(wy-CAM.cy)*CAM.s];
+/* ---------- the caption band, as data ----------
+   #cap sits a fixed fraction of the frame above its bottom edge, so a push-in
+   slides whatever is drawn low in the design frame beneath it — silently: the
+   frame composes, the sheet shows it, and a reviewer reads past it. CAP_SAFE_Y
+   is the band's top edge in design units (y down, 0 at the frame's centre),
+   from the same fractions #cap's CSS uses (bottom .055 of the frame height;
+   font .015625 of its width at line-height 1.3, padding .00729167 top and
+   bottom), less a small margin. bracket-camera2d.js holds it to the pill the
+   page actually lays out, at two window shapes.
+   clipAboveCaption() clips everything drawn after it to the frame above that
+   line, in screen space, so no camera key can put geometry under the caption.
+   Call it inside ctx.save()/ctx.restore() around the world pass, and draw any
+   screen-space overlay after the restore. A film that ships without captions
+   can leave it out; `build.js band` measures what sits under the pill either way. */
+const CAP_SAFE_Y=VIEW_H/2-VIEW_H*.055-VIEW_W*(.015625*1.3+2*.00729167)-.9;
+function clipAboveCaption(){
+  const sb=Math.min(canvas.width/VIEW_W,canvas.height/VIEW_H);
+  ctx.beginPath();ctx.rect(0,0,canvas.width,canvas.height/2+CAP_SAFE_Y*sb);ctx.clip();
+}
 
 /* ---------- draw helpers (world units; set style, then draw) ---------- */
 function rrect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);
@@ -415,6 +434,7 @@ function draw(t){
   // Full restate: background in screen space, then the camera transform.
   ctx.setTransform(1,0,0,1,0,0);
   ctx.fillStyle=STYLE.bg;ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.save();clipAboveCaption();   // no camera key can put geometry under the caption
   applyCamera(t);
   ctx.lineJoin='round';ctx.lineCap='round';
 
@@ -482,6 +502,7 @@ function draw(t){
       ctx.stroke();
     }
   }
+  ctx.restore();   // drops the caption clip and the camera; screen-space overlays go after this
 }
 
 /* ---------- overlay (captions, title, flashes) — identical to 3D ---------- */

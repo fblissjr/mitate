@@ -328,8 +328,29 @@ jump (~15% of frame height) is obvious between adjacent cells; a 0.35 rad limb
 rotation (~2% of frame area) is invisible. So it reaches world- and object-level
 breaks and stops short of limb-level ones, and it does better on a held camera.
 
+Bounds are seconds or `beat@fraction` (`two@.4 two@.6`), the second resolved by
+the kit's own `beatAt` against the scene's BEATS literal, so a window follows a
+retime. A bound the scene alone can compute (a record time mapped through the
+film's own clock) is not accepted: get the second from `probe`, then pass it.
+
 It is the one instrument that caught a whole-mechanism stall a full render of
 `motion` called indistinguishable — beads visibly frozen across nine cells.
+
+## `build.js band`
+
+2D only. Per captioned beat, at three fractions of the beat, the share of the
+caption pill's area that sits over drawn content in a caption-free render:
+pixels more than a fixed distance from the page background, max of the three.
+**A measurement, not a check**: it counts ink, not importance, so a grid line
+and a hidden label weigh the same, and it applies no threshold. Read it beside
+the sheet. Its control shows the reading moving from zero on the pristine 2D
+template to most of the pill with content pushed under it. It samples three
+moments per beat, so a camera move that crosses the band between samples can
+pass unread; `strip` over that move is the look-closer.
+
+It declares a skip, rather than measuring, on a 3D scene (the world fills the
+frame behind the caption, so ink there is the normal case), on a scene with no
+captioned beats, and on one without `window.BEATS`.
 
 ## `build.js sheet`
 

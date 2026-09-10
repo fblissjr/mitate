@@ -162,8 +162,10 @@ function tAt(c){                                // record time -> first t that r
 every event's `tAt(c)` once at load, and **ramp each appearance in `t`, not in
 record time**: the record's rate across keys can differ by two orders of
 magnitude, so a fade of fixed record length is a pop in the fast stretches. The
-same inverse aims the instruments — `strip` and `probe` take `t`, and a window
-chosen by eye around an event lands in the wrong place.
+same inverse aims the instruments — a window chosen by eye around an event
+lands in the wrong place. `strip` takes `beat@fraction` bounds directly; for a
+record time, get the second from `bun run build.js probe <scene> 0 'tAt(c)'`
+and pass that.
 
 ### Beats before geometry
 
@@ -1062,10 +1064,13 @@ Three consequences to design around:
   comment lists it among the defects it fixed.)
 - **A push-in carries geometry under the caption band.** The caption is a fixed
   fraction of the frame, so zooming a 2D camera key slides whatever sits near
-  the bottom of the design frame beneath it. No instrument measures geometry
-  hidden by the caption — smoke checks overflow and reading speed, not
-  occlusion — so read every zoomed key in the sheet, and lay out with the
-  band's position at the tightest zoom in mind.
+  the bottom of the design frame beneath it. smoke checks the caption's
+  overflow and reading speed, never what it covers. On a 2D scene `build.js
+  band` measures it: per captioned beat, the share of the pill's area over
+  drawn content. It counts ink, not importance, and has no threshold, so read
+  it beside the sheet, and lay out with the band's position at the tightest
+  zoom in mind. On 3D the world always fills the frame behind the caption, and
+  the verb says so instead of measuring.
 - **What frame-relative scaling costs instead is legibility, and no instrument
   sees it.** Because a caption is a constant fraction of the frame, it is ~5.7px
   in a phone-sized box and ~10px in a gallery-card-sized one: composed

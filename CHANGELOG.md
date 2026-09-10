@@ -7,6 +7,38 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.30.0
+
+### added
+
+**`build.js band <scene>`: ink under the caption, on 2D scenes.** Per
+captioned beat, at three fractions of the beat, it renders caption-free,
+reads the canvas inside the pill's rect, and reports the share of the pill's
+area that is not page background (max of the samples). A measurement with no
+threshold and no verdict; on a 3D scene, or one with no captions, it declares
+the skip instead of printing numbers. Closes the gap 0.29.0 wrote down as
+"no instrument measures it". `templates/bracket-band.js` is its control:
+pristine 2D template, content pushed under the pill, the 3D template and a
+caption-free fixture, each with the reading or the declared skip it must
+produce. Run red before the verb existed (all four arms failing), then green.
+
+**`strip` takes `beat@fraction` bounds** (`strip scene.html two@.4 two@.6`),
+resolved by the canonical KERNEL's `beatAt` against the scene's BEATS literal.
+No scene expressions: the prime directive keeps those to `probe`. Two new
+red rows in `bracket-commands.js` (unknown beat, malformed bound) and a
+beat-addressed row; `band`'s declared 3D skip is a row there too.
+
+**`templates/bracket-camera2d.js`**, the control 0.29.0's `worldToScreen`
+shipped without: it compares the helper against the transform the frame
+actually drew with (`ctx.getTransform()`, read in the seek's own task) at
+three times including a push-in, and two mutant arms (restate removed, scale
+ignored) must disagree. Its first run failed its own pristine arm: the
+tolerance was tighter than `DOMMatrix`'s float error, now sub-pixel.
+
+**`scripts/cold-briefs/incident-timeline.md`**, a brief whose input is a
+timestamped record, to measure whether a cold session finds the record-clock
+snippet and `worldToScreen` or rebuilds them. Not yet run.
+
 ## 0.29.0
 
 ### added

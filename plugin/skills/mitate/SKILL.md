@@ -160,7 +160,8 @@ that is `probe`, below.
 ```bash
 bun run build.js sheet <name>.html                # one frame per beat
 bun run build.js sheet <name>.html 480 0.6 nocap  # semantics pass — writes <name>.nocap.sheet.jpg, NOT <name>.sheet.jpg
-bun run build.js strip <name>.html <t0> <t1>      # consecutive frames — continuity
+bun run build.js strip <name>.html two@.4 two@.6  # consecutive frames — continuity (bounds: seconds or beat@fraction)
+bun run build.js band <name>.html                 # 2D: how much of each caption sits over drawn content
 bun run build.js aspect <name>.html 8.5           # one moment, four window shapes
 bun run build.js probe <name>.html "beatAt('hit',.5)" 'sep(a, b)'
 bun run build.js probe <name>.html 4 'shape(bear)'   # what IS this thing?

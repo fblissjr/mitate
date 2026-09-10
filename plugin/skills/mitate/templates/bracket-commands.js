@@ -180,6 +180,11 @@ const ROWS = [
   ['sheet',   ['sheet', scene, '240', '0.6'],     { artifact: base + '.sheet.jpg' }],
   ['aspect',  ['aspect', scene, '0', '240'],      { artifact: base + '.aspect.jpg' }],
   ['strip',   ['strip', scene, '0', '0.5', '4'],  { artifact: base + '.strip.jpg' }],
+  // Beat-addressed bounds resolve through the KERNEL against the scene's BEATS.
+  ['strip@beat', ['strip', scene, 'title@0', 'title@.3', '12'], { artifact: base + '.strip.jpg' }],
+  // The fixture is 3D, so this row pins band's DECLARED skip; bracket-band.js
+  // owns the 2D readings.
+  ['band',    ['band', scene],                    { stdout: 'band: skipped' }],
   ['motion',  ['motion', scene, '1'],             { stdout: 'motion:', needs: 'ffmpeg' }],
   ['probe',   ['probe', scene, '0', 'DURATION'],  { stdout: 'DURATION' }],
   ['check',   ['check', scene],                   { stdout: 'check: ok' }],
@@ -193,6 +198,8 @@ const ROWS = [
   // every row above could pass while the dispatch silently accepted anything.
   ['(red) unknown verb',     ['nosuchverb', scene],  { fails: 'usage:' }],
   ['(red) probe, no expr',   ['probe', scene, '0'],  { fails: 'need <when>' }],
+  ['(red) strip, unknown beat', ['strip', scene, 'nosuchbeat@.5', '1'], { fails: 'unknown beat' }],
+  ['(red) strip, bad bound', ['strip', scene, 'soon', '1'], { fails: 'neither seconds nor' }],
   ['(red) missing scene',    ['poster', path.join(work, 'absent.html')], { fails: '' }],
   // ensureVendor refuses to embed into a shipped *.template.html -- a real guard
   // with a real history: running any command on one used to inflate it with
@@ -393,7 +400,7 @@ try {
 // legible, and it is why this reports per tier.
 const TIER = {
   core:   ['vendor', 'bundle', 'probe', 'frames', 'check'],
-  review: ['poster', 'sheet', 'aspect', 'strip', 'motion'],
+  review: ['poster', 'sheet', 'aspect', 'strip', 'strip@beat', 'band', 'motion'],
   export: ['video', 'all', 'avif', 'loop'],
 };
 // `(red)` and `(warn)` are both control arms and they assert opposite things:

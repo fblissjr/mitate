@@ -1828,7 +1828,127 @@ async function probe(scene, when, exprs) {
   }
 }
 
-const USAGE = 'usage: bun run build.js vendor|bundle|frames|video|all|avif|loop|poster|sheet|aspect|strip|motion|check|probe <scene.html> [fps|t|t0] [width|t1] [frac|fps]\n'
+/* strip bounds: seconds, or <beat>@<fraction>.
+ *
+ * The kit's own rule is "address by beat, never by raw seconds", and strip was
+ * the one review verb that took only seconds — so a window chosen by eye around
+ * a moment lands wherever the eye guessed, which is how a strip ends just as
+ * the motion it was aimed at begins. `two@.45` resolves through the canonical
+ * KERNEL's beatAt against this scene's own BEATS literal: no browser, and no
+ * scene expressions (the prime directive keeps those to `probe`, whose
+ * exception is single-call-site). For a time that only the scene can compute,
+ * get the number from probe first, then pass seconds. */
+function stripBound(scene, v) {
+  if (v !== undefined && v !== '' && Number.isFinite(Number(v))) return Number(v);
+  const m = /^([A-Za-z_$][\w$]*)@(\d*\.?\d+)$/.exec(String(v));
+  if (!m) throw new Error(`strip: bound "${v}" is neither seconds nor <beat>@<fraction> (e.g. two@.45)`);
+  const f = Number(m[2]);
+  if (!(f >= 0 && f <= 1)) throw new Error(`strip: ${v} — the fraction must lie in 0..1`);
+  const r = tableValue(fs.readFileSync(scene, 'utf8'), 'BEATS');
+  if (r.state !== 'ok') {
+    throw new Error(`strip: ${v} needs a BEATS literal this reader can read (it is ${r.state}) — `
+      + `pass seconds instead, e.g. from: bun run build.js probe <scene> 0 "beatAt('${m[1]}',${m[2]})"`);
+  }
+  const kit = execKit('KERNEL', { CONFIG: {}, BEATS: r.value, FRAME: {} }, 'beatAt');
+  return kit.beatAt(m[1], f);   // throws "unknown beat: <name>", the page's own words
+}
+
+/* band — how much of each caption's pill sits over drawn content, on a 2D scene.
+ *
+ *   bun run build.js band <scene.html>
+ *
+ * The caption is a fixed fraction of the frame, so a 2D push-in slides whatever
+ * sits low in the design frame beneath it — a whole lane vanished that way on
+ * one film, visible only to a reader of the contact sheet. smoke measures the
+ * caption's overflow and reading speed, never what it covers.
+ *
+ * Per captioned beat, at three fractions of the beat: render caption-free
+ * (?nocap hides the DOM pill but leaves it laid out, so its rect is exact),
+ * read the canvas inside the pill's rect, and count pixels farther than
+ * BAND_INK from the page background. Reported as a share of the pill's area,
+ * the max of the three samples.
+ *
+ * A MEASUREMENT, NOT A VERDICT. It counts ink, not importance: a faint grid
+ * line and a hidden label weigh the same. No threshold, so read the numbers
+ * beside the sheet. bracket-band.js is the control that the reading moves.
+ *
+ * 2D ONLY, AND SAYS SO. On a 3D scene the world fills the frame behind the
+ * caption, so ink under it is the normal case; the verb declares the skip
+ * rather than printing numbers that mean nothing. */
+const BAND_FRACS = [0.2, 0.5, 0.8];
+const BAND_INK = 40;   // sum of |channel - background| above which a pixel is ink
+async function band(scene) {
+  const html = fs.readFileSync(scene, 'utf8');
+  if (VENDOR_TAG.test(html) || html.includes('embedded by build.js vendor')) {
+    console.log(`band: skipped — ${path.basename(scene)} is a 3D scene (three is vendored or embedded); `
+      + 'the world fills the frame behind the caption, so ink under it is not a signal there.');
+    return;
+  }
+  const { chromium } = require('playwright-core');
+  const { chromiumPath, angleArgs } = require(path.join(__dirname, 'backend.js'));
+  const browser = await chromium.launch({ executablePath: chromiumPath(), args: angleArgs() });
+  try {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1 });
+    page.on('pageerror', e => console.error('scene error: ' + e.message));
+    await page.goto('file://' + path.resolve(scene) + '?record=1&nocap');
+    await page.waitForFunction('window.sceneReady === true', null, { timeout: 20000 })
+      .catch(() => { throw new Error('scene never set window.sceneReady — check the errors above'); });
+    await page.evaluate('window.stopPlayback()');
+    // BEATS through the window contract; spans through the canonical kit, so
+    // the sample times are the page's own arithmetic, not a second copy of it.
+    const beats = await page.evaluate('Array.isArray(window.BEATS) ? window.BEATS : null');
+    if (!beats) {
+      console.log('band: skipped — the scene does not export window.BEATS, so there are no beats to address.');
+      return;
+    }
+    const capped = beats.filter(b => b && b.cap);
+    if (!capped.length) { console.log('band: skipped — no beat carries a caption.'); return; }
+    const kit = execKit('KERNEL', { CONFIG: {}, BEATS: beats, FRAME: {} }, 'beatAt');
+    const rows = [];
+    for (const b of capped) {
+      let best = { pct: -1, t: 0 };
+      for (const f of BAND_FRACS) {
+        const t = kit.beatAt(b.name, f);
+        // Seek and read in ONE task: smoke.js's sampleAt states why (a read in a
+        // later task can see a cleared or stale canvas).
+        const r = await page.evaluate(`(() => {
+          window.seekTo(${t});
+          const cap = document.getElementById('cap'), canvas = document.querySelector('canvas');
+          if (!cap || !canvas) return null;
+          const rc = cap.getBoundingClientRect();
+          const bg = (getComputedStyle(document.body).backgroundColor.match(/\\d+/g) || [0, 0, 0]).map(Number);
+          const sx = canvas.width / innerWidth, sy = canvas.height / innerHeight;
+          const w = Math.max(1, Math.round(rc.width * sx)), h = Math.max(1, Math.round(rc.height * sy));
+          const tmp = document.createElement('canvas'); tmp.width = w; tmp.height = h;
+          const g = tmp.getContext('2d');
+          g.drawImage(canvas, rc.left * sx, rc.top * sy, rc.width * sx, rc.height * sy, 0, 0, w, h);
+          const d = g.getImageData(0, 0, w, h).data;
+          let ink = 0;
+          for (let i = 0; i < d.length; i += 4)
+            if (Math.abs(d[i] - bg[0]) + Math.abs(d[i + 1] - bg[1]) + Math.abs(d[i + 2] - bg[2]) > ${BAND_INK}) ink++;
+          return { pct: 100 * ink / (w * h) };
+        })()`);
+        if (!r) {
+          console.log('band: skipped — the page has no #cap element or no canvas, so there is no pill to measure under.');
+          return;
+        }
+        if (r.pct > best.pct) best = { pct: r.pct, t };
+      }
+      rows.push([b.name, best]);
+    }
+    console.log(`band ${path.basename(scene)}`);
+    for (const [name, { pct, t }] of rows) {
+      console.log(`  band  ${name.padEnd(14)} ${pct.toFixed(1).padStart(5)}% of the pill over ink  (max of ${BAND_FRACS.length}; t=${t.toFixed(2)})`);
+    }
+    console.log(`\nband: ${rows.length} captioned beat(s), sampled at ${BAND_FRACS.join('/')} of each, caption-free render. `
+      + `Ink is any pixel more than ${BAND_INK} from the page background; no threshold — read it beside the sheet.`);
+  } finally {
+    await browser.close();
+  }
+}
+
+const USAGE = 'usage: bun run build.js vendor|bundle|frames|video|all|avif|loop|poster|sheet|aspect|strip|band|motion|check|probe <scene.html> [fps|t|t0] [width|t1] [frac|fps]\n'
+  + '       strip: t0 and t1 are seconds or <beat>@<fraction>, e.g. strip scene.html two@.4 two@.6\n'
   + "       probe: bun run build.js probe <scene.html> <when> '<expr>' ['<expr>' ...]";
 // arg1/arg2/arg3 are deliberately neutral: their meaning is per-command (fps
 // for frames, t for poster, width for sheet, ...) and the old names (fpsArg,
@@ -1858,7 +1978,8 @@ else if (step === 'video') video(target, Number(arg1 || 30));
 else if (step === 'all') { bundle(target); frames(target, Number(arg1 || 30)); video(target, Number(arg1 || 30)); }
 else if (step === 'aspect') die(aspectSheet(target, Number(arg1 || 0), Number(arg2 || 520)));
 else if (step === 'sheet') die(sheet(target, Number(arg1 || 480), arg2 === undefined ? 0.6 : Number(arg2), arg3 === 'nocap'));
-else if (step === 'strip') die(strip(target, Number(arg1), Number(arg2), Number(arg3 || 30)));
+else if (step === 'strip') die((async () => strip(target, stripBound(target, arg1), stripBound(target, arg2), Number(arg3 || 30)))());
+else if (step === 'band') die(band(target));
 else if (step === 'motion') motion(target, Number(arg1 || 12));
 // Synchronous and browserless, so it needs no encoder probe and no `die`. It
 // sets process.exitCode rather than calling process.exit, so the whole report

@@ -7,6 +7,30 @@ sibling plugins as they actually were, because a retrospective rewrite would
 make the record say things that never happened. The rename and repo split are
 0.13.0. See the provenance note in [`plugin/README.md`](plugin/README.md).
 
+## 0.29.0
+
+### added
+
+**The 2D template exports its camera.** `applyCamera` now restates a `CAM`
+object (`s`, `cx`, `cy`) every frame, and `worldToScreen(wx, wy)` ships beside
+it, with a comment on drawing in screen space against world positions (HUDs,
+edge-pinned labels, tracers) and on giving pinned labels a gutter. Promoted
+from the pattern ledger at its second independent instance: `scenes/crash.html`
+had built the same restate and a `worldToScreen` for its HUD pass, and a later
+timeline film rebuilt it without having read that file. Outside every fence,
+so no carrier changes.
+
+**`method.md`: a dated record needs its clock and the inverse.** A tested
+snippet (`clockAt` and `tAt` over beat-addressed keys, holds and slow motion
+as keys), lifted from that timeline film's instrument-green run. Carries the
+two rules the film paid for: ramp appearances in `t`, not record time, and aim
+`strip`/`probe` through the inverse. The ledger holds this shape at one
+instance; it ships as reference prose, not as kit code.
+
+**`method.md` framing rules: a push-in carries geometry under the caption
+band**, which no instrument measures. Observed on the same film's first
+contact sheet, where a zoomed key hid a whole lane beneath the caption.
+
 ## 0.28.4
 
 ### added

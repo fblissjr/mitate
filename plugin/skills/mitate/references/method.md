@@ -135,6 +135,36 @@ restaging. After each composition round, put a source still beside the render
 at the same moment and say what differs — a question no instrument asks for
 you yet.
 
+**A dated record gives event times, and the film needs both directions.**
+When the input is a log, a transcript, a ledger or any list of timestamped
+events, the film has two clocks: `t`, and the record's own. Map one to the
+other with keys addressed by beat, where two keys at the same record time are
+a hold and a short record span over a long beat span is slow motion:
+
+```js
+const CK=[['intro',0,0],['intro',1,900],['hit',.5,1535],['hit',.9,1545],['hit',1,1547]]
+  .map(([b,a,c])=>({t:beatAt(b,a),c}));        // c = record seconds
+function clockAt(t){                            // t -> record time (the playhead)
+  if(t<=CK[0].t)return CK[0].c;
+  for(let i=0;i<CK.length-1;i++){const a=CK[i],b=CK[i+1];
+    if(t<=b.t)return b.t===a.t?b.c:lerp(a.c,b.c,(t-a.t)/(b.t-a.t));}
+  return CK[CK.length-1].c;
+}
+function tAt(c){                                // record time -> first t that reaches it
+  if(c<=CK[0].c)return CK[0].t;
+  for(let i=0;i<CK.length-1;i++){const a=CK[i],b=CK[i+1];
+    if(c<=b.c&&b.c>a.c)return a.t+(Math.max(c,a.c)-a.c)/(b.c-a.c)*(b.t-a.t);}
+  return CK[CK.length-1].t;
+}
+```
+
+`warp()` is forward-only; the inverse is the half you will want most. Resolve
+every event's `tAt(c)` once at load, and **ramp each appearance in `t`, not in
+record time**: the record's rate across keys can differ by two orders of
+magnitude, so a fade of fixed record length is a pop in the fast stretches. The
+same inverse aims the instruments — `strip` and `probe` take `t`, and a window
+chosen by eye around an event lands in the wrong place.
+
 ### Beats before geometry
 
 A sequence is a list of beats — (time range, caption, one visible change). Write
@@ -1030,6 +1060,12 @@ Three consequences to design around:
   caption/window parity gap. (Fixed CSS px against the *window* was one of the
   ten implicit frames the FRAME architecture eliminated — the template's own
   comment lists it among the defects it fixed.)
+- **A push-in carries geometry under the caption band.** The caption is a fixed
+  fraction of the frame, so zooming a 2D camera key slides whatever sits near
+  the bottom of the design frame beneath it. No instrument measures geometry
+  hidden by the caption — smoke checks overflow and reading speed, not
+  occlusion — so read every zoomed key in the sheet, and lay out with the
+  band's position at the tightest zoom in mind.
 - **What frame-relative scaling costs instead is legibility, and no instrument
   sees it.** Because a caption is a constant fraction of the frame, it is ~5.7px
   in a phone-sized box and ~10px in a gallery-card-sized one: composed

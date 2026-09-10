@@ -301,7 +301,19 @@ function applyCamera(t){
   // never showed it. Identity at 16:9; narrower windows letterbox instead.
   const s=Math.min(canvas.width/VIEW_W,canvas.height/VIEW_H)*zoom;
   ctx.setTransform(s,0,0,s,canvas.width/2-cx*s,canvas.height/2-cy*s);
+  // Restated every frame (never adjusted): anything drawn in screen space
+  // against a world position needs the SAME camera this frame was drawn with.
+  CAM.s=s;CAM.cx=cx;CAM.cy=cy;
 }
+/* ---------- screen space against world positions ----------
+   A HUD pinned to the frame, labels held at an edge while the camera pushes
+   in, a tracer from a world object to a panel: each needs world->screen for
+   this frame's camera. Draw them after the world pass, with the transform
+   reset (ctx.setTransform(1,0,0,1,0,0)), placing through worldToScreen.
+   A push-in slides world geometry under anything pinned to an edge, so give
+   pinned labels a background-coloured gutter rather than trusting the gap. */
+const CAM={s:1,cx:0,cy:0};
+const worldToScreen=(wx,wy)=>[canvas.width/2+(wx-CAM.cx)*CAM.s,canvas.height/2+(wy-CAM.cy)*CAM.s];
 
 /* ---------- draw helpers (world units; set style, then draw) ---------- */
 function rrect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);

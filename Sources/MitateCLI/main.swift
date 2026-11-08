@@ -140,12 +140,25 @@ do {
         guard args.count >= 3 else {
             throw StageError(
                 code: "MISSING_ARGUMENT",
-                message: "Usage: mitate sql <shot.db> \"<SQL>\"",
+                message: "Usage: mitate sql <shot.db> \"<SQL>\" | mitate sql <shot.db> -f <file.sql>",
                 pointer: "wiki/soundstage-schema.md"
             )
         }
         let dbPath = args[1]
-        let sql = args[2]
+        let sql: String
+        if (args[2] == "-f" || args[2] == "--file"), args.count >= 4 {
+            let filePath = args[3]
+            guard let content = try? String(contentsOfFile: filePath, encoding: .utf8) else {
+                throw StageError(
+                    code: "FILE_READ_ERROR",
+                    message: "Unable to read SQL file at '\(filePath)'",
+                    pointer: "wiki/soundstage-schema.md"
+                )
+            }
+            sql = content
+        } else {
+            sql = args[2]
+        }
         let db = try StageDB(path: dbPath, createIfMissing: false)
         let changed = try db.executeTransaction(sql)
         let checkReport = try StageCheck.validate(db: db)

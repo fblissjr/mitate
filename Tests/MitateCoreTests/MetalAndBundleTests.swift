@@ -134,4 +134,35 @@ struct MetalAndBundleTests {
         #expect(!htmlContent.contains("type=\"module\""))
         #expect(!htmlContent.contains("https://"))
     }
+
+    @Test("Phase v2.4 Calibration Portfolio: scenes/gearbox-v2.db and scenes/bear-and-bees-v2.db pass check, probe, and smoke with zero warnings")
+    func calibrationPortfolioScenesCheckAndSmoke() throws {
+        let repoRoot = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .path
+
+        for sceneRelPath in ["scenes/gearbox-v2.db", "scenes/bear-and-bees-v2.db"] {
+            let fullPath = "\(repoRoot)/\(sceneRelPath)"
+            #expect(FileManager.default.fileExists(atPath: fullPath))
+            let db = try StageDB(path: fullPath, createIfMissing: false)
+            let check = try StageCheck.validate(db: db)
+            #expect(check.ok == true)
+            #expect(check.errorCount == 0)
+            #expect(check.warningCount == 0)
+
+            let smoke = try StageRenderer.runSmoke(db: db)
+            #expect(smoke.ok == true)
+            #expect(smoke.determinismPassed == true)
+            #expect(smoke.sampleDiffs.allSatisfy { $0.diff.identical && $0.diff.changedPixels == 0 })
+        }
+
+        // Verify 3D gear train contact on gearbox-v2.db
+        let gearboxDB = try StageDB(path: "\(repoRoot)/scenes/gearbox-v2.db", createIfMissing: false)
+        let probe = try StageCheck.probe(db: gearboxDB, atSpec: "transfer@0.6", sepPair: ("drive_gear", "idler_gear"))
+        #expect(probe.contact != nil)
+        #expect(abs(probe.contact?.euclideanGapM ?? 1.0) < 1e-4)
+        #expect(probe.contact?.contactState == "touching")
+    }
 }

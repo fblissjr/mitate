@@ -85,7 +85,12 @@ public enum BakeEngine {
                 var euler = SIMD3<Double>(actor.pitchDeg, actor.yawDeg, actor.rollDeg)
                 let scale = SIMD3<Double>(actor.scaleX, actor.scaleY, actor.scaleZ)
 
-                let actorSeed = Double( abs(actor.id.hashValue &+ seed) % 1009 ) * 0.013
+                var deterministicIdHash: UInt64 = 1469598103934665603
+                for byte in actor.id.utf8 {
+                    deterministicIdHash ^= UInt64(byte)
+                    deterministicIdHash &*= 1099511628211
+                }
+                let actorSeed = Double((deterministicIdHash &+ UInt64(bitPattern: Int64(seed))) % 1009) * 0.013
                 var floats: [Float] = []
                 floats.reserveCapacity(frameCount * floatsPerSample)
 
@@ -104,9 +109,9 @@ public enum BakeEngine {
 
                     // Deterministic step integration (damped harmonic + seeded excitation)
                     let targetPos = SIMD3<Double>(
-                        actor.x + sin(t * 2.2 + actorSeed) * 0.65,
-                        max(0.05, actor.y + cos(t * 3.1 + actorSeed) * 0.35),
-                        actor.z + sin(t * 1.7 + actorSeed * 2.0) * 0.45
+                        actor.x + sin(t * 2.8 + actorSeed) * 0.22,
+                        max(0.05, actor.y + cos(t * 5.6 + actorSeed) * 0.05),
+                        actor.z + sin(t * 1.9 + actorSeed * 2.0) * 0.10
                     )
                     let stiffness = 14.0
                     let damping = 3.2

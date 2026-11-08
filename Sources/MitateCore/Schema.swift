@@ -30,7 +30,7 @@ public enum StageSchema {
 
     public static let bootstrapSQL: String = """
     PRAGMA foreign_keys = ON;
-    PRAGMA journal_mode = WAL;
+    PRAGMA journal_mode = DELETE;
 
     -- ============================================================================
     -- A1. BEATS (Named Spans — Durations Accumulate, Never Hardcoded Timestamps)

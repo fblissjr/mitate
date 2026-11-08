@@ -9,6 +9,12 @@ public final class StageDB: @unchecked Sendable {
 
     public init(path: String, createIfMissing: Bool = true) throws {
         self.path = path
+        if createIfMissing && path != ":memory:" {
+            let dir = URL(fileURLWithPath: path).deletingLastPathComponent().path
+            if !dir.isEmpty {
+                try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
+            }
+        }
         let flags = createIfMissing
             ? (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX)
             : (SQLITE_OPEN_READWRITE | SQLITE_OPEN_FULLMUTEX)
@@ -26,7 +32,7 @@ public final class StageDB: @unchecked Sendable {
         }
         self.handle = opened
         try execRaw("PRAGMA foreign_keys = ON;")
-        _ = try? execRaw("PRAGMA journal_mode = WAL;")
+        _ = try? execRaw("PRAGMA journal_mode = DELETE; PRAGMA synchronous = NORMAL;")
     }
 
     deinit {

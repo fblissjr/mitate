@@ -651,8 +651,10 @@ public enum StageRenderer {
             var weightedDir = SIMD3<Double>.zero
             var lumenSum = 0.0
             var tintSum = SIMD3<Double>.zero
-            for (lampActorId, lamp) in cache.lamps {
-                if let lampAct = snap.actors[lampActorId], lampAct.effectiveVisible {
+            for lampActorId in cache.lamps.keys.sorted() {
+                if let lamp = cache.lamps[lampActorId],
+                   let lampAct = snap.actors[lampActorId],
+                   lampAct.effectiveVisible {
                     let dir = simd_normalize(lampAct.worldPosition - snap.camera.target)
                     weightedDir += dir * lamp.lumens
                     lumenSum += lamp.lumens
@@ -668,7 +670,7 @@ public enum StageRenderer {
             }
         }
 
-        // Sort visible renderable actors back-to-front by camera depth (painter's order with exact projection)
+        // Sort visible renderable actors back-to-front by camera depth (ground planes always first, then painter's order with deterministic ID tie-break)
         let visibleActors = snap.actors.values.filter { act in
             guard act.effectiveVisible else { return false }
             if !includeOverlays && cache.props[act.id]?.shape == "text3d" {
@@ -676,9 +678,13 @@ public enum StageRenderer {
             }
             return act.role == "prop" || act.role == "rig" || act.role == "swarm"
         }.sorted { a, b in
+            let aIsPlane = cache.props[a.id]?.shape == "plane"
+            let bIsPlane = cache.props[b.id]?.shape == "plane"
+            if aIsPlane != bIsPlane { return aIsPlane }
             let da = CameraSolver.projectToScreen(worldPoint: a.worldPosition, camera: snap.camera).z
             let db = CameraSolver.projectToScreen(worldPoint: b.worldPosition, camera: snap.camera).z
-            return da > db
+            if abs(da - db) > 1e-6 { return da > db }
+            return a.id < b.id
         }
 
         for act in visibleActors {
@@ -764,34 +770,27 @@ public enum StageRenderer {
     ) {
         let shape = prop?.shape ?? "cube"
         if shape == "plane" {
-            // Draw ground plane horizon / grid polygon
+            // Draw ground plane from bottom of viewport up to the projected ground horizon line
             let b = actor.worldBounds
-            let corners = [
-                SIMD3(b.min.x, b.max.y, b.min.z),
-                SIMD3(b.max.x, b.max.y, b.min.z),
-                SIMD3(b.max.x, b.max.y, b.max.z),
-                SIMD3(b.min.x, b.max.y, b.max.z)
-            ]
-            var pts: [CGPoint] = []
-            for c in corners {
-                let p = CameraSolver.projectToScreen(worldPoint: c, camera: camera)
-                if p.z > 0.05 {
-                    pts.append(CGPoint(
-                        x: rect.minX + CGFloat(p.x) * rect.width,
-                        y: rect.minY + CGFloat(1.0 - p.y) * rect.height
-                    ))
-                }
-            }
-            if pts.count >= 3 {
-                let baseCol = parseHexColor(shader?.albedo ?? "#323842")
-                let lit = simd_clamp(baseCol * lampColorTint * (0.42 * lumenScale), SIMD3(repeating: 0.0), SIMD3(repeating: 1.0))
-                ctx.setFillColor(CGColor(red: lit.x, green: lit.y, blue: lit.z, alpha: 0.85))
-                ctx.beginPath()
-                ctx.move(to: pts[0])
-                for p in pts.dropFirst() { ctx.addLine(to: p) }
-                ctx.closePath()
-                ctx.fillPath()
-            }
+            let forward = simd_normalize(camera.target - camera.eye)
+            let farGroundPt = SIMD3<Double>(
+                camera.target.x + forward.x * 20.0,
+                b.max.y,
+                camera.target.z + forward.z * 20.0
+            )
+            let p = CameraSolver.projectToScreen(worldPoint: farGroundPt, camera: camera)
+            let horizonV = min(max(p.z > 0.05 ? p.y : 0.62, 0.35), 0.88)
+            let groundHeight = CGFloat(1.0 - horizonV) * rect.height
+            let groundRect = CGRect(x: rect.minX, y: rect.minY, width: rect.width, height: groundHeight)
+            let baseCol = parseHexColor(shader?.albedo ?? "#323842")
+            let lit = simd_clamp(baseCol * lampColorTint * (0.38 * lumenScale), SIMD3(repeating: 0.0), SIMD3(repeating: 1.0))
+            ctx.setFillColor(CGColor(red: lit.x, green: lit.y, blue: lit.z, alpha: 0.90))
+            ctx.fill(groundRect)
+            ctx.setStrokeColor(CGColor(red: lit.x * 1.25, green: lit.y * 1.25, blue: lit.z * 1.25, alpha: 0.55))
+            ctx.setLineWidth(1.0)
+            ctx.move(to: CGPoint(x: rect.minX, y: rect.minY + groundHeight))
+            ctx.addLine(to: CGPoint(x: rect.maxX, y: rect.minY + groundHeight))
+            ctx.strokePath()
             return
         }
 
@@ -958,8 +957,9 @@ public enum StageRenderer {
         let limbColor = CGColor(red: 0.62 * lampColorTint.x, green: 0.48 * lampColorTint.y, blue: 0.36 * lampColorTint.z, alpha: 1.0)
 
         ctx.setStrokeColor(limbColor)
-        ctx.setLineWidth(4.0)
-        for limb in pose.limbs.values {
+        ctx.setLineWidth(5.0)
+        for limbKey in pose.limbs.keys.sorted() {
+            guard let limb = pose.limbs[limbKey] else { continue }
             let p0 = CameraSolver.projectToScreen(worldPoint: limb.attachWorld, camera: camera)
             let p1 = CameraSolver.projectToScreen(worldPoint: limb.kneeOrElbowWorld, camera: camera)
             let p2 = CameraSolver.projectToScreen(worldPoint: limb.footOrHandWorld, camera: camera)
@@ -974,21 +974,42 @@ public enum StageRenderer {
         let headScreen = CameraSolver.projectToScreen(worldPoint: pose.headCenter, camera: camera)
         let hipScreen = CameraSolver.projectToScreen(worldPoint: pose.rootPosition + SIMD3(0, charRow.hipH, 0) + pose.bodyOffset, camera: camera)
         if headScreen.z > 0.05 && hipScreen.z > 0.05 {
+            let hx = rect.minX + CGFloat(headScreen.x) * rect.width
+            let hy = rect.minY + CGFloat(1.0 - headScreen.y) * rect.height
+            let px = rect.minX + CGFloat(hipScreen.x) * rect.width
+            let py = rect.minY + CGFloat(1.0 - hipScreen.y) * rect.height
+
             ctx.setStrokeColor(bodyColor)
-            ctx.setLineWidth(7.0)
-            ctx.move(to: CGPoint(x: rect.minX + CGFloat(hipScreen.x) * rect.width, y: rect.minY + CGFloat(1.0 - hipScreen.y) * rect.height))
-            ctx.addLine(to: CGPoint(x: rect.minX + CGFloat(headScreen.x) * rect.width, y: rect.minY + CGFloat(1.0 - headScreen.y) * rect.height))
+            ctx.setLineWidth(charRow.quadruped ? 14.0 : 8.0)
+            ctx.move(to: CGPoint(x: px, y: py))
+            ctx.addLine(to: CGPoint(x: hx, y: hy))
             ctx.strokePath()
 
-            let headRadiusPx = max(6.0, CGFloat(charRow.headR / max(0.5, headScreen.z)) * rect.height)
+            let headRadiusPx = max(7.0, CGFloat(charRow.headR / max(0.5, headScreen.z)) * rect.height * 0.9)
             let headRect = CGRect(
-                x: rect.minX + CGFloat(headScreen.x) * rect.width - headRadiusPx,
-                y: rect.minY + CGFloat(1.0 - headScreen.y) * rect.height - headRadiusPx,
+                x: hx - headRadiusPx,
+                y: hy - headRadiusPx,
                 width: headRadiusPx * 2.0,
                 height: headRadiusPx * 2.0
             )
             ctx.setFillColor(bodyColor)
             ctx.fillEllipse(in: headRect)
+            if charRow.quadruped {
+                // Draw rounded bear ears + snout muzzle for immediate silhouette read in squint/nocap
+                let earR = headRadiusPx * 0.42
+                ctx.fillEllipse(in: CGRect(x: hx - headRadiusPx * 0.85, y: hy - headRadiusPx * 1.15, width: earR * 2, height: earR * 2))
+                ctx.fillEllipse(in: CGRect(x: hx + headRadiusPx * 0.15, y: hy - headRadiusPx * 1.15, width: earR * 2, height: earR * 2))
+                if charRow.muzzleLen > 0.01 {
+                    let muzzleWorld = pose.headCenter + SIMD3<Double>(charRow.headR + charRow.muzzleLen * 0.55, -charRow.headR * 0.12, 0.0)
+                    let mScreen = CameraSolver.projectToScreen(worldPoint: muzzleWorld, camera: camera)
+                    if mScreen.z > 0.05 {
+                        let mx = rect.minX + CGFloat(mScreen.x) * rect.width
+                        let my = rect.minY + CGFloat(1.0 - mScreen.y) * rect.height
+                        let mr = headRadiusPx * 0.52
+                        ctx.fillEllipse(in: CGRect(x: mx - mr, y: my - mr * 0.75, width: mr * 2.0, height: mr * 1.5))
+                    }
+                }
+            }
         }
     }
 

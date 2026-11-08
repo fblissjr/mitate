@@ -297,14 +297,14 @@ public enum StageEvaluator {
             if t < t0 || t > t1 { return nil }
             return BeatAddressing.evaluateExpression(expr, t: t, tWarped: t)
         }
+        if t < t0 {
+            return nil
+        }
         if cue.curve == "bump" {
-            if t < t0 || t > t1 { return cue.startVal }
+            if t > t1 { return cue.startVal }
             let u = (t - t0) / (t1 - t0)
             let env = BeatAddressing.evalCurve("bump", u: u)
             return cue.startVal + (cue.endVal - cue.startVal) * env
-        }
-        if t < t0 {
-            return nil
         }
         let u = min(max((t - t0) / (t1 - t0), 0.0), 1.0)
         let k = BeatAddressing.evalCurve(cue.curve, u: u)

@@ -81,7 +81,9 @@ public final class KernelJIT: @unchecked Sendable {
 
         if let device {
             let options = MTLCompileOptions()
-            options.mathMode = .safe // Strict IEEE determinism
+            options.languageVersion = .version4_1 // macOS 27.x Metal 4.1 baseline
+            options.mathMode = .safe // Strict IEEE 754 arithmetic determinism
+            options.mathFloatingPointFunctions = .precise // metal::precise transcendentals (sin/cos/exp)
             do {
                 let lib = try device.makeLibrary(source: mslSource, options: options)
                 guard lib.makeFunction(name: entrySymbol) != nil else {

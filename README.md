@@ -35,6 +35,13 @@ Deterministic animated scenes from any input — a prompt, a document, a codebas
 **Google Antigravity (`agy`)**:
 Discovered automatically via `.agents/plugins.json` pointing to `./plugin`, or installable via `agy plugin install ./plugin`.
 
+### Build & Test (macOS Golden Gate 27.2+ / Swift 6.4 / Metal 4.1)
+
+```bash
+xcrun swift build
+xcrun swift test
+```
+
 ### Quick CLI Workflow
 
 ```bash

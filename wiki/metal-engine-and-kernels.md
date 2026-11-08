@@ -40,7 +40,7 @@ TransformState kinematics(
 ### Rules for Custom MSL Kernels (`gpu_kernels`)
 1. **Read-Only Initial Buffers (`state_buffers`):** Compute kernels at render time read from `state_buffers.initial_data_blob` and write to the frame's output transform buffer. They must **never** mutate `initial_data_blob` in place across frames during `seekTo(t)`.
 2. **Stateful Simulations Use `mitate bake`:** If a kernel needs step-by-step velocity integration ($v_{k+1} = v_k + a \Delta t$), run it via `mitate bake shot.db --seed <N>` to populate `baked_tracks`, which `MitateEngine` then evaluates in $O(1)$ at any `t`.
-3. **Runtime Compilation & Situated Errors:** `MitateEngine` compiles `gpu_kernels.msl_source` via `device.makeLibrary(source:options:)`. Any MSL syntax or type error is caught and returned as structured JSON naming the `gpu_kernels.id`, line, and column.
+3. **Runtime Compilation & Situated Errors:** `MitateEngine` compiles `gpu_kernels.msl_source` via `device.makeLibrary(source:options:)` targeting **Metal 4.1 (`MTLLanguageVersion.version4_1`)** on macOS Golden Gate 27.2+ (`arm64-apple-macosx27.2`) with both `options.mathMode = .safe` (IEEE 754 arithmetic) and `options.mathFloatingPointFunctions = .precise` (`metal::precise` transcendentals). Any MSL syntax or type error is caught and returned as structured JSON naming the `gpu_kernels.id`, line, and column.
 
 ---
 

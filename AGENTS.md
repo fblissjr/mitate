@@ -9,6 +9,7 @@ This file is the canonical front door for both **Google Antigravity (`agy`)** an
 ## Core Intent & Architecture
 
 - **[`VISION.md`](VISION.md) (Read First)**: Why determinism comes first (as a measuring instrument, not dogma), `t` as a coordinate vs. `state`, reproducibility vs. byte-identity, and why declarations live in SQLite (`shot.db`). Where any document conflicts with `VISION.md` on intent, `VISION.md` wins.
+- **[`docs/user-guide.md`](docs/user-guide.md)**: Step-by-step user guide, mechanical and character tutorials (`gearbox-v2.db`, `bear-and-bees-v2.db`), Three-Axis Review Loop walkthrough, and CLI reference.
 - **[`docs/plan.md`](docs/plan.md)**: System architecture, full SQLite soundstage DDL (`schema.sql`), Metal 3/4 hybrid rendering pipeline, CLI specification, and v2 roadmap milestones.
 - **[`docs/source-of-truth.md`](docs/source-of-truth.md)**: Where facts are homed and how truth is maintained without duplicate prose.
 

@@ -2,12 +2,13 @@ last updated: 2026-11-08
 
 # Which doc answers which question
 
-**Jump:** [`VISION.md`](../VISION.md) · [`AGENTS.md`](../AGENTS.md) · [`plan.md`](plan.md) · [`source-of-truth.md`](source-of-truth.md) · [`wiki/index.md`](../wiki/index.md) · [`plugin/skills/mitate/SKILL.md`](../plugin/skills/mitate/SKILL.md)
+**Jump:** [`VISION.md`](../VISION.md) · [`AGENTS.md`](../AGENTS.md) · [`user-guide.md`](user-guide.md) · [`plan.md`](plan.md) · [`source-of-truth.md`](source-of-truth.md) · [`wiki/index.md`](../wiki/index.md) · [`plugin/skills/mitate/SKILL.md`](../plugin/skills/mitate/SKILL.md)
 
 A router, not a summary. Every fact in this repository has one canonical home (see [`source-of-truth.md`](source-of-truth.md)). Nothing in `docs/` or `wiki/` ships into a user's plugin install cache — installed users receive [`plugin/`](../plugin/), while contributors and in-repo agents read `AGENTS.md`, `VISION.md`, `docs/`, and `wiki/`.
 
 | If you are asking | Read | When |
 |---|---|---|
+| **I want a hands-on walkthrough — how do I build, review, and export my first `mitate` v2 scene?** | **[`user-guide.md`](user-guide.md)** | First-time setup, step-by-step mechanical & character tutorials, and CLI cheat sheet |
 | **I am starting a session — what are the rules and where do I look?** | **[`../AGENTS.md`](../AGENTS.md)** (`CLAUDE.md` -> `@AGENTS.md`) | First, at the start of every session |
 | **What is this project for** — why determinism comes first, what `t` vs. `state` means, why reproducibility outranks byte-identity, and why declarations live in `shot.db` | **[`../VISION.md`](../VISION.md)** | First, and before any structural or architectural change. Where any document conflicts with `VISION.md` on intent, `VISION.md` wins |
 | **What is the `mitate` v2 architecture, complete SQLite `schema.sql` DDL, Metal 3/4 pipeline, and phase roadmap?** | **[`plan.md`](plan.md)** | Before implementing or modifying `MitateCore`, `MitateMetal`, `MitateWeb`, or the `mitate` CLI |

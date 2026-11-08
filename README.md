@@ -7,6 +7,7 @@ Deterministic animated scenes from any input — a prompt, a document, a codebas
 *mitate* (見立て): to see one thing as another — the Japanese aesthetic of representing one thing through another. Here, seeing any input as a scene.
 
 **Why it is built this way, and why determinism comes first**, is [`VISION.md`](VISION.md) — one page, and the thing to read before deciding this project is just a video generator.
+**New to `mitate` v2?** Start with the step-by-step **[User Guide & Tutorial (`docs/user-guide.md`)](docs/user-guide.md)**.
 
 ## The Prime Directive
 
@@ -76,6 +77,7 @@ mitate bundle shot.db --out scene.html
 |---|---|
 | [`AGENTS.md`](AGENTS.md) (`CLAUDE.md`) | Canonical front-door router for Google Antigravity (`agy`) and Claude Code |
 | [`VISION.md`](VISION.md) | Core intent: why determinism comes first, `t` vs. `state`, reproducibility vs. byte-identity, and why declarations live in `shot.db` |
+| [`docs/user-guide.md`](docs/user-guide.md) | Step-by-step user guide & hands-on tutorials (`gearbox-v2.db`, `bear-and-bees-v2.db`, Three-Axis Review Loop, and CLI cheat sheet) |
 | [`docs/plan.md`](docs/plan.md) | `mitate` v2 system architecture, full SQLite soundstage DDL (`schema.sql`), Metal 3/4 hybrid rendering pipeline, CLI specification, and roadmap milestones |
 | [`docs/README.md`](docs/README.md) | Documentation & wiki question router |
 | [`wiki/index.md`](wiki/index.md) | Modular LLM Knowledge Wiki (`time-and-beats.md`, `soundstage-schema.md`, `cinematography-and-rigging.md`, `metal-engine-and-kernels.md`, `instruments-and-review.md`, `patterns-and-recipes.md`) |

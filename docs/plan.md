@@ -438,7 +438,7 @@ mitate bundle shot.db --out scene.html
 
 ### Phase v2.1 — Foundation & `MitateCore` (Relational Stage, Addressing, Solver, Check)
 - **Deliverables**:
-  - `Package.swift` (Swift 6, macOS Apple Silicon native).
+  - `Package.swift` (Swift 6.2+, macOS Golden Gate 27.2+ Apple Silicon native).
   - `MitateCore`: `Schema.swift`, `StageDB.swift`, `BeatAddressing.swift`, `CharacterRig.swift`, `CameraSolver.swift`, `StageEvaluator.swift`, `BakeEngine.swift`, `StageCheck.swift`.
   - CLI commands: `init`, `sql`, `schema`, `recipe`, `check`, `bake`, `probe`.
 - **Gate**:

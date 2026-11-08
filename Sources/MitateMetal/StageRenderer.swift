@@ -1339,34 +1339,28 @@ public enum StageRenderer {
             AVVideoHeightKey: height
         ]
         let input = AVAssetWriterInput(mediaType: .video, outputSettings: settings)
-        input.expectsMediaDataInRealTime = false
-
-        let attrs: [String: Any] = [
-            kCVPixelBufferPixelFormatTypeKey as String: Int(kCVPixelFormatType_32ARGB),
-            kCVPixelBufferWidthKey as String: width,
-            kCVPixelBufferHeightKey as String: height
-        ]
-        let adaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: input, sourcePixelBufferAttributes: attrs)
+        let creationAttrs = CVPixelBufferCreationAttributes(
+            pixelFormatType: CVPixelFormatType(rawValue: kCVPixelFormatType_32ARGB),
+            size: CVImageSize(width: width, height: height)
+        )
         guard writer.canAdd(input) else {
             throw StageError(code: "VIDEO_WRITER_ERROR", message: "Cannot add video input to AVAssetWriter for '\(path)'")
         }
-        writer.add(input)
-        writer.startWriting()
+        let receiver = writer.inputPixelBufferReceiver(for: input, pixelBufferAttributes: creationAttrs)
+        try writer.start()
         writer.startSession(atSourceTime: .zero)
 
         for (idx, frame) in frames.enumerated() {
-            while !input.isReadyForMoreMediaData {
-                Thread.sleep(forTimeInterval: 0.001)
+            var mutableBuffer: CVMutablePixelBuffer
+            if let pool = receiver.pixelBufferPool {
+                mutableBuffer = try pool.makeMutablePixelBuffer()
+            } else {
+                mutableBuffer = try CVMutablePixelBuffer(creationAttrs)
             }
-            var pb: CVPixelBuffer?
-            guard let pool = adaptor.pixelBufferPool,
-                  CVPixelBufferPoolCreatePixelBuffer(nil, pool, &pb) == kCVReturnSuccess,
-                  let pixelBuffer = pb else {
-                continue
-            }
-            CVPixelBufferLockBaseAddress(pixelBuffer, [])
-            if let base = CVPixelBufferGetBaseAddress(pixelBuffer) {
-                let dstBytesPerRow = CVPixelBufferGetBytesPerRow(pixelBuffer)
+            mutableBuffer.accessUnsafeMutableRawPlaneBytes { planes in
+                guard let plane = planes.first,
+                      let base = plane.bytes.baseAddress else { return }
+                let dstBytesPerRow = plane.properties.bytesPerRow
                 let dstPtr = base.assumingMemoryBound(to: UInt8.self)
                 for y in 0..<height {
                     for x in 0..<width {
@@ -1380,12 +1374,14 @@ public enum StageRenderer {
                     }
                 }
             }
-            CVPixelBufferUnlockBaseAddress(pixelBuffer, [])
+            let readOnlyBuffer = CVReadOnlyPixelBuffer(mutableBuffer)
             let time = CMTime(value: CMTimeValue(idx), timescale: CMTimeScale(fps))
-            adaptor.append(pixelBuffer, withPresentationTime: time)
+            while !(try receiver.appendImmediately(readOnlyBuffer, with: time)) {
+                Thread.sleep(forTimeInterval: 0.001)
+            }
         }
 
-        input.markAsFinished()
+        receiver.finish()
         let sem = DispatchSemaphore(value: 0)
         writer.finishWriting {
             sem.signal()

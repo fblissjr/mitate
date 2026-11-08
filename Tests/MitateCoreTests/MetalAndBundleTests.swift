@@ -133,6 +133,13 @@ struct MetalAndBundleTests {
         #expect(htmlContent.contains("window.sceneReady"))
         #expect(!htmlContent.contains("type=\"module\""))
         #expect(!htmlContent.contains("https://"))
+
+        // 6. shoot (MP4 video via macOS 27.2 AVAssetWriter PixelBufferReceiver)
+        try db.executeTransaction("UPDATE slate SET width = 320, height = 180; UPDATE beats SET dur_sec = 0.08;")
+        let mp4Out = "\(tmpDir)/dailies.mp4"
+        let mp4Report = try StageRenderer.shoot(db: db, mode: "dailies", outPath: mp4Out)
+        #expect(FileManager.default.fileExists(atPath: mp4Out))
+        #expect(mp4Report.frameCount >= 2)
     }
 
     @Test("Phase v2.4 Calibration Portfolio: scenes/gearbox-v2.db and scenes/bear-and-bees-v2.db pass check, probe, and smoke with zero warnings")

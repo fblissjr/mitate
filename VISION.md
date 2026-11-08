@@ -1,10 +1,12 @@
-last updated: 2026-08-08
+last updated: 2026-11-08
 
 # Why this exists, and why in this order
 
-`CLAUDE.md` has the rules. [`docs/plan.md`](docs/plan.md) has the architecture
-and the phase gates. This file has the one thing neither of them says: **why
-determinism comes first**, and what it is first *for*.
+`CLAUDE.md` has the rules. [`docs/plan.md`](docs/plan.md) has the architecture,
+the SQLite soundstage schema, the Metal engine design, and the phase gates. This
+file has the one thing neither of them says: **why determinism comes first**,
+what it is first *for*, and **why `mitate` v2 moves from single-file HTML/JS to
+a relational SQLite soundstage (`shot.db`) + native Apple Silicon Metal**.
 
 It is short on purpose. If it grows into a summary of the plan, delete the
 summary. Where it gestures at something, the file that owns it is linked:
@@ -15,10 +17,11 @@ patterns get promoted.
 
 ## The goal
 
-An **engine**, its **primitives**, the **abstractions** that let you say what you
-mean instead of how to compute it, the **tooling** that builds and ships it, and
-the **harness** that proves all of it — enough that an agent can turn **any
-context** into a scene, reliably.
+An **engine**, its **primitives**, the **abstractions** that let an agent say
+what it means instead of how to compute it, the **tooling** that builds and
+ships it, and the **harness** that proves all of it — enough that an agent in
+Antigravity (`agy`) or Claude Code can turn **any context** into a scene,
+reliably.
 
 Not "a tool that makes films." Films are how the engine gets proven: every
 film in the corpus demonstrates that a layer works and fails loudly when it
@@ -38,16 +41,11 @@ The three review axes exist because "it renders" and "it works" are different
 claims, and the second one is the one anyone cares about. Determinism is what
 makes the second claim checkable; it is not a substitute for it.
 
-> This supersedes the framing in `plan.md`'s Risks section, which read "mitate
-> ships films" and fenced engine-shaped work as scope creep. That fence was
-> written to protect against building a game engine nobody asked for, and it is
-> still right about *that*. It was wrong to describe the destination.
-
 ## Determinism is the instrument, not the point
 
 The easy reading is that purity is a price paid for nice properties — byte
-comparison, one file serving both the page and the render. True, and far too
-small.
+comparison, one artifact serving both preview and final render. True, and far
+too small.
 
 **A generator that produces a different result every run cannot be evaluated by
 watching it run.** Every observation is of a different object. The only way to
@@ -76,14 +74,14 @@ dogma.
 - **Reproducibility** — the same inputs produce the same scene. This is the
   property. It is what makes evaluation possible, and it does not bend.
 - **Byte-identity** — one *technique* for measuring reproducibility, with a
-  stated validity scope. `CLAUDE.md` invariant 5 already limits it to a single
-  backend, because two backends legitimately disagree per pixel.
+  stated validity scope. `CLAUDE.md` invariant 5 limits it to a single
+  backend, because two backends (e.g. Native Metal vs. the WebGPU/WebGL2 HTML
+  player) legitimately disagree per pixel.
 
 Where the technique's scope runs out, the claim survives and the measurement
-changes. A bake replayed is byte-identical; the same bake recomputed under a new
-solver version will not be, and that is not a determinism failure — it is where a
-tolerance-shaped oracle becomes the right instrument. The bake proposal already
-treats re-bake identity as its own question rather than assuming it.
+changes. A bake replayed from `baked_tracks` is byte-identical; the same bake
+recomputed under a new solver version will not be, and that is not a determinism
+failure — it is where a tolerance-shaped oracle becomes the right instrument.
 
 **And it measures the toolmaker, not only the scene** (owner, 2026-08-04):
 rebuild the same scene under new tooling and compare — better, worse, cheaper,
@@ -95,9 +93,9 @@ alarming.
 **The guard against dogma is a magnitude.** A check that reports only pass or
 fail cannot tell a scene that renders a *different film* from one that moved a
 single pixel by a single bit — and treated as equal, the second spends the
-credibility the first depends on. A difference should be reported with its size
-and its location. That is also what makes a failure actionable rather than merely
-alarming.
+credibility the first depends on. A difference must be reported with its size
+and its location (`changed_pixels`, `bbox`, `max_channel_delta`, `psnr_db`).
+That is also what makes a failure actionable rather than merely alarming.
 
 ## `t` is a coordinate; `state` is what a driver emits
 
@@ -111,279 +109,179 @@ reachable:
 
 | driver | emits | the test |
 |---|---|---|
-| timeline (today) | `{t}` | same state twice → same pixels |
-| a recorded run | `{t, baked}` | unchanged |
-| a viewer | `{t, view}` | unchanged |
-| an input driver | `{t, …}` from events | unchanged |
+| timeline (`beats` + `cue_sheet`) | `StageClock(t)` | same state twice → same pixels |
+| a recorded bake (`mitate bake`) | `StageClock(t) + baked_tracks` | unchanged |
+| a viewer / ortho scout (`quad`) | `StageClock(t) + view` | unchanged |
+| an input driver | `StageClock(t, events)` | unchanged |
 
 A simulation is a **generator of mappings**. Each run produces one. Recording
-freezes one. Once frozen it is an ordinary scene, and the whole instrument stack
-applies to it unmodified. That is the bridge, and `t` is the interface it hands
-back.
+(`mitate bake`) freezes one into `baked_tracks`. Once frozen it is an ordinary
+scene, and the whole instrument stack (`quad`, `sheet`, `strip`, `probe`,
+`smoke`) applies to it unmodified. That is the bridge, and `t` is the interface
+it hands back.
 
-**The table is a shape, not a roadmap.** Only the first row exists. The others
-are what the shape admits, and whether any of them gets built — or whether the
-useful direction turns out to be something not listed — is genuinely open. What
-the shape buys is that finding out later costs a signature change rather than a
-rewrite. `docs/addressing.md` works this through properly, including what the
-position-encoding literature in machine learning does and does **not** transfer:
-the mechanism does not, because nothing here compares two positions.
+**Temporal accumulation is the enemy of random-access `t`.** Any rendering
+technique that carries history buffers across frames (`MTLFXTemporalScaler`,
+temporal irradiance caches, unbaked step-integrated `state_buffers`) makes frame
+`t` depend on which frames were rendered before it. In `mitate` v2, evaluation at
+`t` is strictly single-frame deterministic: spatial-only upscaling, single-frame
+AOV-guided denoising, and Sobol/PCG3D sequences seeded purely by
+`(pixel_xy, sample_idx, random_seed)`.
 
 ### `state` is the intermediate layer. The window contract is not.
 
 Worth being exact, because the design depends on the difference.
 
-- **The window contract** is an interface *for tools*. It is deliberately thin,
-  and the thinness is the whole value: any scene is interchangeable for any
-  other because no tool knows a film's internals. Widen it and that dies.
-- **`state`** is the value a driver hands the kernel. It is where meaning
-  accumulates, and the table above is its growth plan.
-
-`setCamera(t)` became `setCamera(state)` in 0.16.62. That was `state` acquiring
-its first named parameter — the seam a bake, a viewer and an input driver all
-widen. The contract does not move when they do, which is the point of having two
-layers instead of one.
+- **The contract** (`mitate` CLI verbs over `shot.db` on the native path;
+  `window.seekTo(t)` / `window.DURATION` / `window.sceneReady()` on the bundled
+  HTML path) is an interface *for tools*. It is deliberately thin, and the
+  thinness is the whole value: any scene is interchangeable for any other
+  because no tool knows a film's private internals.
+- **`state` (`StageClock` + evaluated `StageSnapshot`)** is the value the
+  evaluator hands the renderer and the `.metal` kernel hooks. It is where
+  meaning accumulates.
 
 ### Scene position and presentation time are not the same coordinate
 
-They are fused today: playback advances `t` in real seconds. Separate them — `t`
-addresses the scene, and a second mapping decides how fast an observer moves
-through it — and slow motion, holds, speed-ups and timelapse become
-**declarative** instead of authored into the beats.
+Separating them — `t` addresses the scene, and `warp_segments` decides how fast
+an observer moves through it — makes slow motion, holds, speed-ups and timelapse
+**declarative** instead of authored into the beats. Once anything is simulated or
+baked at scene-position resolution, how fast someone watches it cannot change
+what happened.
 
-That matters beyond convenience once anything is simulated. If a bake is computed
-at scene-position resolution, how fast someone watches it cannot change what
-happened. Leave the two fused and playback speed is a physics parameter, which is
-exactly the coupling this project exists to remove. A warped coordinate already
-exists as one of the addressing frames; the separation at the presentation layer
-does not.
+## What we are actually building: declarative layers on a relational stage
 
-**One honest limit.** A recording gives you an oracle for *that run*, not for the
-generator. Nothing yet tells you a simulator is right — that needs a different
-kind of instrument, property- or distribution-shaped rather than byte-identical,
-and this project has never built one.
+Look at what `mitate` builds and the pattern is obvious. You declare intent in
+relational tables, and the compiler works out the physical consequences:
 
-## What we are actually building: declarative layers
-
-Look at what already exists and the pattern is obvious. You declare, and the
-system works out the consequences:
-
-| layer | you declare | you do not author |
+| layer | you declare (in `shot.db`) | you do not hand-author |
 |---|---|---|
-| `BEATS` | named spans | timestamps |
-| `SHOTS` / `SUBJECTS` | "medium shot on the bear" | camera coordinates |
-| `STYLE` / bibles | the look, as one object | per-material values |
-| lights | where light comes from | what is lit, and when |
-| gait | a proportion vector | leg keyframes |
-| **interaction** | — | **hand-coded, every time** |
+| `beats` | named spans with durations | cumulative timestamps (`t0`, `t1`, `DURATION`) |
+| `shots` / `subjects` | `"MCU on the bear at 35°"` | raw camera `(x,y,z)` coordinates or auto-derived bounding boxes |
+| `style_bibles` | the look as one row (`active_bible`) | scattered per-material hex literals or exposure tweaks |
+| `lamps` / `atmospheres` | photometric lumens, Kelvin, haze density | what is lit, shadow rays, or volumetric god-rays |
+| `characters` | a proportion vector + `walk_start_x` | bone hierarchies, 2-bone IK math, or leg keyframes |
+| `baked_tracks` (`mitate bake`) | mass, colliders, kinematics kernel + seed | hand-tuned sine waves approximating a bounce or collision |
 
-That last row is the gap, and it is what Phase 4 is really for — its constraints
-and its four red lines are in
-[`docs/physics-bake-proposal.md`](docs/physics-bake-proposal.md). A physics bake is
-not a feature; it is the declarative layer for interaction, the way lighting is
-one for illumination. Declare mass and solidity, let the system work out what
-happens when things meet, instead of hand-tuning three sine waves that approximate
-a swing.
+### Where a declaration lives — why `mitate` v2 is a SQLite Soundstage (`shot.db`)
 
-It must be **opt-in and per-object**, never a global mode. Wanting a character to
-clip through a wall as a joke, or gravity set to Mars, is a legitimate authoring
-decision — "cede control here, keep it there" is the interface.
-
-**And it was premature until the layer beneath it was named.** That layer was,
-in this project's own words, *"substantial, it works, and it is unnamed,
-unspecified, and unvalidated as a whole."* Adding another layer on top of tables
-nobody had enumerated, validated by nothing, buys a capability with no
-foundation.
-
-**The enumeration now exists** — `references/breakdown.md`, 2026-08-02. Two of
-its findings change what comes next rather than merely recording it: the layer is
-**uneven**, with real schemas that throw beside open bags that validate nothing;
-and validation clusters where a mistake is *unrepresentable* (an unknown name
-fails a lookup) rather than where it is *expensive* (an extent that does not
-match its geometry passes silently). The second is the gap a compile step closes
-and a runtime cannot.
-
-### Where a declaration lives — decided 2026-08-02, and never a detail
-
-The table says *what* you declare. It does not say where the declaration lives,
-and today the answer is: as JavaScript object literals inside the shipped
-artifact, replicated into every file that carries them. That came from a tool for
-building explainer videos. Nobody here chose it.
-
-It belongs in this file rather than in the plan because **"declarative" is a
-claim about structure**. If a declaration cannot be read, validated or rendered
+In `mitate` v1, declarations lived as JavaScript object literals inside a
+shipped HTML file, beside 5,704 lines of fenced kit machinery replicated across
+every carrier. As this file noted in v1: **"declarative" is a claim about
+structure.** If a declaration cannot be read, validated, queried, or rendered
 independently of the artifact that embeds it, the claim is about authoring style
-instead — and the difference shows up as work: blocks held byte-identical across
-every carrier, a tool to propagate them, and a control to police that tool. The
-parity run reports the size of that tax on every invocation. It is not small, and
-it grows with every carrier added. One measurement sharpens what the tax is
-evidence *of* (2026-08-02, method in `docs/representation.md`): the replicated
-surface is almost entirely kit machinery and its comments — declaration
-literals are a rounding error of it — so the tax argues for emitting the kit
-from one source, while the independence claim above is about the film's own
-declarations and stands on its own evidence.
+instead.
 
-The direction was written down before this project had its current name, and it
-has already been applied three times: **make the implicit thing data, then make
-the tooling read it.** `BEATS` made timing data, and timing became retimeable.
-`SHOTS` made camera data, and framing became solvable. `FRAME` made the frame
-data, and vertical and square output became first-class — each one previously
-impossible by construction, whatever an author wrote. The same record names the
-shape it should take: **data and a small compiler, not an abstraction layer.**
+Since v1 was written, two things became clear from watching real agent sessions
+in Claude Code and Antigravity (`docs/harness-loop.md`):
 
-It has never been applied to geometry or motion, which is where most of a film
-actually is.
+1. **Agents are surgical with SQL and clumsy with thousand-line file rewrites.**
+   Asking an LLM to tweak a light, retime a beat, or adjust a character's stride
+   inside a 1,500-line HTML file burns tokens and risks corrupting adjacent code
+   or fence markers. In a relational SQLite database (`shot.db`), that edit is a
+   one-line atomic `UPDATE` (`mitate sql shot.db "UPDATE lamps SET lumens=2800
+   WHERE actor_id='key'"`), validated immediately by SQLite `CHECK` and
+   `FOREIGN KEY` constraints before a single GPU thread launches.
+2. **Per-scene JavaScript/Chromium bootstrapping is pure friction.** Installing
+   `three` and `playwright-core`, resolving headless Chromium binaries, and
+   dodging WebGPU SwiftShader black-frame landmines in every scratch workspace
+   taxes every session before it writes a single beat. A single precompiled
+   Swift + Metal binary (`mitate`, aliased as `slate`) talking directly to Apple
+   Silicon Unified Memory (`MTLStorageModeShared`) and hardware `VideoToolbox`
+   renders a 2×2 orthographic + camera scout sheet (`mitate quad`) in ~40ms with
+   zero per-scene setup.
 
-**Decided 2026-08-02, and recorded where the brief said it would be.** The
-boundary is drawn in [`docs/representation.md`](docs/representation.md)'s
-decision section, which owns it: data is what is decidable without running the
-scene, every end of decidability is a named, typed hole, and the line moves by
-the plan's cost-scaled triggers. The ordering this file argued for — enumerate
-the layer before choosing a representation — held: the enumeration came first,
-and the decision cites its evidence. This file still says why the question
-mattered, not what was chosen; read the decision there.
+Moving the source of truth to `shot.db` completes the arc `VISION.md` started:
+- **Zero fence replication**: The engine lives in the compiled binary
+  (`MitateCore` + `MitateMetal`), never duplicated across scene files.
+- **Pre-render validation by construction**: SQLite constraints + `v_set_lint` +
+  `mitate check` validate the entire relational graph in <5ms with no GPU and no
+  browser.
+- **Auto-derived extents (`auto_bounds`)**: In v1, hand-declared `SUBJECTS`
+  extents (`h`/`w`/`d`) were the #1 recurring composition defect because tables
+  could not read runtime geometry. In v2, `MitateCore` evaluates the exact 3D
+  bounding box of any actor or character rig at `t` directly when `extent_mode =
+  'auto_bounds'`.
+- **Web delivery stays one command away**: Because `shot.db` is pure structured
+  data + closed-form cues + `baked_tracks`, `mitate bundle shot.db --out
+  scene.html` still emits a single self-contained HTML file implementing the
+  canonical `window.seekTo(t)` contract whenever browser delivery is wanted.
 
 ## The shape a primitive has to have
 
 Two failure modes bound the design, and naming them is more useful than naming a
 technology.
 
-**A closed vocabulary rots.** If the only expressible things are the ones someone
-anticipated, the first film that needs something else either cannot be made or is
-made by escaping the system — and once authors escape, the consistency the
-vocabulary existed for is gone.
+**A closed vocabulary rots.** If the only expressible things are the rows
+someone anticipated in SQLite tables, the first film that needs a custom vortex
+swarm, a mirage ray medium, or a procedural iridescent shader either cannot be
+made or escapes the system.
 
 **An unstructured one cannot be checked.** Nothing can validate a declaration
-that has no shape. That is why declared extents rotted for the project's whole
-life — a hand-written subject table could disagree with the geometry it
-described and nothing noticed, until the shape became checkable (REP4: the
-base derives, the adjustment is named, and a bare number draws a warning) —
-and why a NaN can make one instrument fail loudly while another goes silently
-all-clear on the same run.
+that has no shape.
 
-Both are avoidable at once, and the existence proof is already in the tree.
-`buildCharacter(P, matFor)` takes a fixed proportion vector — a real schema — and
-a **function** for materials. From that one constructor, `menagerie` builds a
-bear, a human and an invented strider. Structure at the seam, arbitrary code in
-the leaf.
+`mitate` v2 solves both with the same rule as v1: **schema where things connect,
+code where things are specific.**
+- **Schema at the seam**: The SQLite tables (`beats`, `shots`, `subjects`,
+  `characters`, `actors`, `props`, `surface_shaders`, `lamps`, `cue_sheet`)
+  enforce every structural connection, unit, and foreign key.
+- **Code in the leaf**: The `gpu_kernels` table holds agent-authored Metal C++17
+  `[[visible]]` functions that JIT-compile in ~25ms into 5 typed
+  `MTLVisibleFunctionTable` hook slots (`kinematics`, `ray_medium`,
+  `procedural_surface`, `lens_ray`, `finishing_pass`), reading `StageClock` and
+  the shared-memory scene heap directly.
 
-That is the rule to design to: **schema where things connect, code where things
-are specific.** It is not a language to learn and it is not a template to fill
-in.
-
-A primitive earns its place when it makes a **pair** of things travel together
-that were previously re-derived apart — a biped and its gait, a shot size and the
-camera math that realises it. The test is not "is this reusable" but *does using
-it make the next film's version consistent with this one, without forbidding the
-film that needs something else.*
-
-## What this is all for
-
-Today, staging a character tripping over another moving character means computing
-the outcome by hand: where each one is, how fast, with what stride and what mass,
-where the contact lands and what it looks like — then tuning until it reads, and
-re-tuning every one of those numbers when any single one changes.
-
-The destination is that you declare the bodies and the intent and the system
-works out the consequence — the same move lighting already made, and the reason
-the bake is described as a declarative layer rather than a feature. Determinism
-is what makes it reachable: a computed consequence is only trustworthy if you can
-hold it still and check it, and only useful if it does not change under you
-between runs.
-
-## How it gets better
+## How it gets better: the agent-driven harness loops
 
 An engine that only grows when someone remembers to generalise will not grow.
-Every reference here exists because a person noticed the same problem twice and
-wrote it down — `film-language.md` is shot grammar someone kept re-deciding,
-`materials.md` is surface behaviour someone kept re-deriving.
+And an agent skill whose guidance sits in unopened markdown files will not guide.
 
-**So capturing a pattern should be a side effect of making a film, not an act of
-discipline afterwards** — a flywheel where each film leaves the engine better
-equipped for the next one. The mechanism is half-built as of 2026-08-04: capture
-became the method's own closing step (the film field report,
-`references/method.md`), and extraction exists as a repo-side skill that reads
-finished work and proposes promotions. What remains unproven is the loop
-actually turning, which only films can demonstrate. The argument and the counts
-are in [`docs/pattern-ledger.md`](docs/pattern-ledger.md).
+Across four analyzed cold-start builds in v1, **every reference read happened in
+the first 1–6 minutes of the session; not one reference was opened mid-build.**
+When an agent hit a determinism bug, a cropped frame, or an exposure blowout at
+minute 90, it never went back to read a reference table — it reacted to what the
+CLI printed on stdout.
 
-The cost of not having it is on record: a cookbook of shape recipes was written
-once, cited from two shipped files as though it had been carried over, was not
-carried over, and survived only because an archive audit went looking.
+That measurement governs every CLI verb in `mitate` v2:
 
-**There is a second loop, and it runs the other way.** The first one carries
-technique *out* of a film and into the references. This one carries evidence
-*back*: a session that has only the installed plugin builds a film, and what it
-did — what it opened, what it never opened, where it stumbled, what the tools
-printed at it — is the measurement. Not a survey of what the docs say; a record
-of what they caused. The shipped surface is the only thing such a session has,
-so its behaviour is the closest thing to a direct reading of whether that
-surface works, and it is the only instrument the cold-start criterion below has
-ever had. **Improving the skill and the harness is downstream of watching them
-be used**, and this is what "used" means here.
-
-The reason it reads the transcript rather than the field report is measured, not
-philosophical. The report is the builder's account of itself, and the builder is
-the least reliable witness available: across four analysed builds, every one
-overstated its own debugging effort — three of them by six- to sevenfold — one
-shipped a figure it had itself measured twice and contradicted, one gave three
-different counts for one number in three places, and one shipped a field report
-that disagrees with its own postmortem about the session's signature finding.
-Their *technical* findings held up well. Their accounts of their own behaviour
-did not, and behaviour is what this loop is for. So the account is a lead and
-the transcript is the evidence, which is the same rule this project applies to
-every other claim.
-
-Two constraints ride with it, both learned the expensive way. A session that
-built in a workspace holding earlier work is contaminated even when its code is
-provably clean — a prior artifact sitting in context steers what gets done next,
-and an instruction to ignore it that names *files* will not reach what is
-already *read*. And the transcripts are private: findings and counts are
-reported verbatim, the artifacts they came from are cited by class and never by
-path or filename.
+1. **Situated telemetry on every run.** Every `mitate` render and check command
+   (`check`, `quad`, `sheet`, `strip`, `probe`, `smoke`, `shoot`) emits
+   structured JSON telemetry to stdout (`meter`, `framing.in_frame_actors`,
+   `framing.out_of_frame_actors`, `contacts`, `lint`, and situado pointers to
+   the exact command or reference section that fixes a detected issue). The tool
+   teaches the agent at the moment of need.
+2. **Self-discoverable schema and recipes.** `mitate schema [table]` prints
+   compact DDL and copy-pasteable SQL examples; `mitate recipe <name>` prints or
+   applies tested SQL patterns (`three-point-lights`, `character-walk`,
+   `rack-focus`, `explainer-gears`).
+3. **Two flywheels, both active in `agy` and Claude Code:**
+   - **In-session review (`film-reviewer`)**: After building a draft `shot.db`
+     and checking spatial layout with `mitate quad`, the builder delegates to the
+     `film-reviewer` subagent, which runs `mitate sheet` (`0.6`, `0.95`, and
+     `--nocap`), `mitate strip`, `mitate probe`, and `mitate smoke` to grade
+     **Composition**, **Continuity**, and **Semantics** with measured brackets.
+   - **Cold-build transcript loop (`cold-build.sh` + `analyze-build-session`)**:
+     Fixed briefs run against lower model/effort tiers, measuring whether the
+     floor required to ship a clean film descends over time.
 
 ## How to tell if this is working
 
 Not "are there more features." These:
 
-- A change to a scene either matches the last run byte-for-byte or it does not,
-  and the difference is *localisable* — reported with its size and its position,
-  not as a bare verdict.
+- A change to a scene either matches the last run byte-for-byte (within one
+  backend) or it does not, and the difference is *localisable* — reported by
+  `mitate smoke` with its changed-pixel count, bounding box, max channel delta,
+  and PSNR, not as a bare pass/fail verdict.
 - A claim in this repo can be re-derived by running something, not by trusting
   prose.
-- A declaration can be validated **before a frame is rendered**.
-- A new capability reuses the kernel, the characters, the materials and at least
-  one instrument **without modification** — that is Phase 6's gate, and it is the
-  real test of whether the layering was ever true.
-- A film that needs something the vocabulary cannot say can still be made, and
-  the gap is visible afterwards rather than silently absorbed.
-- A session arriving with no context can find what it needs and act correctly.
-
-The last one is measurable and gets measured. They are listed because a criterion
-you fail is worth more than one you have quietly dropped — and two of them were
-written on 2026-08-02 as outright false, which is worth recording because one of
-them stopped being so on the same day.
-
-**Pre-render validation: now mostly true, and the residual boundary is
-narrower than it was.** `build.js check` (0.16.67) cross-references the
-declarative tables against each other before anything renders — every name a
-shot uses, every anchor inside its beat, captions against the reading limit —
-and since REP4 (0.28.0) it also checks an extent's FORM: a bare number in an
-`h`/`w`/`d` draws a warning, and an extent that derives from its construction
-cannot disagree with it at build time, which dissolved the largest slice of
-what used to be the layer's most expensive gap. What still cannot be decided
-before render is the derived VALUE against the *posed* geometry — an extent
-is static and geometry is animated, the corpus's row 11 measures exactly that
-(a walker wider fallen than walking) — which needs the scene's own objects.
-The filed answer is in-scene self-validation sampled at shot times
-(`working-plan.md` carries the design and its triggers), not a widening of
-`probe`'s exception. The verb states which tables it covered on every run,
-because a validator whose green cannot be told from a run that read nothing
-was the first defect it shipped with.
-
-**Determinism magnitude: still false, though no longer untouched.** A failure
-now names its layer — the verdict says whether the scene's own pixels moved or
-only the capture did (0.26.0) — and can hand over the disagreeing frames. What
-it still does not report is how large the difference is or where it sits, so
-"roughly the same after a tooling change" remains uncheckable, and the guard
-against dogma above is the argument for changing it.
+- A declaration is validated **before a frame is rendered** — at SQL `INSERT` /
+  `UPDATE` time via constraints, and in <5ms via `mitate check` (including
+  auto-derived actor/character bounding boxes at shot times).
+- A new capability reuses the evaluator, the character rig, the shaders, and the
+  review instruments **without modification**.
+- A film that needs something the SQLite tables cannot say can still be made via
+  a 25ms-JIT `gpu_kernels` function or procedural prop, and recurring patterns
+  promote cleanly into recipes or schema.
+- An agent session in `agy` or Claude Code arriving with no context can discover
+  the schema (`mitate schema`), build a `shot.db`, inspect it (`mitate quad` /
+  `sheet` / `probe`), pass `mitate smoke`, and ship a film that lands.

@@ -1,6 +1,8 @@
-last updated: 2026-09-04
+last updated: 2026-11-08
 
 # The harness loop: how the harness gets better, and how we know
+
+> **Note (2026-11-08, `v2` branch):** Re-read against the tree and re-decided with the owner on 2026-11-08. On the `v2` branch, [`plan.md`](plan.md) defines the `mitate` v2 (Slate) SQLite 3 Virtual Soundstage + native Swift 6 & Metal 3/4 architecture and phased roadmap. The harness loop principles below (deterministic evaluation, situated errors, cold-build measurement) carry directly into v2.
 
 **Start here if you are a future session asking what to do** (owner request,
 2026-09-04). This file is the plan for getting the two flywheels in
@@ -11,8 +13,6 @@ lifecycle rules in [`source-of-truth.md`](source-of-truth.md) say who may edit
 it (tactical edits need no owner input; changing the sequence's ranking does).
 [`README.md`](README.md)'s work-next row points here; the board it replaced is
 kept in that row as record.
-
-<!--due: 2026-10-04 | if no cold build has run by this date, this plan is stale: re-read it against the tree and re-decide the sequence with the owner before doing anything else in it -->
 
 ## What mitate is, in plain terms
 

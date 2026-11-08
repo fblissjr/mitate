@@ -254,11 +254,13 @@ public enum CameraSolver {
 
         // Effective horizontal span projected perpendicular to the camera view ray
         let projectedSpan = abs(W * cos(worldAzimuthRad)) + abs(D * sin(worldAzimuthRad))
+        let halfDepthAlongView = 0.5 * (abs(W * sin(worldAzimuthRad)) + abs(D * cos(worldAzimuthRad)))
         let distV = (H / max(0.05, frameFrac)) / (2.0 * tan(fovYRad * 0.5))
         let distH = (projectedSpan / max(0.05, frameFrac)) / (2.0 * tan(fovXRad * 0.5))
-        let distance = max(0.35, max(distV, distH))
+        let distance = max(0.35, max(distV, distH) + halfDepthAlongView)
 
-        let aimY = resolvedSubj.bounds.min.y + H * anchorY
+        // Bias vertical aim slightly downward so the subject sits comfortably above the v > 0.88 caption band
+        let aimY = resolvedSubj.bounds.min.y + H * max(0.15, anchorY - 0.06)
         var target = SIMD3<Double>(
             resolvedSubj.bounds.center.x + shot.anchorX * projectedSpan * 0.35,
             aimY,

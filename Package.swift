@@ -9,7 +9,7 @@ let package = Package(
     products: [
         .library(
             name: "MitateCore",
-            targets: ["MitateCore"]
+            targets: ["MitateCore", "MitateMetal", "MitateWeb"]
         ),
         .executable(
             name: "mitate",
@@ -24,14 +24,33 @@ let package = Package(
                 .linkedLibrary("sqlite3")
             ]
         ),
+        .target(
+            name: "MitateMetal",
+            dependencies: ["MitateCore"],
+            path: "Sources/MitateMetal",
+            linkerSettings: [
+                .linkedFramework("Metal"),
+                .linkedFramework("CoreGraphics"),
+                .linkedFramework("CoreText"),
+                .linkedFramework("ImageIO"),
+                .linkedFramework("AVFoundation"),
+                .linkedFramework("CoreVideo"),
+                .linkedFramework("UniformTypeIdentifiers")
+            ]
+        ),
+        .target(
+            name: "MitateWeb",
+            dependencies: ["MitateCore"],
+            path: "Sources/MitateWeb"
+        ),
         .executableTarget(
             name: "MitateCLI",
-            dependencies: ["MitateCore"],
+            dependencies: ["MitateCore", "MitateMetal", "MitateWeb"],
             path: "Sources/MitateCLI"
         ),
         .testTarget(
             name: "MitateCoreTests",
-            dependencies: ["MitateCore"],
+            dependencies: ["MitateCore", "MitateMetal", "MitateWeb"],
             path: "Tests/MitateCoreTests"
         )
     ]

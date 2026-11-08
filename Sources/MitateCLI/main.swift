@@ -1,5 +1,7 @@
 import Foundation
 import MitateCore
+import MitateMetal
+import MitateWeb
 
 private struct CLIEnvelope<T: Encodable>: Encodable {
     let ok: Bool
@@ -62,8 +64,11 @@ do {
                 i += 1
             }
         }
-        if FileManager.default.fileExists(atPath: dbPath) {
-            try FileManager.default.removeItem(atPath: dbPath)
+        for suffix in ["", "-wal", "-shm"] {
+            let p = dbPath + suffix
+            if FileManager.default.fileExists(atPath: p) {
+                try? FileManager.default.removeItem(atPath: p)
+            }
         }
         let db = try StageDB(path: dbPath, createIfMissing: true)
         try db.initializeStage(preset: preset)
@@ -196,24 +201,25 @@ do {
         }
         let mslSource = try String(contentsOfFile: filePath, encoding: .utf8)
         let resolvedEntry = entrySymbol.isEmpty ? kernelId : entrySymbol
+        // JIT compile / verify Metal shader before storing
+        let jitInfo = try KernelJIT.shared.compileKernel(
+            id: kernelId,
+            hookSlot: slot,
+            entrySymbol: resolvedEntry,
+            mslSource: mslSource
+        )
         let escapedSource = mslSource.replacingOccurrences(of: "'", with: "''")
         let db = try StageDB(path: dbPath, createIfMissing: false)
         _ = try db.executeTransaction("""
         INSERT OR REPLACE INTO gpu_kernels (id, hook_slot, purity_mode, entry_symbol, msl_source)
         VALUES ('\(kernelId)', '\(slot)', '\(purity)', '\(resolvedEntry)', '\(escapedSource)');
         """)
-        struct KernelPayload: Encodable {
-            let id: String
-            let slot: String
-            let purity: String
-            let entry_symbol: String
-        }
         emitJSON(
             ok: true,
             command: "kernel",
             db: dbPath,
             startTime: startTime,
-            payload: KernelPayload(id: kernelId, slot: slot, purity: purity, entry_symbol: resolvedEntry)
+            payload: jitInfo
         )
 
     case "check":
@@ -326,6 +332,173 @@ do {
             payload: report
         )
 
+    case "quad":
+        guard args.count >= 2 else {
+            throw StageError(
+                code: "MISSING_ARGUMENT",
+                message: "Usage: mitate quad <shot.db> [--t|--at <t|beat@frac>] --out <quad.png|quad.jpg>",
+                pointer: "wiki/instruments-and-review.md"
+            )
+        }
+        let dbPath = args[1]
+        var atSpec: String? = nil
+        var outPath = "quad.png"
+        var i = 2
+        while i < args.count {
+            let flag = args[i]
+            if (flag == "--t" || flag == "--at"), i + 1 < args.count {
+                atSpec = args[i + 1]; i += 2
+            } else if flag == "--out", i + 1 < args.count {
+                outPath = args[i + 1]; i += 2
+            } else {
+                i += 1
+            }
+        }
+        let db = try StageDB(path: dbPath, createIfMissing: false)
+        let report = try StageRenderer.renderQuad(db: db, atSpec: atSpec, outPath: outPath)
+        emitJSON(ok: true, command: "quad", db: dbPath, startTime: startTime, payload: report)
+
+    case "sheet":
+        guard args.count >= 2 else {
+            throw StageError(
+                code: "MISSING_ARGUMENT",
+                message: "Usage: mitate sheet <shot.db> [--frac 0.6] [--nocap] [--cols 3] --out <sheet.jpg>",
+                pointer: "wiki/instruments-and-review.md"
+            )
+        }
+        let dbPath = args[1]
+        var frac = 0.6
+        var nocap = false
+        var cols = 3
+        var outPath = "sheet.jpg"
+        var i = 2
+        while i < args.count {
+            let flag = args[i]
+            if flag == "--frac", i + 1 < args.count {
+                frac = Double(args[i + 1]) ?? 0.6; i += 2
+            } else if flag == "--nocap" {
+                nocap = true; i += 1
+            } else if flag == "--cols", i + 1 < args.count {
+                cols = Int(args[i + 1]) ?? 3; i += 2
+            } else if flag == "--out", i + 1 < args.count {
+                outPath = args[i + 1]; i += 2
+            } else {
+                i += 1
+            }
+        }
+        let db = try StageDB(path: dbPath, createIfMissing: false)
+        let report = try StageRenderer.renderSheet(db: db, frac: frac, nocap: nocap, cols: cols, outPath: outPath)
+        emitJSON(ok: true, command: "sheet", db: dbPath, startTime: startTime, payload: report)
+
+    case "strip":
+        guard args.count >= 2 else {
+            throw StageError(
+                code: "MISSING_ARGUMENT",
+                message: "Usage: mitate strip <shot.db> --from <beat@frac> --to <beat@frac> [--frames 8] --out <strip.jpg>",
+                pointer: "wiki/instruments-and-review.md"
+            )
+        }
+        let dbPath = args[1]
+        var fromSpec = "0.0"
+        var toSpec = "1.0"
+        var frames = 8
+        var outPath = "strip.jpg"
+        var i = 2
+        while i < args.count {
+            let flag = args[i]
+            if flag == "--from", i + 1 < args.count {
+                fromSpec = args[i + 1]; i += 2
+            } else if flag == "--to", i + 1 < args.count {
+                toSpec = args[i + 1]; i += 2
+            } else if flag == "--frames", i + 1 < args.count {
+                frames = Int(args[i + 1]) ?? 8; i += 2
+            } else if flag == "--out", i + 1 < args.count {
+                outPath = args[i + 1]; i += 2
+            } else {
+                i += 1
+            }
+        }
+        let db = try StageDB(path: dbPath, createIfMissing: false)
+        let report = try StageRenderer.renderStrip(db: db, fromSpec: fromSpec, toSpec: toSpec, frameCount: frames, outPath: outPath)
+        emitJSON(ok: true, command: "strip", db: dbPath, startTime: startTime, payload: report)
+
+    case "smoke":
+        guard args.count >= 2 else {
+            throw StageError(
+                code: "MISSING_ARGUMENT",
+                message: "Usage: mitate smoke <shot.db> [--dump-frames <dir>]",
+                pointer: "wiki/instruments-and-review.md"
+            )
+        }
+        let dbPath = args[1]
+        var dumpDir: String? = nil
+        var i = 2
+        while i < args.count {
+            if args[i] == "--dump-frames" {
+                if i + 1 < args.count && !args[i + 1].hasPrefix("--") {
+                    dumpDir = args[i + 1]; i += 2
+                } else {
+                    dumpDir = "smoke_dumps"; i += 1
+                }
+            } else {
+                i += 1
+            }
+        }
+        let db = try StageDB(path: dbPath, createIfMissing: false)
+        let report = try StageRenderer.runSmoke(db: db, dumpFramesDir: dumpDir)
+        emitJSON(ok: report.ok, command: "smoke", db: dbPath, startTime: startTime, payload: report)
+
+    case "shoot":
+        guard args.count >= 2 else {
+            throw StageError(
+                code: "MISSING_ARGUMENT",
+                message: "Usage: mitate shoot <shot.db> [--mode dailies|hero|reference] [--t|--at <t|beat@frac>] --out <take.mp4|take.mov|still.png>",
+                pointer: "wiki/instruments-and-review.md"
+            )
+        }
+        let dbPath = args[1]
+        var mode = "dailies"
+        var atSpec: String? = nil
+        var outPath = "take01.mp4"
+        var i = 2
+        while i < args.count {
+            let flag = args[i]
+            if flag == "--mode", i + 1 < args.count {
+                mode = args[i + 1]; i += 2
+            } else if (flag == "--t" || flag == "--at"), i + 1 < args.count {
+                atSpec = args[i + 1]; i += 2
+            } else if flag == "--out", i + 1 < args.count {
+                outPath = args[i + 1]; i += 2
+            } else {
+                i += 1
+            }
+        }
+        let db = try StageDB(path: dbPath, createIfMissing: false)
+        let report = try StageRenderer.shoot(db: db, mode: mode, atSpec: atSpec, outPath: outPath)
+        emitJSON(ok: true, command: "shoot", db: dbPath, startTime: startTime, payload: report)
+
+    case "bundle":
+        guard args.count >= 2 else {
+            throw StageError(
+                code: "MISSING_ARGUMENT",
+                message: "Usage: mitate bundle <shot.db> --out <scene.html>",
+                pointer: "wiki/instruments-and-review.md"
+            )
+        }
+        let dbPath = args[1]
+        var outPath = "scene.html"
+        var i = 2
+        while i < args.count {
+            if args[i] == "--out", i + 1 < args.count {
+                outPath = args[i + 1]; i += 2
+            } else {
+                i += 1
+            }
+        }
+        let db = try StageDB(path: dbPath, createIfMissing: false)
+        let report = try HTMLBundler.bundle(db: db, outPath: outPath)
+        emitJSON(ok: true, command: "bundle", db: dbPath, startTime: startTime, payload: report)
+
     default:
         struct HelpPayload: Encodable {
             let commands: [String]
@@ -336,7 +509,10 @@ do {
             command: verb,
             startTime: startTime,
             payload: HelpPayload(
-                commands: ["init", "schema", "recipe", "sql", "check", "bake", "probe"],
+                commands: [
+                    "init", "schema", "recipe", "sql", "kernel", "bake",
+                    "check", "probe", "quad", "sheet", "strip", "smoke", "shoot", "bundle"
+                ],
                 wiki_router: "AGENTS.md -> wiki/index.md"
             )
         )

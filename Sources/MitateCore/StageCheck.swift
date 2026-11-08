@@ -47,6 +47,28 @@ public struct FramingProbeEntry: Sendable, Codable, Equatable {
     public let depthM: Double
     public let inSafeFrame: Bool
     public let inCaptionBand: Bool
+
+    public init(
+        actorId: String,
+        role: String,
+        worldPosition: [Double],
+        worldBoundsMin: [Double],
+        worldBoundsMax: [Double],
+        screenBBox: [Double],
+        depthM: Double,
+        inSafeFrame: Bool,
+        inCaptionBand: Bool
+    ) {
+        self.actorId = actorId
+        self.role = role
+        self.worldPosition = worldPosition
+        self.worldBoundsMin = worldBoundsMin
+        self.worldBoundsMax = worldBoundsMax
+        self.screenBBox = screenBBox
+        self.depthM = depthM
+        self.inSafeFrame = inSafeFrame
+        self.inCaptionBand = inCaptionBand
+    }
 }
 
 public struct ContactSeparationReport: Sendable, Codable, Equatable {

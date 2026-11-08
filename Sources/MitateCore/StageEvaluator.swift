@@ -6,28 +6,36 @@ public struct StageStateCache: Sendable {
     public let beats: [BeatRow]
     public let bibles: [String: StyleBibleRow]
     public let sizes: [String: SizeRow]
+    public let shaders: [String: SurfaceShaderRow]
     public let actors: [ActorRow]
     public let props: [String: PropRow]
     public let characters: [String: CharacterRow]
     public let subjects: [String: SubjectRow]
     public let shots: [ShotRow]
+    public let lamps: [String: LampRow]
+    public let atmospheres: [AtmosphereRow]
     public let cues: [CueRow]
     public let warpSegments: [WarpSegmentRow]
     public let bakedTracks: [String: BakedTrackRow]
+    public let finishing: FinishingChainRow
 
     public init(db: StageDB) throws {
         self.slate = try db.loadSlate()
         self.beats = try db.loadBeats()
         self.bibles = try db.loadStyleBibles()
         self.sizes = try db.loadSizes()
+        self.shaders = try db.loadSurfaceShaders()
         self.actors = try db.loadActors()
         self.props = try db.loadProps()
         self.characters = try db.loadCharacters()
         self.subjects = try db.loadSubjects()
         self.shots = try db.loadShots()
+        self.lamps = try db.loadLamps()
+        self.atmospheres = try db.loadAtmospheres()
         self.cues = try db.loadCues()
         self.warpSegments = try db.loadWarpSegments()
         self.bakedTracks = try db.loadBakedTracks()
+        self.finishing = try db.loadFinishingChain()
     }
 }
 

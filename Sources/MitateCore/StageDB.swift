@@ -488,6 +488,140 @@ public final class StageDB: @unchecked Sendable {
         return list
     }
 
+    public func loadSurfaceShaders() throws -> [String: SurfaceShaderRow] {
+        var map: [String: SurfaceShaderRow] = [:]
+        let sql = """
+        SELECT id, mode, albedo, metalness, roughness, ior, clarity, abbe_dispersion,
+               subsurface_weight, subsurface_mfp, clearcoat, fuzz_weight, fuzz_tint,
+               glow_color, glow_nits, opacity, procedural_kernel
+        FROM surface_shaders;
+        """
+        try query(sql, row: { stmt in
+            let row = SurfaceShaderRow(
+                id: Self.colString(stmt, 0) ?? "studio_matte",
+                mode: Self.colString(stmt, 1) ?? "pbr",
+                albedo: Self.colString(stmt, 2) ?? "#9aa2ad",
+                metalness: sqlite3_column_double(stmt, 3),
+                roughness: sqlite3_column_double(stmt, 4),
+                ior: sqlite3_column_double(stmt, 5),
+                clarity: sqlite3_column_double(stmt, 6),
+                abbeDispersion: sqlite3_column_double(stmt, 7),
+                subsurfaceWeight: sqlite3_column_double(stmt, 8),
+                subsurfaceMfp: Self.colString(stmt, 9) ?? "#ff5f45",
+                clearcoat: sqlite3_column_double(stmt, 10),
+                fuzzWeight: sqlite3_column_double(stmt, 11),
+                fuzzTint: Self.colString(stmt, 12) ?? "#ffffff",
+                glowColor: Self.colString(stmt, 13) ?? "#000000",
+                glowNits: sqlite3_column_double(stmt, 14),
+                opacity: sqlite3_column_double(stmt, 15),
+                proceduralKernel: Self.colString(stmt, 16)
+            )
+            map[row.id] = row
+        })
+        return map
+    }
+
+    public func loadLamps() throws -> [String: LampRow] {
+        var map: [String: LampRow] = [:]
+        let sql = """
+        SELECT actor_id, type, kelvin, lumens, tint_hex, spread_angle, softness,
+               width_m, height_m, volumetric_dust, cast_shadows
+        FROM lamps;
+        """
+        try query(sql, row: { stmt in
+            let row = LampRow(
+                actorId: Self.colString(stmt, 0) ?? "",
+                type: Self.colString(stmt, 1) ?? "area_rect",
+                kelvin: sqlite3_column_double(stmt, 2),
+                lumens: sqlite3_column_double(stmt, 3),
+                tintHex: Self.colString(stmt, 4) ?? "#ffffff",
+                spreadAngle: sqlite3_column_double(stmt, 5),
+                softness: sqlite3_column_double(stmt, 6),
+                widthM: sqlite3_column_double(stmt, 7),
+                heightM: sqlite3_column_double(stmt, 8),
+                volumetricDust: sqlite3_column_double(stmt, 9),
+                castShadows: sqlite3_column_int(stmt, 10) != 0
+            )
+            map[row.actorId] = row
+        })
+        return map
+    }
+
+    public func loadAtmospheres() throws -> [AtmosphereRow] {
+        var list: [AtmosphereRow] = []
+        let sql = """
+        SELECT id, actor_id, mode, fog_density, anisotropy, base_height_m, falloff, scatter_hex
+        FROM atmospheres ORDER BY id ASC;
+        """
+        try query(sql, row: { stmt in
+            list.append(AtmosphereRow(
+                id: Self.colString(stmt, 0) ?? "",
+                actorId: Self.colString(stmt, 1),
+                mode: Self.colString(stmt, 2) ?? "global_mist",
+                fogDensity: sqlite3_column_double(stmt, 3),
+                anisotropy: sqlite3_column_double(stmt, 4),
+                baseHeightM: sqlite3_column_double(stmt, 5),
+                falloff: sqlite3_column_double(stmt, 6),
+                scatterHex: Self.colString(stmt, 7) ?? "#c8d6e5"
+            ))
+        })
+        return list
+    }
+
+    public func loadFinishingChain() throws -> FinishingChainRow {
+        var row = FinishingChainRow(
+            toneMapper: "agx",
+            exposureEv: 0.0,
+            contrast: 1.0,
+            saturation: 1.0,
+            bloomIntensity: 0.05,
+            bloomThreshold: 0.9,
+            halationWeight: 0.0,
+            chromaticAberration: 0.0,
+            filmGrainIntensity: 0.02,
+            vignetteWeight: 0.15,
+            customKernel: nil
+        )
+        let sql = """
+        SELECT tone_mapper, exposure_ev, contrast, saturation, bloom_intensity,
+               bloom_threshold, halation_weight, chromatic_aberration,
+               film_grain_intensity, vignette_weight, custom_kernel
+        FROM finishing_chain WHERE id = 1;
+        """
+        try query(sql, row: { stmt in
+            row = FinishingChainRow(
+                toneMapper: Self.colString(stmt, 0) ?? "agx",
+                exposureEv: sqlite3_column_double(stmt, 1),
+                contrast: sqlite3_column_double(stmt, 2),
+                saturation: sqlite3_column_double(stmt, 3),
+                bloomIntensity: sqlite3_column_double(stmt, 4),
+                bloomThreshold: sqlite3_column_double(stmt, 5),
+                halationWeight: sqlite3_column_double(stmt, 6),
+                chromaticAberration: sqlite3_column_double(stmt, 7),
+                filmGrainIntensity: sqlite3_column_double(stmt, 8),
+                vignetteWeight: sqlite3_column_double(stmt, 9),
+                customKernel: Self.colString(stmt, 10)
+            )
+        })
+        return row
+    }
+
+    public func recordTake(
+        mode: String,
+        renderTimeMs: Double,
+        meanLuminance: Double,
+        clippingPct: Double,
+        outputPath: String
+    ) throws {
+        let escapedOut = outputPath.replacingOccurrences(of: "'", with: "''")
+        let escapedMode = mode.replacingOccurrences(of: "'", with: "''")
+        let sql = """
+        INSERT INTO takes (mode, render_time_ms, mean_luminance, clipping_pct, output_path)
+        VALUES ('\(escapedMode)', \(renderTimeMs), \(meanLuminance), \(clippingPct), '\(escapedOut)');
+        """
+        _ = try executeTransaction(sql)
+    }
+
     public func loadBakedTracks() throws -> [String: BakedTrackRow] {
         var map: [String: BakedTrackRow] = [:]
         let sql = """

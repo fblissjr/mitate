@@ -261,6 +261,65 @@ public struct BakedTrackRow: Sendable, Codable, Equatable {
     public var samplesBlob: Data
 }
 
+public struct SurfaceShaderRow: Sendable, Codable, Equatable {
+    public var id: String
+    public var mode: String
+    public var albedo: String
+    public var metalness: Double
+    public var roughness: Double
+    public var ior: Double
+    public var clarity: Double
+    public var abbeDispersion: Double
+    public var subsurfaceWeight: Double
+    public var subsurfaceMfp: String
+    public var clearcoat: Double
+    public var fuzzWeight: Double
+    public var fuzzTint: String
+    public var glowColor: String
+    public var glowNits: Double
+    public var opacity: Double
+    public var proceduralKernel: String?
+}
+
+public struct LampRow: Sendable, Codable, Equatable {
+    public var actorId: String
+    public var type: String
+    public var kelvin: Double
+    public var lumens: Double
+    public var tintHex: String
+    public var spreadAngle: Double
+    public var softness: Double
+    public var widthM: Double
+    public var heightM: Double
+    public var volumetricDust: Double
+    public var castShadows: Bool
+}
+
+public struct AtmosphereRow: Sendable, Codable, Equatable {
+    public var id: String
+    public var actorId: String?
+    public var mode: String
+    public var fogDensity: Double
+    public var anisotropy: Double
+    public var baseHeightM: Double
+    public var falloff: Double
+    public var scatterHex: String
+}
+
+public struct FinishingChainRow: Sendable, Codable, Equatable {
+    public var toneMapper: String
+    public var exposureEv: Double
+    public var contrast: Double
+    public var saturation: Double
+    public var bloomIntensity: Double
+    public var bloomThreshold: Double
+    public var halationWeight: Double
+    public var chromaticAberration: Double
+    public var filmGrainIntensity: Double
+    public var vignetteWeight: Double
+    public var customKernel: String?
+}
+
 // MARK: - Evaluated Snapshot Models (Pure Function of t)
 
 public struct StageClock: Sendable, Codable, Equatable {

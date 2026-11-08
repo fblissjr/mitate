@@ -10,10 +10,10 @@ a relational SQLite soundstage (`shot.db`) + native Apple Silicon Metal**.
 
 It is short on purpose. If it grows into a summary of the plan, delete the
 summary. Where it gestures at something, the file that owns it is linked:
-[`docs/addressing.md`](docs/addressing.md) for `t`,
-[`docs/physics-bake-proposal.md`](docs/physics-bake-proposal.md) for what a bake
-may and may not do, [`docs/pattern-ledger.md`](docs/pattern-ledger.md) for how
-patterns get promoted.
+[`wiki/time-and-beats.md`](wiki/time-and-beats.md) for `t`, relative beats, and
+what a Tier-1 bake may and may not do, and
+[`wiki/patterns-and-recipes.md`](wiki/patterns-and-recipes.md) for how tested
+SQL and MSL patterns get promoted.
 
 ## The goal
 
@@ -173,7 +173,7 @@ independently of the artifact that embeds it, the claim is about authoring style
 instead.
 
 Since v1 was written, two things became clear from watching real agent sessions
-in Claude Code and Antigravity (`docs/harness-loop.md`):
+in Claude Code and Antigravity:
 
 1. **Agents are surgical with SQL and clumsy with thousand-line file rewrites.**
    Asking an LLM to tweak a light, retime a beat, or adjust a character's stride

@@ -29,26 +29,23 @@ internal/*
 *.swo
 *~
 
-# Node / bun (the skill's render + build toolchain, when it lands here)
+# SwiftPM / Xcode / SQLite WAL scratch
+.build/
+.swiftpm/
+DerivedData/
+*.xcodeproj
+*.xcworkspace
+*.db-wal
+*.db-shm
+
+# Node / bun
 node_modules/
 .bun/
 npm-debug.log*
 bun-debug.log*
-# bun.lock IS committed for reproducibility — do not ignore it.
-
-# Playwright browsers / recorder scratch (never committed; artifacts live outside the repo)
-.cache/ms-playwright/
-/render-tmp/
 
 # Machine-local tooling config (holds absolute paths — never commit)
 .path-privacy.local.json
-
-# The local flavor of the Claude Code settings. `.claude/settings.json` IS
-# tracked and stays that way — it wires the claims reminder, which is a repo
-# control and has to exist for every checkout. This file is its opposite half:
-# per-machine skill overrides and permissions, one `git add -A` from a commit.
-# It was ignored only by a global gitignore until now, so the guarantee held on
-# one machine and nowhere else.
 .claude/settings.local.json
 
 # Env / secrets
@@ -56,19 +53,7 @@ bun-debug.log*
 .env.local
 .env.*.local
 
-# Netlify
-.netlify/
-
 # Logs / OS cruft
 *.log
 Thumbs.db
-
-# Transient bracket workspaces. bracket-commands.js mkdtemps these into cwd and
-# removes them in a finally -- this is the belt for the path where it cannot,
-# because scratch in the repo root is one `git add -A` from a commit.
-.mitate-cmd-*/
-
-# Point-in-time snapshots stay local (owner call, 2026-08-07). NOTE: this
-# entry only stops NEW snapshot files from being staged; files tracked before
-# it landed remain tracked until an explicit `git rm --cached`.
 snapshots/

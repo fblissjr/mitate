@@ -16,10 +16,11 @@ rendering engine (`MitateMetal`)**, plus a self-contained HTML exporter
 (`mitate bundle`) that preserves the `window.seekTo(t)` web contract.
 
 Read [`../VISION.md`](../VISION.md) first for why determinism comes first and why
-declarations live in SQLite. The v1 founding record and measurements remain in
-[`predecessor-record.md`](predecessor-record.md),
-[`addressing.md`](addressing.md), [`representation.md`](representation.md), and
-[`physics-bake-proposal.md`](physics-bake-proposal.md).
+declarations live in SQLite, and see [`../wiki/index.md`](../wiki/index.md) for
+the modular LLM Knowledge Wiki covering each layer (`time-and-beats.md`,
+`soundstage-schema.md`, `cinematography-and-rigging.md`,
+`metal-engine-and-kernels.md`, `instruments-and-review.md`, and
+`patterns-and-recipes.md`).
 
 ---
 
@@ -28,10 +29,10 @@ declarations live in SQLite. The v1 founding record and measurements remain in
 ### 1.1 What v1 Proved vs. Where v1 Fought the Agent
 
 In `mitate` v1, every scene was a ~1,500-line self-contained HTML file carrying
-an embedded ~1.1 MB `three.js` bundle and <!--derived:fences-->7<!--/derived-->
+an embedded ~1.1 MB `three.js` bundle and 7
 replicated JavaScript fence blocks (`CONTRACT`, `KERNEL`, `SOLVER`, `RIG`,
 `DRIVER`, `CHARACTER`, `HTML`). Watching real agent builds in `agy` and Claude
-Code (`docs/harness-loop.md`) exposed three structural bottlenecks:
+Code exposed three structural bottlenecks:
 
 | Bottleneck in v1 (Monolithic HTML + Headless Browser) | How `mitate` v2 (`shot.db` + Native Swift/Metal) Solves It |
 | :--- | :--- |
@@ -55,7 +56,7 @@ workflows:
    - Hardware TBDR Tile G-Buffer + Inline Ray-Traced lighting + zero-copy `IOSurface` → `VTCompressionSession` (`ProRes 4444` / `HEVC` / `H.264`).
    - `quad` 2×2 orthographic + camera scout view and automatic stdout exposure/framing JSON telemetry.
 2. **Corrected for `mitate` v2:**
-   - **Relative Beat Addressing replaces raw `time_sec`:** Raw timestamps break on the first beat retime (`addressing.md`). v2 adds `beats` (`v_beats`) and anchors `cue_sheet` and `shots` to `(beat_id, beat_frac)` (covariant) or `(beat_id, offset_sec, dur_sec)` (invariant physical duration).
+   - **Relative Beat Addressing replaces raw `time_sec`:** Raw timestamps break on the first beat retime (`wiki/time-and-beats.md`). v2 adds `beats` (`v_beats`) and anchors `cue_sheet` and `shots` to `(beat_id, beat_frac)` (covariant) or `(beat_id, offset_sec, dur_sec)` (invariant physical duration).
    - **Random-Access `f(t)` Purity + Tier-1 `bake` replaces stateful `substeps_per_frame`:** Step-integrating `state_buffers` at runtime violates the Prime Directive. v2 enforces pure closed-form `KinematicsKernelFn(t)` by default and provides `mitate bake shot.db` to freeze simulated trajectories into `baked_tracks` so `seekTo(t)` stays $O(1)$ in any order.
    - **Single-Frame Deterministic Denoising replaces `MTLFXTemporalScaler`:** Temporal scalers and temporal GI caches carry history across frames, breaking random-access seek identity and smearing across hard cuts. v2 uses spatial-only scaling + single-frame AOV-guided wavelet denoising seeded purely by `(pixel_xy, sample_idx, seed)`.
    - **Cinematography Solver (`SIZES` + `SUBJECTS` + `SHOTS`) added above `lenses`:** `aim_at` solves orientation, not distance or framing. v2 embeds the `SIZES` ladder (`EWS`, `WS`, `FSA`, `FS`, `MS`, `MCU`, `CU`, `ECU`) and `shots` table so agents can frame by cinematographic intent while keeping raw camera coordinates available as an override.

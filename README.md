@@ -1,118 +1,30 @@
-last updated: 2026-09-04
+last updated: 2026-11-08
 
 # mitate
 
-An agent skill (Claude Code & Antigravity 2.0) that writes **an animated three.js scene as native HTML**.
-There is no input format — whatever context your agent can already read is
-enough: a prompt, a document, a codebase, a screenshot. Ask for one and you get
-a single file that opens in any browser. Not a video: no player, no build step,
-and the geometry is drawn live on every frame.
+Deterministic animated scenes from any input — a prompt, a document, a codebase, a mechanism, a screenshot, or a story beat — built on the **`mitate` v2 (Slate)** architecture: a **single-file SQLite 3 Virtual Soundstage (`shot.db`)**, a **native Apple Silicon Swift 6 + Metal 3/4 rendering engine (`MitateCore` + `MitateMetal`)**, and a **self-contained HTML exporter (`mitate bundle`)**.
 
-It is a pipeline an agent drives rather than a one-shot generator: it reshoots
-parts, validates on three axes, and gets better over time.
+*mitate* (見立て): to see one thing as another — the Japanese aesthetic of representing one thing through another. Here, seeing any input as a scene.
 
-**Every scene is a pure function of `t` — and `t` is a position, not a clock.**
-It is an address you evaluate, not a cursor you advance: nothing ever asks what
-time it is, only what the scene looks like at this address. Any `t`, in any
-order, as many times as you like, always the same pixels.
+**Why it is built this way, and why determinism comes first**, is [`VISION.md`](VISION.md) — one page, and the thing to read before deciding this project is just a video generator.
 
-That one property is what everything else is built on. The recorder shoots frames
-out of order and in parallel. A check seeks away and back and compares bytes, so
-a regression is detectable rather than arguable. A viewer scrubs backwards. And
-duration is free: a frame at `t=18000` costs what a frame at `t=1` costs, and the
-file is the same size either way, because the duration is a number in a table.
+## The Prime Directive
 
-The whole surface tooling touches is a handful of `window.*` exports at the end
-of every scene — [the window contract](#the-window-contract), below.
+1. **Every scene is a pure function of `t` — and `t` is a random-access position, not a clock.**
+   It is an address you evaluate (`StageClock(t) -> StageSnapshot(t)`), not a cursor you advance: zero state carried across frames, no temporal accumulation (`MTLFXTemporalScaler`, temporal GI caches, or unbaked stateful buffers), no runtime `Math.random()`, and no wall-clock dependence. Motion is either closed-form (`cue_sheet` + pure `.metal` `kinematics` kernels) or frozen at build time into `baked_tracks` via `mitate bake`. Any `t`, in any order, as many times as you like, evaluates in $O(1)$ and produces the exact same pixels.
+2. **Tooling that drives a scene talks only to the contract**, never to scene internals:
+   - **Native contract (`shot.db`)**: Driven strictly via `mitate` (alias `slate`) CLI verbs (`init`, `schema`, `recipe`, `sql`, `kernel`, `bake`, `check`, `quad`, `sheet`, `strip`, `probe`, `smoke`, `shoot`, `bundle`).
+   - **Web contract (`scene.html` via `mitate bundle`)**: `window.seekTo(t)`, `window.DURATION`, `window.stopPlayback()`, `window.sceneReady()`.
 
-The tooling tries to abstract all this cleanly, but clean abstraction is nearly
-impossible here — so treat it as a bootstrap to personalize. When the film you
-want needs a primitive that doesn't exist yet, you build it on top — until
-models can do all of this on their own.
+## Why SQLite (`shot.db`) + Native Apple Silicon Metal
 
-[![A sampler of scenes made with mitate: a bear nosing a hanging beehive, three characters walking in on their own gaits, a gearbox mechanism, subsurface scattering through thin skin, a grid of shader primitives, and the same gearbox under a neon style bible](site/posters/scenes.jpg)](https://mitate.microapp.me)
+- **Surgical 1-line SQL mutations**: Instead of rewriting a 1,500-line HTML file to adjust a light, retime a beat, or tweak a character's stride, an agent runs `mitate sql shot.db "UPDATE lamps SET lumens=2800 WHERE actor_id='key'"`, validated immediately by SQLite `FOREIGN KEY` and `CHECK` constraints.
+- **Relative beat addressing (`beats` & `v_beats`)**: Every shot and animation cue anchors to `(beat_id, beat_frac)`. Retiming a beat in `beats` shifts every downstream cue and transition automatically.
+- **Auto-derived subject bounds (`auto_bounds`)**: `MitateCore` computes the exact posed 3D world-space bounding box of any actor, character rig, or group at shot time `t` before solving camera framing (`SIZES`: `EWS`, `WS`, `FSA`, `FS`, `MS`, `MCU`, `CU`, `ECU`).
+- **Schema at the seam, code in the leaf**: Structural relationships live in SQLite tables; custom procedural motion, volumetric media, or shading hooks compile in ~25ms from `.metal` `[[visible]]` functions into `MTLVisibleFunctionTable` (`gpu_kernels`).
+- **Situated JSON telemetry + Three-Axis Review**: Every `mitate` command prints structured JSON (`meter`, `framing`, `contacts`, `lint`) to stdout. Scenes are verified across **Composition** (`quad` + `sheet` at `0.6` and `0.95` + `.squint.jpg`), **Continuity** (`strip`), **Semantics** (`sheet --nocap`), **3D Contact** (`probe`), and **Random-Access Determinism** (`smoke`, reporting `changed_pixels`, `bbox`, `max_channel_delta`, `psnr_db`).
 
-That sampler is a slice of what it makes today — the full corpus plays in the
-browser at **[mitate.microapp.me](https://mitate.microapp.me)** — free and
-MIT-licensed, and the site is just the films. The same scenes are tracked in
-[`scenes/`](scenes/) (the film corpus — the plugin itself ships no films, and
-that directory's README carries one section per film): open one from disk and
-you get the real artifact, at full resolution and frame rate, rather than a
-compressed recording of it. It's an early version — this is the current
-output, not the ceiling.
-
-*mitate* (見立て): to see one thing as another — the Japanese aesthetic of
-representing one thing through another. Here, seeing any input as a scene.
-
-**Why it is built this way, and why determinism comes first**, is
-[`VISION.md`](VISION.md) — one page, and the thing to read before deciding this
-project is just a video generator.
-
-## Why do it this way, and what it costs
-
-**What you gain.** The output is code, not pixels. An agent can reshoot one shot
-without re-rendering the rest, and swap the whole look by changing one line. It
-diffs and versions like source. It renders at any resolution from the same file,
-because nothing is baked in. And determinism makes a regression byte-detectable:
-the same `t` either matches the last run or it does not.
-
-**What it can't do.** This is three.js with no image textures — flat color, node
-math, GPU noise — so it is stylized by construction: it cannot be photoreal, and
-no frame of footage ever appears in a film. It will not edit an existing video, a
-screen recording, or a slide deck. The films are silent. Faces are not built yet.
-The character films spend 4 to 5 seconds compiling shaders on a first visit on
-capable hardware — slower devices, longer — and captions stop being legible below
-roughly 700px of frame width.
-
-**Where it is.** There's a balance in building in AI between "unfinished" and
-"over-engineered", and this sits on the unfinished side (I think). Everything
-here runs 12 to 37 seconds — kept short so the films open as live HTML on
-ordinary devices. **Nothing caps duration**: a 60-second film has been built, and
-a frame at t=18000 costs what a frame at t=1 costs, because the scene graph is
-built once and every frame restates it rather than accumulating.
-Characters are one skeleton family. I don't know yet whether this is useful — it
-is fun to tinker with and see what it can do, and that is why it is public.
-
-## The window contract
-
-Everything the recorder, the smoke gate, and the showcase site can do, they do
-through a few `window.*` exports at the end of every scene — never by reaching
-into scene internals.
-
-**It is tiered, which is the part usually missed.** `smoke.js` hard-asserts four
-names — `seekTo`, `DURATION`, `stopPlayback`, `sceneReady` — and reads the rest
-behind fallbacks, so a scene missing `BEATS` is degraded rather than broken.
-`smoke.js`'s `CONTRACT` and `SOFT_CONTRACT` are the authority; this section is
-the reader-facing view of them. This is the driver block from
-[`gearbox.html`](scenes/gearbox.html) (search for
-`window.seekTo`). The excerpt is abridged and may drift out of sync as scenes
-evolve — the scene file is the source of truth:
-
-```js
-// the driver (abridged)
-window.DURATION = TOTAL;            // derived from BEATS, cannot disagree
-window.BEATS    = BEATS;            // tools label frames by beat
-window.FRAME    = FRAME;            // the declared aspect + px
-window.FLASHES  = FLASHES;          // flash midpoints, absolute seconds
-window.CAPFADE  = CONFIG.capFade;   // caption fade, for the reading-speed lint
-window.SHOTS    = SHOTS.map(/* cut-entry windows */);
-
-window.seekTo = function (t) {      // the f in f(t)
-  uTime.value = t;
-  const state = { t };              // the driver builds it; the kernel reads it
-  setCamera(state); animate(t); setOverlay(t);
-  pipeline.render();
-};
-window.stopPlayback = function () { playing = false; };
-// …and window.sceneReady = true, once every shader is warm
-```
-
-The names are permanent — every tool depends on them. The list grows when a
-tool needs an export rather than a peek: `FLASHES` and `SHOTS` joined the day
-a check needed them. The showcase site is itself a consumer — its hero drives
-gearbox through `seekTo`, live.
-
-## Install
+## Install & Usage
 
 **Claude Code**:
 ```
@@ -120,67 +32,49 @@ gearbox through `seekTo`, live.
 /plugin install mitate@mitate
 ```
 
-**Antigravity 2.0**:
+**Google Antigravity (`agy`)**:
 Discovered automatically via `.agents/plugins.json` pointing to `./plugin`, or installable via `agy plugin install ./plugin`.
 
-Then ask for one, in whatever words you'd normally use: *"animate how our
-approval process flows"*, *"make a boss-intro cutscene for this creature"*,
-*"turn docs/data-flywheel.md into an explainer"*, *"make this joke an animated
-meme"*.
+### Quick CLI Workflow
 
-The corpus films run 12 to 37 seconds; a 60-second one has been built. A film
-lasts exactly as long as the beats written for it, and the HTML file is the same
-size either way, because the duration is a number in a table. What grows with
-length is recording time and the number of beats to author and review — not the
-artifact, the memory, or the cost of a frame.
+```bash
+# Discover schema or apply a tested SQL recipe
+mitate schema [table_name]
+mitate recipe [three-point-lights|character-walk|rack-focus|explainer-gears]
 
-**WebGPU is not required** — scenes use three.js `WebGPURenderer`, which falls
-back to WebGL2 transparently, so any WebGL2 browser plays one.
+# Initialize a new SQLite soundstage and mutate with atomic SQL
+mitate init shot.db --preset workshop
+mitate sql shot.db "INSERT INTO beats (id, seq_order, dur_sec, caption) VALUES ('intro', 1, 2.8, '1 · The drive gear engages');"
 
-**The toolchain is local, and how much of it you need depends on the backend.**
-The Canvas2D template is born self-contained and needs nothing at all. A three.js
-scene needs `bun` to embed three into the file — skipping that is recoverable,
-since every `build.js` command embeds automatically (a direct `shoot.js` run is
-the one path that does not). Rendering to MP4 or
-AVIF, and running the review instruments, needs `bun`, ffmpeg and a Chromium.
-See [`plugin/README.md`](plugin/README.md#installation).
+# Pre-render lint (<5ms) and 2x2 Camera + Top/Front/Side ortho scout (~40ms)
+mitate check shot.db
+mitate quad shot.db --t intro@0.5 --out quad.png
 
-That local dependency is worth knowing if you use Claude somewhere other than
-Claude Code: Cowork and cloud sessions load the skills enabled on your claude.ai
-account rather than a locally installed plugin, and they are a different
-environment from the one these commands assume. **Nobody has run mitate there,
-so treat it as untested rather than supported.**
+# Three-Axis Review & Determinism Gate
+mitate sheet shot.db --frac 0.6  --out sheet_06.jpg
+mitate sheet shot.db --frac 0.95 --out sheet_095.jpg
+mitate sheet shot.db --frac 0.6 --nocap --out sheet_nocap.jpg
+mitate strip shot.db --from intro@0.2 --to intro@0.8 --out strip.jpg
+mitate probe shot.db --t intro@0.5 --sep gear_a gear_b
+mitate smoke shot.db
 
-## Layout
+# Shoot hardware-encoded video (MP4 / ProRes 4444) or bundle self-contained HTML
+mitate shoot shot.db --mode hero --out film.mp4
+mitate bundle shot.db --out scene.html
+```
 
-| Path | What |
+## Repository Layout
+
+| Path | What lives here |
 |---|---|
-| [`plugin/`](plugin/) | The plugin itself — manifests (`.claude-plugin/` & `plugin.json`), `rules/`, `skills/mitate/` with SKILL.md, references, templates. No films ship in it. See [`plugin/README.md`](plugin/README.md) |
-| [`.agents/`](.agents/) | Antigravity 2.0 workspace configuration ([`AGENTS.md`](AGENTS.md) front door) |
-| [`site/`](site/) | The static showcase site behind [mitate.microapp.me](https://mitate.microapp.me) — one hand-authored page, no framework |
-| [`docs/`](docs/) | [`plan.md`](docs/plan.md) (founding plan, architecture, phase gates), [`physics-bake-proposal.md`](docs/physics-bake-proposal.md), and [`predecessor-record.md`](docs/predecessor-record.md) (the frozen predecessor's measured findings, inherited) |
-| [`scenes/`](scenes/) | The tracked film corpus — full repo members (CI-smoked, parity-checked, on the site), not shipped in the plugin |
-| [`scripts/`](scripts/) | `stage-films.sh` — copies `scenes/` into `site/films/` at build time |
-
-Each scene HTML file is tracked once, in `scenes/`, and staged into
-`site/films/` at deploy. Edit them where they live.
-
-## Status
-
-Phases 0–2 are complete and gated: the node-stack templates, recorder, and
-instruments on both backends; the material packs and style bibles; the character
-scaffold, demonstrated by `menagerie` and delivered by `bear-and-bees`. A chart
-tier sits below the films for isolating shader primitives. Phase 4, the physics
-bake, is next by phase priority; the 2026-07 restructure migration completed and
-its plan retired itself, so the live queue is [`docs/README.md`](docs/README.md)'s
-work-next row — films from the test-case portfolio first.
-Architecture and phase gates in
-[`docs/plan.md`](docs/plan.md); the current ranked work — instruments, doc
-routing, and what is deliberately deferred with the trigger that revives it — in
-[`docs/working-plan.md`](docs/working-plan.md); version history in
-[`CHANGELOG.md`](CHANGELOG.md).
+| [`AGENTS.md`](AGENTS.md) (`CLAUDE.md`) | Canonical front-door router for Google Antigravity (`agy`) and Claude Code |
+| [`VISION.md`](VISION.md) | Core intent: why determinism comes first, `t` vs. `state`, reproducibility vs. byte-identity, and why declarations live in `shot.db` |
+| [`docs/plan.md`](docs/plan.md) | `mitate` v2 system architecture, full SQLite soundstage DDL (`schema.sql`), Metal 3/4 hybrid rendering pipeline, CLI specification, and roadmap milestones |
+| [`docs/README.md`](docs/README.md) | Documentation & wiki question router |
+| [`wiki/index.md`](wiki/index.md) | Modular LLM Knowledge Wiki (`time-and-beats.md`, `soundstage-schema.md`, `cinematography-and-rigging.md`, `metal-engine-and-kernels.md`, `instruments-and-review.md`, `patterns-and-recipes.md`) |
+| [`plugin/`](plugin/) | Shipped agent plugin (`skills/mitate/SKILL.md`, `skills/mitate/references/*.md`, `agents/film-reviewer.md`, `rules/AGENTS.md`) |
+| [`scripts/`](scripts/) | Repository self-check (`scripts/selfcheck.js`) and git hook installer (`scripts/install-hooks.sh`) |
 
 ## License
 
-MIT — see [LICENSE](LICENSE). Third-party notices (three.js, embedded in every
-scene) are in [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
+MIT — see [LICENSE](LICENSE).

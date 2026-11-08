@@ -1,102 +1,34 @@
-# Delivering the scene
+# Delivering the scene: HTML bundles and poster stills
 
-The scene HTML **is** the deliverable. It is not a source file you render a
-product from — it is the product, and on any surface that can run it, shipping
-anything else is shipping a lossy copy of something you already have.
+> **Not here.** Video recording modes (`MP4`, `HEVC`, `ProRes 4444`) and inline GitHub loops → `recordings.md`; WebGPU/WebGL2 browser runtime details → `webgpu-stack.md`.
 
-That is a measured claim, not a preference: after compression the real artifact
-is smaller than a mid-quality recording of itself, at far better fidelity.
+From a single `shot.db` soundstage, `mitate` v2 produces two primary deliverables: hardware-encoded video (`mitate shoot`, covered in `recordings.md`) and a single self-contained looping HTML player (`mitate bundle`).
 
-> **Not here.** recording formats, encoders and their measured costs →
-> `recordings.md`; the format DECISION → SKILL.md, at spec time; render-side
-> cost → `webgpu-stack.md`.
+## Self-contained HTML bundle (`mitate bundle`)
 
-**Map.** Deliberately unlinked — a heading map costs nothing and cannot dangle,
-where hand-written anchors ship into an install cache unverified.
+```bash
+mitate bundle shot.db --out scene.html
+```
 
-- On a page you control, ship the scene — not a recording of it
-- Stills come from the scene, never from the loop
-- Which artifact goes on which surface
+Compiles `shot.db` — including its declarative `beats`, `shots`, `subjects`, `style_bibles`, procedural `props`, `characters`, `cue_sheet`, and any frozen `baked_tracks` — into one standalone `.html` file with zero external network requests, no CDN links, and no `type="module"` server requirement. Double-click `scene.html` from disk or serve it from any static host.
 
-The HTML scene is a fourth, co-equal delivery option alongside mp4, WebP and
-AVIF — not a footnote to them. It is the interactive, deterministic source
-itself, not a rendering of it: `build.js bundle` makes it a single
-self-contained file that runs offline, and it plays fine served from GitHub
-Pages or any static host. It does **not** run from github.com directly, because
-GFM strips `<script>` — which is the one constraint that makes a recording
-necessary at all, and the entire subject of `recordings.md`.
+### The Web Contract (`window.*`)
 
-## On a page you control, ship the scene — not a recording of it
+Every bundled `scene.html` implements the permanent `window.*` contract so external players, test harnesses, and embedding pages can drive any scene without touching scene internals:
 
-The compressed-loop path is scoped to **one constraint: GitHub will not render
-an mp4 inline.** Lift it — on any page you control — and the right answer is not
-a better recording. It is no recording: serve the scene.
+- `window.seekTo(t)` — seeks to position `t` (in seconds, `0 <= t <= window.DURATION`) and renders that exact frame deterministically.
+- `window.DURATION` — total duration in seconds, derived from `beats` (`SUM(dur_sec)`).
+- `window.stopPlayback()` — halts the built-in `requestAnimationFrame` playback loop so an external scrubber or harness can drive `window.seekTo(t)` directly.
+- `window.sceneReady()` — returns boolean readiness (`true` once all shaders and buffers are initialized and `seekTo(0)` has warmed the pipeline).
 
-The instinct is that an HTML file carrying an embedded three.js is the heavy
-option. Measured, it is the opposite, because text compresses and video does not:
+## Poster stills come from the scene, never from a compressed video
 
-| per film, over the wire | size |
-|---|---|
-| scene HTML, raw | ~1.11 MB |
-| scene HTML, **brotli** (what a static host actually serves) | **~255 KB** |
-| the same film as h264 1280/30fps | 559-1626 KB |
-| the same film as AVIF 720/12fps | ~344 KB |
-
-The real artifact is cheaper than a mid-quality recording of itself, at far
-better fidelity — because it is not a copy, it is the thing. On this repo's
-showcase the swap cut a full scroll-through from ~6.3 MB to ~1.9 MB and removed
-8 MB of tracked mp4s. The byte figures move whenever a scene's content does.
-
-Two second-order wins, both larger than they look:
-
-- **The thumbnail and the full view are the same URL.** Watch a thumbnail, click
-  to open it, and the open costs zero bytes — already cached. A recording makes
-  you pay for the film twice.
-- **Bandwidth tracks device capability.** Weak devices fall back to the poster
-  still (~45 KB), cheaper than any animated format. The degradation path saves
-  bytes instead of costing them.
-
-The cost is real and worth stating: a live scene boots in about a second where a
-video paints its poster instantly, and each one holds a GPU context. So the
-showcase mounts almost nothing: one driven hero scene on capable desktops
-(the cheapest scene to warm — ~1.1s to `sceneReady` against 4-5s for the
-character films), and every other scene only on an explicit click, unmounted on
-close. Under `prefers-reduced-motion`, and on coarse-pointer devices — where an
-offscreen-composited iframe was measured never reaching `sceneReady` — the hero
-holds a poster still and a static readout instead. Zero or one mounted scene,
-by construction.
-
-## Stills come from the scene, never from the loop
-
-`build.js poster <scene.html> [t] [width]` renders a frame-exact still straight
-from the scene. Use it for README heroes, reduced-motion fallbacks, and site
-thumbnails. Extracting a frame from an AVIF or WebP instead gives you a
-transcode of a lossy encode — visibly worse, and for no gain, since the scene is
-right there and deterministic.
-
-This is a rule about the scene being the source, which is why it lives here and
-not with the encoders: the still is rendered, never re-derived from a recording.
-
-In this repo that rule is why the showcase carries one `-still.jpg` per film,
-rendered from source at a chosen `t`. It is the only image the showcase ships.
+To generate a hero still, thumbnail, or reduced-motion fallback image at a specific beat coordinate `beat@frac`, render directly from `shot.db` rather than extracting a lossy frame from an MP4 or AVIF encode.
 
 ## Which artifact goes on which surface
 
-| surface | ship | why |
+| Surface | Deliverable | Command |
 |---|---|---|
-| GitHub README | animated AVIF (or WebP) | the only animated formats GitHub embeds; mp4 is served `text/plain` and `<video>` is stripped |
-| a page you control | **the scene HTML** | smaller than its own recording after brotli, and it is the artifact rather than a lossy copy |
-| a poster or still, anywhere | `build.js poster` | a frame rendered from source |
-
-The first row is the whole reason `recordings.md` exists; everything about
-producing that artifact — formats, encoders, decode cost, the content-type
-mechanism — lives there.
-
-What this repo actually does, after trying the alternatives: **it ships no
-recordings at all.** The showcase drives one hero scene through the window
-contract where the device can afford it, loads any other scene on demand, and
-otherwise nothing moves; the film READMEs embed a poster frame per film, because
-GitHub cannot run a scene and a frame is the honest thing to show there. Every
-image is `build.js poster` against the scene. The recording path still holds for anyone
-who *needs* an inline animated preview on GitHub — that is what `build.js avif`
-is for — but a page that says it is not a video should not open by playing one.
+| Local review, static website, or interactive scrubber | Self-contained `scene.html` | `mitate bundle shot.db --out scene.html` |
+| Direct video delivery, presentation, or NLE timeline | Frame-exact `.mp4` or `.mov` (`ProRes 4444`) | `mitate shoot shot.db --mode hero --out film.mp4` |
+| GitHub README inline animation (where `<video>` and `<script>` are stripped) | Animated `.avif` or `.webp` | See `recordings.md` |

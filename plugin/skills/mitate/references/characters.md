@@ -1,194 +1,59 @@
-# The character scaffold
+# The character scaffold (`characters`)
 
-> **Not here.** surface and shading packs → `materials.md`; per-beat motion discipline → `method.md`.
+> **Not here.** Surface shaders and lighting → `materials.md`; per-beat motion and continuity rules → `method.md`; camera framing and `angle_deg` → `film-language.md`.
 
-
-One parametric skeleton family. A character is a **point in proportion
-space** plus a **material choice** — never a shipped mascot, never a fetched
-asset. The kit lives in `templates/scene.character.template.html` inside the
-`CHARACTER` parity fence; copy that template when a film has figures, the
-plain 3D template when it does not (the block costs nothing when absent).
-
-Doctrine, from the founding plan: scaffold-as-data, authored once, committed;
-the skill must never grow a runtime asset-fetch path. Every kit function is a
-pure function of its inputs — posing is closed-form (two-bone IK, distributed
-chain bends), so `seekTo` purity is untouched. The IK and the plant-grid gait
-are ports of the predecessor's proven walker, measured lessons and all.
+Every articulated figure in `mitate` v2 is a row in `characters` attached to an actor (`actors.role = 'rig'`) — defined by a **proportion vector**, a **shader map** (`shader_map_json`), optional **shell fur** (`fur_shells`), and **distance-driven analytic IK gait** (`walk_start_x`, `stride_m`, `step_lift_m`). Never fetch external character meshes.
 
 ## Conventions
 
-Characters face **+X**. The sagittal plane is XY; z is lateral. Chains built
-by the kit use: `rotation.z` = curl (sagittal), `rotation.x` = wag (lateral),
-`rotation.y` = twist/turn.
+- **Facing `+X`**: Characters face **`+X`** in local space; the sagittal plane is `XY` and `Z` is lateral. In `shots`, `angle_deg = 90` frames the face frontally, `55` or `125` frames a 3/4 front view, `0` or `180` frames profile, and `-90` frames the back of the head (`film-language.md`).
+- **Hierarchy & `auto_bounds`**: `actors` holds the root world transform (`x, y, z, yaw_deg`). When a `subjects` row targets a character actor with `extent_mode = 'auto_bounds'`, `MitateCore` automatically bounds the full posed figure (including nose-to-tail length for quadrupeds) so the camera aims at the visual center rather than cropping the head.
 
-## The API
+## Proportion vector (`characters`)
 
-| Call | What it does |
-|---|---|
-| `propDefaults()` | the full proportion vector with defaults — override per character |
-| `buildCharacter(P, matFor)` | skeleton + lathed/capsule shells -> `rig`. `matFor(part)` supplies materials per `'torso'\|'head'\|'muzzle'\|'limb'\|'foot'\|'tail'` — the seam where shading packs plug in |
-| `solveLimb(limb, dx, dy)` | analytic two-bone IK, target relative to the limb's attach point |
-| `gaitPose(rig, s, vAmp, opts)` | plant every planted limb from distance travelled `s`; returns the stride |
-| `gaitBob(s, stride)` | the shared gait phase (`sin(pi*s/stride)`) for bob/lean/arm swing |
-| `footTarget(s, phase, stride, swingH)` | the raw plant-grid cycle, if you need targets directly (hops) |
-| `chainCurl(chain, rad, axis)` | distribute a total bend evenly across a chain (neck aim, tail lift) |
-| `chainWave(chain, phase, amp, lag, axis)` | phase-lagged follow-through — procedural secondary motion, pure in its phase argument |
+```sql
+INSERT INTO actors (id, role, x, y, z) VALUES ('bear', 'rig', -3.0, 0.0, 0.0);
 
-The `rig`: `root` (place/rotate the character; limbs attach here at fixed
-frames), `body` (torso/neck/head/tail — bob and lean THIS, so cosmetic motion
-never moves the IK attach frames and planted feet stay planted), `head`,
-`neckChain`, `tailChain`, `limbs.{HL,HR,FL,FR}`, `planted`, and the framing
-estimates `height`, `length` (nose-to-tail — the subject's `h`/`w`; declare
-`w` for quadrupeds or the solver frames empty air) and `centerX` (visual
-center relative to the root — subject pos is `[rootX + centerX, height/2,
-rootZ]`; aiming at the root orbits a quadruped's tail end and crops the
-head, measured as an FS rendering a wall of rump).
-
-## The proportion vector
-
-See `propDefaults()` in the template for every field and its comment. The
-constraints the kit enforces loudly (build-time throw, not silent
-hyperextension): `hindUpper+hindLower > hipH`, and for quadrupeds
-`foreUpper+foreLower > shoulder height` (which is
-`hipH + cos(torsoTilt)*torsoLen`). Two more that bite visually, learned on
-this template's first renders: `shoulderW/2` must clear `chestR` or hanging
-arms embed in the torso; near-equal overlapping shell radii z-fight (the
-torso is one lathed profile for exactly that reason).
-
-Worked starting points (tune by looking, not by faith):
-
-- **Biped (the template demo):** the defaults, plus
-  `{tailLen:1.8, tailSegs:4, muzzle:.4}` for a creature register; drop the
-  tail and muzzle for a human silhouette. `quadruped:false` hangs the
-  forelimbs as arms (swing them from `gaitBob`, flex `mid.rotation.z`).
-- **Quadruped (bear-shaped) — the vector verified on a corpus film,
-  building and walking:**
-  `{quadruped:true, torsoTilt:80, hipH:1.85, torsoLen:2.4, pelvisR:.95,
-  chestR:1.05, neckLen:.85, neckSegs:2, neckTilt:55, headR:.62, muzzle:.55,
-  tailLen:.5, tailSegs:2, tailTilt:30, shoulderW:1.6, hipW:1.5,
-  foreUpper:1.2, foreLower:1.15, foreR:.34, hindUpper:1.1, hindLower:1.05,
-  hindR:.38, footLen:.65, footH:.22}`
-- **A text-invented creature** is the same move: read the description,
-  choose tilts/lengths/radii/segments, add scene-level features.
-
-## Gait
-
-Everything derives from **distance travelled `s`, never wall time** — feet
-freeze mid-plant when the body stops. Drive `s` from a named closed form of
-`t` (the demo's `walkerXAt`) that SUBJECTS also reads, so camera and body
-cannot disagree. `vAmp` is the motion envelope (a `pulse` over the walk
-beat): gaitPose blends to a staggered rest stance as it dies, or the last
-cycle leaves feet mid-stride.
-
-**When the walk spans more than one beat, the envelope spans the SAME
-window — and this is a trap with a silent failure.** `ramp`/`pulse` address
-ONE named beat, so a travel that starts under a title card and finishes in
-the next beat needs both halves written against the same pair of edges.
-Get it wrong in the obvious direction — travel widened, envelope left on the
-walk beat — and the body translates while `vAmp` is still zero: `gaitPose`
-scales to nothing, the legs hold straight, and the figure skates in on locked
-limbs. Nothing flags it. It is pure in `t`, so smoke is green; there is no
-discontinuity, so no strip shows a pop; and it is a plausible-looking dark
-silhouette at wide framings.
-
-```js
-// Travel and envelope, addressed by beat at BOTH ends, so retiming either
-// beat moves them together. ss() for the position, bump() for the envelope —
-// pulse() IS bump() over one beat's span, and this is the two-beat form.
-const walkerXAt = t => lerp(WALK_START, WALK_END,
-  ss(t, beatAt('title', .35), beatAt('approach', .98)));
-...
-const vAmp = bump(t, beatAt('title', .35), beatAt('approach', .98));
+INSERT INTO characters (
+  actor_id, preset, quadruped,
+  hip_h, torso_len, torso_tilt_deg, pelvis_r, chest_r,
+  shoulder_w, hip_w, neck_len, neck_segs, head_r, muzzle_len,
+  tail_len, tail_segs,
+  fore_upper, fore_lower, fore_r,
+  hind_upper, hind_lower, hind_r,
+  foot_len, foot_h,
+  fur_shells, fur_length_m,
+  walk_start_x, stride_m, step_lift_m,
+  shader_map_json
+) VALUES (
+  'bear', 'quadruped', 1,
+  1.85, 2.40, 80.0, 0.95, 1.05,
+  1.60, 1.50, 0.85, 2, 0.62, 0.55,
+  0.50, 2,
+  1.20, 1.15, 0.34,
+  1.10, 1.05, 0.38,
+  0.65, 0.22,
+  8, 0.04,
+  -3.0, 1.25, 0.16,
+  '{"default":"bear_coat","muzzle":"bear_snout"}'
+);
 ```
 
-Verify it the project's way rather than by eye: `build.js strip` over a
-mid-walk window, checking that a planted foot holds its ground position
-across cells while the body passes over it. A locked-limb skate is obvious in
-a strip and nearly invisible in a contact sheet.
+### Anatomical constraints enforced by `mitate check`
+1. **Hind leg reach**: `hind_upper + hind_lower > hip_h` (prevents hyperextension lock).
+2. **Quadruped foreleg reach**: When `quadruped = 1`, `fore_upper + fore_lower` must reach the floor from shoulder height (`hip_h + cos(torso_tilt_deg) * torso_len`).
+3. **Biped arm clearance**: When `quadruped = 0`, keep `shoulder_w / 2.0 > chest_r + fore_r * 0.4` so hanging arms do not embed in the torso.
 
-Phases are per-limb: biped `HL 0 / HR .5`; quadruped lateral-sequence walk
-`HL 0, FL .25, HR .5, FR .75`. Each planted limb's plant column rides its own
-attach x, which is what lets one grid serve a foreleg planting a
-torso-length ahead. Verify planting the project's way: `build.js strip` over
-a mid-walk window — a planted foot must hold its ground position across
-cells while the body passes over it.
+## Distance-driven gait (never raw wall time `t`)
 
-Hops are IK targets, not pose freezing (proven-walker lesson): bypass
-gaitPose during airtime and call `solveLimb` with targets tucked toward the
-body, asymmetrically, or the feet read as one.
+Walk cycles derive from **distance travelled** $s(t) = x(t) - \text{walk\_start\_x}$ along the character's own plant grid (`stride_m`, `step_lift_m`), never from wall time `t`. When the character stops translating, its feet remain planted on the floor.
 
-## Fur (shell layers) and fabric (sheen)
+- **Biped phase (`quadruped = 0`)**: Hind legs alternate at phases `0.0` and `0.5`; forelimbs hang as arms and swing in counter-phase.
+- **Quadruped lateral-sequence phase (`quadruped = 1`)**: `HL = 0.0`, `FL = 0.25`, `HR = 0.50`, `FR = 0.75`.
+- **Match travel and gait envelope windows**: When a walk spans multiple beats in `cue_sheet`, anchor the translation cue and any gait envelope to the **exact same** `(beat_id, beat_frac)` and `(end_beat_id, end_beat_frac)` pair. Verify foot planting across frames with `mitate strip`.
+- **Every character owns its own grid**: When two characters walk in the same scene, each row in `characters` has its own `walk_start_x`, `stride_m`, and `hip_h` — never share one character's gait parameters with another body.
 
-**Fur** is kit code: `furCharacter(rig, ['torso','limb','tail'], opts)` furs
-every mesh of the named parts (identified by their shared per-part material,
-so scene add-ons are never furred by accident), or `addFur(mesh, opts)` for
-one mesh. Each of `opts.layers` (8) shells is the same geometry displaced
-along its own normals by `opts.len` — real shell fur riding every IK
-transform — with TSL noise coverage that thins toward the tips and darkens
-toward the roots. Alpha-test discard via `alphaTestNode` (node slot, per the
-materials.md rule), NOT transparency: fur stays on the opaque pipeline and
-never joins the sortObjects ordering bill. Verified byte-deterministic on
-both backends on the quadruped vector above. Shells cast no shadows —
-L casters per part is shadow-map noise that pays nothing on screen.
+## Shell fur (`fur_shells`) and scene features
 
-**Fabric** is a material recipe for `matFor`, verified rendering on r185
-(the sheen rim brightens grazing angles on a rough base — look for it on
-shoulder edges):
-
-```js
-const m = new THREE.MeshPhysicalNodeMaterial({color: 0x7a3550, roughness: .9});
-m.sheenNode = THREE.float(1.0);
-m.sheenRoughnessNode = THREE.float(.4);
-m.sheenColorNode = THREE.color(0xffd9e0);
-```
-
-Node slots again — the plain `sheen` property is presumed unreliable the
-same way `transmission` measurably is (materials.md).
-
-## Features are scene add-ons
-
-The scaffold ships anatomy; the scene ships character. Attach features to
-the rig's groups — the demo's eyes ride `rig.head` (two spheres, four
-lines), which is also what makes facing unambiguous: a bare sphere reads the
-same front and back, and the first render's front shots looked like back
-shots until the face existed. Ears, horns, props, markings all follow the
-same pattern. If a feature needs to move, drive it from `t` like everything
-else.
-
-**Place a feature by direction, and let the radius do the placing.** A feature
-on a head is a unit direction from the head's center scaled to the surface:
-`dir.normalize().multiplyScalar(headR + lift)`, parented to `rig.head` so it
-rides every nod. The `lift` is what keeps it sitting PROUD of the surface —
-`materials.md` owns the numbers. Hand-tuned xyz offsets are wrong twice: they
-drift off the sphere the moment a proportion changes, and they restate the
-radius a second time.
-
-**Ground contact is authored, not hoped for.** A contact disc parented to each
-touching part: `CircleGeometry` rotated flat, transparent dark basic material
-with a radial fade — `opacity = (1-d)^k * alpha`, `d` 0 at the center and 1 at
-the rim — `depthWrite:false`, `castShadow`/`receiveShadow` off, floated just
-above the floor. Parented to the limb end it plants and lifts with the foot for
-free, and it reads as contact at every rung. It is ordinary geometry, so it is
-exactly as deterministic as the rest of the scene and takes the whole shadow
-pipeline off the determinism surface — where a shadow-mapped contact ties the
-cue to one light's direction and to the map's resolution besides. Write the
-falloff as plain arithmetic rather than `smoothstep`: a reversed argument order
-yields a silently constant-zero opacity that reads as "the mesh never got
-built".
-
-**Two drivers, one joint set.** A gait and a gesture that both write the same
-limb do not compose — rotations assign, so the last writer wins, and adding
-them double-counts the rest pose. Two shapes work, and both are declarations
-about windows rather than adjustments to values: give each driver a disjoint
-beat window and hand over THROUGH the shared rest pose (each side's envelope is
-zero at the boundary, so the joints pass through the same stance and no frame
-shows both writers); or keep one writer and assign a blend — compute both joint
-targets, write the `lerp` of the two with a beat-addressed weight. A limb
-written by two live drivers is pure in `t` and green in smoke while it snaps at
-every window edge.
-
-## Not here yet (deliberately)
-
-The face morph basis, expression library and hands are Phase 3
-(`the-briefing` gates them). Secondary motion stays procedural
-(`chainWave`) or baked — never integrated at runtime.
+- **Shell fur**: Setting `fur_shells > 0` (e.g. `8`, `fur_length_m = 0.04`) generates concentric normal-displaced shell layers using deterministic alpha-test discard seeded by `(vertex_id, shell_idx)` — 100% order-independent and byte-deterministic.
+- **Costume & facial features**: Parent child `actors` (`role = 'prop'`) to the character rig for eyes, ears, hats, or held props. Position eyes proud of `head_r` (`head_r + lift`) so facing direction reads immediately even in wide shots, and verify all physical contacts with `mitate probe`.

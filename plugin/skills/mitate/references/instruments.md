@@ -1,496 +1,61 @@
 # Instruments: what each check can and cannot see
 
-Every check in this pipeline has a measured limit. This file is the ledger of
-those limits, because the failure mode that costs the most is not a check that
-fails — it is a check that **passes and should not have**.
+> **Not here.** Authoring method and the three axes → `method.md`; backend determinism architecture → `webgpu-stack.md`; SQLite table definitions → `breakdown.md`.
 
-`method.md` holds the method; this holds the instruments' brackets. Read it when
-you are deciding whether a green result means anything.
+Every `mitate` CLI instrument has a specific scope and measured boundary. **A proxy can reject; it cannot approve.** Read both the structured stdout JSON telemetry (`meter`, `framing`, `contacts`, `lint`) and the rendered images (`read_file` / `Read`).
 
-> **Not here.** the method itself → `method.md`; backend policy → `webgpu-stack.md`.
+## 1. `mitate check shot.db` (`<5ms`, no GPU)
 
-**This file is not audited end to end.** Most brackets here were measured on the
-predecessor skill and carried over, not re-measured on this stack, because they
-describe what a *check* can perceive rather than what a renderer draws. Where a
-number is inherited and unverified on this stack, it says so.
+Cross-references the relational soundstage in `shot.db` before a single GPU thread runs:
 
-**Three kinds of claim live in this repo and only one of them rots.** An
-*incident record* ("this reached `git add` once") is history and stays true. An
-*intent* comment ("this tick is why the frame is deterministic") is checkable by
-reading. A *measurement assertion* ("measured — does not close the cloak",
-"40/40 clean", "~2.3x") is a claim about a run that happened elsewhere, and it
-decays silently the moment the code moves. The repo's own self-check counts the
-uncontrolled ones and **ratchets** them — the count lives there, once, and is
-not restated here. Two known casualties so far: a console anchor whose comment
-asserted a measurement never taken, and a `sortObjects` repro cited as
-preserved and absent from the tree. That is the size of the known class. It is
-not a to-do list; it is the reason to distrust an unsourced number here,
-including the ones below.
-
-**Map.** Deliberately unlinked — a heading map costs nothing and cannot dangle,
-where hand-written anchors ship into an install cache unverified.
-
-- The rule these all serve — *a proxy can reject; it cannot approve*
-- `smoke.js` — the gate, check by check
-- `build.js check` — the tables against each other, before a frame exists
-- `build.js motion` · `strip` · `sheet` · `aspect` · `poster` — the review tools
-- Where a check belongs: the tool path or the artifact
-- What has no instrument
-
-## The rule these all serve
-
-> **A proxy can reject. It cannot approve.**
-
-A passing score in a region where the proxy has no authority means nothing, and
-must not read as approval. Every threshold below is either bracketed by
-observation on both sides, or explicitly labelled unbracketed.
-
----
-
-## `smoke.js`
-
-| check | quantifier | what it catches | what it cannot see |
-|---|---|---|---|
-| page errors | per load | console/page errors, deprecation warnings | anything that fails silently |
-| contract | — | a missing `seekTo`/`DURATION`/`stopPlayback`/`sceneReady` | — |
-| determinism | **all** of 4 planned points, +up to 2 transition midpoints, **plus one across a page reload** | state across frames, `Math.random()`, wall-clock, and load-time randomness that is pure within a session | state that only desyncs at unsampled times. A red attributes its LAYER: a canvas readback rides beside every screenshot, so the verdict says whether the scene's own pixels moved (scene state) or only the observation did (capture layer — the scene is innocent and the text says so). `--dump-frames` writes the two disagreeing PNGs beside the scene. Bracketed by `templates/bracket-determinism.js` (end to end) and `templates/bracket-readback.js` (verdict attribution, artifacts, and the refutation condition) |
-| blank frame | **all** of 4 planned points, +up to 2 transition midpoints | a pipeline shooting empty frames | a frame that is dark but not empty |
-| shipped-frame spread | **max** over its own 4-point plan | a backend that ships nothing (half-dead adapter) | a register that is legitimately flat *and* correct |
-| live playback | 3+ `seekTo` calls, 2+ distinct `t`, on the one load without `?record=1` | a film that records perfectly and never moves for a viewer | whether the motion *reads*; a driver calling a captured reference instead of `window.seekTo` |
-| marker parity | file set × <!--derived:fences-->7<!--/derived--> fences, each against the canonical store | a carrier whose kit differs from the store — even if every carrier agrees | drift inside a scene |
-| framing invariance | 3 shapes × 3 fixed fractions | a scene that crops instead of containing | composition quality at any single shape |
-| caption speed / overflow | per beat | a caption too fast or too wide **for the frame** | canvas text; vertical collision; **text that fits but is too small to read** |
-| exposure | 3 fixed fractions, worst | washed out or crushed | whether the register intended it |
-
-**There are two different sampling mechanisms, and conflating them is a mistake
-this file has already made once.** Which one a check uses decides whether it can
-be blinded by a flash:
-
-| mechanism | used by | points | flash-aware? |
-|---|---|---|---|
-| `samplePlan(dur, flashes, 4)` | determinism, blank frame, shipped-frame spread | 4 interior, at `dur*i/5` | **yes** — cleared against MERGED flash intervals |
-| `SAMPLE_FRACTIONS = [0.25, 0.5, 0.8]` | exposure, framing invariance | 3 fixed fractions of `DURATION` | **no** — raw multiplication, no avoidance |
-
-So exposure and framing invariance can land inside a white-out and read it as the
-frame. That is tolerable for those two (both are advisory or shape-comparing) and
-would not be for determinism — which is exactly why determinism routes through
-the plan. The determinism check additionally appends up to two shot-transition
-midpoints from `window.SHOTS`, so its real floor is 4 points and often 6: fixed
-fractions were measured missing every blend window on a shipped film, and a
-transition-confined bug would have passed every check.
-
-**The determinism check was the sharpest lesson in this whole file.** It used to
-sample `Math.min(1, dur/3)` — the constant 1.0s for any film over 3s, inside the
-title card the workflow tells you to write first. Three controls on one scene:
-
-| control | truth | verdict |
+| What `mitate check` decides | Severity | What it cannot see |
 |---|---|---|
-| stateful, rotor moving at t=1.0 | non-deterministic | **FAIL** (correct) |
-| same bug, diagram fades in over the title | non-deterministic | determinism passed; failed by luck on a **9-byte margin** |
-| same bug, faint structure drawn from t=0 | non-deterministic | **`all scenes pass`, 0 warnings** |
+| Foreign keys (`beats`, `shots`, `subjects`, `actors`, `props`, `surface_shaders`, `cue_sheet`) | error | Whether the staged composition looks good |
+| `beats.dur_sec > 0`, `shots.beat_frac IN [0, 1]`, ascending shot sequence order | error | Whether beat pacing feels rushed or slow |
+| `shots.match_prev = 1` framing equality (`size_rung`, `angle_deg`, `elev_deg`, `fov_mm`, `anchor_y`) | error | Whether the match cut reads visually |
+| `gpu_kernels` with `purity_mode = 'baked_sim'` have a fresh matching row in `baked_tracks` | error | Whether a `pure_t` kernel is hiding subtle visual aliasing |
+| Caption reading speed (`CPS > 30` warning; bracketed at `27 CPS` comfortable vs `37 CPS` unreadable) | warn | Whether caption text is legible at tiny display widths |
+| Union subject (`member_actors_json`) using a body-landmark rung (`MS`/`MCU`/`CU`) without `anchor_y` | warn | Whether a wide union shot is aesthetically balanced |
+| 3+ shots sharing identical framing parameters | warn | Whether the repetition is an intentional motif |
 
-t=1.0 was the only timestamp in that film where the scene was clean. Quantifying
-over a sample plan is why all three now fail. **When a check reports absence, ask
-what a positive result would have looked like.**
+## 2. `mitate quad shot.db --t <beat@frac> --out quad.png` (`~40ms`)
 
-**Parity had the same shape of hole, one level down.** The parity row above only
-means anything for files actually *in* the comparison set, and a scene used to be
-able to leave it silently. Extraction is anchored on the full
-`/* ==== KERNEL-END ==== */`; the guard meant to catch a half-fenced file asked
-the loose `includes('KERNEL-END')`. A mangled `KERNEL-ENDX` satisfies the loose
-form and defeats the anchored one, so the block stopped extracting and nothing
-complained — a deleted marker failed, a *corrupted* one did not. Both now derive
-from the same pattern. The general rule, which is the third instance of it in
-this file: **when a guard and the thing it guards ask different questions, the
-gap between the two questions is where defects live.**
+Renders a 2×2 spatial scout:
+- **Top-Left**: Active camera beauty render with safe-title and framing guides.
+- **Top-Right**: Top-down orthographic (`XZ`) with 1m/5m grid, camera frustum cone, lamp direction vectors, and labeled actor AABBs.
+- **Bottom-Left**: Front orthographic (`XY`).
+- **Bottom-Right**: Right-side orthographic (`ZY`).
 
-**<!--derived:fences-->7<!--/derived--> fences are registered**:
-`CONTRACT`, `KERNEL`, `SOLVER`, `RIG`, `DRIVER`, `CHARACTER`, `HTML`. The number
-is derived from that array rather than written by hand — a count restated in a
-file that ships disagrees with `smoke.js` for every installed user the moment a
-fence is added. The `HTML` block uses HTML-comment markers rather than
-JS-comment ones, because it lives outside `<script>` — smoke's parity loop
-carries a second regex arm for it. A new shared block gets a fence at the third
-consumer, and the fence goes in this list or it is not enforced. Each fence is
-compared against its canonical copy in
-`templates/fences/<NAME>.fence.txt` rather than across the carriers — so nine
-copies drifting *together* still fail, a single scanned scene is a real
-comparison, and `--parity-fix` regenerates carriers from the store instead of
-propagating from a named one. The store itself is validated first: missing,
-extra, or mangled store files refuse the whole scan (`bracket-parity.js` holds
-one arm per refusal).
+**What it catches:** Floating props above the floor, actors outside the camera frustum cone, lamps pointing the wrong way, and depth misses (`dz`) that look like contact in the camera view.
+**What it cannot see:** Motion continuity between frames or full-sequence pacing.
 
-**The shipped-frame spread floor** is distinct from the exposure advisory and
-runs on a caption-stripped page: exposure takes the MIN over the plan (the
-flattest frame, a style-conditional advisory), the shipped-frame check takes the
-MAX (the film's richest stripped frame). A film whose *best* frame is flat is not
-a register, it is a backend shipping nothing. Bracketed on this stack: a half-dead
-SwiftShader-WebGPU configuration measured 1.7; the healthy 3D template 161.3; the
-flat paper-register 2D template 120.9 — two orders of magnitude of daylight.
+## 3. `mitate sheet shot.db --frac <0..1> [--nocap] --out sheet.jpg`
 
-**The live-playback check exists because the whole pipeline was blind to the only
-path a viewer takes.** Every template starts its rAF loop with
-`if(!location.search.includes('record'))requestAnimationFrame(loop)`, and every
-page load in `smoke.js` and `shoot.js` carries `?record=1`. So the loop — the
-thing every human who opens the file gets — was executed by nothing in this
-suite, and a scene whose loop dies on its first frame shipped perfect recorded
-frames while sitting motionless on screen. It passed this gate green on both
-backends. The recorder cannot see the defect by construction, which is precisely
-why the gate has to.
+Renders one frame per beat tiled side by side, plus `sheet.squint.jpg` (90px height silhouette strip):
+- **`--frac 0.6` (mid-beat)** and **`--frac 0.95` (end-of-beat)**: Running both is mandatory. A single `0.6` sample misses effects that park at the end of a beat or subjects that drift out of frame right before a cut.
+- **Flash avoidance**: If a beat carries a world-cut flash (`flash_at`, `flash_width`) covering `0.95`, inspect a timestamp just outside the flash window.
+- **`sheet.squint.jpg`**: Tests value separation and silhouette readability at thumbnail scale.
+- **`--nocap`**: Strips captions and title cards to test Axis 3 (Semantics). Note that 3D `text3d` prop geometry in the scene remains visible unless hidden or mentally masked during semantic review.
 
-It watches the mechanism rather than the pixels: the loop's only job is to call
-`seekTo` with a rising `t`, so the check wraps `seekTo` after `sceneReady` and
-counts. A pixel diff would have to guess how far a given film moves in 200 ms and
-would fire on a held title card — the same "one frame answers no question about
-motion" trap the strip exists for. Counting cannot. **Two distinct `t` values is
-the load-bearing half:** a loop that runs forever while recomputing the same `t`
-is as frozen as one that never started, and a call count alone passes it.
+## 4. `mitate strip shot.db --from <beat@frac> --to <beat@frac> --out strip.jpg`
 
-**It asks whether `seekTo` is being driven, never whose loop is driving it**, and
-that generality is deliberate rather than incidental. More than one thing already
-replaces the built-in loop: the showcase site's player calls `stopPlayback()` and drives `t`
-itself ("we drive it now"), and any in-scene viewer does the same. A check
-written against `requestAnimationFrame` would go blind on exactly the scenes with
-the most machinery between the clock and the frame — and a control aimed at the
-built-in loop of such a scene fails to fire, which is how this shape was found.
-For the same reason the assertion is *distinct* `t`, not *rising* `t`: a
-viewer-driven or wrapping clock is not monotone, and demanding monotonicity would
-fail correct scenes. The one thing it cannot see is a driver that captured a
-direct reference to the function before the wrap and calls it privately; every
-template calls `window.seekTo` by name, and any replacement loop must keep doing
-so to stay visible here.
+Tiles consecutive frames across a motion window or cut boundary.
+- **Measured bracket**: Easily reveals world- and object-level jumps (~15% of frame height), mechanism stalls, and skating feet during a walk cycle. Very small limb rotations (~2% of frame area on a moving camera) can fall below visual detection in a strip — inspect `cue_sheet` spans directly for uncovered step boundaries (`method.md`).
 
-**A wrapper that counts before it calls measures its own wrapper, not the
-scene.** A host that both replaces the loop *and* swallows the exception does
-**not** slip past this check, though an ad-hoc probe once suggested it did (71
-calls, 71 distinct `t`): that probe incremented its counter *before* calling the
-inner `seekTo`, so the increment ran even when the inner threw. The shipped
-check counts **after the inner call returns**, which is why a swallowing host
-fires like any other frozen film.
+## 5. `mitate probe shot.db --t <beat@frac> --sep <actor_a> <actor_b>`
 
-Bracketed four ways by `templates/bracket-liveplay.js`,
-which builds its own broken copies and is runnable from a clean checkout —
-all four firing: unmodified
-(calls=20, distinct=20, playing); a throw in the rAF loop; a throw inside
-`seekTo`; and a host that swallows the throw — the last three all calls=0,
-distinct=0. **The wrapper ordering is load-bearing.**
+Evaluates exact 3D world-space AABBs, per-axis clearance/overlap (`dx`, `dy`, `dz`, where negative values mean overlap), and 2D screen-space bounding boxes at `t`.
+- **When required**: Every time a scene claims physical contact (feet on the floor, a hand/snout touching a target, meshing gear teeth) or when verifying that an animated expression varies across 4–5 distinct `t` samples.
 
-What survives, restated narrowly: **the check runs standalone, so no
-*deployment configuration* other than a top-level load is exercised** — not the
-iframe-with-a-parent-driving-`seekTo` case, not the install cache. The
-shipped-frame check runs under `?record=1` and does not reach them either. That
-is a coverage gap in the harness, not a blind spot in this check, and
-the showcase player's warning is a warning rather than a check.
+## 6. `mitate smoke shot.db [--dump-frames]`
 
-Bracketed three ways on a corpus film, all three firing with the right message: the
-rAF chain never started (0 calls), the first frame threw and killed the chain
-(0 calls, plus the page error) — which is the shape the real defect took — and a
-frozen clock driving `seekTo(0)` forever (3+ calls, 1 distinct `t`, caught only
-by the distinctness arm). Quiet on every corpus film and on the 2D
-template. Cost is one extra page load per scene: **+0.14 s on hardware WebGPU, +1.05 s on the
-software-GL default** — measured on a corpus film at the 640x360 check
-viewport, one machine, wall-clock over a full `smoke.js` run; the gap is boot,
-not the check.
+The automated contract and determinism gate:
+1. Runs `mitate check`.
+2. Evaluates out-of-order random-access seeks (`t_a -> t_b -> t_a`) across a flash-aware 4-point beat sample plan plus shot-transition midpoints.
+3. Verifies non-blank output and luma spread (`meter.clip_high_pct`, `meter.crush_low_pct`).
+4. Reports any pixel discrepancy with its exact magnitude and location (`changed_pixels`, `bbox`, `max_channel_delta`, `psnr_db`), writing disagreeing PNGs when `--dump-frames` is passed.
 
-## `build.js check`
+## What has no automated instrument
 
-The only instrument here that reads no pixels and loads no page. It
-cross-references the declarative tables `breakdown.md` enumerates — `BEATS`,
-`SHOTS`, `SUBJECTS`, `CONFIG`, `FRAME`, `KEYS`, read as literals out of the
-scene's source text — against each other and against the kit's own semantics,
-and every finding is decidable before a frame renders or the page loads at all.
-`SIZES` is the exception in that list: it lives inside the
-SOLVER fence, so `check` gets it by EXECUTING the canonical fence store's copy
-beside the tools, not by reading the scene — sound only because parity holds,
-which is what guarantees the scene's own bytes agree with the store's.
-
-| it decides | severity | what it cannot see |
-|---|---|---|
-| a shot's `at` names a beat that exists, at a fraction inside `0..1` | error | whether the moment is the right one |
-| `subject` / `focus` resolve in `SUBJECTS`, `size` / `size2` in `SIZES` | error | whether the subject is the one the beat is about |
-| shots are in ascending time order | error | — |
-| `KEYS[].beat` and `CONFIG.flashes[].beat` resolve | error | — |
-| `FRAME.px` describes `FRAME.aspect` | error | whether either is the frame you wanted |
-| a union shot on a rung whose anchor is a body landmark, with no `anchor` override | warn | whether the composition reads |
-| a `STYLE`/`CONFIG` key that nothing reads — not the carried fences, not the scene's own code (near-miss named within two edits) | warn | whether a key that IS read does what its name says; a key consumed only indirectly (measured: no shipped carrier does this) |
-| a SUBJECTS extent (`h`/`w`/`d`) carrying a bare number instead of deriving from construction with named adjustments | warn | whether a derived extent's VALUE matches the geometry — the paragraph below |
-| a caption above `smoke.js`'s reading-speed limit | warn | legibility at the size it is viewed — see below |
-| three or more shots sharing one framing | warn | whether the repetition is a motif |
-
-**It does not drive the scene, and that is what keeps it off the prime
-directive's exception list.** No browser, no `seekTo`, no runtime state. It reads
-source text and only for the kit-owned table names above, never a film's own
-identifiers — the same category as `smoke.js --parity-only`.
-
-**The severity split is the design.** An error is a statement the tables cannot
-both satisfy and it sets the exit code; a warning is a composition judgement the
-tables merely make visible, and stays advisory for the reason the exposure lint
-does.
-
-**What it cannot see, and it is the layer's most expensive gap:** whether an
-extent's `h`/`w`/`d` VALUE matches the geometry it claims to describe.
-Measuring that means naming scene objects, which is `build.js probe`'s admitted
-exception and not this command's to take. What it DOES see is the FORM: an
-extent carried by a bare number — tied to nothing, so updated by nothing —
-draws a warn naming the entry and its keys, while a derived extent
-(`bear.height*SC+PAD`) evaluates to `NaN` in this reader and its value goes
-unjudged. That trade — form checkable, value ceded to probe — is the
-representation decision's priced cost, and `check` says the value gap out loud
-on every run, green ones included.
-**A table this reader cannot slice is named, not skipped.** `check` reads table
-LITERALS out of the source text, so a table assembled by a loop or returned from
-a call is beyond it. Both shapes are one step from a clean green: the loop form
-evaluates an empty literal as a valid table and reports `0 shot(s)`, the call
-form is indistinguishable from a 2D scene that has no `SHOTS` at all. **A
-verdict that cannot tell "nothing to check" from "could not check" is the exact
-failure this file exists to track**, and the verb whose purpose is catching what
-a render would miss is the last place it should live. So: such a table draws a
-warning naming it, the header says `SHOTS unread` rather than asserting a scene
-kind, and the verdict line lists either the tables covered or the tables not
-covered.
-
-One blind spot remains and is quieter: a table whose values are computed from
-geometry built at runtime evaluates to `NaN` rather than to a number. The
-cross-references that compare it still fire — a `NaN` anchor fails the `0..1`
-range test, a `NaN` `dur` fails the positive test, both verified — but a `NaN`
-that no comparison reaches passes unremarked. A value that is a BARE reference
-to a scene constant is the recognized case: it reads as unresolved and draws a
-warning naming what goes unchecked, rather than an error quoting a value the
-source never wrote (both `dur` and anchor fractions).
-Arithmetic ON such a reference collapses to `NaN` and rejoins the paragraph
-above.
-
-**Substitutions are declared, not silent.** Where `check` cannot read
-an input it runs on a stand-in, and the verdict says so: an unreadable or
-runtime-assembled table is named along with what it un-covers, and a `STYLE`
-assembled from a bible runs the solver against an empty stand-in and warns
-whenever shots carry `match` or `fov` — the one place the stand-in's lens
-default can flip a verdict against the driven page's. The warn is honesty, not
-agreement: the stand-in cannot know the scene's lens, so `check` and a driven
-page can legitimately disagree there, and the sixth `bracket-check-kit.js` arm
-pins that the disagreement is declared on screen rather than silent.
-
-**The fences execute in a mirrored environment, and the mirror has one seam.**
-`check` runs the canonical KERNEL and SOLVER fences with the scene's
-extracted tables in scope, and identifiers the tables do not supply fall
-through to the process's real globals, so the fence takes the same code path it
-takes in a page. The seam: an identifier declared in NEITHER place is a
-`ReferenceError` in a page and `undefined` in the executor, because the scope
-proxy answers every lookup. A fence defect of exactly that shape would die in
-the page and pass here; `bracket-check-kit.js` holds the two instruments to one
-verdict on the known divergence corpus, and this seam is what that green cannot
-promise about unknown ones.
-
-**The threshold to know about is the repeated-framing warning.** Three is the
-floor, and it has an observation on each side: two corpus films each
-return to their establishing shot, which puts both at a pair of identical
-framings — ordinary grammar, which must not fire — while a known-defective
-scene's "same card" repeat sits at four. Nothing distinguishes a lazy repeat from a
-deliberate motif, so it is a warning and not an error.
-
-**Every row above has an arm in `templates/bracket-commands.js`**, each on a copy
-of a corpus scene with exactly that property broken, and each was watched go red
-with its own check neutralised. The union row carries a second arm in the other
-direction: the same shot WITH an `anchor` must produce no warning, because a
-real two-shot is exactly that shape and a rule that cannot tell them apart
-condemns a correct film.
-
-## `build.js motion`
-
-Reports per-beat motion energy and dead air. Its limits are measured, not
-assumed (inherited; the analysis is renderer-independent):
-
-- **It does not detect pops or stalls.** That was built and cut: a known 0.35 rad
-  limb step measured **1.00x its own local baseline**, and a stall detector fired
-  at *every* beat boundary on the defective control — and ~10 times on a
-  known-good film, because a film is SUPPOSED to settle between beats.
-- **It measures textured pixels, not motion.** A title beat with a real 14° camera
-  orbit scored 0.54 because the frame is mostly flat sky; a comparable push over a
-  detailed frame scored 3.09. Bars are **not comparable across beats of different
-  texture density**.
-- **It measures moving area, not significance.** A payoff beat where the whole
-  argument resolves scored 0.23 against a neighbour's 8.23, because it is two
-  small dots against a large block crossing frame.
-- **The bar is normalised to the peak beat**, so one loud beat flattens every
-  other into a single `#`.
-- **The per-beat value is a mean**, so it is invariant to distribution: a 0.73s
-  end-of-beat freeze moved it by 0.00.
-- **Dead air is structural in some registers.** A comic rest is by construction
-  longer than the minimum and below the floor; fine, low-contrast linework
-  animates without registering at all. Both produce true-positive flags on
-  correct films.
-
-## `build.js strip`
-
-Consecutive frames tiled — the only pixel-level look at continuity available to a
-reviewer who cannot play the film. **Bracketed both ways**: a 1.2-unit whole-body
-jump (~15% of frame height) is obvious between adjacent cells; a 0.35 rad limb
-rotation (~2% of frame area) is invisible. So it reaches world- and object-level
-breaks and stops short of limb-level ones, and it does better on a held camera.
-
-Bounds are seconds or `beat@fraction` (`two@.4 two@.6`), the second resolved by
-the kit's own `beatAt` against the scene's BEATS literal, so a window follows a
-retime. A bound the scene alone can compute (a record time mapped through the
-film's own clock) is not accepted: get the second from `probe`, then pass it.
-
-It is the one instrument that caught a whole-mechanism stall a full render of
-`motion` called indistinguishable — beads visibly frozen across nine cells.
-
-## `build.js band`
-
-2D only. Per captioned beat, at three fractions of the beat, the share of the
-caption pill's area that sits over drawn content in a caption-free render:
-pixels more than a fixed distance from the page background, max of the three.
-**A measurement, not a check**: it counts ink, not importance, so a grid line
-and a hidden label weigh the same, and it applies no threshold. Read it beside
-the sheet. Its control shows the reading moving from zero on the pristine 2D
-template to most of the pill with content pushed under it. It samples three
-moments per beat, so a camera move that crosses the band between samples can
-pass unread; `strip` over that move is the look-closer.
-
-It declares a skip, rather than measuring, on a 3D scene (the world fills the
-frame behind the caption, so ink there is the normal case), on a scene with no
-captioned beats, and on one without `window.BEATS`.
-
-## `build.js sheet`
-
-One frame per beat, plus a `.squint.jpg` silhouette strip.
-
-- **Its fixed fraction is a blind spot.** At 0.6 it misses effects that park; the
-  0.95 end-of-beat pass exists for that and is a standing step. But **both** land
-  inside a `CONFIG.flashes` window on the beats that bracket a world cut — the
-  highest-risk moments in a two-world film — and inside any bright in-scene
-  effect. A defect duly hid there.
-- **It cannot see a short physical event.** A 0.5s jump inside a 2.0s beat is
-  invisible at 0.6 and at 0.95.
-- Tiled beats are what reveal a *systematic* error; the same mistake in six shots
-  reads as six small problems one at a time and as one bad formula when tiled.
-
-The squint strip is also the character-silhouette gate: at 90px, distinct
-characters must stay distinguishable from one another.
-
-## `build.js aspect`
-
-Tiles one moment at four window shapes. Complements the framing-invariance lint:
-the lint can **reject** a scene whose design frame changes with the window, and
-cannot **approve** one — and the render is always the design shape, so it can
-never show you this. Read the cells; every one must be the same composition.
-
-Caveat: cells are padded into a common square box, so four window shapes render
-at four scales. A correctly contained subject can *look* like it drifts. When in
-doubt read the individual frames rather than the sheet.
-
-## `build.js poster`
-
-One frame-exact still at a chosen `t`, plus a markdown snippet. It is the right
-source for any still image — a README hero, a reduced-motion fallback, a site
-thumbnail — because it renders from the scene rather than transcoding a lossy
-loop. **Never extract a still from an AVIF or WebP when the scene is available.**
-
-It is not an instrument: one frame at one time answers no question about
-continuity or motion. It is a delivery command that happens to be frame-exact.
-
-## Where a check belongs: the tool path or the artifact
-
-A guard placed on the code path only holds for callers who take that path. A
-guard placed on the artifact holds however the artifact got that way.
-
-The case that taught this: `build.js` embeds the vendored library into a scene
-in place, which is correct for an authored film and destructive for a shipped
-`*.template.html`. Running the gate rewrote a tracked template with a full
-inlined library, idempotently, so nothing flagged it. `ensureVendor` now refuses
-templates — but that only protects callers who go through `ensureVendor`. A hand
-edit, a bad merge, or a future command that writes the file directly all
-reproduce the same broken artifact past that guard. Checking the artifact's own
-invariant — a template is small and still carries its `<script src>` tag —
-catches every route to it, including routes nobody has written yet.
-
-The artifact check itself lives in `smoke.js --parity-only`, next to marker
-parity, because it is the same kind of property: pure string work over the
-files, no render required. That mode exists so a fast caller — an editor hook,
-a pre-commit, CI's cheap stage — can run these without paying a Chromium
-launch.
-
-**Resist reimplementing it in the caller.** A first attempt wrote the parity
-logic a second time, in bash, inside the hook. It diverged from this file on
-day one: a scene with a mangled `KERNEL-STARTX` marker dropped out of the
-comparison in total silence — the exact self-exemption the check exists to
-catch, and the exact two-copies-drift failure the marker fences exist to
-prevent. **A check duplicated into its caller is subject to the rule it
-enforces.** Callers should be wrappers.
-
-**The instrument deliberately NOT built here** is worth as much as the ones
-that were. The obvious move looked like "assert the working tree is clean after
-`smoke.js` runs". It is wrong: `smoke.js` runs mostly in an author's scratch
-directory, which is usually not a repository at all and where writing files is
-the entire point. The assertion would be false in the tool's primary use case
-and would have to be suppressed there — which is how a check becomes noise and
-then becomes bypassed. **An invariant that belongs to a repository gets
-enforced where repositories are enforced** (a hook, CI, a pre-commit check),
-not inside a tool that has no idea it is in one. Note the split: *a template is
-small and self-contained* is a property of the file, so it lives here; *the
-tree has no uncommitted changes* is a property of the repository, so it does
-not.
-
-## What has no instrument
-
-Recorded honestly, because these are where films actually ship broken.
-
-**What belongs on this list, and what does not.** Every entry is a property of
-the artifact that is either (a) reachable by an instrument nobody has built
-yet, or (b) real, decidable, and reachable only by a human who must therefore
-be asked. A criterion that is *neither* — whether a beat is funny, warm or
-tense — does not belong here and is not a gap in the toolkit. Listing one
-invites someone to build an instrument for it, and the thing has no ground
-truth to build against. Judge a film's tone if you like; do not record it as a
-success criterion, because nothing can tell you that you were wrong. The
-review axes gate what is decidable: does a frame compose, does motion survive
-between frames, does the film explain itself without its words.
-
-- **Watching the loop at speed.** The strongest continuity instrument, and it
-  needs a human. No agent can do it. The live-playback check above is not this
-  and does not weaken it: it answers *does the loop run*, never *does it read* —
-  a film that plays and pops at every cut passes it.
-- **Semantics.** "Cover everything except the geometry" is a question you ask
-  yourself. The `?nocap` switch removes the DOM caption; it does **not** remove
-  canvas text, which is where a diagrammatic film's meaning actually lives — in
-  one external-doc film only 2 of 8 beats survived a strict cover-*all*-text pass.
-  The stronger `?strip=text` (what the sheet's `nocap` argument sends) also
-  no-ops canvas draws — but **only those routed through the 2D template's
-  `txt()` helper**. Hand-rolled `fillText` survives the pass silently and the
-  resulting sheet looks normal, so a green here certifies only the text the
-  scene chose to make strippable. `method.md` owns the authoring rule that
-  keeps this honest.
-- **Whether an animated sub-expression actually varies.** A decorative pulse
-  written as `sin(quant(t,2)*π*2)` is exactly constant — every sample lands on
-  a sine node — and every instrument reports clean: still pure in `t`, so smoke
-  is green; no discontinuity, so no strip shows a pop; far too small a region
-  for `motion`'s whole-frame delta. On one cold-start build
-  one sat invisible through every instrument from first draft to the
-  continuity pass — caught pre-delivery, but by incidental hand-inspection
-  while investigating something else, never by anything in this toolkit. The countermeasure is `probe`: sample the expression at 4-5
-  `t` values. Two or more distinct outputs prove it varies; **identical
-  outputs are ambiguous** — a constant expression and a probe that never moved
-  `t` produce the same flat line, and a hand-rolled probe that maps over
-  timestamps while reading the scene graph without seeking reads one pose N
-  times (the shipped `build.js probe` seeks per invocation, which is the
-  property to preserve). Before recording constancy in either direction, run
-  the same probe against an expression known to vary — a probe that cannot
-  show variation anywhere is measuring itself. `method.md` ("A composed
-  periodic can be constant") owns the rule.
-- **Whether a caption is legible at the size it will actually be viewed.**
-  Captions are a constant fraction of the frame (`calc(var(--fw)*.015625)`), so
-  they compose correctly at every size and go unreadable at small ones — ~5.7px
-  in a phone-sized box. The overflow check passes, because the text fits. See
-  `method.md`; the answer below ~700px of frame width is `?nocap`.
-- **Whether a contact is real in all three axes.** A camera angle can fake a
-  graze that misses in depth; that class of defect recurs (the running count is kept outside this subtree,
-  with the repo's pattern ledger) and is
-  caught by probe-measuring the contact, not by looking at it.
-- **Cross-backend reproducibility.** `seekTo` purity is a property *within* one
-  backend. WebGPU-Metal and the WebGL2 fallback do not produce byte-identical
-  frames — expected, not a bug — so any byte-comparison regression must fix the
-  backend on both sides. (The predecessor measured its own cross-backend delta at
-  PSNR 57–58 dB, differences confined to antialiased edges and speculars; that
-  number is **inherited and has not been re-measured** for the WebGPU/WebGL2 pair,
-  so treat the shape of the finding as transferable and the figure as indicative.)
+- **Whether the film's visual metaphor actually explains the concept** (`--nocap` strips the words, but a human or reviewing agent must look at `sheet_nocap.jpg` and judge whether the geometry carries the meaning).
+- **Whether motion cadence feels right at real-time playback speed.**

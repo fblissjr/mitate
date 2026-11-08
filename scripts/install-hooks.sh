@@ -1,45 +1,18 @@
 #!/usr/bin/env bash
 # Install this repo's pre-commit checks into the slot path-privacy leaves free.
 #
-# TRACKED ON PURPOSE. `.git/hooks/` is not version-controlled, so a hook written
-# by hand exists on exactly one machine and cannot be re-created — which is the
-# same defect as rule 5's `sortObjects` repro, cited as "preserved in the session
-# scratchpad" and absent from the tree. A control you cannot reinstall is a
-# claim, not a control. This script is the installer so the hook is reproducible
-# from a clean checkout.
-#
 #   ./scripts/install-hooks.sh            # install (idempotent)
 #   ./scripts/install-hooks.sh --force    # overwrite a differing .local hook
 #
-# What it wires, both no-browser and fast enough to sit on every commit:
-#   scripts/selfcheck.js   — version cascade, the three pin and its per-scene
-#                            stamps, subtree link resolution, the date-free rule
-#                            for shipped markdown and its `Not here` edges, the
-#                            assertion ratchet, and freshness markers.
-#                            Milliseconds.
-#   smoke.js --parity-only — fence parity: every carrier checked against the
-#                            canonical store (templates/fences/), across every
-#                            carrier directory,
-#                            INCLUDING the defect corpus outside `plugin/`,
-#                            which joins the set deliberately: a regression
-#                            fixture running a stale kernel is not measuring the
-#                            engine the instruments gate. The count is not
-#                            written here — it grows with the corpus and the
-#                            command reports it. ~0.2s, no browser. SKILL.md has
-#                            recommended exactly this for a pre-commit hook
-#                            since it was written, and nothing ever wired it.
-#
-# KNOWN LIMIT, stated so nobody trusts it further than it goes: the freshness
-# check compares each marker against the file's last COMMIT, so it cannot see the
-# commit being made. A marker you forgot to bump passes here and fails in CI.
-# That is correct — bumping a marker before the commit that justifies it would be
-# the same lie in the other direction — but it means this hook shifts most of the
-# self-check left, not all of it.
+# What it wires (fast, no GPU or browser required):
+#   scripts/selfcheck.js — AGENTS.md / CLAUDE.md (@AGENTS.md) & core doc coherence,
+#                          version cascade across plugin manifests and CHANGELOG.md,
+#                          shipped plugin/ markdown relative link resolution,
+#                          date-free shipped markdown & reference routing edges,
+#                          Agent Skills description length limit, and hook sync.
 #
 # path-privacy owns `.git/hooks/pre-commit` and chains `pre-commit.local` FIRST,
-# propagating the exit code (`"$LOCAL_HOOK" "$@" || exit $?`). Verified against
-# wrapper-version t2. This installs into that slot rather than replacing the
-# wrapper, so the path-privacy checks keep running after ours.
+# propagating the exit code (`"$LOCAL_HOOK" "$@" || exit $?`).
 set -euo pipefail
 
 ROOT="$(git rev-parse --show-toplevel)"
@@ -54,15 +27,7 @@ read -r -d '' BODY <<'HOOK_BODY' || true
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
-# Exit codes matter here and are easy to lose: piping either command into `tail`
-# or `grep` makes the pipeline report the FILTER's status, which is how a red
-# self-check once read as green and got committed through.
 bun run scripts/selfcheck.js
-
-bun run plugin/skills/mitate/templates/smoke.js --parity-only \
-  plugin/skills/mitate/templates/*.html \
-  scenes/*.html \
-  fixtures/defect-corpus/*.html
 HOOK_BODY
 
 if [ -e "$HOOK" ] && [ "$FORCE" != "--force" ]; then
@@ -78,5 +43,4 @@ fi
 printf '%s\n' "$BODY" > "$HOOK"
 chmod +x "$HOOK"
 echo "installed $HOOK"
-echo "  runs: scripts/selfcheck.js, then smoke.js --parity-only"
-echo "  note: the freshness check cannot see the pending commit — CI stays the backstop"
+echo "  runs: bun run scripts/selfcheck.js"

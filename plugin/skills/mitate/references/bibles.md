@@ -1,95 +1,44 @@
-# Style bibles v2: the whole look is one object
+# Style bibles: the whole look is one row
 
-> **Not here.** material recipes → `materials.md`; shot vocabulary → `film-language.md`. The flat-vector vocabulary has no home yet — see the backend table below.
+> **Not here.** Material modes and lighting recipes → `materials.md`; shot vocabulary → `film-language.md`; SQLite schema columns → `breakdown.md`.
 
+A style bible is a single row in `style_bibles` that constrains everything about a film's look — backdrop, exposure, color transform, default focal length, camera energy, cut pace, bloom, depth of field, and `palette_json` — switched by updating one column on `slate`:
 
-A bible is a single object that constrains everything about a film's look —
-palette, exposure, post, lens, cut pace, camera energy — selected by ONE
-line. Changing the film's register is changing that line; changing a field
-mid-film is a bible violation (the look stops being coherent the moment two
-registers mix).
-
-## What a bible is, on any backend
-
-**The contract, and it is backend-agnostic:** a bible is the whole look as ONE
-object, switched by one line. It constrains *how* things look, never *what* is in
-the scene — that is the Anti-template line, and it is what keeps a bible from
-becoming a preset.
-
-**The vocabulary is per-backend, and that is the part that grows.** A 3D bible
-speaks lens, camera energy, cut pace, bloom, depth of field; a flat-vector bible
-cannot mean any of those and needs its own words — stroke weight, ink, accent,
-contrast polarity. Both satisfy the same contract. Neither field list is the
-definition.
-
-| backend | vocabulary lives in | state |
-|---|---|---|
-| 3D node stack | below, in this file | shipped |
-| Canvas2D flat vector | `bibles-2d.md` | **NOT WRITTEN.** `scene2d.template.html` ships with no art-direction reference of any kind. Its surface is `STYLE`, a palette const, `ACCENT_INK`, `stroke` weight and `contrastOn()`; the predecessor had three worked packs (paper-cutout, blueprint, neon-dark) which were left in the archive rather than promoted, because no 2D film has shipped to force the question |
-| anything later | its own `bibles-<backend>.md` | — |
-
-**Whoever writes the next one:** satisfy the contract above, name only what your
-backend can actually mean, and state the hazards you *observed* separately from
-the ones you *predict*. A bible whose fields the template cannot consume is a
-mood board.
-
-**Why flat files and not a `bibles/` subfolder.** The repo's self-check reads
-`references/*.md` non-recursively when it enforces each reference's routing
-edge, so a subfoldered reference would ship outside that enforcement
-entirely. Flat costs nothing
-until one backend needs more than one file — **that is the trigger to subfolder**,
-and it comes with a one-line change to make that check recurse.
-
-## The v2 shape (node stack)
-
-The template and solver already consume these STYLE fields directly, so a
-bible needs no extra machinery — it IS the STYLE object:
-
-| Field | Consumed by | Governs |
-|---|---|---|
-| `bg`, `exposure` | template | backdrop, tone-mapped exposure |
-| `bloom`, `dof` | post pipeline | halation, rack-focus (per-frame pure) |
-| `lens` | cinematography solver | default fov — long flattens, short dramatizes |
-| `cutDur` | solver | cut personalities (`{blend, whip}` durations) |
-| `energy` | solver | `locked` / `steadicam` / `handheld` camera nerves |
-| palette keys | `buildWorlds()` by convention | every material color, emissive glow scale, fog depth |
-
-```js
-const BIBLES = {
-  workshop: { bg: 0x182430, exposure: 1.15, energy: 'steadicam',
-              gearIn: 0xc9a35c, /* ... */ markerGlow: .9 },
-  neon:     { bg: 0x0a0e16, exposure: 1.0, energy: 'locked', lens: 24,
-              cutDur: {blend: 1.2}, bloom: {threshold: .7, strength: .85},
-              gearIn: 0x232b3a, /* ... */ markerGlow: 3.2 },
-};
-const STYLE = BIBLES.workshop;   // <-- the one line
+```sql
+UPDATE slate SET active_bible = 'neon' WHERE id = 1;
 ```
 
-## The control pair
+## Built-in style bibles (`style_bibles`)
 
-The two bibles above are a measured pair, verified on a corpus film: same
-beats, same geometry, one line — two categorically different films, both
-byte-deterministic on both backends. `workshop` is a lit machine-shop
-(steel and brass under a key light, steadicam); `neon` is a dark stage
-where the machines are silhouettes and the LIGHT is the subject — bloomed
-emissive markers, glowing time-history trails, locked long-lens camera,
-slower dolly blends.
+Every `shot.db` initialized by `mitate init` includes four baseline rows in `style_bibles`:
+
+| `id` | `backdrop_mode` / `backdrop_color` | `color_transform` | `lens_mm` | `camera_energy` | Register |
+|---|---|---|---|---|---|
+| `workshop` | `solid_color` (`#141619`) | `agx` | `50.0` | `locked` | Lit machine-shop / studio stage (steel, brass, warm key + cool fill) |
+| `neon` | `solid_color` (`#090a10`) | `agx_punchy` | `35.0` | `steadicam` | High-contrast dark stage where silhouettes and emissive `glow_nits` carry the read |
+| `daylight` | `physical_sky` (`#87ceeb`) | `agx` | `50.0` | `locked` | Exterior daylight with Hosek-Wilkie physical sky and sun |
+| `paper` | `solid_color` (`#f4f1ea`) | `filmic` | `50.0` | `locked` | High-key diagrammatic / editorial stage with crisp ink contrast |
+
+## Customizing or adding a style bible
+
+```sql
+INSERT INTO style_bibles (
+  id, backdrop_mode, backdrop_color, exposure_ev, contrast,
+  color_transform, lens_mm, camera_energy, sway_amp,
+  cut_whip_sec, cut_blend_sec, bloom_strength, bloom_threshold,
+  dof_fstop, palette_json
+) VALUES (
+  'cyber_cutscene', 'solid_color', '#07090f', 0.2, 1.15,
+  'agx_punchy', 40.0, 'steadicam', 0.8,
+  0.16, 0.80, 0.65, 0.75,
+  2.8, '{"hero":"#ffb45e","accent":"#2a9d8f","rim":"#6f93c4"}'
+);
+
+UPDATE slate SET active_bible = 'cyber_cutscene' WHERE id = 1;
+```
 
 ## Register rules
 
-- **One bible per film.** A film that needs two looks is two worlds under a
-  cut, each still inside the bible, or it is two films.
-- **The bible owns the post flags.** A dark emissive register (neon) turns
-  bloom on and budgets markerGlow so only the payoff crosses the threshold;
-  a lit register leaves bloom off rather than fighting a pale palette's
-  halation (bloom is palette-conditional — `materials.md`).
-- **Camera energy is register, not preference.** Technical/diagrammatic
-  wants `locked` or calm `steadicam` + long lens; character registers earn
-  `handheld` only in moments the story is unstable.
-- **Palette keys are the scene's contract with the bible.** buildWorlds()
-  reads every color that IS the look from STYLE — a hex literal on a
-  subject is a look decision hiding from the bible switch (the control
-  pair is the test: if switching bibles leaves a subject color behind,
-  that color was hardcoded). Neutral hardware may keep literals: the
-  measured pair leaves its machine's pedestal, axle and rim-light hexes
-  fixed across both bibles.
+- **One active bible per film (`slate.active_bible`).** A bible constrains *how* things look, never *what* is on stage. Switching `slate.active_bible` from `'workshop'` to `'neon'` re-renders the exact same beats, geometry, and shots in a new register without breaking determinism.
+- **The bible owns post-processing defaults.** Dark emissive registers (`neon`) enable `bloom_strength > 0` and budget `surface_shaders.glow_nits` so only the hero callouts cross `bloom_threshold`. Pale/lit registers (`paper`, `daylight`) keep `bloom_strength = 0.0` to avoid halating bright backgrounds.
+- **Camera energy is register, not decoration.** Technical explainers and diagrams read clearest with `camera_energy = 'locked'` or low-amplitude `'steadicam'`; reserve `'handheld'` for moments where narrative instability is the point.

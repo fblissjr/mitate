@@ -1,208 +1,25 @@
-# The node stack: WebGPURenderer, TSL, and the recorder
+# Rendering backends: Native Metal (`MitateMetal`) and Web Bundle (`MitateWeb`)
 
-> **Not here.** shipping the scene, and posters → `delivery.md`; export formats
-> and encoders → `recordings.md`; material recipes → `materials.md`.
+> **Not here.** Self-contained HTML delivery → `delivery.md`; video recording modes → `recordings.md`; material modes → `materials.md`; what `mitate smoke` measures → `instruments.md`.
 
+`mitate` v2 renders scenes from `shot.db` on two deterministic backends:
+1. **Primary Native Backend (`MitateMetal`)**: Apple Silicon Swift 6 + Metal 3/4 (`MTLStorageModeShared` unified memory, hardware TBDR G-Buffer, inline `raytracing::intersector` area lighting, single-frame AOV wavelet denoiser, and `IOSurface` → `VideoToolbox`).
+2. **Self-Contained Web Bundle (`mitate bundle`)**: Single-file HTML player exporting the `window.seekTo(t)` contract over WebGPU with automatic WebGL2 fallback.
 
-The renderer-specific half of mitate's 3D backend. The universal method —
-failure axes, beats discipline, determinism rules — is `method.md`; the shot
-vocabulary is `film-language.md`. This file is what changed when the stack
-moved from `WebGLRenderer` + GLSL to `WebGPURenderer` + TSL, and every claim in
-it was measured on `three@0.185.1`. If this file and the code disagree, audit
-before trusting either — then fix the stale one.
+## Determinism scope and diff magnitude
 
-## One renderer, two backends
+**Byte-identity holds within a single backend.** Seeking `t_a -> t_b -> t_a` on `MitateMetal` (or within a fixed browser backend) must produce **0 changed pixels**. Across different backends (`MitateMetal` vs. bundled WebGPU/WebGL2), shading and edge antialiasing legitimately differ while composition, timing, and framing match.
 
-`WebGPURenderer` resolves its backend at `init()`: a WebGPU adapter if the
-browser offers one, else a transparent WebGL2 fallback — same scene code, same
-TSL materials, visually identical composition (measured). Frames are NOT
-byte-identical across backends, so byte-wise regressions must pin the backend
-on both sides. The scene exports which backend actually ran as
-`window.BACKEND` (`'webgpu' | 'webgl2'`), because the answer depends on both
-launch flags and the Chromium build, and inferring it goes wrong.
+Whenever `mitate smoke` detects a pixel difference on random-access seek, it reports the exact magnitude and location in stdout JSON rather than a bare pass/fail:
+- `changed_pixels` — count of differing pixels.
+- `bbox` — `[min_x, min_y, max_x, max_y]` bounding box of the divergence.
+- `max_channel_delta` — maximum 8-bit/16-bit channel delta.
+- `psnr_db` — Peak Signal-to-Noise Ratio in dB (with `--dump-frames` writing the disagreeing images for visual inspection).
 
-The recorder's policy (`shoot.js` / `smoke.js`, same logic):
+## Five rules that keep both backends byte-deterministic
 
-| Env | Effect |
-|---|---|
-| (nothing) | No WebGPU flags. Headless usually has no adapter; WebGL2 fallback. The universal, CI-safe default. |
-| `WEBGPU=metal` | macOS hardware adapter (`--enable-unsafe-webgpu --use-angle=metal`). Verified. ~2.3x faster end to end (37 vs 87 ms/frame with post chain, screenshots included) — **one machine, one sweep, macOS. Directional, not a portable figure**; no comparable number exists for any other host, and nothing re-measures this. |
-| `WEBGPU=vulkan` | Linux hardware adapter. UNVERIFIED here; run smoke first. |
-| `WEBGPU=auto` | metal on darwin, vulkan elsewhere. |
-| `WEBGPU=swiftshader` | Software WebGPU. Diagnostic-only: ships flat frames on the playwright headless-shell build, warmth-dependently on others. `shoot.js` refuses it without `WEBGPU_UNSAFE_SHIP=1`; smoke's shipped-frame check exists exactly for it. |
-| `ANGLE_BACKEND=...` | GL backend selection for the fallback path, unchanged from the old stack. Conflicts with `WEBGPU=` are rejected loudly. |
-
-**The landmine that motivated all of this:** on macOS, `--enable-unsafe-webgpu`
-WITHOUT `--use-angle=metal` hands Chromium a SwiftShader-WebGPU adapter whose
-compositor ships the flat clear color — every frame, exit 0, deterministic,
-captions crisp on top. Four instruments passed on it before the shipped-frame
-check existed. Never hand-roll WebGPU flags; go through the env policy.
-
-## The async boot contract
-
-```js
-await renderer.init();                       // resolves the backend
-await renderer.compileAsync(scene, camera);  // pre-warms every material
-window.BACKEND = renderer.backend.isWebGPUBackend ? 'webgpu' : 'webgl2';
-window.seekTo(0);
-window.sceneReady = true;                    // ONLY now may the recorder capture
-```
-
-`renderAsync()` is deprecated in r185; after boot, the synchronous
-`renderer.render()` inside `seekTo` is the verified path on both backends.
-One WebGPU-backend caution from the minimal-repro work: the very FIRST
-render of a scene can differ one-time from every later render of the same
-state even with sorting off (a warmup signature, distinct from the revisit
-bug). The boot's `seekTo(0)` before `sceneReady` absorbs it — never
-byte-compare against a frame captured before that first render completes.
-
-## The six determinism rules the node stack adds
-
-1. **Time reaches shaders through one uniform.** `const uTime = THREE.uniform(0)`,
-   set from `seekTo`. The TSL `time` node auto-increments off a wall clock —
-   never import it. A node graph reading uTime is exactly as pure as a
-   property set from `t`.
-2. **The nodeFrame tick in seekTo is load-bearing.** Shadow maps update at
-   most once per `nodeFrame.frameId` (`ShadowNode.updateBefore` — its guard
-   overrides even `shadow.needsUpdate`), and frameId only advances in the
-   renderer's internal rAF loop, never in `render()`. Two seeks in one browser
-   tick would leave the second rendering with the first's shadow map —
-   measured as a flaky byte-determinism failure confined to shadowed regions.
-   `window.seekTo` therefore calls `renderer._nodes.nodeFrame.update()` before
-   rendering. Private API, pinned at 0.185.1; smoke fails loudly if an upgrade
-   renames it. Do not remove it because everything looks fine without it —
-   everything looked fine without it.
-3. **No temporal passes.** TRAA, afterimage, accumulation motion blur carry
-   state across frames. The bundled TSL display passes (bloom, dof, film,
-   chromaticAberration) are per-frame pure.
-4. **No `ComputeNode` / storage buffers.** Stateful across dispatches, and the
-   WebGL2 fallback cannot run them at all.
-5. **`renderer.sortObjects = false` stays off.** Found by a corpus regression
-   film, then reproduced once out-of-pipeline (3 meshes, no shadows, no fog,
-   both backends). **The harness is gone** — the repro scripts are not in the
-   tree. So the mechanism below is a *recorded observation*, not a re-runnable
-   measurement, and nothing here can tell you whether it still holds on three
-   past r185. Read the counts as history. It has not been filed upstream and
-   cannot be, without rebuilding the repro first. TRIGGER to rebuild it as a
-   tracked `bracket-sortobjects.js`: the next three.js bump, or any change to
-   the boot sequence. Keeping the flag off costs nothing meanwhile, and its one
-   consequence is documented at the end of this entry.
-   The observation: with depth sorting on, REVISITING a state after the sort order
-   changed renders objects at the previous render's pose. First visit
-   correct; every revisit wrong; 100% deterministic-wrong on revisit (the
-   in-pipeline "~12% flaky" was sampling structure, not a race); sticky
-   across re-renders and settle time; and the stale object's SHADOW draws
-   at the CORRECT pose while its beauty pass lags. Object motion through
-   the depth order is a sufficient trigger — camera cuts are just the
-   common cause. Control: sortObjects=false was 40/40 clean in the repro
-   and 16/16 on the real scene. Consequence: transparent objects draw in
-   CREATION order, so when transparent things overlap on screen, create
-   the farther one first.
-6. **`frustumCulled = false` on every mesh** (the template's `mesh()` helper
-   does it). The per-mesh cull decision was measured consuming a stale pose:
-   a mesh near the frustum edge rendered or vanished depending on which t the
-   camera arrived from. Scenes here are tens of meshes; culling buys nothing.
-
-## Recorder mechanics that differ from the old stack
-
-- **Seek WITH a sync, then settle, then screenshot.** `render()` queues GPU work
-  and the compositor can present it a frame late, so a capture can read the
-  PREVIOUS composite. Two mechanisms, and both are needed:
-  `backend.js`'s `seekSynced(page, t)` seeks and forces the render to complete
-  **in one page task**, then `settle` waits a double-rAF for presentation.
-  Scene contract unchanged — `seekTo` stays synchronous.
-
-  A double-rAF alone was not enough, measured on ubuntu-22.04/WebGL2,
-  10 repeats per cell: a bare seek gave byte-differences on three cells at
-  40%/30%/20%, and the same sequence with the readback sharing the seek's task
-  gave **0 of 200**. The failure had been misread as two films carrying
-  state; it was the gate racing presentation on a slow stack, which is what the
-  original settle fix was for and what a fixed *duration* cannot guarantee.
-  A readback is a completion barrier rather than a latency guess, so it should not
-  need re-tuning per host — and reaching for the coefficient instead is the trap:
-  the pull toward tuning a number is strongest exactly when a thing is nearly
-  right, which is the moment to stop and instrument. **Scope of the evidence: WebGL2 only.** WebGPU
-  submits through an async queue, so the argument is plausible there and
-  unverified; `seekSynced` is applied on both paths regardless, because a 1x1 read
-  is cheap and the failure it prevents is silent.
-
-  **Use `seekSynced` at every site where a capture follows a seek** — all three
-  of `shoot.js`'s capture paths, and smoke's determinism arm. A bare
-  `evaluate('window.seekTo(t)')` at any of them puts every recorded frame of
-  every MP4 through the vulnerable pattern, not just the gate.
-- **The drawing buffer is cleared after compositing.** An in-page
-  `drawImage(canvas)` readback in a LATER task reads zeros; render-and-read
-  must share one `evaluate`. smoke's exposure sampler does this; copy that
-  pattern for any new in-page pixel check. This is also why the sync above lives
-  inside `seekSynced` rather than inside `settle`: a readback bolted into
-  `settle` is a separate task and synchronises nothing.
-- **smoke's shipped-frame check** opens a caption-stripped page (`?strip=text`)
-  cold — before the main check page warms the GPU process — and fails if every
-  sampled `t` ships the identical image or if the RICHEST sampled frame's luma
-  spread is under `SHIPPED_SPREAD_FLOOR` (bracket: broken 1.7, healthy 3D
-  161.3, flat 2D register 120.9). It measures the exact bytes the recorder
-  writes, which is the only layer where "it renders" means anything.
-- **Chromium resolution matters.** The managed-cache scan includes Apple
-  Silicon layouts; without them the tools silently fell through to system
-  Chrome — an auto-updating build that disagreed with playwright's pinned one
-  about WebGPU. `CHROMIUM_PATH` overrides; keep the gate and the recorder on
-  the same binary.
-
-## The regression twin
-
-Measured on a corpus film. The same scene body (beats, worlds, shots, animate)
-injected into this skill's template and into frozen explainer-video's renders
-near-identically:
-composition, lighting, and read match cell for cell on the contact sheets;
-both pass their own smoke. The once-reported "~3% framing delta" between
-stacks was MEASURED AWAY: at equal viewport and equal t, rendered geometry
-is sub-pixel identical (±0.7 px over 14 silhouette probes) across classic
-WebGL, the WebGL2 fallback, and WebGPU-Metal — the observed delta was a
-capture-viewport mismatch in the original A/B (one screenshot's effective
-viewport was ~33 px short; on-screen size is proportional to innerHeight
-because the scene fixes vertical fov). Lesson: pin the viewport before
-byte- or crop-comparing captures. What genuinely differs across stacks is
-SHADING — the node renderer's highlights are brighter and shadows tighter
-(~9% of pixels differ by >8/255) — which the eye reads as zoom. Also
-learned here: `key.shadow.normalBias = .035` kills shadow acne on extruded
-faces at closeup (a scene-rig setting; both stacks needed it).
-
-## Node materials in scene code
-
-Everything from `three/webgpu` and `three/tsl` is spread flat onto `THREE` by
-the vendor bundle, plus `SkyMesh` and the display passes `bloom`, `dof`,
-`film`, `chromaticAberration`. The template's demo material is the pattern:
-
-```js
-const mat = new THREE.MeshStandardNodeMaterial({ roughness: .35 });
-const veins = THREE.mx_fractal_noise_float(
-  THREE.positionLocal.mul(1.6).add(uTime.mul(.25)), 4, 2.0, .5, 1.0).mul(.5).add(.5);
-mat.colorNode = THREE.mix(THREE.color(0x2a9d8f), THREE.color(0x8ad5c9), veins.smoothstep(.35, .8));
-```
-
-Zero assets: MaterialX noise (`mx_noise_float` — the Perlin-style one; there
-is NO `mx_perlin_noise_float` export and a typo'd node name propagates as
-`undefined` silently — plus `mx_worley_noise_float`, `mx_fractal_noise_float`,
-`mx_aastep`) computes on the GPU. `MeshPhysicalNodeMaterial` (transmission,
-`dispersion`, sheen, iridescence) and `MeshSSSNodeMaterial` are exercised by
-the material packs — recipes and measured traps in `materials.md`.
-`MeshToonNodeMaterial` is available but deliberately unused: the cel recipe
-authors its banding directly in the node graph on `MeshBasicNodeMaterial`
-instead.
-Post chains compose through
-`THREE.RenderPipeline` (`PostProcessing` is its deprecated alias). The
-template runs one ALWAYS, pass-through by default, with `STYLE.bloom` and
-`STYLE.dof` flags — both verified byte-deterministic through smoke on both
-backends, and DoF's focus distance rides the cinematography solver's
-`shotFocus` through a uniform, making the `SHOTS[]` `focus` property
-functional. TSL bloom thresholds are NOT the old `UnrealBloomPass` brackets —
-re-measure before trusting any number.
-
-Bundle cost: 1.09 MB embedded per scene (vs 0.77 MB for the old WebGL stack).
-
-## r185 notes carried over
-
-`PCFSoftShadowMap` deprecated (use `PCFShadowMap`); `outputColorSpace`, not
-`outputEncoding`; physical lighting is the only mode. `THREE.<removed>` is
-`undefined`, not an error — smoke treats console warnings as failures for
-exactly this class.
+1. **Time enters only through `StageClock(t)`.** Never read wall-clock timers (`Date()`, `performance.now()`, or auto-incrementing shader time nodes). Every transform, material parameter, and shader uniform derives from `t`.
+2. **Zero temporal accumulation.** Never enable `MTLFXTemporalScaler`, temporal anti-aliasing (TAA/TRAA), temporal GI caches, or frame-to-frame feedback buffers. `MitateMetal` uses single-frame edge-stopping A-Trous wavelet denoising (`Denoise.metal`) guided by noise-free G-Buffer Albedo, Normal, and Depth AOVs, plus spatial-only scaling (`MTLFXSpatialScaler`).
+3. **Pure GPU kernels (`purity_mode = 'pure_t'`).** Custom `.metal` functions attached via `mitate kernel` (`MTLVisibleFunctionTable` slots: `kinematics`, `ray_medium`, `procedural_surface`, `lens_ray`, `finishing_pass`) must treat `state_buffers` as read-only initial data and seed any stochastic sampling strictly from `(pixel_xy, sample_idx, slate.random_seed)`.
+4. **Stateful simulations freeze into `baked_tracks` (`mitate bake`).** Any kernel or system that integrates velocity or collisions across time steps uses `purity_mode = 'baked_sim'`. Running `mitate bake shot.db --seed <N>` steps the simulation deterministically at build time and writes compressed trajectories into `baked_tracks`, which both `MitateMetal` and `mitate bundle` evaluate in $O(1)$ at any `t`.
+5. **Synchronous completion barrier before capture.** On `MitateMetal`, every capture waits for `MTLCommandBuffer.waitUntilCompleted()` on unified memory before reading texture bytes; on the bundled web path, `window.seekTo(t)` completes pipeline rendering synchronously after `window.sceneReady()` returns `true`.
